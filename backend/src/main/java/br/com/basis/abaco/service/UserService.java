@@ -418,4 +418,9 @@ public class UserService extends BaseService {
         userRepository.save(user);
         userSearchRepository.save(bindUserForSaveElatiscSearch(user));
     }
+
+    public void salvarUsuario(User user){
+        userRepository.save(user);
+        userSearchRepository.save(bindUserForSaveElatiscSearch(user));
+    }
 }

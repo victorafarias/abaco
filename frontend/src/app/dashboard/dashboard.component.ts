@@ -3,10 +3,13 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '@nuvem/angular-base';
 import { MenuComponent, MenusService, PageNotificationService } from '@nuvem/primeng-components';
+import { MenuItem } from 'primeng';
 import { Observable, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { User } from '../user';
 import { AuthService } from '../util/auth.service';
+import { NovidadeVersaoDTO } from './novidades-versao-dto';
+import { NovidadesVersaoService } from './novidades-versao-service';
 
 @Component({
     selector: 'app-dashboard',
@@ -17,17 +20,27 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     username: string;
     password: string;
+    
 
     authenticated = false;
 
+    mostrarDialogNovidadesVersao: boolean = false;
+
+    novidadesDaVersao: NovidadeVersaoDTO[] = [];
+    novidadeVersao: NovidadeVersaoDTO = new NovidadeVersaoDTO();
+    versaoAtual: string = "";
+    mostrarNovidades: boolean = false;
+    
     private routeSub: Subscription;
     @ViewChild(MenuComponent, { static: true }) menu: MenuComponent;
+    items: MenuItem[] = [];
 
     constructor(
         private authService: AuthenticationService<User>,
         private http: HttpClient,
         private pageNotificationService: PageNotificationService,
         private menuService: MenusService,
+        private novidadesVersaoService: NovidadesVersaoService,
         private authAbacoService: AuthService,
         private router: Router
     ) { }
@@ -41,6 +54,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit() {
+        this.visualizarNovidadesDaVersao();
     }
 
 
@@ -114,4 +128,37 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         return storageUser.firstName + ' ' + storageUser.lastName;
     }
 
+
+    visualizarNovidadesDaVersao() {
+        this.novidadesVersaoService.getAll().subscribe(response => {
+            if(response.length > 0){
+                this.mostrarDialogNovidadesVersao = true;
+                this.novidadesDaVersao = response;          
+                this.novidadeVersao = this.novidadesDaVersao[this.novidadesDaVersao.length-1];
+                this.versaoAtual = this.novidadeVersao.versao;
+                
+                let menuItens: MenuItem[] = [];
+                this.novidadesDaVersao.forEach(nv => {
+                    menuItens.push(
+                        {label: nv.versao, icon: "pi pi-caret-right", command: () => {
+                            this.alterarConteudo(nv);
+                        }});
+                })
+
+                this.items = [{
+                    label: 'Versões',
+                    icon: 'pi pi-fw pi-spinner',
+                    items: menuItens}]
+            }
+        });
+    }
+    alterarConteudo(nv: NovidadeVersaoDTO) {
+        this.novidadeVersao = nv;
+    }
+
+    verificarOpcaoMostrarNovidades(){
+        if(this.mostrarNovidades === true){
+            this.novidadesVersaoService.desabilitarNovidadesUsuario().subscribe(r=>{});
+        }
+    }
 }

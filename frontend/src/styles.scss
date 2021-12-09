@@ -64,3 +64,11 @@ body .ui-widget-overlay {
   width: 85px !important;
   text-align: center;
 }
+
+::ng-deep .p-panelmenu .p-panelmenu-header>a {
+	background-color: lightblue;
+  }::ng-deep .p-panelmenu .p-panelmenu-header.p-highlight>a {
+    background-color: red;
+  }::ng-deep .p-panelmenu ul li:nth-child(1) {
+    color: blue;
+}
