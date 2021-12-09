@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="basis (generated)" id="1637853324367-7">
+        <createTable tableName="novidades">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="novidadesPK"/>
+            </column>
+            <column name="novidades" type="TEXT"/>
+            <column name="ocorrencia" type="VARCHAR(255)"/>
+            <column name="novidades_versao_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="basis (generated)" id="1637853324367-8">
+        <createTable tableName="novidades_versao">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="novidades_versaoPK"/>
+            </column>
+            <column name="versao" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="basis (generated)" id="1637853324367-53">
+        <addForeignKeyConstraint baseColumnNames="novidades_versao_id"
+                                 baseTableName="novidades"
+                                 constraintName="FKslup7okm90e4xeyqh7rdfjqff"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 referencedColumnNames="id"
+                                 referencedTableName="novidades_versao"/>
+    </changeSet>
+    <changeSet author="basis (generated)" id="1639063395775-1">
+        <insert tableName="novidades_versao">
+            <column name="id" value="1"></column>
+            <column name="versao" value="2.8.3"></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="1"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235308"></column>
+            <column name="novidades" value="Melhoria na funcionalidade 'Clonar' análise. Foi implementado a ordenação fixa das funções de dados e transação, juntamente com os campos 'DERS, ALRS, RLRS'."></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="2"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235310"></column>
+            <column name="novidades" value="Incluído dois botões novos para manipulação do usuário. Na funcionalidade 'Resumo da Análise', quando estiver bloqueada o botão 'Desbloquear' foi adicionado, logo após estar desbloqueada, e esteja no modo visualização da análise, foi adicionado o botão 'Editar' que permite que o usuário possa fazer a edição da análise, sem que precise voltar a tela de pesquisa."></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="3"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235311"></column>
+            <column name="novidades" value="Melhoria na funcionalidade 'Visualizar' e 'Editar' Sistemas. Foi implementado um filtro de texto livre para as colunas Nome do Módulo em Módulo e Nome do módulo e Nome da funcionalidade(Nas duas tabelas de 'Módulo' e 'Funcionalidade'."></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="4"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235312"></column>
+            <column name="novidades" value="Melhoria na funcionalidade 'Listar' Funções de Dados e Funções de Transação. Adicionado um armazenamento em cache da paginação da lista, onde o usuário pode sair e voltar e não mudará a opção selecionada. Foi implementado o comportamento ao excluir/editar em lote a barra de botões voltar para o estado inicial!"></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="5"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235322"></column>
+            <column name="novidades" value="Incluído em todos os relatórios de contagem uma nova aba. Ao gerar planilhas, relatórios padrão do Ábaco, foi adicionado uma aba que faz a contagem de pontos de função por funcionalidade."></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="6"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235325"></column>
+            <column name="novidades" value="Foi criado em baselines um novo botão para exportar a baseline para uma planilha em excel detalhadadamente, com os modelos disponíveis em análise."></column>
+        </insert>
+        <insert tableName="novidades">
+            <column name="id" value="7"></column>
+            <column name="novidades_versao_id" value="1"></column>
+            <column name="ocorrencia" value="BASIS-235578"></column>
+            <column name="novidades" value="Melhoria no relatório do modelo Basis, foi ajustado para que todos os INM de função de transação seja listado na aba certa."></column>
+        </insert>
+    </changeSet>
+    <changeSet author="basis (generated)" id="1639065559297-1">
+        <update tableName="jhi_user">
+            <column name="mostrar_novidades" value="true"></column>
+        </update>
+    </changeSet>
+</databaseChangeLog>

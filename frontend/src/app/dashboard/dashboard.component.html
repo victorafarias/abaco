@@ -7,3 +7,46 @@
         </div>
     </div>
 </div>
+
+
+
+<p-dialog [draggable]="false" (onHide)="verificarOpcaoMostrarNovidades()" [modal]="true" [style]="{width: '50vw'}" [closable]="true" header="Novidades da versão"
+     styleClass="test2"
+    [(visible)]="mostrarDialogNovidadesVersao" [contentStyle]="{'height': ['windowHeightDialog']}"
+    #dialogNovidadesVersao>
+    <div class="ui-g">
+        <div class="ui-g-3">
+            <p-menu  styleClass="test"  [model]="items"></p-menu>
+        </div>
+
+        <div class="ui-g-9">
+            <p-panel [header]="'Versão selecionada: '+novidadeVersao.versao" styleClass="test" >
+                <p-header  style="float: right; position: relative; 
+                color: rgb(0, 0, 0);">
+                    Versão mais atual: {{versaoAtual}}
+                </p-header>
+                <div *ngFor="let novidade of novidadeVersao.novidades">
+                    <h4 style="margin-bottom: -10px;">{{novidade.ocorrencia}}</h4>
+                    <p>{{novidade.novidades}}</p>
+                    <hr color="#CECDCD">
+                </div>
+            </p-panel>
+            <br>
+            <!-- <p-card [header]="'Versão: '+novidadeVersao.versao" >
+                <p-header style="float: right; position: relative">
+                    Versão mais atual: {{versaoAtual}}
+                </p-header>
+                <div *ngFor="let novidade of novidadeVersao.novidades">
+                    {{novidade}}
+                </div>
+            </p-card> -->
+        </div>
+    </div>
+    <div class="ui-g-12">
+        <div class="p-field-checkbox">
+            <p-checkbox name="mostrarNovidades" [(ngModel)]="mostrarNovidades" [binary]="true"
+                inputId="mostrarNovidades"></p-checkbox>
+            <label for="mostrarNovidades">Não mostrar mais as novidades da última versão.</label>
+        </div>
+    </div>
+</p-dialog>
