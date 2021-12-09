@@ -78,6 +78,12 @@
             <column name="novidades" value="Melhoria no relatório do modelo Basis, foi ajustado para que todos os INM de função de transação seja listado na aba certa."></column>
         </insert>
     </changeSet>
+
+    <changeSet author="basis (generated)" id="1639069352688-23">
+        <addColumn tableName="jhi_user">
+            <column name="mostrar_novidades" type="boolean"/>
+        </addColumn>
+    </changeSet>
     <changeSet author="basis (generated)" id="1639065559297-1">
         <update tableName="jhi_user">
             <column name="mostrar_novidades" value="true"></column>
