@@ -20,7 +20,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     username: string;
     password: string;
-    
+
 
     authenticated = false;
 

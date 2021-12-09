@@ -7,6 +7,6 @@ export class NovidadeVersaoDTO{
 
 export class NovidadesDTO{
     id?: number;
-    novidades?: string;
+    novidade?: string;
     ocorrencia?: string;
 }

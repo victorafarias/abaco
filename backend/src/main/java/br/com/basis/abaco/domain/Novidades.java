@@ -42,7 +42,7 @@ public class Novidades implements Serializable, ReportObject {
     @Lob @Basic(fetch = FetchType.LAZY)
     @Type(type = "org.hibernate.type.TextType")
     @Column(name = "novidades")
-    private String novidades;
+    private String novidade;
 
     @ManyToOne
     @JoinColumn(name = "novidades_versao_id")
@@ -65,13 +65,14 @@ public class Novidades implements Serializable, ReportObject {
         this.ocorrencia = ocorrencia;
     }
 
-    public String getNovidades() {
-        return novidades;
+    public String getNovidade() {
+        return novidade;
     }
 
-    public void setNovidades(String novidades) {
-        this.novidades = novidades;
+    public void setNovidade(String novidade) {
+        this.novidade = novidade;
     }
+
     public NovidadesVersao getNovidadesVersao() {
         return novidadesVersao;
     }
