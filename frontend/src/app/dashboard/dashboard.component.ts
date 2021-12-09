@@ -144,7 +144,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                             this.alterarConteudo(nv);
                         }});
                 })
-
                 this.items = [{
                     label: 'Versões',
                     icon: 'pi pi-fw pi-spinner',
