@@ -17,6 +17,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -57,10 +59,14 @@ public class NovidadesVersao implements Serializable, ReportObject {
     }
 
     public Set<Novidades> getNovidades() {
-        return novidades;
+        return Optional.ofNullable(this.novidades)
+            .map(lista -> new LinkedHashSet<Novidades>(lista))
+            .orElse(new LinkedHashSet<Novidades>());
     }
 
     public void setNovidades(Set<Novidades> novidades) {
-        this.novidades = novidades;
+        this.novidades = Optional.ofNullable(novidades)
+            .map(lista -> new LinkedHashSet<Novidades>(lista))
+            .orElse(new LinkedHashSet<Novidades>());
     }
 }

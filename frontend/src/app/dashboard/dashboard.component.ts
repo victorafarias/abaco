@@ -20,7 +20,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     username: string;
     password: string;
-    
+
 
     authenticated = false;
 
@@ -144,7 +144,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                             this.alterarConteudo(nv);
                         }});
                 })
-
                 this.items = [{
                     label: 'Versões',
                     icon: 'pi pi-fw pi-spinner',
