@@ -20,7 +20,8 @@ export class User implements BaseEntity {
     public tipoEquipes?: TipoEquipe[],
     public perfils?: Perfil[],
     public perfilOrganizacoes?: PerfilOrganizacao[],
-    public organizacoes?: Organizacao[]
+    public organizacoes?: Organizacao[],
+    public mostrarNovidades?: boolean
   ) {
    }
 

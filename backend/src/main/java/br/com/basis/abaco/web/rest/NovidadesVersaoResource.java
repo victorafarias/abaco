@@ -38,4 +38,11 @@ public class NovidadesVersaoResource {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/novidades-versao/habilitar-novidades")
+    public ResponseEntity<Void> habilitarNovidadeUsuario(){
+        log.debug("REST request to disable view news");
+        novidadesVersaoService.habilitarNovidadeUsuario();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }

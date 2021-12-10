@@ -18,7 +18,11 @@ export class NovidadesVersaoService {
     }
 
 
-    desabilitarNovidadesUsuario() {
-        return this.http.get<NovidadeVersaoDTO[]>(this.resourceUrl+"/desabilitar-novidades");
+    desabilitarNovidadesUsuario() :Observable<void>{
+        return this.http.get<void>(this.resourceUrl+"/desabilitar-novidades");
+    }
+
+    habilitarNovidadesUsuario() :Observable<void>{
+        return this.http.get<void>(this.resourceUrl+"/habilitar-novidades");
     }
 }

@@ -35,6 +35,12 @@
                             <span>Configuração Baseline</span>
                         </a>
                     </li>
+
+                    <li role="menuitem">
+                        <a>
+                            <p-checkbox (onChange)="modificarNovidadesUsuario($event)" [(ngModel)]="mostrarNovidadesUsuario" [binary]="true" label="Mostrar novidades"></p-checkbox>
+                        </a>
+                    </li>
                     
                     <li role="menuitem">
                         <a logout >
