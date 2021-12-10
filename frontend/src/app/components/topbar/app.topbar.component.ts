@@ -6,6 +6,8 @@ import { LoginService } from 'src/app/login';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
 import { UploadService } from 'src/app/upload/upload.service';
+import { NovidadesVersaoService } from 'src/app/dashboard/novidades-versao-service';
+import { UserService } from 'src/app/user';
 
 
 @Component({
@@ -19,9 +21,12 @@ export class AppTopbarComponent implements OnInit{
 
     organizacao: Organizacao = new Organizacao();
     src: String = "";
+    mostrarNovidadesUsuario: boolean = false;
 
     constructor(public app: AppComponent,
         private orgService: OrganizacaoService,
+        private userService: UserService,
+        private novidadesService: NovidadesVersaoService,
         private uploadService: UploadService,
         private readonly _authentication:AuthenticationService<User>) {
     }
@@ -37,6 +42,9 @@ export class AppTopbarComponent implements OnInit{
                     });
                 }
             }       
+        })
+        this.userService.findCurrentUser().subscribe(r => { 
+            this.mostrarNovidadesUsuario = r.mostrarNovidades;
         })
     }
 
@@ -57,6 +65,21 @@ export class AppTopbarComponent implements OnInit{
         }
 
         return storageUser.firstName;
+    }
+
+    modificarNovidadesUsuario(event){
+        if(event.checked == true){
+            this.novidadesService.habilitarNovidadesUsuario().subscribe(r=>{
+                console.log("Aq");
+                
+            });
+        }else{
+            this.novidadesService.desabilitarNovidadesUsuario().subscribe(r=>{
+                console.log("Aq");
+                
+            });
+        }
+        
     }
 
 }

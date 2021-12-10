@@ -34,4 +34,12 @@ public class NovidadesVersaoService {
             userService.salvarUsuario(user);
         }
     }
+
+    public void habilitarNovidadeUsuario() {
+        User user = userService.getLoggedUser();
+        if(user != null && (user.getMostrarNovidades() == false)){
+            user.setMostrarNovidades(true);
+            userService.salvarUsuario(user);
+        }
+    }
 }

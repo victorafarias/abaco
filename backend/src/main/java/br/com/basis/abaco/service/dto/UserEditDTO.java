@@ -27,6 +27,8 @@ public class UserEditDTO {
 
     private boolean activated = true;
 
+    private Boolean mostrarNovidades;
+
     private Set<TipoEquipeDTO> tipoEquipes = new HashSet<>();
 
     private Set<OrganizacaoDTO> organizacoes = new HashSet<>();
