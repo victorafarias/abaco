@@ -3,46 +3,47 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
 import { SecurityModule, VersionTagModule } from '@nuvem/angular-base';
-import { BreadcrumbModule, ErrorStackModule, MenuModule, PageNotificationModule, BlockUiModule } from '@nuvem/primeng-components';
+import { BlockUiModule, BreadcrumbModule, ErrorStackModule, MenuModule, PageNotificationModule } from '@nuvem/primeng-components';
 import { environment } from '../environments/environment';
+import { AnaliseModule } from './analise/analise.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { BaselineModule } from './baseline/baseline.module';
 import { AbacoButtonsModule } from './components/abaco-buttons/abaco-buttons.module';
 import { DiarioErrosComponent } from './components/diario-erros/diario-erros.component';
 import { AppFooterComponent } from './components/footer/app.footer.component';
+import { NovidadesVersaoService } from './components/novidades-versao/novidades-versao-service';
 import { AppInlineProfileComponent } from './components/profile/app.profile.component';
 import { AppRightpanelComponent } from './components/rightpanel/app.rightpanel.component';
 import { AppTopbarComponent } from './components/topbar/app.topbar.component';
+import { ConfiguracaoBaselineModule } from './configuracao-baseline/configuracao-baseline.module';
 import { ContratoModule } from './contrato/contrato.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { DivergenciaModule } from './divergencia/divergencia.module';
 import { EsforcoFaseModule } from './esforco-fase';
 import { FaseModule } from './fase/fase.module';
-import { IndexadorModule } from './indexador/indexador.module';
-import { ManualModule } from './manual/manual.module';
-import { OrganizacaoModule } from './organizacao/organizacao.module';
-import { SharedModule } from './shared/shared.module';
-import { UploadService } from './upload/upload.service';
-import { FuncionalidadeModule } from './funcionalidade/funcionalidade.module';
-import { ModuloModule } from './modulo/modulo.module';
-import { SistemaModule } from './sistema/sistema.module';
-import { UserModule } from './user/user.module';
-import { TipoEquipeModule } from './tipo-equipe/tipo-equipe.module';
-import { AnaliseModule } from './analise/analise.module';
 import { FuncaoDadosModule } from './funcao-dados/funcao-dados.module';
 import { FuncaoTransacaoModule } from './funcao-transacao/funcao-transacao.module';
-import { BaselineModule } from './baseline/baseline.module';
-import { SenhaModule } from './senha/senha.module';
-import { DashboardModule } from './dashboard/dashboard.module';
-import { RouterModule } from '@angular/router';
+import { FuncionalidadeModule } from './funcionalidade/funcionalidade.module';
+import { IndexadorModule } from './indexador/indexador.module';
 import { LoginModule } from './login/login.module';
-import { PesquisarFuncaoTransacaoModule } from './pesquisar-ft/pesquisar-ft.module';
-import { StatusModule } from './status/status.module';
+import { ManualModule } from './manual/manual.module';
+import { ModuloModule } from './modulo/modulo.module';
 import { NomenclaturaModule } from './nomenclatura/nomenclatura.module';
-import { DivergenciaModule } from './divergencia/divergencia.module';
-import { ConfiguracaoBaselineModule } from './configuracao-baseline/configuracao-baseline.module';
+import { OrganizacaoModule } from './organizacao/organizacao.module';
 import { PerfilModule } from './perfil/perfil.module';
-import { AuthService } from './util/auth.service';
+import { PesquisarFuncaoTransacaoModule } from './pesquisar-ft/pesquisar-ft.module';
+import { SenhaModule } from './senha/senha.module';
+import { SharedModule } from './shared/shared.module';
+import { SistemaModule } from './sistema/sistema.module';
+import { StatusModule } from './status/status.module';
+import { TipoEquipeModule } from './tipo-equipe/tipo-equipe.module';
+import { UploadService } from './upload/upload.service';
+import { UserModule } from './user/user.module';
 import { AuthGuardService } from './util/auth.guard.service';
+import { AuthService } from './util/auth.service';
 
 @NgModule({
     declarations: [
@@ -95,7 +96,7 @@ import { AuthGuardService } from './util/auth.guard.service';
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
-        UploadService, AuthService, AuthGuardService
+        UploadService, AuthService, AuthGuardService, NovidadesVersaoService
     ],
     bootstrap: [AppComponent],
     exports: [ RouterModule]

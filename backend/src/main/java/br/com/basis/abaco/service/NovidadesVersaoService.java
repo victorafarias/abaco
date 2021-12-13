@@ -5,7 +5,6 @@ import br.com.basis.abaco.domain.User;
 import br.com.basis.abaco.repository.NovidadesVersaoRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -20,11 +19,7 @@ public class NovidadesVersaoService {
     }
 
     public Set<NovidadesVersao> getAllNovidadesVersao() {
-        User user = userService.getLoggedUser();
-        if(user.getMostrarNovidades() == null || user.getMostrarNovidades() == true){
-            return novidadesVersaoRepository.findAllOrderById();
-        }
-        return new HashSet<>();
+        return novidadesVersaoRepository.findAllOrderById();
     }
 
     public void desabilitarNovidadeUsuario() {
