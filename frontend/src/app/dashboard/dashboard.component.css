@@ -18,6 +18,7 @@
 	background-position: center;
 	background-size: cover;
 }
+
 :host ::ng-deep .test {
 	background-color: rgba(127, 168, 255, 0.062);
   }
@@ -43,4 +44,3 @@
   :host ::ng-deep .ui-dialog .ui-dialog-titlebar{
     background: rgba(99, 99, 99, 0.329); 
 }
-  
