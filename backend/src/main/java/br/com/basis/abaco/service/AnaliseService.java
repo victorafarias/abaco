@@ -725,8 +725,8 @@ public class AnaliseService extends BaseService {
             analiseDivergencia = bindDivergenceAnalise(analiseDivergencia, analise, user);
             analiseDivergencia.setStatus(status);
             analiseDivergencia.setIsDivergence(true);
-            updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
             analiseDivergencia = save(analiseDivergencia);
+            updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
             return analiseDivergencia;
         }
         return new Analise();
