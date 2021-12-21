@@ -37,4 +37,6 @@ public class AnaliseEditDTO extends AnaliseBaseDTO implements ReportObject {
     private Manual manual;
     private Set<Compartilhada> compartilhadas;
     private Status status;
+
+    private AnaliseDTO analiseDivergence;
 }

@@ -89,6 +89,10 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     translateSubscriptions: Subscription[] = [];
     viewFuncaoDados = false;
     showAddComent = false;
+
+    showEditComment: boolean = false;
+    editDivergenceComment: CommentFuncaoDados = new CommentFuncaoDados();
+
     selectModeButtonsEditAndView: boolean;
     impacto: SelectItem[] = [
         { label: 'Inclusão', value: 'INCLUSAO' },
@@ -1231,8 +1235,8 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.pageNotificationService.addErrorMessage('A função de dados selecionada é inválida.');
             return;
         }
-        this.commentFD.commet = divergenceComment;
-        this.funcaoDadosService.saveComent(this.commentFD.commet, this.seletedFuncaoDados.id)
+        this.commentFD.comment = divergenceComment;
+        this.funcaoDadosService.saveComent(this.commentFD.comment, this.seletedFuncaoDados.id)
             .subscribe((comment) => {
                 this.seletedFuncaoDados.lstDivergenceComments.push(comment);
                 this.divergenceComment = '';
@@ -1636,5 +1640,52 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     private criarMensagemDeSucessoDaCriacaoDoModulo(nomeModulo: string, nomeSistema: string) {
         this.pageNotificationService
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
+    }
+
+    cancelEditComment(){
+        this.showEditComment = false;
+        this.editDivergenceComment = new CommentFuncaoDados();
+    }
+
+    abrirDialogComment(divergenceComment: CommentFuncaoDados){
+        if(!divergenceComment){
+            this.pageNotificationService.addErrorMessage('Comentário inválido.');
+            return;
+        }
+
+        this.showEditComment = true;
+        this.editDivergenceComment = new CommentFuncaoDados(divergenceComment.id, divergenceComment.comment, divergenceComment.user, divergenceComment.funcaoDados);
+    }
+
+    deletarComment(divergenceComment: CommentFuncaoDados){
+        this.confirmationService.confirm({
+            message: 'Tem certeza que deseja excluir o comentário?',
+            accept: () => {
+                if (divergenceComment.id != undefined) {
+                    this.funcaoDadosService.deleteComment(divergenceComment.id).subscribe(() =>{
+                        this.seletedFuncaoDados.lstDivergenceComments.splice(this.seletedFuncaoDados.lstDivergenceComments.indexOf(divergenceComment), 1);
+                        this.pageNotificationService.addSuccessMessage("Comentário excluído com sucesso!");
+                    })
+                    
+                }
+            }
+        });
+    }
+
+    editComent(divergenceComment: CommentFuncaoDados){
+        if (!divergenceComment.comment) {
+            this.pageNotificationService.addErrorMessage('É obrigatório preencher o campo comentário.');
+            return;
+        }
+        
+        this.funcaoDadosService.updateComment(divergenceComment.id, divergenceComment.comment).subscribe(r => {
+            this.seletedFuncaoDados.lstDivergenceComments.forEach(lstDComment => {
+                if(lstDComment.id === divergenceComment.id){
+                    lstDComment.comment = divergenceComment.comment;
+                }
+            })
+            this.pageNotificationService.addSuccessMessage("Comentário editado com sucesso!");
+            this.cancelEditComment();
+        })
     }
 }

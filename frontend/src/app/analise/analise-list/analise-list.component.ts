@@ -45,6 +45,7 @@ export class AnaliseListComponent implements OnInit {
         { value: 'organizacao.nome', label: 'Organização' },
         { value: 'identificadorAnalise', label: 'Identificador Analise' },
         { value: 'numeroOs', label: 'Número Os.' },
+        { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência'},
         { value: 'equipeResponsavel.nome', label: 'Equipe' },
         { value: 'sistema.nome', label: 'Sistema' },
         { value: 'status.nome', label: 'Status' },
@@ -63,6 +64,7 @@ export class AnaliseListComponent implements OnInit {
         'identificadorAnalise',
         'sistema.nome',
         'numeroOs',
+        'analiseDivergence.identificadorAnalise',
         'equipeResponsavel.nome',
         'status.nome',
         'metodoContagem',
@@ -1307,5 +1309,13 @@ export class AnaliseListComponent implements OnInit {
         lstStatus => {
             this.statusCombo = lstStatus;
         });
+    }
+
+    goToPageDivergencia(divergencia: Analise){
+        if(divergencia.bloqueiaAnalise === true){
+            window.open("#/divergencia/"+divergencia.id+"/view", "_blank");
+        }else{
+            window.open("#/divergencia/"+divergencia.id+"/edit", "_blank");
+        }
     }
 }

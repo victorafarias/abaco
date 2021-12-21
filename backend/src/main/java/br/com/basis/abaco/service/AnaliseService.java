@@ -45,10 +45,7 @@ import br.com.basis.abaco.repository.search.FuncaoDadosSearchRepository;
 import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
 import br.com.basis.abaco.repository.search.UserSearchRepository;
 import br.com.basis.abaco.security.SecurityUtils;
-import br.com.basis.abaco.service.dto.AnaliseDTO;
-import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
-import br.com.basis.abaco.service.dto.AnaliseEditDTO;
-import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
+import br.com.basis.abaco.service.dto.*;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.utils.StringUtils;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
@@ -526,7 +523,11 @@ public class AnaliseService extends BaseService {
     }
 
     public AnaliseDTO convertToDto(Analise analise) {
-        return modelMapper.map(analise, AnaliseDTO.class);
+        AnaliseDTO analiseDto = modelMapper.map(analise, AnaliseDTO.class);
+        if(analise.getAnaliseDivergence() != null){
+            analiseDto.setAnaliseDivergence(this.convertToAnaliseDivergenceDTO(analise.getAnaliseDivergence()));
+        }
+        return analiseDto;
     }
 
     public Analise convertToEntity(AnaliseDTO analiseDTO) {
@@ -544,6 +545,10 @@ public class AnaliseService extends BaseService {
     public AnaliseDivergenceEditDTO convertToAnaliseDivergenceEditDTO(Analise analise) {
         return modelMapper.map(analise, AnaliseDivergenceEditDTO.class);
 
+    }
+
+    public AnaliseDivergenceDTO convertToAnaliseDivergenceDTO(Analise analise){
+        return modelMapper.map(analise, AnaliseDivergenceDTO.class);
     }
 
     public Analise convertToEntity(AnaliseEditDTO analiseEditDTO) {
@@ -575,6 +580,7 @@ public class AnaliseService extends BaseService {
         analise.setFatorCriticidade(analiseUpdate.getFatorCriticidade());
         analise.setValorCriticidade(analiseUpdate.getValorCriticidade());
         analise.setScopeCreep(analiseUpdate.getScopeCreep());
+        analise.setMotivo(analiseUpdate.getMotivo());
     }
 
     public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus) {
@@ -649,6 +655,13 @@ public class AnaliseService extends BaseService {
         sumFase = sumFase.divide(percent).setScale(decimalPlace);
         analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).toString());
         analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+
+        analise.setPfTotalAprovado(analise.getAdjustPFTotal());
+        Double somaAjustadoOriginal = 0d;
+        for (Analise analiseComparada : analise.getAnalisesComparadas()) {
+            somaAjustadoOriginal += Double.parseDouble(analiseComparada.getAdjustPFTotal());
+        }
+        analise.setPfTotalOriginal(somaAjustadoOriginal.toString());
     }
 
 

@@ -103,10 +103,10 @@
                                         {{rowData.metodoContagem}}
                                     </td>
                                     <td>
-                                        {{rowData.pfTotal}}
+                                        {{rowData.pfTotalOriginal}}
                                     </td>
                                     <td>
-                                        {{rowData.adjustPFTotal}}
+                                        {{rowData.pfTotalAprovado}}
                                     </td>
                                     <td >
                                         {{rowData.dataCriacaoOrdemServico | date: 'dd/MM/y - HH:mm' }}
@@ -149,6 +149,14 @@
                         </p-table>
                     </div>
                     <div class="ui-g-12 ui-md-1" >
+                        <basis-datatable-button
+                            *ngIf="canPesquisar"
+                            [bTooltip]="'Visualizar'" 
+                            name="visualizarDivergencia"
+                            icon="remove-red-eye"
+                            [disabled]="!selectedDivergence"
+                            (click)="viewDivergence(analiseSelecionada)" >
+                        </basis-datatable-button>
                         <basis-datatable-button
                             *ngIf="canEditar"
                             name="generateDivergence"

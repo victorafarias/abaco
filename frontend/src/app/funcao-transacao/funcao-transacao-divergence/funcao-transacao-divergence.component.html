@@ -30,7 +30,7 @@
                                     [enableButtonsScroll]="true" [filterOnColumn]="true"
                                     [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="true"
                                     [selectionMode]="'multiple'" [disableDelete]="true"
-                                    [disableEdit]="selectModeButtonsEditAndView  || isOrderning"
+                                    [disableEdit]="isView || selectModeButtonsEditAndView  || isOrderning"
                                     [disableView]="selectModeButtonsEditAndView || isOrderning" #tables>
                                     <p-column header="Ordem" field="ordem">
                                         <ng-template let-col let-funcaoTransacao="rowData" pTemplate="body">

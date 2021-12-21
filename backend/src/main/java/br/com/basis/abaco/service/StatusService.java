@@ -90,4 +90,8 @@ public class StatusService {
 
         return byteArrayOutputStream;
     }
+
+    public List<Status> buscarStatusAtivosValidacao() {
+        return statusRepository.findAllByAtivoTrueAndDivergenciaTrue();
+    }
 }

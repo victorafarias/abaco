@@ -2,6 +2,7 @@ package br.com.basis.abaco.domain;
 
 import br.com.basis.abaco.domain.audit.AbacoAudit;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
+import br.com.basis.abaco.domain.enumeration.MotivoAnalise;
 import br.com.basis.abaco.domain.enumeration.TipoAnalise;
 import br.com.basis.dynamicexports.pojo.ReportObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -237,6 +238,17 @@ public class Analise implements Serializable, ReportObject {
     @Column(name = "scope_creep")
     private Double scopeCreep;
 
+
+    //Campos divergencia
+    @Column(name = "motivo")
+    @Enumerated(EnumType.ORDINAL)
+    private MotivoAnalise motivo;
+
+    @Column(name = "pf_total_original")
+    private String pfTotalOriginal;
+
+    @Column(name = "pf_total_aprovado")
+    private String pfTotalAprovado;
 
     public Analise(Analise analise, User user) {
         this.id = null;

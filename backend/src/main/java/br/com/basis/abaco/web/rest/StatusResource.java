@@ -108,6 +108,11 @@ public class StatusResource {
         return statusService.findAll();
     }
 
+    @GetMapping("/status/ativos-validacao")
+    public List<Status> buscarStatusAtivosValidacao(){
+        return statusService.buscarStatusAtivosValidacao();
+    }
+
     @GetMapping("/status/{id}")
     @Timed
     @Secured({"ROLE_ABACO_STATUS_CONSULTAR", "ROLE_ABACO_STATUS_EDITAR"})

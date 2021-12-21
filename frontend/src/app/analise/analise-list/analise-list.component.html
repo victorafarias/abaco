@@ -98,6 +98,12 @@
                             field="identificadorAnalise" [sortable]="true"></p-column>
                         <p-column [styleClass]="'numero-os'" header="Número Os." field="numeroOs" [sortable]="true">
                         </p-column>
+                        <p-column [styleClass]="'analise-divergence'" header="Identificador da Divergência" field="analiseDivergence.identificadorAnalise"
+                            [sortable]="true" filterType="select" [filter]="true">
+                            <ng-template let-col let-analise="rowData" pTemplate="body">
+                                <a style="cursor: pointer; color: blue" (click)="goToPageDivergencia(analise.analiseDivergence)"> {{ analise.analiseDivergence?.identificadorAnalise }}</a>
+                            </ng-template>
+                        </p-column>
                         <p-column [styleClass]="'equipe'" header="Equipe" field="equipeResponsavel.nome"
                             [sortable]="true" filterType="select" [filter]="true">
                             <ng-template let-col let-analise="rowData" pTemplate="body">

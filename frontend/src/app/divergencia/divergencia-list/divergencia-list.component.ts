@@ -47,8 +47,8 @@ export class DivergenciaListComponent implements OnInit {
         { field: 'identificadorAnalise', header: 'Identificador da Validação' },
         { field: 'sistema.nome', header: 'Sistema' },
         { field: 'metodoContagem', header: 'Metodo Contagem' },
-        { field: 'pfTotal', header: 'PF total' },
-        { field: 'adjustPFTotal', header: 'PF Ajustado' },
+        { field: 'pfTotalOriginal', header: 'PF Ajustado Original' },
+        { field: 'pfTotalAprovado', header: 'PF Ajustado Aprovado' },
         { field: 'dataCriacaoOrdemServico', header: 'Data de criação' },
         { field: 'status', header: 'Status' },
         { field: 'bloqueiaAnalise', header: 'Bloqueado' },
@@ -421,5 +421,7 @@ export class DivergenciaListComponent implements OnInit {
             this.pageNotificationService.addSuccessMessage('Registro bloqueado com sucesso!');
         }
     }
-
+    viewDivergence(analise){ 
+        this.router.navigate(['/divergencia', analise.id, 'view']);
+    }
 }

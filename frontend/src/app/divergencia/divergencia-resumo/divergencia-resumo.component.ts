@@ -32,6 +32,8 @@ export class DivergenciaResumoComponent implements OnInit {
     public linhaResumo: Resumo[] = [];
     public pfTotal: number;
     public pfAjustada: number;
+
+    pfOriginal: string;
     complexidades: string[];
 
     public analise: Analise = null;
@@ -84,7 +86,7 @@ export class DivergenciaResumoComponent implements OnInit {
             this.idAnalise = params['id'];
             this.blockUiService.show();
             if (this.idAnalise) {
-                if (!this.isView) {
+                // if (!this.isView) {
                     this.divergenciaService.find(this.idAnalise).subscribe(analise => {
                         this.analiseSharedDataService.analise = new Analise().copyFromJSON(analise);
                         this.analise =  new Analise().copyFromJSON(analise);
@@ -94,6 +96,7 @@ export class DivergenciaResumoComponent implements OnInit {
                         this.esforcoFases = this.analiseSharedDataService.analise.esforcoFases;
                         this.pfTotal = parseFloat(analise.pfTotal);
                         this.pfAjustada = parseFloat(analise.adjustPFTotal);
+                        this.pfOriginal = parseFloat(analise.pfTotalOriginal).toFixed(2);;
                         this.divergenciaService.getDivergenciaResumo(this.idAnalise)
                         .subscribe(res => {
                             const jsonResponse = res;
@@ -120,27 +123,27 @@ export class DivergenciaResumoComponent implements OnInit {
                                 this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
                             );
                     });
-                } else {
-                    this.divergenciaService.findView(this.idAnalise).subscribe(analise => {
-                        this.analiseSharedDataService.analise = analise;
-                        this.analise = analise;
-                        this.pfTotal = parseFloat(analise.pfTotal);
-                        this.pfAjustada = parseFloat(analise.adjustPFTotal);
-                        this.disableAba = analise.metodoContagem === MessageUtil.INDICATIVA;
-                        this.divergenciaService.getDivergenciaResumo(this.idAnalise)
-                            .subscribe(res => {
-                                this.linhaResumo = res;
-                                this.linhaResumo = Resumo.addTotalLine(this.linhaResumo);
-                            });
-                    },
-                        err => {
-                            this.pageNotificationService.addErrorMessage(
-                                this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
-                            );
-                    });
+            //     } else {
+            //         this.divergenciaService.findView(this.idAnalise).subscribe(analise => {
+            //             this.analiseSharedDataService.analise = analise;
+            //             this.analise = analise;
+            //             this.pfTotal = parseFloat(analise.pfTotal);
+            //             this.pfAjustada = parseFloat(analise.adjustPFTotal);
+            //             this.disableAba = analise.metodoContagem === MessageUtil.INDICATIVA;
+            //             this.divergenciaService.getDivergenciaResumo(this.idAnalise)
+            //                 .subscribe(res => {
+            //                     this.linhaResumo = res;
+            //                     this.linhaResumo = Resumo.addTotalLine(this.linhaResumo);
+            //                 });
+            //         },
+            //             err => {
+            //                 this.pageNotificationService.addErrorMessage(
+            //                     this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
+            //                 );
+            //         });
 
-                }
-                this.blockUiService.hide();
+            //     }
+            //     this.blockUiService.hide();
             }
         });
     }
