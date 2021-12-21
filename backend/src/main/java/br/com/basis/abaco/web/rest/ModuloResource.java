@@ -1,13 +1,28 @@
 package br.com.basis.abaco.web.rest;
 
+import br.com.basis.abaco.domain.Funcionalidade;
 import br.com.basis.abaco.domain.Modulo;
 import br.com.basis.abaco.repository.ModuloRepository;
 import br.com.basis.abaco.repository.search.ModuloSearchRepository;
+import br.com.basis.abaco.service.dto.filter.SearchFilterDTO;
+import br.com.basis.abaco.service.exception.RelatorioException;
+import br.com.basis.abaco.service.relatorio.RelatorioModuloColunas;
+import br.com.basis.abaco.service.relatorio.RelatorioStatusColunas;
+import br.com.basis.abaco.utils.AbacoUtil;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
+import br.com.basis.dynamicexports.service.DynamicExportsService;
+import br.com.basis.dynamicexports.util.DynamicExporter;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
+import net.sf.dynamicreports.report.exception.DRException;
+import net.sf.jasperreports.engine.JRException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,8 +35,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -46,9 +61,12 @@ public class ModuloResource {
 
     private final ModuloSearchRepository moduloSearchRepository;
 
-    public ModuloResource(ModuloRepository moduloRepository, ModuloSearchRepository moduloSearchRepository) {
+    private final DynamicExportsService dynamicExportsService;
+
+    public ModuloResource(ModuloRepository moduloRepository, ModuloSearchRepository moduloSearchRepository, DynamicExportsService dynamicExportsService) {
         this.moduloRepository = moduloRepository;
         this.moduloSearchRepository = moduloSearchRepository;
+        this.dynamicExportsService = dynamicExportsService;
     }
 
     /**
@@ -169,5 +187,32 @@ public class ModuloResource {
             .collect(Collectors.toList());
     }
 
+    @PostMapping(value = "/modulos/exportacao/{tipoRelatorio}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Timed
+    public ResponseEntity<InputStreamResource> gerarRelatorioExportacao(@PathVariable String tipoRelatorio, @RequestBody SearchFilterDTO filtro) throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream = this.gerarRelatorio(filtro, tipoRelatorio);
+        return DynamicExporter.output(byteArrayOutputStream, "relatorio." + tipoRelatorio);
+    }
 
+    @PostMapping(value = "/modulos/exportacao-arquivo", produces = MediaType.APPLICATION_PDF_VALUE)
+    @Timed
+    public ResponseEntity<byte[]> gerarRelatorioImprimir(@RequestBody SearchFilterDTO filtro)
+        throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream = this.gerarRelatorio(filtro, "pdf");
+        return new ResponseEntity<byte[]>(byteArrayOutputStream.toByteArray(), HttpStatus.OK);
+    }
+
+    public ByteArrayOutputStream gerarRelatorio(SearchFilterDTO filtro, String tipoRelatorio) throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream;
+        try {
+            Page<Modulo> page = new PageImpl<>(filtro.getModulos(), dynamicExportsService.obterPageableMaximoExportacao(), filtro.getModulos().size());
+            byteArrayOutputStream = dynamicExportsService.export(new RelatorioModuloColunas(), page, tipoRelatorio,
+                Optional.empty(), Optional.ofNullable(AbacoUtil.REPORT_LOGO_PATH),
+                Optional.ofNullable(AbacoUtil.getReportFooter()));
+        } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
+            throw new RelatorioException(e);
+        }
+
+        return byteArrayOutputStream;
+    }
 }

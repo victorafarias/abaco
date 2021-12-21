@@ -9,7 +9,12 @@ import { Modulo } from 'src/app/modulo';
 import { Funcionalidade, funcionalidadeRoute, FuncionalidadeService } from 'src/app/funcionalidade';
 import { PageNotificationService, DatatableClickEvent } from '@nuvem/primeng-components';
 import { BlockUiService } from '@nuvem/angular-base';
+import * as FileSaver from 'file-saver';
+import * as XLSX from 'xlsx';
+import { ExportacaoUtilService } from 'src/app/components/abaco-buttons/export-button/export-button.service';
 
+const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+const EXCEL_EXTENSION = '.xlsx';
 
 @Component({
     selector: 'app-sistema-form',
@@ -18,6 +23,42 @@ import { BlockUiService } from '@nuvem/angular-base';
 })
 export class SistemaFormComponent implements OnInit, OnDestroy {
 
+    tiposExportacaoFuncionalidade = [
+        {
+            label: 'PDF', icon: '', command: () => {
+                this.exportar(ExportacaoUtilService.PDF, "funcionalidades");
+            }
+        },
+        {
+            label: 'EXCEL', icon: '', command: () => {
+                this.exportar(ExportacaoUtilService.EXCEL, "funcionalidades");
+            }
+        },
+        {
+            label: 'IMPRIMIR', icon: '', command: () => {
+                this.imprimir(ExportacaoUtilService.PDF, "funcionalidades");
+            }
+        },
+    ];
+    tiposExportacaoModulo = [
+        {
+            label: 'PDF', icon: '', command: () => {
+                this.exportar(ExportacaoUtilService.PDF, "modulos");
+            }
+        },
+        {
+            label: 'EXCEL', icon: '', command: () => {
+                this.exportar(ExportacaoUtilService.EXCEL, "modulos");
+            }
+        },
+        {
+            label: 'IMPRIMIR', icon: '', command: () => {
+                this.imprimir(ExportacaoUtilService.PDF, "modulos");
+            }
+        },
+    ];
+
+    
     readonly edit = 'edit';
     readonly delete = 'delete';
 
@@ -485,5 +526,35 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.routeSub.unsubscribe();
+    }
+
+    exportar(tipoRelatorio: string, resourceName: string) {
+        let funcs: any[] = [];
+        if(resourceName == "modulos"){
+            this.sistema.modulos.forEach(modulo => {
+                funcs.push(new Modulo(modulo.id, modulo.nome));
+            });
+        }else if(resourceName == "funcionalidades"){
+            this.sistema.funcionalidades.forEach(fnc => {
+                funcs.push(new Funcionalidade(fnc.id, fnc.nome, new Modulo(fnc.modulo.id, fnc.modulo.nome)));
+            });
+        }
+        this.sistemaService.exportar(tipoRelatorio, funcs, resourceName);
+        
+    }
+
+    imprimir(tipoRelatorio: string, resourceName: string) {
+        let funcs: any[] = [];
+        if(resourceName == "modulos"){
+            this.sistema.modulos.forEach(modulo => {
+                funcs.push(new Modulo(modulo.id, modulo.nome));
+            });
+        }else if(resourceName == "funcionalidades"){
+            this.sistema.funcionalidades.forEach(fnc => {
+                funcs.push(new Funcionalidade(fnc.id, fnc.nome, new Modulo(fnc.modulo.id, fnc.modulo.nome)));
+            });
+        }
+        this.sistemaService.imprimir(funcs, resourceName);
+        
     }
 }

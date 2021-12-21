@@ -1,5 +1,6 @@
 package br.com.basis.abaco.domain;
 
+import br.com.basis.dynamicexports.pojo.ReportObject;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Cache;
@@ -34,7 +35,7 @@ import java.util.Set;
 @Table(name = "modulo")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Document(indexName = "modulo")
-public class Modulo implements Serializable {
+public class Modulo implements Serializable, ReportObject {
 
     private static final long serialVersionUID = 1L;
 
