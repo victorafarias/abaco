@@ -79,7 +79,6 @@ import java.util.stream.Collectors;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
 
-
 @Service
 public class AnaliseService extends BaseService {
     public static final String ORGANIZACAO_ID = "organizacao.id";
