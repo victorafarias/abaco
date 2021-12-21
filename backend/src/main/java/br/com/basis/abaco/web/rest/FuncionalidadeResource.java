@@ -10,12 +10,19 @@ import br.com.basis.abaco.repository.FuncionalidadeRepository;
 import br.com.basis.abaco.repository.search.FuncionalidadeSearchRepository;
 import br.com.basis.abaco.service.FuncionalidadeService;
 import br.com.basis.abaco.service.dto.DropdownDTO;
+import br.com.basis.abaco.service.dto.filter.SearchFilterDTO;
+import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
+import br.com.basis.dynamicexports.util.DynamicExporter;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -189,6 +197,21 @@ public class FuncionalidadeResource {
         log.debug("Requisição para migrar funções das funcionalidades: {} para {}", idEdit, idMigrar);
         funcionalidadeService.migrarFuncoes(idEdit, idMigrar);
         return deleteFuncionalidade(idEdit);
+    }
+
+    @PostMapping(value = "/funcionalidades/exportacao/{tipoRelatorio}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Timed
+    public ResponseEntity<InputStreamResource> gerarRelatorioExportacao(@PathVariable String tipoRelatorio, @RequestBody SearchFilterDTO filtro) throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream = funcionalidadeService.gerarRelatorio(filtro, tipoRelatorio);
+        return DynamicExporter.output(byteArrayOutputStream, "relatorio." + tipoRelatorio);
+    }
+
+    @PostMapping(value = "/funcionalidades/exportacao-arquivo", produces = MediaType.APPLICATION_PDF_VALUE)
+    @Timed
+    public ResponseEntity<byte[]> gerarRelatorioImprimir(@RequestBody SearchFilterDTO filtro)
+        throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream = funcionalidadeService.gerarRelatorio(filtro, "pdf");
+        return new ResponseEntity<byte[]>(byteArrayOutputStream.toByteArray(), HttpStatus.OK);
     }
 
 }
