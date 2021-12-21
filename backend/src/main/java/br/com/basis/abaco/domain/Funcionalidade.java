@@ -1,5 +1,6 @@
 package br.com.basis.abaco.domain;
 
+import br.com.basis.dynamicexports.pojo.ReportObject;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -40,7 +41,7 @@ import java.util.Set;
 @Document(indexName = "funcionalidade")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Funcionalidade implements Serializable {
+public class Funcionalidade implements Serializable, ReportObject {
 
     private static final long serialVersionUID = 1L;
 

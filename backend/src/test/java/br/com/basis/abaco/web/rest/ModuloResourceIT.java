@@ -7,6 +7,7 @@ import br.com.basis.abaco.repository.ModuloRepository;
 import br.com.basis.abaco.repository.search.ModuloSearchRepository;
 import br.com.basis.abaco.web.rest.errors.ExceptionTranslator;
 
+import br.com.basis.dynamicexports.service.DynamicExportsService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,10 +64,12 @@ public class ModuloResourceIT {
 
     private Modulo modulo;
 
+    private DynamicExportsService dynamicExportsService;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-            ModuloResource moduloResource = new ModuloResource(moduloRepository, moduloSearchRepository);
+            ModuloResource moduloResource = new ModuloResource(moduloRepository, moduloSearchRepository, dynamicExportsService);
         this.restModuloMockMvc = MockMvcBuilders.standaloneSetup(moduloResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
