@@ -11,6 +11,7 @@ import { FuncaoTransacaoModule } from '../funcao-transacao/funcao-transacao.modu
 import { TableModule } from 'primeng';
 import { AbacoButtonsModule } from '../components/abaco-buttons/abaco-buttons.module';
 import { DivergenciaResumoComponent } from './divergencia-resumo/divergencia-resumo.component';
+import { DivergenciaViewComponent } from './divergencia-view/divergencia-view.component';
 
 
 
@@ -33,7 +34,8 @@ import { DivergenciaResumoComponent } from './divergencia-resumo/divergencia-res
         DivergenciaListComponent,
         DivergenciaDetailComponent,
         DivergenciaFormComponent,
-        DivergenciaResumoComponent, 
+        DivergenciaResumoComponent,
+        DivergenciaViewComponent, 
     ],
     providers: [
         DivergenciaService,

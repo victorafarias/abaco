@@ -39,5 +39,8 @@
     <include file="classpath:config/liquibase/changelog/20211015135639_add_qtd_ders_rlrs_alrs.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20211018180859_reajuste_qtd_ders_rlrs_alrs.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20211209170146_add_novidades_versao_2.8.3.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20211218033957_add_motivo_analise.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20211220170742_add_pf_original_aprovado_divergencia.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20211221113949_alter_type_divergence_comments.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 

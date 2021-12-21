@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Divergencia } from '../divergencia.model';
 import { Subscription } from 'rxjs';
 import { DivergenciaService } from '../divergencia.service';
+import { Analise } from 'src/app/analise';
 
 
 @Component({
@@ -11,7 +12,7 @@ import { DivergenciaService } from '../divergencia.service';
   })
 export class DivergenciaDetailComponent implements OnInit, OnDestroy {
 
-  analise: Divergencia;
+  analise: Analise;
   private subscription: Subscription;
 
 
@@ -27,14 +28,10 @@ export class DivergenciaDetailComponent implements OnInit, OnDestroy {
   }
 
   load(id) {
-    // this.analiseService.findWithFuncaos(id).subscribe((analise) => {
-    //   const jsonResponse = analise[0].json();
-    //   jsonResponse['funcaoDados'] = analise[1];
-    //   jsonResponse['funcaoTransacaos'] = analise[2];
-    //   analise = this.analiseService.convertItemFromServer(jsonResponse);
-    //   analise.createdBy = jsonResponse.createdBy;
-    //   this.analise = analise;
-    // });
+    this.analiseService.find(id).subscribe((analise) => {
+     
+      this.analise = analise;
+    });
   }
 
   ngOnDestroy() {

@@ -29,6 +29,13 @@ export const enum TipoContagem {
     'APLICACAO'
 }
 
+export enum MotivoAnalise {
+    'CONT_BASIS_MENOR_MAIOR_ERRO_FME' = "CONT_BASIS_MENOR_MAIOR_ERRO_FME",
+    'CONT_BASIS_MENOR_MAIOR_ERRO_BASIS' = 'CONT_BASIS_MENOR_MAIOR_ERRO_BASIS',
+    'CONT_BASIS_MAIOR_MAIOR_ERRO_FME' = 'CONT_BASIS_MAIOR_MAIOR_ERRO_FME',
+    'CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS' = 'CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS'
+}
+
 export class Divergencia implements BaseEntity {
 
     private mappableFuncaoDados: MappableEntities<FuncaoDados>;

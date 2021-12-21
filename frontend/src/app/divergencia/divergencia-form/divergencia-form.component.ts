@@ -21,7 +21,8 @@ import { FuncaoDados } from '../../funcao-dados';
 import { DivergenciaService } from '../divergencia.service';
 import { StatusService } from 'src/app/status';
 import { Status } from 'src/app/status/status.model';
-import { Analise } from 'src/app/analise';
+import { Analise, AnaliseService } from 'src/app/analise';
+import { MotivoAnalise } from '../divergencia.model';
 
 
 @Component({
@@ -67,6 +68,12 @@ export class DivergenciaFormComponent implements OnInit {
     analise = new Analise();
     usuariosOptions: User[] = [];
 
+    motivosAnalise: SelectItem[] = [
+        {label: "Contagem BASIS menor. Maior parte dos erros FME", value: MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_FME},
+        {label: "Contagem BASIS menor. Maior parte dos erros BASIS", value: MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_BASIS},
+        {label: "Contagem BASIS maior. Maior parte dos erros FME", value: MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_FME},
+        {label: "Contagem BASIS maior. Maior parte dos erros BASIS", value: MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS}
+    ]
 
     tiposAnalise: SelectItem[] = [
         {label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO},
@@ -89,7 +96,7 @@ export class DivergenciaFormComponent implements OnInit {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private analiseService: DivergenciaService,
+        private analiseService: AnaliseService,
         private sistemaService: SistemaService,
         private analiseSharedDataService: AnaliseSharedDataService,
         private equipeService: TipoEquipeService,
@@ -99,12 +106,21 @@ export class DivergenciaFormComponent implements OnInit {
         private contratoService: ContratoService,
         private manualService: ManualService,
         private statusService: StatusService,
+        private divergenciaService: DivergenciaService,
     ) {
     }
 
     ngOnInit() {
         this.analiseSharedDataService.init();
         this.getAnalise();
+        this.carregarStatus();
+    }
+
+    carregarStatus() {
+        this.statusService.listaAtivoDivergencia().subscribe(
+        lstStatus => {
+            this.statusCombo = lstStatus;
+        });
     }
 
     getLabel(label) {
@@ -138,8 +154,9 @@ export class DivergenciaFormComponent implements OnInit {
         this.routeSub = this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEdicao = true;
-                this.analiseService.find(params['id']).subscribe(analise => {
+                this.divergenciaService.find(params['id']).subscribe(analise => {
                     this.analise = analise;
+                    this.atualizarMotivos();
                     },
                     err => {
                         this.pageNotificationService.addErrorMessage(
@@ -155,6 +172,22 @@ export class DivergenciaFormComponent implements OnInit {
                 this.canEditMetodo = true;
             }
         });
+    }
+    atualizarMotivos() {
+        switch(this.analise.motivo){
+            case MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_FME:
+                break;
+            case MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_BASIS:
+
+                break;
+            case MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_FME:
+
+                break;
+            case MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS:
+
+                break;
+            
+        }
     }
 
     private verifyCanEditAnalise(analise: Divergencia): Boolean {
@@ -472,6 +505,16 @@ export class DivergenciaFormComponent implements OnInit {
 
     public habilitarCamposIniciais() {
         return this.isEdicao;
+    }
+
+    save(){
+        if(this.analise.status == undefined || this.analise.status == null){
+            return this.pageNotificationService.addErrorMessage("Campos obrigatórios não preenchidos.");
+        }
+        const analise = new Analise().copyFromJSON(this.analise);
+        this.analiseService.update(analise).subscribe(() =>{
+            this.pageNotificationService.addSuccessMessage('Dados alterados com sucesso!');
+        })
     }
 
 

@@ -273,6 +273,9 @@ public class AnaliseResource {
             User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
             if (analiseService.permissionToEdit(user, analise)) {
                 AnaliseEditDTO analiseEditDTO = analiseService.convertToAnaliseEditDTO(analise);
+                if(analise.getAnaliseDivergence() != null){
+                    analiseEditDTO.setAnaliseDivergence(analiseService.convertToDto(analise.getAnaliseDivergence()));
+                }
                 return ResponseUtil.wrapOrNotFound(Optional.ofNullable(analiseEditDTO));
             }
         }
@@ -659,19 +662,19 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_GERAR_VALIDACAO")
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnalisePadao, @PathVariable Long idAnaliseComparada, @RequestParam(value = "isUnion", defaultValue = "false") boolean isUnionFunction) {
-        Analise analisePadrão = analiseRepository.findOne(idAnalisePadao);
+        Analise analisePadrao = analiseRepository.findOne(idAnalisePadao);
         Analise analiseComparada = analiseRepository.findOne(idAnaliseComparada);
-        Status status = statusRepository.findFirstByDivergenciaTrue();
+        Status status = statusRepository.findByNome("Em Análise").get();
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Status");
         }
-        if (analisePadrão == null || analisePadrão.getId() == null) {
+        if (analisePadrao == null || analisePadrao.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Padrão");
         }
         if (analiseComparada == null || analiseComparada.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Comparada");
         }
-        Analise analiseDivergencia = analiseService.generateDivergence(analisePadrão, analiseComparada, status, isUnionFunction);
+        Analise analiseDivergencia = analiseService.generateDivergence(analisePadrao, analiseComparada, status, isUnionFunction);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analiseDivergencia));
     }
 

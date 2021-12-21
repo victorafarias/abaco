@@ -31,5 +31,8 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Status findFirstByDivergenciaTrue();
 
+    List<Status> findAllByAtivoTrueAndDivergenciaTrue();
+
+
 
 }

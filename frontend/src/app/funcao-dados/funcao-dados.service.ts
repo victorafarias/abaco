@@ -12,8 +12,6 @@ import { ResponseWrapper } from 'src/app/shared';
 import { Manual } from 'src/app/manual';
 import { Analise } from '../analise';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
-import { Status } from '../status/status.model';
-import { url } from 'node:inspector';
 
 @Injectable()
 export class FuncaoDadosService {
@@ -126,6 +124,14 @@ export class FuncaoDadosService {
 
     saveComent(comment: String, idStatus: number) {
         return this.http.post<CommentFuncaoDados>(`${this.resourceUrlComment}/${idStatus}`, comment);
+    }
+
+    updateComment(id: number, comment: string){
+        return this.http.put<CommentFuncaoDados>(`${this.resourceUrlComment}/${id}`, comment);
+    }
+
+    deleteComment(id: number){
+        return this.http.delete<void>(`${this.resourceUrlComment}/${id}`);
     }
 
 

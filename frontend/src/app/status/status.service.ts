@@ -84,7 +84,15 @@ export class StatusService {
             }));
     }
 
-
+    listaAtivoDivergencia(): Observable<Status[]> {
+        return this.http.get<Status[]>(this.resourceUrl + '/ativos-validacao').pipe(
+            catchError((error: any) => {
+                if (error.status === 403) {
+                    this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+                    return Observable.throw(new Error(error.status));
+                }
+            }));
+    }
 
     delete(id: number): Observable<Response> {
         return this.http.delete<Response>(`${this.resourceUrl}/${id}`);

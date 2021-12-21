@@ -3,7 +3,8 @@ import { FuncaoDados } from './funcao-dados.model';
 
 export class CommentFuncaoDados {
     constructor(
-            public commet?: string,
+            public id?: number,
+            public comment?: string,
             public user?: User,
             public funcaoDados?: FuncaoDados,
     ) {
