@@ -156,7 +156,6 @@ export class DivergenciaFormComponent implements OnInit {
                 this.isEdicao = true;
                 this.divergenciaService.find(params['id']).subscribe(analise => {
                     this.analise = analise;
-                    this.atualizarMotivos();
                     },
                     err => {
                         this.pageNotificationService.addErrorMessage(
@@ -173,23 +172,6 @@ export class DivergenciaFormComponent implements OnInit {
             }
         });
     }
-    atualizarMotivos() {
-        switch(this.analise.motivo){
-            case MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_FME:
-                break;
-            case MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_BASIS:
-
-                break;
-            case MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_FME:
-
-                break;
-            case MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS:
-
-                break;
-            
-        }
-    }
-
     private verifyCanEditAnalise(analise: Divergencia): Boolean {
         let canEditAnalise: Boolean = false;
         this.tipoEquipesLoggedUser.forEach(equip => {
