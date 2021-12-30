@@ -647,7 +647,7 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_ANALISE_GERAR_VALIDACAO")
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnaliseComparada) {
         Analise analise = analiseRepository.findOne(idAnaliseComparada);
-        Status status = statusRepository.findByNome("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
+        Status status = statusRepository.findByNomeContainsIgnoreCase("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error status");
         }
@@ -657,6 +657,7 @@ public class AnaliseResource {
         Analise analiseDivergencia = analiseService.generateDivergence(analise, status);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analiseDivergencia));
     }
+    
 
     @GetMapping("/analises/gerar-divergencia/{idAnalisePadao}/{idAnaliseComparada}")
     @Timed
@@ -664,7 +665,7 @@ public class AnaliseResource {
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnalisePadao, @PathVariable Long idAnaliseComparada, @RequestParam(value = "isUnion", defaultValue = "false") boolean isUnionFunction) {
         Analise analisePadrao = analiseRepository.findOne(idAnalisePadao);
         Analise analiseComparada = analiseRepository.findOne(idAnaliseComparada);
-        Status status = statusRepository.findByNome("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
+        Status status = statusRepository.findByNomeContainsIgnoreCase("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Status");
         }
