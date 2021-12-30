@@ -10,6 +10,7 @@ import { Rlr } from '../rlr/rlr.model';
 import { DerTextParser, ParseResult } from '../analise-shared/der-text/der-text-parser';
 import { DerChipConverter } from '../analise-shared/der-chips/der-chip-converter';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
+import { TipoEquipe } from '../tipo-equipe';
 
 export enum TipoFuncaoDados {
     'ALI' = 'ALI',
@@ -62,7 +63,8 @@ export class FuncaoDados implements FuncaoResumivel, BaseEntity, FuncaoAnalise{
         public statusFuncao?: StatusFunction,
         public lstDivergenceComments?: CommentFuncaoDados[],
         public files?: any[],
-        public ordem?: number
+        public ordem?: number,
+        public equipe?: TipoEquipe,
     ) {
         if (!pf) {
             this.pf = 0;
@@ -140,7 +142,7 @@ export class FuncaoDados implements FuncaoResumivel, BaseEntity, FuncaoAnalise{
             this.pf, this.analise, this.funcionalidades, this.funcionalidade,
             this.fatorAjuste, this.alr, this.name, this.sustantation, this.der, this.rlr,
             this.grossPF, this.derValues, this.rlrValues, this.ders, this.rlrs, this.impacto,
-            this.quantidade, this.modulo, this.statusFuncao, this.lstDivergenceComments, this.files, this.ordem);
+            this.quantidade, this.modulo, this.statusFuncao, this.lstDivergenceComments, this.files, this.ordem, this.equipe);
     }
 
 }
@@ -182,6 +184,7 @@ class FuncaoDadosCopyFromJSON {
         this._funcaoDados.lstDivergenceComments = this._json.lstDivergenceComments;
         this._funcaoDados.files = this._json.files;
         this._funcaoDados.ordem = this._json.ordem;
+        this._funcaoDados.equipe = this._json.equipe;
     }
 
     private converteBaseEntities() {

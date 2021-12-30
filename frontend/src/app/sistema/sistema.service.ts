@@ -152,8 +152,6 @@ export class SistemaService {
 
     imprimir(lista: any[], resourceName: string){
         const obj = resourceName == "modulos" ? {modulos: lista} : {funcionalidades: lista};
-        console.log(obj);
-        
         ExportacaoUtilService.imprimir(this.http, resourceName, null, obj).subscribe(res => {
             var file = new Blob([res], { type: 'application/pdf' });
             var fileURL = URL.createObjectURL(file);

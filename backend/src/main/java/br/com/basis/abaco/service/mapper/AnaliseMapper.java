@@ -13,7 +13,12 @@ import java.util.stream.Collectors;
 
 public class AnaliseMapper implements EntityMapper<AnaliseDTO, Analise> {
 
-    private ModelMapper modelMapper = new ModelMapper();;
+    private ModelMapper modelMapper = new ModelMapper();
+
+    public AnaliseMapper(){
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
+    }
+
 
     @Override
     public Analise toEntity(AnaliseDTO dto) {

@@ -83,6 +83,7 @@
                         </div>
                     </div>
                     <basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
+                    [responsive]="true"
                         (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()" [rows]="20"
                         id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
                         [disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
@@ -116,14 +117,18 @@
                                 {{ analise.sistema.nome}}
                             </ng-template>
                         </p-column>
+                        <p-column [styleClass]="'metodo-contagem'" header="Método Contagem" field="metodoContagem"
+                            [sortable]="true" filterType="select" [filter]="true">
+                            <ng-template let-col let-analise="rowData" pTemplate="body">
+                                {{ analise.metodoContagem }}
+                            </ng-template>
+                        </p-column>
                         <p-column [styleClass]="'status'" header="Status" field="status.nome" [sortable]="true"
                             [filter]="true">
                             <ng-template let-col let-analise="rowData" pTemplate="body">
                                 {{ analise.status && analise.status.nome? analise.status.nome : ''}}
                             </ng-template>
                         </p-column>
-                        <p-column [styleClass]="'metodo-contagem'" header="Metodo Contagem" field="metodoContagem"
-                            [sortable]="true" filterType="select" [filter]="true"></p-column>
                         <p-column [styleClass]="'pf-total'" header="PF total" field="pfTotal" [sortable]="true"
                             filterType="">
                             <ng-template let-col let-analise="rowData" pTemplate="body">

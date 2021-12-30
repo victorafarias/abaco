@@ -98,6 +98,9 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
     isOrderning: boolean = false;
 
+    showEditComment: boolean = false;
+    editDivergenceComment: CommentFuncaoTransacao = new CommentFuncaoTransacao();
+
     public isDisabled = false;
 
     private fatorAjusteNenhumSelectItem = { label: 'Nenhum', value: undefined };
@@ -472,7 +475,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             'totalAlrs': { value: ft.ftrValue(), writable: true },
             'deflator': { value: this.formataFatorAjuste(ft.fatorAjuste), writable: true },
             'nomeFuncionalidade': { value: ft.funcionalidade.nome, writable: true },
-            'nomeModulo': { value: ft.funcionalidade.modulo.nome, writable: true }
+            'nomeModulo': { value: ft.funcionalidade.modulo.nome, writable: true },
+            'nomeEquipe': {value: ft?.equipe?.nome, writable: true}
         });
     }
 
@@ -672,6 +676,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         } else {
             this.desconverterChips();
             this.verificarModulo();
+            
             this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
             const funcaoTransacaoCalculada = CalculadoraTransacao.calcular(
                 this.analise.metodoContagem, this.currentFuncaoTransacao, this.analise.contrato.manual);
@@ -1079,8 +1084,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.pageNotificationService.addErrorMessage('A função de transação selecionada é inválida.');
             return;
         }
-        this.commentFT.commet = divergenceComment;
-        this.funcaoTransacaoService.saveComent(this.commentFT.commet, this.currentFuncaoTransacao.id)
+        this.commentFT.comment = divergenceComment;
+        this.funcaoTransacaoService.saveComent(this.commentFT.comment, this.currentFuncaoTransacao.id)
             .subscribe((comment) => {
                 this.currentFuncaoTransacao.lstDivergenceComments.push(comment);
                 this.showAddComent = false;
@@ -1486,6 +1491,53 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     private criarMensagemDeSucessoDaCriacaoDoModulo(nomeModulo: string, nomeSistema: string) {
         this.pageNotificationService
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
+    }
+
+    cancelEditComment(){
+        this.showEditComment = false;
+        this.editDivergenceComment = new CommentFuncaoTransacao();
+    }
+
+    abrirDialogComment(divergenceComment: CommentFuncaoTransacao){
+        if(!divergenceComment){
+            this.pageNotificationService.addErrorMessage('Comentário inválido.');
+            return;
+        }
+
+        this.showEditComment = true;
+        this.editDivergenceComment = new CommentFuncaoTransacao(divergenceComment.id, divergenceComment.comment, divergenceComment.user, divergenceComment.funcaoDados);
+    }
+
+    deletarComment(divergenceComment: CommentFuncaoTransacao){
+        this.confirmationService.confirm({
+            message: 'Tem certeza que deseja excluir o comentário?',
+            accept: () => {
+                if (divergenceComment.id != undefined) {
+                    this.funcaoTransacaoService.deleteComment(divergenceComment.id).subscribe(() =>{
+                        this.currentFuncaoTransacao.lstDivergenceComments.splice(this.currentFuncaoTransacao.lstDivergenceComments.indexOf(divergenceComment), 1);
+                        this.pageNotificationService.addSuccessMessage("Comentário excluído com sucesso!");
+                    })
+                    
+                }
+            }
+        });
+    }
+
+    editComent(divergenceComment: CommentFuncaoTransacao){
+        if (!divergenceComment.comment) {
+            this.pageNotificationService.addErrorMessage('É obrigatório preencher o campo comentário.');
+            return;
+        }
+        
+        this.funcaoTransacaoService.updateComment(divergenceComment.id, divergenceComment.comment).subscribe(r => {
+            this.currentFuncaoTransacao.lstDivergenceComments.forEach(lstDComment => {
+                if(lstDComment.id === divergenceComment.id){
+                    lstDComment.comment = divergenceComment.comment;
+                }
+            })
+            this.pageNotificationService.addSuccessMessage("Comentário editado com sucesso!");
+            this.cancelEditComment();
+        })
     }
 }
 
