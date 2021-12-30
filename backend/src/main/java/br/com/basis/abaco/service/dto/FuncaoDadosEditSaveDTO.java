@@ -36,4 +36,5 @@ public class FuncaoDadosEditSaveDTO {
     private List<UploadedFile> files = new ArrayList<>();
     private Set<String> rlrValues = new HashSet<>();
     private Long ordem;
+    private TipoEquipeDTO equipe;
 }

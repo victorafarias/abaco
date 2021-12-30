@@ -22,6 +22,9 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Optional<Status> findByNome(String nome);
 
+
+    Optional<Status> findByNomeContainsIgnoreCase(String nome);
+
     @Query("SELECT new br.com.basis.abaco.service.dto.DropdownDTO(s.id, s.nome) FROM Status s")
     List<DropdownDTO> getDropdown();
 

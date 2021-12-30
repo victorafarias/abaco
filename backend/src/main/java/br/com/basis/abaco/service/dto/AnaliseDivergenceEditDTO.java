@@ -37,5 +37,6 @@ public class AnaliseDivergenceEditDTO extends AnaliseBaseDTO implements ReportOb
     private MotivoAnalise motivo;
     private String pfTotalOriginal;
     private String pfTotalAprovado;
+    private boolean bloqueiaAnalise;
 
 }

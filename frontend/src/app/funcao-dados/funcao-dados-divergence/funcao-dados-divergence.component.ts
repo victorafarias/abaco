@@ -474,7 +474,8 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             'deflator': { value: this.formataFatorAjuste(fd.fatorAjuste), writable: true },
             'impactoFilter': { value: this.updateNameImpacto(fd.impacto), writable: true },
             'nomeFuncionalidade': { value: fd.funcionalidade.nome, writable: true },
-            'nomeModulo': { value: fd.funcionalidade.modulo.nome, writable: true }
+            'nomeModulo': { value: fd.funcionalidade.modulo.nome, writable: true },
+            'nomeEquipe': { value: fd?.equipe?.nome, writable: true}
         });
     }
 

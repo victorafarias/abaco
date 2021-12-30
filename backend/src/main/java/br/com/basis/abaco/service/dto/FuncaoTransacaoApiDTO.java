@@ -41,6 +41,7 @@ public class FuncaoTransacaoApiDTO {
     private List<DivergenceCommentDTO> lstDivergenceComments = new ArrayList<>();
     private List<UploadedFileDTO> files;
     private Long ordem;
+    private TipoEquipeDTO equipe;
 
     public List<DivergenceCommentDTO> getLstDivergenceComments() {
         return  Collections.unmodifiableList(lstDivergenceComments);

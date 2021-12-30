@@ -432,12 +432,10 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoDados bindFuncaoDados(Analise analiseClone, FuncaoDados fd) {
-        Set<Rlr> rlrs = new HashSet<>();
-        Set<Der> ders = new HashSet<>();
+        Set<Rlr> rlrs = new LinkedHashSet<>();
+        Set<Der> ders = new LinkedHashSet<>();
         FuncaoDados funcaoDado = new FuncaoDados();
         bindFuncaoDados(analiseClone, fd, rlrs, ders, funcaoDado);
-        funcaoDado.setDers(ders);
-        funcaoDado.setRlrs(rlrs);
         return funcaoDado;
     }
 
@@ -471,11 +469,9 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoTransacao bindFuncaoTransacao(Analise analiseClone, FuncaoTransacao ft) {
-        Set<Alr> alrs = new HashSet<>();
-        Set<Der> ders = new HashSet<>();
+        Set<Alr> alrs = new LinkedHashSet<>();
+        Set<Der> ders = new LinkedHashSet<>();
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
-        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrs, null, ft.getFtrValues(), ft.getImpacto(), ders, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
-        funcaoTransacao.setFuncionalidade(ft.getFuncionalidade());
         ft.getAlrs().forEach(alr -> {
             Alr alrClone = new Alr(null, alr.getNome(), alr.getValor(), funcaoTransacao, null);
             alrs.add(alrClone);
@@ -484,6 +480,8 @@ public class AnaliseService extends BaseService {
             Der derClone = new Der(null, der.getNome(), der.getValor(), der.getRlr(), null, funcaoTransacao);
             ders.add(derClone);
         });
+        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrs, null, ft.getFtrValues(), ft.getImpacto(), ders, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
+        funcaoTransacao.setFuncionalidade(ft.getFuncionalidade());
         return funcaoTransacao;
     }
 
@@ -501,7 +499,6 @@ public class AnaliseService extends BaseService {
     }
 
     private void bindFuncaoDados(Analise analiseClone, FuncaoDados fd, Set<Rlr> rlrs, Set<Der> ders, FuncaoDados funcaoDado) {
-        funcaoDado.bindFuncaoDados(fd.getComplexidade(), fd.getPf(), fd.getGrossPF(), analiseClone, fd.getFuncionalidade(), fd.getDetStr(), fd.getFatorAjuste(), fd.getName(), fd.getSustantation(), fd.getDerValues(), fd.getTipo(), fd.getRetStr(), fd.getQuantidade(), rlrs, fd.getAlr(), fd.getFiles(), fd.getRlrValues(), ders, fd.getFuncaoDadosVersionavel(), fd.getImpacto(), fd.getEquipe(), fd.getOrdem());
         Optional.ofNullable(fd.getDers()).orElse(Collections.emptySet())
             .forEach(der -> {
                 Rlr rlr = null;
@@ -516,6 +513,8 @@ public class AnaliseService extends BaseService {
                 Rlr rlrClone = new Rlr(null, rlr.getNome(), rlr.getValor(), ders, funcaoDado);
                 rlrs.add(rlrClone);
             });
+        funcaoDado.bindFuncaoDados(fd.getComplexidade(), fd.getPf(), fd.getGrossPF(), analiseClone, fd.getFuncionalidade(), fd.getDetStr(), fd.getFatorAjuste(), fd.getName(), fd.getSustantation(), fd.getDerValues(), fd.getTipo(), fd.getRetStr(), fd.getQuantidade(), rlrs, fd.getAlr(), fd.getFiles(), fd.getRlrValues(), ders, fd.getFuncaoDadosVersionavel(), fd.getImpacto(), fd.getEquipe(), fd.getOrdem());
+
     }
 
     public AnaliseDTO convertToDto(Analise analise) {
@@ -653,11 +652,18 @@ public class AnaliseService extends BaseService {
         analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
 
         analise.setPfTotalAprovado(analise.getAdjustPFTotal());
-        Double somaAjustadoOriginal = 0d;
+
+        Timestamp hoje = Timestamp.from(Instant.now());
+        Analise analiseOriginalBasis = new Analise();
         for (Analise analiseComparada : analise.getAnalisesComparadas()) {
-            somaAjustadoOriginal += Double.parseDouble(analiseComparada.getAdjustPFTotal());
+            if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains("basis")){
+                if(analiseComparada.getDataCriacaoOrdemServico().before(hoje)){
+                    hoje = analiseComparada.getDataCriacaoOrdemServico();
+                    analiseOriginalBasis = analiseComparada;
+                }
+            }
         }
-        analise.setPfTotalOriginal(somaAjustadoOriginal.toString());
+        analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
     }
 
 

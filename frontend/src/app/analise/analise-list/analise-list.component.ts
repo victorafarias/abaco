@@ -48,8 +48,8 @@ export class AnaliseListComponent implements OnInit {
         { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência'},
         { value: 'equipeResponsavel.nome', label: 'Equipe' },
         { value: 'sistema.nome', label: 'Sistema' },
+        { value: 'metodoContagem', label: 'Método Contagem' },
         { value: 'status.nome', label: 'Status' },
-        { value: 'metodoContagem', label: 'Metodo Contagem' },
         { value: 'pfTotal', label: 'PF total' },
         { value: 'adjustPFTotal', label: 'PF Ajustado' },
         { value: 'dataCriacaoOrdemServico', label: 'Data de criação' },
@@ -66,13 +66,14 @@ export class AnaliseListComponent implements OnInit {
         'numeroOs',
         'analiseDivergence.identificadorAnalise',
         'equipeResponsavel.nome',
-        'status.nome',
         'metodoContagem',
+        'status.nome',
         'pfTotal',
         'adjustPFTotal',
         'PF Ajustado'];
     private lastColumn: any[] = [];
 
+    
     visible: any;
 
     searchUrl: string = this.grupoService.grupoUrl;
@@ -1312,10 +1313,12 @@ export class AnaliseListComponent implements OnInit {
     }
 
     goToPageDivergencia(divergencia: Analise){
-        if(divergencia.bloqueiaAnalise === true){
-            window.open("#/divergencia/"+divergencia.id+"/view", "_blank");
-        }else{
-            window.open("#/divergencia/"+divergencia.id+"/edit", "_blank");
-        }
+        this.divergenceServie.find(divergencia.id).subscribe(div => {
+            if(div.bloqueiaAnalise === true){
+                window.open("#/divergencia/"+divergencia.id+"/view", "_blank");
+            }else{
+                window.open("#/divergencia/"+divergencia.id+"/edit", "_blank");
+            }
+        })
     }
 }
