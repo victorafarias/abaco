@@ -84,6 +84,8 @@ public class AnaliseService extends BaseService {
     public static final String ORGANIZACAO_ID = "organizacao.id";
     public static final String EQUIPE_RESPONSAVEL_ID = "equipeResponsavel.id";
     public static final String COMPARTILHADAS_EQUIPE_ID = "compartilhadas.equipeId";
+
+    private static final String BASIS = "basis";
     private BigDecimal percent = new BigDecimal("100");
     private static final int decimalPlace = 2;
     private final static String EMPTY_STRING = "";
@@ -656,7 +658,7 @@ public class AnaliseService extends BaseService {
         Timestamp hoje = Timestamp.from(Instant.now());
         Analise analiseOriginalBasis = new Analise();
         for (Analise analiseComparada : analise.getAnalisesComparadas()) {
-            if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains("basis")){
+            if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS)){
                 if(analiseComparada.getDataCriacaoOrdemServico().before(hoje)){
                     hoje = analiseComparada.getDataCriacaoOrdemServico();
                     analiseOriginalBasis = analiseComparada;
@@ -779,9 +781,9 @@ public class AnaliseService extends BaseService {
             analiseDivergenciaPrincipal.setStatus(status);
             analiseDivergenciaPrincipal.setIsDivergence(true);
             analiseDivergenciaPrincipal.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
-            if(analisePrincipal.getEquipeResponsavel().getNome().toLowerCase().contains("basis") && analisePrincipal.getDataCriacaoOrdemServico().before(analiseSecundaria.getDataCriacaoOrdemServico())){
+            if(analisePrincipal.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analisePrincipal.getDataCriacaoOrdemServico().before(analiseSecundaria.getDataCriacaoOrdemServico())){
                 analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
-            }else if(analiseSecundaria.getEquipeResponsavel().getNome().toLowerCase().contains("basis") && analiseSecundaria.getDataCriacaoOrdemServico().before(analisePrincipal.getDataCriacaoOrdemServico())){
+            }else if(analiseSecundaria.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analiseSecundaria.getDataCriacaoOrdemServico().before(analisePrincipal.getDataCriacaoOrdemServico())){
                 analiseDivergenciaPrincipal.setAdjustPFTotal(analiseSecundaria.getAdjustPFTotal());
             }else{
                 analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
@@ -790,6 +792,7 @@ public class AnaliseService extends BaseService {
         }
         return new Analise();
     }
+    
 
     private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise analiseDivergenciaPrincipal) {
         Set<FuncaoDados> lstFuncaoDados = new HashSet<>();
