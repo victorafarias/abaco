@@ -699,6 +699,7 @@ public class AnaliseService extends BaseService {
         analiseClone.setFuncaoTransacaos(bindDivergenceFuncaoTransacaos(analise, analiseClone));
         analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
         analiseClone.setBloqueiaAnalise(false);
+        analiseClone.setAdjustPFTotal(analise.getAdjustPFTotal());
         return analiseClone;
     }
 
@@ -740,6 +741,7 @@ public class AnaliseService extends BaseService {
     @Transactional
     public Analise generateDivergence(Analise analisePricinpal, Analise analiseSecundaria, Status status, boolean isUnionFunction) {
         Analise analiseDivergencia = bindAnaliseDivegernce(analisePricinpal, analiseSecundaria, status, isUnionFunction);
+
         save(analiseDivergencia);
         updateAnaliseRelationAndSendEmail(analisePricinpal, status, analiseDivergencia);
         updateAnaliseRelationAndSendEmail(analiseSecundaria, status, analiseDivergencia);
@@ -777,6 +779,13 @@ public class AnaliseService extends BaseService {
             analiseDivergenciaPrincipal.setStatus(status);
             analiseDivergenciaPrincipal.setIsDivergence(true);
             analiseDivergenciaPrincipal.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+            if(analisePrincipal.getEquipeResponsavel().getNome().toLowerCase().contains("basis") && analisePrincipal.getDataCriacaoOrdemServico().before(analiseSecundaria.getDataCriacaoOrdemServico())){
+                analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
+            }else if(analiseSecundaria.getEquipeResponsavel().getNome().toLowerCase().contains("basis") && analiseSecundaria.getDataCriacaoOrdemServico().before(analisePrincipal.getDataCriacaoOrdemServico())){
+                analiseDivergenciaPrincipal.setAdjustPFTotal(analiseSecundaria.getAdjustPFTotal());
+            }else{
+                analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
+            }
             return analiseDivergenciaPrincipal;
         }
         return new Analise();
