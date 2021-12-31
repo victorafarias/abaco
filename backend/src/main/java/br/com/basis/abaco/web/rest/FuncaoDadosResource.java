@@ -316,6 +316,7 @@ public class FuncaoDadosResource {
     }
     
 
+
     /**
      * GET  /funcao-dados/:id : update status the "id" funcaoDados.
      *

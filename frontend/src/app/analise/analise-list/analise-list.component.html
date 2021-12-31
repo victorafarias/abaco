@@ -83,7 +83,7 @@
                         </div>
                     </div>
                     <basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
-                    [responsive]="true"
+                    [responsive]="true" 
                         (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()" [rows]="20"
                         id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
                         [disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
