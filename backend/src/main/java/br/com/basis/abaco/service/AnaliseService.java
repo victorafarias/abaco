@@ -794,6 +794,7 @@ public class AnaliseService extends BaseService {
     }
     
 
+
     private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise analiseDivergenciaPrincipal) {
         Set<FuncaoDados> lstFuncaoDados = new HashSet<>();
         Set<FuncaoTransacao> lstFuncaoTransacaos = new HashSet<>();
