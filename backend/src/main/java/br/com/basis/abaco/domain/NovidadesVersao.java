@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
+
 @Entity
 @Table(name = "novidades_versao")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
