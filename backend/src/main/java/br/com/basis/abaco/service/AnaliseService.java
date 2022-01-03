@@ -22,8 +22,6 @@ import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.domain.VwAnaliseSomaPf;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
-import br.com.basis.abaco.domain.enumeration.TipoFatorAjuste;
-import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.CompartilhadaRepository;
 import br.com.basis.abaco.repository.ContratoRepository;
@@ -46,17 +44,13 @@ import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
 import br.com.basis.abaco.repository.search.UserSearchRepository;
 import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.utils.StringUtils;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.modelmapper.ModelMapper;
@@ -74,7 +68,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -91,6 +84,8 @@ public class AnaliseService extends BaseService {
     public static final String ORGANIZACAO_ID = "organizacao.id";
     public static final String EQUIPE_RESPONSAVEL_ID = "equipeResponsavel.id";
     public static final String COMPARTILHADAS_EQUIPE_ID = "compartilhadas.equipeId";
+
+    private static final String BASIS = "basis";
     private BigDecimal percent = new BigDecimal("100");
     private static final int decimalPlace = 2;
     private final static String EMPTY_STRING = "";
@@ -439,12 +434,10 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoDados bindFuncaoDados(Analise analiseClone, FuncaoDados fd) {
-        Set<Rlr> rlrs = new HashSet<>();
-        Set<Der> ders = new HashSet<>();
+        Set<Rlr> rlrs = new LinkedHashSet<>();
+        Set<Der> ders = new LinkedHashSet<>();
         FuncaoDados funcaoDado = new FuncaoDados();
         bindFuncaoDados(analiseClone, fd, rlrs, ders, funcaoDado);
-        funcaoDado.setDers(ders);
-        funcaoDado.setRlrs(rlrs);
         return funcaoDado;
     }
 
@@ -478,11 +471,9 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoTransacao bindFuncaoTransacao(Analise analiseClone, FuncaoTransacao ft) {
-        Set<Alr> alrs = new HashSet<>();
-        Set<Der> ders = new HashSet<>();
+        Set<Alr> alrs = new LinkedHashSet<>();
+        Set<Der> ders = new LinkedHashSet<>();
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
-        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrs, null, ft.getFtrValues(), ft.getImpacto(), ders, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe());
-        funcaoTransacao.setFuncionalidade(ft.getFuncionalidade());
         ft.getAlrs().forEach(alr -> {
             Alr alrClone = new Alr(null, alr.getNome(), alr.getValor(), funcaoTransacao, null);
             alrs.add(alrClone);
@@ -491,6 +482,8 @@ public class AnaliseService extends BaseService {
             Der derClone = new Der(null, der.getNome(), der.getValor(), der.getRlr(), null, funcaoTransacao);
             ders.add(derClone);
         });
+        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrs, null, ft.getFtrValues(), ft.getImpacto(), ders, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
+        funcaoTransacao.setFuncionalidade(ft.getFuncionalidade());
         return funcaoTransacao;
     }
 
@@ -508,7 +501,6 @@ public class AnaliseService extends BaseService {
     }
 
     private void bindFuncaoDados(Analise analiseClone, FuncaoDados fd, Set<Rlr> rlrs, Set<Der> ders, FuncaoDados funcaoDado) {
-        funcaoDado.bindFuncaoDados(fd.getComplexidade(), fd.getPf(), fd.getGrossPF(), analiseClone, fd.getFuncionalidade(), fd.getDetStr(), fd.getFatorAjuste(), fd.getName(), fd.getSustantation(), fd.getDerValues(), fd.getTipo(), fd.getRetStr(), fd.getQuantidade(), rlrs, fd.getAlr(), fd.getFiles(), fd.getRlrValues(), ders, fd.getFuncaoDadosVersionavel(), fd.getImpacto(), fd.getEquipe());
         Optional.ofNullable(fd.getDers()).orElse(Collections.emptySet())
             .forEach(der -> {
                 Rlr rlr = null;
@@ -523,10 +515,16 @@ public class AnaliseService extends BaseService {
                 Rlr rlrClone = new Rlr(null, rlr.getNome(), rlr.getValor(), ders, funcaoDado);
                 rlrs.add(rlrClone);
             });
+        funcaoDado.bindFuncaoDados(fd.getComplexidade(), fd.getPf(), fd.getGrossPF(), analiseClone, fd.getFuncionalidade(), fd.getDetStr(), fd.getFatorAjuste(), fd.getName(), fd.getSustantation(), fd.getDerValues(), fd.getTipo(), fd.getRetStr(), fd.getQuantidade(), rlrs, fd.getAlr(), fd.getFiles(), fd.getRlrValues(), ders, fd.getFuncaoDadosVersionavel(), fd.getImpacto(), fd.getEquipe(), fd.getOrdem());
+
     }
 
     public AnaliseDTO convertToDto(Analise analise) {
-        return modelMapper.map(analise, AnaliseDTO.class);
+        AnaliseDTO analiseDto = modelMapper.map(analise, AnaliseDTO.class);
+        if(analise.getAnaliseDivergence() != null){
+            analiseDto.setAnaliseDivergence(this.convertToAnaliseDivergenceDTO(analise.getAnaliseDivergence()));
+        }
+        return analiseDto;
     }
 
     public Analise convertToEntity(AnaliseDTO analiseDTO) {
@@ -544,6 +542,10 @@ public class AnaliseService extends BaseService {
     public AnaliseDivergenceEditDTO convertToAnaliseDivergenceEditDTO(Analise analise) {
         return modelMapper.map(analise, AnaliseDivergenceEditDTO.class);
 
+    }
+
+    public AnaliseDivergenceDTO convertToAnaliseDivergenceDTO(Analise analise){
+        return modelMapper.map(analise, AnaliseDivergenceDTO.class);
     }
 
     public Analise convertToEntity(AnaliseEditDTO analiseEditDTO) {
@@ -575,6 +577,7 @@ public class AnaliseService extends BaseService {
         analise.setFatorCriticidade(analiseUpdate.getFatorCriticidade());
         analise.setValorCriticidade(analiseUpdate.getValorCriticidade());
         analise.setScopeCreep(analiseUpdate.getScopeCreep());
+        analise.setMotivo(analiseUpdate.getMotivo());
     }
 
     public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus) {
@@ -649,6 +652,20 @@ public class AnaliseService extends BaseService {
         sumFase = sumFase.divide(percent).setScale(decimalPlace);
         analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).toString());
         analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+
+        analise.setPfTotalAprovado(analise.getAdjustPFTotal());
+
+        Timestamp hoje = Timestamp.from(Instant.now());
+        Analise analiseOriginalBasis = new Analise();
+        for (Analise analiseComparada : analise.getAnalisesComparadas()) {
+            if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS)){
+                if(analiseComparada.getDataCriacaoOrdemServico().before(hoje)){
+                    hoje = analiseComparada.getDataCriacaoOrdemServico();
+                    analiseOriginalBasis = analiseComparada;
+                }
+            }
+        }
+        analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
     }
 
 
@@ -684,6 +701,7 @@ public class AnaliseService extends BaseService {
         analiseClone.setFuncaoTransacaos(bindDivergenceFuncaoTransacaos(analise, analiseClone));
         analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
         analiseClone.setBloqueiaAnalise(false);
+        analiseClone.setAdjustPFTotal(analise.getAdjustPFTotal());
         return analiseClone;
     }
 
@@ -715,8 +733,8 @@ public class AnaliseService extends BaseService {
             analiseDivergencia = bindDivergenceAnalise(analiseDivergencia, analise, user);
             analiseDivergencia.setStatus(status);
             analiseDivergencia.setIsDivergence(true);
-            updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
             analiseDivergencia = save(analiseDivergencia);
+            updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
             return analiseDivergencia;
         }
         return new Analise();
@@ -725,6 +743,7 @@ public class AnaliseService extends BaseService {
     @Transactional
     public Analise generateDivergence(Analise analisePricinpal, Analise analiseSecundaria, Status status, boolean isUnionFunction) {
         Analise analiseDivergencia = bindAnaliseDivegernce(analisePricinpal, analiseSecundaria, status, isUnionFunction);
+
         save(analiseDivergencia);
         updateAnaliseRelationAndSendEmail(analisePricinpal, status, analiseDivergencia);
         updateAnaliseRelationAndSendEmail(analiseSecundaria, status, analiseDivergencia);
@@ -762,10 +781,19 @@ public class AnaliseService extends BaseService {
             analiseDivergenciaPrincipal.setStatus(status);
             analiseDivergenciaPrincipal.setIsDivergence(true);
             analiseDivergenciaPrincipal.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+            if(analisePrincipal.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analisePrincipal.getDataCriacaoOrdemServico().before(analiseSecundaria.getDataCriacaoOrdemServico())){
+                analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
+            }else if(analiseSecundaria.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analiseSecundaria.getDataCriacaoOrdemServico().before(analisePrincipal.getDataCriacaoOrdemServico())){
+                analiseDivergenciaPrincipal.setAdjustPFTotal(analiseSecundaria.getAdjustPFTotal());
+            }else{
+                analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
+            }
             return analiseDivergenciaPrincipal;
         }
         return new Analise();
     }
+    
+
 
     private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise analiseDivergenciaPrincipal) {
         Set<FuncaoDados> lstFuncaoDados = new HashSet<>();

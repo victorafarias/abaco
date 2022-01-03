@@ -28,6 +28,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -222,5 +224,14 @@ public class BaseLineAnaliticoResource {
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
         Page<BaseLineAnaliticoFT> lstPage = elasticsearchTemplate.queryForPage(searchQuery, BaseLineAnaliticoFT.class);
         return new PageImpl(lstPage.getContent(), pageable, lstPage.getTotalElements());
+    }
+
+    @GetMapping(value = "/exportar-excel/{id}/{modelo}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Secured("ROLE_ABACO_BASELINE_EXPORTAR")
+    public ResponseEntity<byte[]> exportarExcel(@PathVariable Long id, @PathVariable Long modelo) throws IOException{
+        BaseLineSintetico baseLineSintetico = recuperarBaselinePorSistema(id);
+        List<BaseLineAnaliticoFD> baseLineAnaliticoFD = getBaseLineAnaliticoFD(id);
+        List<BaseLineAnaliticoFT> baseLineAnaliticoFT = getBaseLineAnaliticoFT(id);
+        return baselineAnaliseService.exportarExcel(baseLineSintetico, baseLineAnaliticoFD, baseLineAnaliticoFT, modelo);
     }
 }

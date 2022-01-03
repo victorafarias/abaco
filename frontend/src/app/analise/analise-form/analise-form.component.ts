@@ -760,5 +760,17 @@ export class AnaliseFormComponent implements OnInit {
         }
         this.router.navigate(link);
     }
+
+    getIdentificadorAnalise(){
+        return this.analise.analiseDivergence.identificadorAnalise;
+    }
+
+    goToDivergencia(divergencia){
+        if(divergencia.bloqueiaAnalise === true){
+            window.open("#/divergencia/"+divergencia.id+"/view", "_blank");
+        }else{
+            window.open("#/divergencia/"+divergencia.id+"/edit", "_blank");
+        }
+    }
 }
 

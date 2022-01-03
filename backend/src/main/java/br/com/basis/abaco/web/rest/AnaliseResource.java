@@ -273,6 +273,9 @@ public class AnaliseResource {
             User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
             if (analiseService.permissionToEdit(user, analise)) {
                 AnaliseEditDTO analiseEditDTO = analiseService.convertToAnaliseEditDTO(analise);
+                if(analise.getAnaliseDivergence() != null){
+                    analiseEditDTO.setAnaliseDivergence(analiseService.convertToDto(analise.getAnaliseDivergence()));
+                }
                 return ResponseUtil.wrapOrNotFound(Optional.ofNullable(analiseEditDTO));
             }
         }
@@ -644,7 +647,7 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_ANALISE_GERAR_VALIDACAO")
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnaliseComparada) {
         Analise analise = analiseRepository.findOne(idAnaliseComparada);
-        Status status = statusRepository.findFirstByDivergenciaTrue();
+        Status status = statusRepository.findByNomeContainsIgnoreCase("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error status");
         }
@@ -654,24 +657,25 @@ public class AnaliseResource {
         Analise analiseDivergencia = analiseService.generateDivergence(analise, status);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analiseDivergencia));
     }
+    
 
     @GetMapping("/analises/gerar-divergencia/{idAnalisePadao}/{idAnaliseComparada}")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_GERAR_VALIDACAO")
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnalisePadao, @PathVariable Long idAnaliseComparada, @RequestParam(value = "isUnion", defaultValue = "false") boolean isUnionFunction) {
-        Analise analisePadrão = analiseRepository.findOne(idAnalisePadao);
+        Analise analisePadrao = analiseRepository.findOne(idAnalisePadao);
         Analise analiseComparada = analiseRepository.findOne(idAnaliseComparada);
-        Status status = statusRepository.findFirstByDivergenciaTrue();
+        Status status = statusRepository.findByNomeContainsIgnoreCase("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Status");
         }
-        if (analisePadrão == null || analisePadrão.getId() == null) {
+        if (analisePadrao == null || analisePadrao.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Padrão");
         }
         if (analiseComparada == null || analiseComparada.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Comparada");
         }
-        Analise analiseDivergencia = analiseService.generateDivergence(analisePadrão, analiseComparada, status, isUnionFunction);
+        Analise analiseDivergencia = analiseService.generateDivergence(analisePadrao, analiseComparada, status, isUnionFunction);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analiseDivergencia));
     }
 
@@ -793,22 +797,22 @@ public class AnaliseResource {
         return new ResponseEntity(newAnalise, HttpStatus.OK);
     }
 
-    @GetMapping("/analises/FD/{nomeFuncao}/{nomeModulo}/{nomeFuncionalidade}/{nomeSistema}/{nomeEquipe}")
-    public ResponseEntity<List<VwAnaliseFD>> carregarAnalisesFD(@PathVariable(name = "nomeFuncao")String nomeFuncao,
-                                                                @PathVariable(name = "nomeModulo")String nomeModulo,
-                                                                @PathVariable(name = "nomeFuncionalidade")String nomeFuncionalidade,
-                                                                @PathVariable(name = "nomeSistema") String nomeSistema,
-                                                                @PathVariable(name = "nomeEquipe") String nomeEquipe){
+    @GetMapping("/analises/FD")
+    public ResponseEntity<List<VwAnaliseFD>> carregarAnalisesFD(@RequestParam(name = "nomeFuncao")String nomeFuncao,
+                                                                @RequestParam(name = "nomeModulo")String nomeModulo,
+                                                                @RequestParam(name = "nomeFuncionalidade")String nomeFuncionalidade,
+                                                                @RequestParam(name = "nomeSistema") String nomeSistema,
+                                                                @RequestParam(name = "nomeEquipe") String nomeEquipe){
         List<VwAnaliseFD> analises = analiseService.carregarAnalisesFromFuncaoFD(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
         return new ResponseEntity<>(analises, HttpStatus.OK);
     }
 
-    @GetMapping("/analises/FT/{nomeFuncao}/{nomeModulo}/{nomeFuncionalidade}/{nomeSistema}/{nomeEquipe}")
-    public ResponseEntity<List<VwAnaliseFT>> carregarAnalisesFT(@PathVariable(name = "nomeFuncao")String nomeFuncao,
-                                                                @PathVariable(name = "nomeModulo")String nomeModulo,
-                                                                @PathVariable(name = "nomeFuncionalidade")String nomeFuncionalidade,
-                                                                @PathVariable(name = "nomeSistema") String nomeSistema,
-                                                                @PathVariable(name = "nomeEquipe") String nomeEquipe){
+    @GetMapping("/analises/FT")
+    public ResponseEntity<List<VwAnaliseFT>> carregarAnalisesFT(@RequestParam(name = "nomeFuncao")String nomeFuncao,
+                                                                @RequestParam(name = "nomeModulo")String nomeModulo,
+                                                                @RequestParam(name = "nomeFuncionalidade")String nomeFuncionalidade,
+                                                                @RequestParam(name = "nomeSistema") String nomeSistema,
+                                                                @RequestParam(name = "nomeEquipe") String nomeEquipe){
         List<VwAnaliseFT> analises = analiseService.carregarAnalisesFromFuncaoFT(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
         return new ResponseEntity<>(analises, HttpStatus.OK);
     }

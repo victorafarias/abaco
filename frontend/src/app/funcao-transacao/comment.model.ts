@@ -3,7 +3,8 @@ import { User } from '../user';
 
 export class CommentFuncaoTransacao {
     constructor(
-            public commet?: string,
+            public id?: number,
+            public comment?: string,
             public user?: User,
             public funcaoDados?: FuncaoTransacao,
     ) {

@@ -27,7 +27,7 @@
                                     [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="true"
                                     [reorderableRows]="isOrderning" (onRowReorder)="updateIndex()"
                                     [selectionMode]="'multiple'" [disableDelete]="true"
-                                    [disableEdit]="selectModeButtonsEditAndView || isOrderning"
+                                    [disableEdit]="isView || selectModeButtonsEditAndView || isOrderning"
                                     [disableView]="selectModeButtonsEditAndView || isOrderning" #tables>
                                     <p-column header="Ordem" field="ordem">
                                         <ng-template let-col let-funcaoDado="rowData" pTemplate="body">
@@ -411,8 +411,10 @@
                             <label>Informação: </label>
                             <div *ngFor="let item of seletedFuncaoDados.lstDivergenceComments">
                                 <div class="ui-g-12 ui-md-12 ui-sm-12">
-                                    <label>Usuário: {{item.user.firstName}} {{item.user.lastName}}</label>
-                                    <textarea rows="5" pInputTextarea [(ngModel)]="item.commet" readonly
+                                    <label>Usuário: {{item.user.firstName}} {{item.user.lastName}} </label>
+                                    <app-blue-button buttonIcon="ui-icon-edit" (click)="abrirDialogComment(item)"></app-blue-button>
+                                    <app-red-button buttonIcon="ui-icon-delete" (click)="deletarComment(item)"></app-red-button>
+                                    <textarea rows="5" pInputTextarea [(ngModel)]="item.comment" readonly
                                         class="ui-md-12 ui-sm-12" style="resize: vertical;"></textarea>
                                 </div>
                             </div>
@@ -578,6 +580,25 @@
                             <div class="ui-md-2 ui-sm-12">
                                 <app-green-button [buttonLabel]="'Adicionar'" id="idBtnCommentFormFuncaoDados"
                                     buttonIcon="ui-icon-done" (click)="saveComent(divergenceComment)">
+                                </app-green-button>
+                            </div>
+                        </div>
+                    </p-dialog>
+
+                    <p-dialog header="Editar Comentário" [(visible)]="showEditComment" [style]="{width: '80vw'}">
+                        <div class="ui-md-12 ui-sm-12">
+                            <textarea rows="5" pInputTextarea [(ngModel)]="editDivergenceComment.comment" class="ui-md-12 ui-sm-12"
+                                style="resize: vertical;"></textarea>
+                        </div>
+                        <div class="ui-g ui-md-12 ui-sm-12" style="justify-content: flex-end">
+                            <div class="ui-md-2 ui-sm-12">
+                                <app-white-button [buttonLabel]="'Cancelar'" id="idBtnApprovedFormFuncaoDados"
+                                    buttonIcon="ui-icon-close" (click)="cancelEditComment()">
+                                </app-white-button>
+                            </div>
+                            <div class="ui-md-2 ui-sm-12">
+                                <app-green-button [buttonLabel]="'Editar'" id="idBtnCommentFormFuncaoDados"
+                                    buttonIcon="ui-icon-done" (click)="editComent(editDivergenceComment)">
                                 </app-green-button>
                             </div>
                         </div>

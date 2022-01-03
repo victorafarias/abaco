@@ -16,6 +16,7 @@ import { ModuloDaFuncionalidadeFinder } from './modulo-finder';
 import { FuncaoDados } from '../funcao-dados';
 import { FuncaoTransacao } from '../funcao-transacao';
 import { Status } from '../status/status.model';
+import { MotivoAnalise } from '../divergencia';
 
 export enum MetodoContagem {
     'DETALHADA' = 'DETALHADA',
@@ -84,6 +85,10 @@ export class Analise implements BaseEntity {
         public fatorCriticidade?: boolean,
         public valorCriticidade?: number,
         public scopeCreep?: number,
+        public motivo?: MotivoAnalise,
+        public pfTotalOriginal?: string,
+        public pfTotalAprovado?: string,
+        public analiseDivergence?: Analise,
     ) {
         this.inicializaMappables(funcaoDados, funcaoTransacaos);
         this.inicializaResumos();
@@ -320,6 +325,7 @@ export class Analise implements BaseEntity {
             this.fatorCriticidade,
             this.valorCriticidade,
             this.scopeCreep,
+            this.motivo
             );
     }
 
@@ -394,6 +400,10 @@ class AnaliseCopyFromJSON {
         if(!this._analiseConverted.scopeCreep){
             this._analiseConverted.scopeCreep = 35;
         }
+        this._analiseConverted.motivo = this._json.motivo;
+        this._analiseConverted.pfTotalAprovado = this._json.pfTotalAprovado;
+        this._analiseConverted.pfTotalOriginal = this._json.pfTotalOriginal;
+        this._analiseConverted.analiseDivergence = this._json.analiseDivergence;
     }
 
     private converteFuncoes() {

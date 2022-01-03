@@ -124,6 +124,14 @@ export class FuncaoTransacaoService {
         return this.http.post<CommentFuncaoTransacao>(`${this.resourceUrlComment}/${idStatus}`, comment);
     }
 
+    updateComment(id: number, comment: string){
+        return this.http.put<CommentFuncaoTransacao>(`${this.resourceUrlComment}/${id}`, comment);
+    }
+
+    deleteComment(id: number){
+        return this.http.delete<void>(`${this.resourceUrlComment}/${id}`);
+    }
+    
     existsWithName(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: Number = 0): Observable<Boolean> {
         const url = `${this.funcaoTransacaoResourceUrl}/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}`;
         return this.http.get<Boolean>(url);

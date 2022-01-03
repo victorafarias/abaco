@@ -140,6 +140,8 @@ public class User extends AbstractAuditingEntity implements Serializable, Report
     @JoinTable(name = "user_organizacao", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "organizacao_id", referencedColumnName = "id"))
     private Set<Organizacao> organizacoes = new HashSet<>();
 
+    @Column(name = "mostrarNovidades")
+    private Boolean mostrarNovidades;
 
 
     public String getEquipes(){
@@ -329,5 +331,13 @@ public class User extends AbstractAuditingEntity implements Serializable, Report
         this.perfilOrganizacoes = Optional.ofNullable(perfilOrganizacoes)
             .map(lista -> new ArrayList<PerfilOrganizacao>(lista))
             .orElse(new ArrayList<PerfilOrganizacao>());
+    }
+
+    public Boolean getMostrarNovidades() {
+        return mostrarNovidades;
+    }
+
+    public void setMostrarNovidades(Boolean mostrarNovidades) {
+        this.mostrarNovidades = mostrarNovidades;
     }
 }

@@ -20,6 +20,7 @@ import br.com.basis.abaco.repository.search.VwAlrAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwAlrSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
+import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.dto.AlrDTO;
 import br.com.basis.abaco.service.dto.DerFtDTO;
@@ -85,6 +86,8 @@ public class FuncaoTransacaoResource {
     private VwDerAllSearchRepository vwDerAllSearchRepository;
     @Autowired
     private VwAlrAllSearchRepository vwAlrAllSearchRepository;
+    @Autowired
+    private AnaliseService analiseService;
 
     public FuncaoTransacaoResource(FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwAlrSearchRepository vwAlrSearchRepository, FuncaoDadosService funcaoDadosService) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
@@ -263,6 +266,7 @@ public class FuncaoTransacaoResource {
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
+    
     /**
      * DELETE  /funcao-transacaos/:id : delete the "id" funcaoTransacao.
      *
@@ -324,6 +328,8 @@ public class FuncaoTransacaoResource {
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
         funcaoTransacao.setStatusFuncao(statusFuncao);
         funcaoTransacaoRepository.save(funcaoTransacao);
+        analiseService.updatePFDivergente(funcaoTransacao.getAnalise());
+        analiseService.save(funcaoTransacao.getAnalise());
         FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }

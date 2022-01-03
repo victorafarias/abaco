@@ -83,6 +83,7 @@
                         </div>
                     </div>
                     <basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
+                    [responsive]="true" 
                         (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()" [rows]="20"
                         id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
                         [disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
@@ -98,6 +99,12 @@
                             field="identificadorAnalise" [sortable]="true"></p-column>
                         <p-column [styleClass]="'numero-os'" header="Número Os." field="numeroOs" [sortable]="true">
                         </p-column>
+                        <p-column [styleClass]="'analise-divergence'" header="Identificador da Divergência" field="analiseDivergence.identificadorAnalise"
+                            [sortable]="true" filterType="select" [filter]="true">
+                            <ng-template let-col let-analise="rowData" pTemplate="body">
+                                <a style="cursor: pointer; color: blue" (click)="goToPageDivergencia(analise.analiseDivergence)"> {{ analise.analiseDivergence?.identificadorAnalise }}</a>
+                            </ng-template>
+                        </p-column>
                         <p-column [styleClass]="'equipe'" header="Equipe" field="equipeResponsavel.nome"
                             [sortable]="true" filterType="select" [filter]="true">
                             <ng-template let-col let-analise="rowData" pTemplate="body">
@@ -110,14 +117,18 @@
                                 {{ analise.sistema.nome}}
                             </ng-template>
                         </p-column>
+                        <p-column [styleClass]="'metodo-contagem'" header="Método Contagem" field="metodoContagem"
+                            [sortable]="true" filterType="select" [filter]="true">
+                            <ng-template let-col let-analise="rowData" pTemplate="body">
+                                {{ analise.metodoContagem }}
+                            </ng-template>
+                        </p-column>
                         <p-column [styleClass]="'status'" header="Status" field="status.nome" [sortable]="true"
                             [filter]="true">
                             <ng-template let-col let-analise="rowData" pTemplate="body">
                                 {{ analise.status && analise.status.nome? analise.status.nome : ''}}
                             </ng-template>
                         </p-column>
-                        <p-column [styleClass]="'metodo-contagem'" header="Metodo Contagem" field="metodoContagem"
-                            [sortable]="true" filterType="select" [filter]="true"></p-column>
                         <p-column [styleClass]="'pf-total'" header="PF total" field="pfTotal" [sortable]="true"
                             filterType="">
                             <ng-template let-col let-analise="rowData" pTemplate="body">
@@ -213,7 +224,7 @@
                         <basis-datatable-button *ngIf="canExportarPlanilha" name="exportExcel"
                             [bTooltip]="'Exportar planilha excel'" (click)="openModalExportarExcel(analiseSelecionada)"
                             icon="file-upload" class="ui-button-success" [disabled]="datatable.selectedRow == null">
-                        </basis-datatable-button> -->
+                        </basis-datatable-button>
                         <basis-datatable-button name="exportJson" [bTooltip]="'Exportar análise'" icon="call-received"
                             (click)="exportarAnalise(analiseSelecionada);" [disabled]="datatable.selectedRow == null"
                             class="ui-button-info">

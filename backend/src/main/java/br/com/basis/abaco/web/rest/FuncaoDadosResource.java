@@ -28,6 +28,7 @@ import br.com.basis.abaco.repository.search.VwDerAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrSearchRepository;
+import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.dto.DerFdDTO;
 import br.com.basis.abaco.service.dto.DropdownDTO;
 import br.com.basis.abaco.service.dto.FuncaoDadoAnaliseDTO;
@@ -90,6 +91,9 @@ public class FuncaoDadosResource {
     private ModelMapper modelMapper;
     @Autowired
     private UploadedFilesRepository filesRepository;
+
+    @Autowired
+    private AnaliseService analiseService;
 
     @Autowired
     private VwRlrAllSearchRepository vwRlrAllSearchRepository;
@@ -310,6 +314,9 @@ public class FuncaoDadosResource {
         }
         return ResponseEntity.ok(existInAnalise);
     }
+    
+
+
 
     /**
      * GET  /funcao-dados/:id : update status the "id" funcaoDados.
@@ -324,6 +331,8 @@ public class FuncaoDadosResource {
         FuncaoDados funcaoDados = funcaoDadosRepository.findOne(id);
         funcaoDados.setStatusFuncao(statusFuncao);
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
+        analiseService.updatePFDivergente(funcaoDados.getAnalise());
+        analiseService.save(funcaoDados.getAnalise());
         FuncaoDadoApiDTO funcaoDadosDTO = getFuncaoDadoApiDTO(result);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }

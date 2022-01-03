@@ -12,6 +12,7 @@ import {FuncaoResumivel} from '../analise-shared';
 import { CommentFuncaoTransacao } from './comment.model';
 import { Status } from '../status/status.model';
 import { Modulo } from '../modulo';
+import { TipoEquipe } from '../tipo-equipe';
 
 export enum TipoFuncaoTransacao {
   'EE' = 'EE',
@@ -57,7 +58,8 @@ export class FuncaoTransacao implements FuncaoResumivel, BaseEntity, FuncaoAnali
     public statusFuncao?: String,
     public lstDivergenceComments?: CommentFuncaoTransacao[],
     public files?: any[],
-    public ordem?: number
+    public ordem?: number,
+    public equipe?: TipoEquipe
   ) {
     if (!pf) {
       this.pf = 0;
@@ -130,7 +132,7 @@ export class FuncaoTransacao implements FuncaoResumivel, BaseEntity, FuncaoAnali
       this.complexidade, this.pf, this.analise, this.funcionalidades,
       this.funcionalidade, this.fatorAjuste, this.alrs,
       this.name, this.sustantation, this.der, this.ftr, this.grossPF,
-      this.derValues, this.ftrValues, this.ders, this.modulo, this.impacto, this.quantidade, this.statusFuncao, this.lstDivergenceComments, this.files, this.ordem);
+      this.derValues, this.ftrValues, this.ders, this.modulo, this.impacto, this.quantidade, this.statusFuncao, this.lstDivergenceComments, this.files, this.ordem, this.equipe);
   }
 
 }
@@ -171,6 +173,7 @@ class FuncaoTransacaoCopyFromJSON {
     this._funcaoTransacao.statusFuncao = this._json.statusFuncao;
     this._funcaoTransacao.files = this._json.files;
     this._funcaoTransacao.ordem = this._json.ordem;
+    this._funcaoTransacao.equipe = this._json.equipe;
   }
 
   private converteBaseEntities() {

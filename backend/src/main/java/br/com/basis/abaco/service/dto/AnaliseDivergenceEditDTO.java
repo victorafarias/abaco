@@ -6,6 +6,7 @@ import br.com.basis.abaco.domain.EsforcoFase;
 import br.com.basis.abaco.domain.FatorAjuste;
 import br.com.basis.abaco.domain.Manual;
 import br.com.basis.abaco.domain.Status;
+import br.com.basis.abaco.domain.enumeration.MotivoAnalise;
 import br.com.basis.dynamicexports.pojo.ReportObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,5 +34,9 @@ public class AnaliseDivergenceEditDTO extends AnaliseBaseDTO implements ReportOb
     private Set<Compartilhada> compartilhadas;
     private Status status;
     private Set<AnaliseEditDTO> analisesComparadas;
+    private MotivoAnalise motivo;
+    private String pfTotalOriginal;
+    private String pfTotalAprovado;
+    private boolean bloqueiaAnalise;
 
 }

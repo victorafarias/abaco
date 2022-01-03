@@ -6,6 +6,7 @@ import { DivergenciaFormComponent } from './divergencia-form/divergencia-form.co
 import { DivergenciaDetailComponent } from './divergencia-detail/divergencia-detail.component';
 import { DivergenciaResumoComponent } from './divergencia-resumo/divergencia-resumo.component';
 import { AuthGuardService } from '../util/auth.guard.service';
+import { DivergenciaViewComponent } from './divergencia-view/divergencia-view.component';
 
 export const divergenciaRoute: Routes = [
     {
@@ -35,9 +36,18 @@ export const divergenciaRoute: Routes = [
             breadcrumb: "Validação"
         }
     },
+    // {
+    //     path: 'divergencia/:id/view',
+    //     component: DivergenciaDetailComponent,
+    //     canActivate: [AuthGuard, AuthGuardService],
+    //     data: {
+    //         roleParaVerificar: ['ROLE_ABACO_VALIDACAO_ACESSAR'],
+    //         breadcrumb: "Validação"
+    //     }
+    // },
     {
         path: 'divergencia/:id/view',
-        component: DivergenciaDetailComponent,
+        component: DivergenciaViewComponent,
         canActivate: [AuthGuard, AuthGuardService],
         data: {
             roleParaVerificar: ['ROLE_ABACO_VALIDACAO_ACESSAR'],
@@ -49,7 +59,17 @@ export const divergenciaRoute: Routes = [
         component: DivergenciaResumoComponent,
         canActivate: [AuthGuard, AuthGuardService],
         data: {
-            roleParaVerificar: ['ROLE_ABACO_VALIDACAO_ACESSAR']
+            roleParaVerificar: ['ROLE_ABACO_VALIDACAO_ACESSAR'],
+            breadcrumb: "Resumo Validação"
+        }
+    },
+    {
+        path: 'divergencia/:id/resumo/:view',
+        component: DivergenciaResumoComponent,
+        canActivate: [AuthGuard, AuthGuardService],
+        data: {
+            roleParaVerificar: ['ROLE_ABACO_VALIDACAO_ACESSAR'],
+            breadcrumb: "Resumo Validação"
         }
     },
 

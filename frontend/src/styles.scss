@@ -26,10 +26,10 @@ body .ui-widget-overlay {
   width: 75px !important;
 }
 #idTabelaComponentAnalise th:nth-child(8) {
-  width: 75px !important;
+  width: 100px !important;
 }
 #idTabelaComponentAnalise td:nth-child(8) {
-  width: 75px !important;
+  width: 100px !important;
 }
 #idTabelaComponentAnalise th:nth-child(7) {
   width: 100px !important;
@@ -63,4 +63,12 @@ body .ui-widget-overlay {
 #idTabelaComponentAnalise td:nth-child(11) {
   width: 85px !important;
   text-align: center;
+}
+
+::ng-deep .p-panelmenu .p-panelmenu-header>a {
+	background-color: lightblue;
+  }::ng-deep .p-panelmenu .p-panelmenu-header.p-highlight>a {
+    background-color: red;
+  }::ng-deep .p-panelmenu ul li:nth-child(1) {
+    color: blue;
 }

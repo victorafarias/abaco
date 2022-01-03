@@ -16,6 +16,7 @@ import br.com.basis.abaco.service.dto.FuncaoDadosDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoDTO;
 import br.com.basis.abaco.service.dto.FuncoesDTO;
 import br.com.basis.abaco.service.dto.ListaFdFtDTO;
+import br.com.basis.abaco.service.dto.PfFuncionalidadeDTO;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.core.io.InputStreamResource;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author eduardo.andrade
@@ -204,9 +206,39 @@ public class RelatorioAnaliseRest {
         this.popularCountsFd();
         this.popularCountsFt();
         this.popularFatorCriticidade();
+        this.popularPFPorFuncionalidade();
         return parametro;
     }
 
+    private void popularPFPorFuncionalidade() {
+        List<PfFuncionalidadeDTO> pfFuncionalidadeDTOS = new ArrayList<>();
+        for (int i = 0; i < analise.getFuncaoDados().size(); i++) {
+            FuncaoDados funcaoDados = analise.getFuncaoDados().stream().collect(Collectors.toList()).get(i);
+            if(pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoDados.getFuncionalidade().getNome()))
+                .collect(Collectors.toList()).isEmpty()){
+                pfFuncionalidadeDTOS.add(new PfFuncionalidadeDTO(i+1, funcaoDados.getFuncionalidade().getNome(), funcaoDados.getPf().doubleValue()));
+            }else{
+                pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoDados.getFuncionalidade().getNome()))
+                    .collect(Collectors.toList()).get(0)
+                    .setTotal(pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoDados.getFuncionalidade().getNome()))
+                        .collect(Collectors.toList()).get(0).getTotal() + funcaoDados.getPf().doubleValue());
+            }
+        }
+        for (int i = 0; i < analise.getFuncaoTransacaos().size(); i++) {
+            FuncaoTransacao funcaoTransacao = analise.getFuncaoTransacaos().stream().collect(Collectors.toList()).get(i);
+            if(pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoTransacao.getFuncionalidade().getNome()))
+                .collect(Collectors.toList()).isEmpty()){
+                pfFuncionalidadeDTOS.add(new PfFuncionalidadeDTO(i+1, funcaoTransacao.getFuncionalidade().getNome(), funcaoTransacao.getPf().doubleValue()));
+            }else{
+                pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoTransacao.getFuncionalidade().getNome()))
+                    .collect(Collectors.toList()).get(0)
+                    .setTotal(pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoTransacao.getFuncionalidade().getNome()))
+                        .collect(Collectors.toList()).get(0).getTotal() + funcaoTransacao.getPf().doubleValue());
+            }
+        }
+        parametro.put("LISTAPFFUNC", pfFuncionalidadeDTOS);
+    }
+    
     /**
      *
      */

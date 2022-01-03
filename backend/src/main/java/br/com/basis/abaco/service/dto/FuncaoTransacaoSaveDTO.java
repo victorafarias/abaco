@@ -76,6 +76,8 @@ public class FuncaoTransacaoSaveDTO {
 
     private Long ordem;
 
+    private TipoEquipeDTO equipe;
+
     public FuncaoTransacao toEntity() throws InvocationTargetException, IllegalAccessException {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         BeanUtils.copyProperties(funcaoTransacao, this);

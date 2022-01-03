@@ -40,6 +40,9 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private AnaliseDivergenceDTO analiseDivergence;
     private Set<AnaliseDivergenceDTO> analisesComparadas = new HashSet<>();
 
+    private String pfTotalOriginal;
+    private String pfTotalAprovado;
+
     @JsonIgnoreProperties("analiseClonadaParaEquipe")
     private AnaliseDTO analiseClonadaParaEquipe;
     private Boolean analiseClonou;
