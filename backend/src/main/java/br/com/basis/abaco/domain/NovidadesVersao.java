@@ -36,6 +36,7 @@ public class NovidadesVersao implements Serializable, ReportObject {
     @OrderBy("id")
     private Set<Novidades> novidades = new HashSet<>();
 
+    
     public Long getId() {
         return id;
     }
