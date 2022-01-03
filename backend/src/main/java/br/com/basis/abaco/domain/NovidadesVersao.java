@@ -7,14 +7,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cascade;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -40,6 +33,7 @@ public class NovidadesVersao implements Serializable, ReportObject {
 
     @OneToMany(mappedBy = "novidadesVersao")
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    @OrderBy("id")
     private Set<Novidades> novidades = new HashSet<>();
 
     public Long getId() {
