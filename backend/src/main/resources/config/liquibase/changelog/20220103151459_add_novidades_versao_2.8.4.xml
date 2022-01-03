@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1641222916453-1">
+       <insert tableName="novidades_versao">
+           <column name="id" value="2"></column>
+           <column name="versao" value="2.8.4"></column>
+       </insert>
+       <insert tableName="novidades">
+           <column name="id" value="8"></column>
+           <column name="novidades_versao_id" value="2"></column>
+           <column name="ocorrencia" value="BASIS-238382"></column>
+           <column name="novidades" value="Foi incluído a funcionalidade 'Novidades da Versão' ao logar no sistema, podendo depois ser habilitado pelo usuário, na engrenagem na parte superior direita da tela."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="9"></column>
+           <column name="novidades_versao_id" value="2"></column>
+           <column name="ocorrencia" value="BASIS-241479"></column>
+           <column name="novidades" value="1. Ocultado os campos: 'Propósito da contagem', 'Escopo da Contagem', 'Fronteira', 'Documentação' e 'Fases' e adicionado os campos 'Motivo', 'Equipe', 'PF Original' e 'Status' com as opções pré-definidas em Validação.
+2. Adicionado filtro para o campo 'Status' sendo permitido apenas cadastros de status tenham a opção 'Validação' habilitada em Validação.
+3. Substituído as colunas 'PF Total' e 'PF Ajustado' na Validação para 'PF Ajustado Original' e 'PF Ajustado Aprovado'.
+4. Excluído a restrição de caractéres permitidos no campo de comentário nas funções de dados e transações na Validação.
+5. Incluído as opções de editar/excluir um comentário nas funções de dados e transações na Validação.
+6. Incluído o campo 'PF Ajustado Original' para a aba de resumo de Validações.
+7. Gerar Validação com o status 'Em análise' como padrão.
+8. Incluído uma nova coluna na listagem de análises descrita como 'Identificador da Divergência' para que seja possível visualizar se existe ou não uma Validação para aquela análise, se sim, ser possível navegar para ela em modo de visualização caso seja bloqueada ou modo de edição se estiver desbloqueada.
+9. Incluído um novo campo na tela 'Geral' de Análises, descrito como 'Identificador da Divergência' para poder acessá-la se tiver alguma.
+10. Incluído a funcionalidade de visualizar e salvar validação."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="10"></column>
+           <column name="novidades_versao_id" value="2"></column>
+           <column name="ocorrencia" value="BASIS-244175"></column>
+           <column name="novidades" value="Criado uma exportação para a grid de módulo e funcionalidade no cadastro de sistemas, onde é possível exportar para PDF, Excel e Imprimir."></column>
+       </insert>
+
+       <update tableName="jhi_user">
+           <column name="mostrar_novidades" value="true"></column>
+       </update>
+   </changeSet>
+</databaseChangeLog>
