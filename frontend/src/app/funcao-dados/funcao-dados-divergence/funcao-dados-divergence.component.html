@@ -60,9 +60,15 @@
                                     <p-column field="grossPF" header="PF Bruto" [sortable]="true"></p-column>
                                     <p-column field="pf" header="PF Líquido" [sortable]="true"></p-column>
                                     <basis-datatable-button name="add" *ngIf="!isView && !isOrderning"
-                                        (click)="openDialog(false)" bTooltip="Incluir nova função"
+                                        (click)="openDialog(false)" pTooltip="Incluir nova função"
                                         class="ui-button-success" icon="add">
                                     </basis-datatable-button>
+                                    <basis-datatable-button *ngIf="!isView && !isOrderning && !selectModeButtonsEditAndView"
+                                    [allowMultipleSelection]="false" name="clone" (click)="clonar()"
+                                    [pTooltip]="funcaoDadosEditar[0] != undefined ? this.getLabel('Clonar') : this.getLabel('Escolha um registro para clonar.')"
+                                    [disabled]="funcaoDadosEditar[0] == undefined" class="ui-button-dark"
+                                    icon="content-copy">
+                                </basis-datatable-button>
                                     <basis-datatable-button name="delete" *ngIf="!isView && !isOrderning"
                                         [bTooltip]="this.getLabel('Excluído')"
                                         (click)="this.setDelete(funcaoDadosEditar)"
@@ -254,8 +260,16 @@
                                     </div>
                                 </span>
                             </div>
+                        </div>
 
-
+                        <div class="ui-g">
+                            <div class="ui-g-3 ui-md-12 ui-sm-12">
+                                <label>Equipe</label>
+                                <p-dropdown [filter]="true" [options]="equipes"
+                                    id="idEquipeFormFuncaoDados" [(ngModel)]="seletedFuncaoDados.equipe"
+                                    [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
+                                </p-dropdown>
+                            </div>
                         </div>
 
                         <div class="ui-g">
@@ -453,6 +467,8 @@
                             </div>
                         </div>
                     </p-dialog>
+
+
                     <p-dialog [header]="this.getLabel('Descrição')" [(visible)]="displayDescriptionDeflator"
                         [style]="{width: '50vw'}" *ngIf="seletedFuncaoDados.fatorAjuste">
                         {{seletedFuncaoDados.fatorAjuste.descricao}}
@@ -492,6 +508,13 @@
                                     <label><b>Complexidade: </b></label>
                                     {{seletedFuncaoDados.complexidade}}
                                 </div>
+                                <div class="ui-md-6 ui-sm-12">
+                                    <label><b>Equipe: </b></label>
+                                    {{seletedFuncaoDados.equipe.nome}}
+                                </div>
+                            </div> 
+                            <div class="ui-g">
+                                
                                 <div class="ui-md-6 ui-sm-12">
                                     <label><b>Deflator: </b></label>
                                     <div>{{seletedFuncaoDados.fatorAjuste.origem}} -

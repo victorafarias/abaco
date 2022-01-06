@@ -70,6 +70,12 @@
                                         (click)="openDialog(false)" bTooltip="Incluir nova função"
                                         class="ui-button-success" icon="add">
                                     </basis-datatable-button>
+                                    <basis-datatable-button [allowMultipleSelection]="false" name="clone"
+                                        (click)="clonar()" *ngIf="!isView && !isOrderning && !selectModeButtonsEditAndView"
+                                        [bTooltip]="funcaoTransacaoEditar[0] != undefined ? this.getLabel('Clonar') : this.getLabel('Escolha um registro para clonar.')"
+                                        [disabled]="funcaoTransacaoEditar[0] == undefined" class="ui-button-dark"
+                                        icon="content-copy">
+                                    </basis-datatable-button>
                                     <basis-datatable-button name="delete" *ngIf="!isView && !isOrderning"
                                         (click)="this.setDelete(funcaoTransacaoEditar);"
                                         [bTooltip]="this.getLabel('Excluído')"
@@ -256,6 +262,17 @@
                                 </span>
                             </div>
                         </div>
+
+                        <div class="ui-g">
+                            <div class="ui-g-3 ui-md-12 ui-sm-12">
+                                <label>Equipe</label>
+                                <p-dropdown [filter]="true" [options]="equipes"
+                                    id="idEquipeFuncaoTransacao" [(ngModel)]="currentFuncaoTransacao.equipe"
+                                    [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
+                                </p-dropdown>
+                            </div>
+                        </div>
+
                         <div class="ui-g">
                             <div class="ui-g-11 ui-md-11 ui-sm-11">
                                 <label>Deflator *</label>
@@ -484,6 +501,13 @@
                                     <label><b>Complexidade: </b></label>
                                     {{currentFuncaoTransacao.complexidade}}
                                 </div>
+                                 <div class="ui-md-6 ui-sm-12">
+                                    <label><b>Equipe: </b></label>
+                                    {{currentFuncaoTransacao.equipe.nome}}
+                                </div>
+                                
+                            </div>
+                            <div class="ui-g">
                                 <div class="ui-md-6 ui-sm-12">
                                     <div>
                                         <label><b>Deflator: </b></label>
