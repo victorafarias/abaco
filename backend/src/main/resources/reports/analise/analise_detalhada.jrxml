@@ -778,7 +778,7 @@
 					<textFieldExpression><![CDATA[$P{PFTOTAL}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Table 1_TH" positionType="FixRelativeToBottom" x="694" y="28" width="100" height="14" isRemoveLineWhenBlank="true" uuid="032b802e-d4cf-4f28-ae47-5dc0bdc48198">
+					<reportElement style="Table 1_TH" x="694" y="28" width="100" height="14" isRemoveLineWhenBlank="true" uuid="032b802e-d4cf-4f28-ae47-5dc0bdc48198">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -793,7 +793,7 @@
 					<textFieldExpression><![CDATA[$P{PFCRITICIDADE}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="FixRelativeToBottom" mode="Transparent" x="440" y="28" width="254" height="14" isRemoveLineWhenBlank="true" uuid="46211305-efc8-4d18-8524-68a29cb13a07">
+					<reportElement mode="Transparent" x="440" y="28" width="254" height="14" isRemoveLineWhenBlank="true" uuid="46211305-efc8-4d18-8524-68a29cb13a07">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -823,7 +823,7 @@
 					<textFieldExpression><![CDATA[$P{SCOPECREEP}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement positionType="FixRelativeToBottom" x="694" y="28" width="100" height="14" isRemoveLineWhenBlank="true" uuid="ec3e311b-02a2-4820-b6bd-705acc9d6aff">
+					<reportElement x="694" y="28" width="100" height="14" isRemoveLineWhenBlank="true" uuid="ec3e311b-02a2-4820-b6bd-705acc9d6aff">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -838,7 +838,7 @@
 					<textFieldExpression><![CDATA[$P{PFESCOPESCREEP}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="FixRelativeToBottom" mode="Transparent" x="440" y="28" width="254" height="14" isRemoveLineWhenBlank="true" uuid="08baae8c-39fc-4d0a-aeda-d8fe292abcdd">
+					<reportElement mode="Transparent" x="440" y="28" width="254" height="14" isRemoveLineWhenBlank="true" uuid="08baae8c-39fc-4d0a-aeda-d8fe292abcdd">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>

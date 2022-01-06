@@ -690,7 +690,6 @@ public class AnaliseResource {
         analise = analiseService.updateDivergenceAnalise(analise);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analise));
     }
-
     
     @GetMapping("/divergencia")
     @Timed
