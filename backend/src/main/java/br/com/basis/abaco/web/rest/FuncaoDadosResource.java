@@ -314,7 +314,7 @@ public class FuncaoDadosResource {
         }
         return ResponseEntity.ok(existInAnalise);
     }
-    
+
 
 
 
@@ -467,6 +467,7 @@ public class FuncaoDadosResource {
         funcaoDadosOld.setStatusFuncao(funcaoDados.getStatusFuncao());
         funcaoDadosOld.setQuantidade(funcaoDados.getQuantidade());
         funcaoDadosOld.setOrdem(funcaoDados.getOrdem());
+        funcaoDadosOld.setEquipe(funcaoDados.getEquipe());
         return  funcaoDadosOld;
     }
 

@@ -8,6 +8,7 @@ import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DivergenciaService } from 'src/app/divergencia';
 import { Sistema, SistemaService } from 'src/app/sistema';
+import { TipoEquipeService } from 'src/app/tipo-equipe';
 import { Upload } from 'src/app/upload/upload.model';
 import { Utilitarios } from 'src/app/util/utilitarios.util';
 import { Alr } from '../../alr/alr.model';
@@ -107,6 +108,8 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         { label: 'AIE - Arquivo de Interface Externa', value: 'AIE' }
     ];
 
+    equipes: SelectItem[] = [];
+
     crud: string[] = ['Excluir', 'Editar', 'Inserir', 'Pesquisar', 'Consultar'];
 
     idAnalise: number;
@@ -166,6 +169,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         private route: ActivatedRoute,
         private pageNotificationService: PageNotificationService,
         private changeDetectorRef: ChangeDetectorRef,
+        private tipoEquipeService: TipoEquipeService,
         private funcaoDadosService: FuncaoDadosService,
         private funcaoTransacaoService: FuncaoTransacaoService,
         private divergenciaService: DivergenciaService,
@@ -228,6 +232,25 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.traduzirClassificacoes();
         this.traduzirImpactos();
         this.inicializaFatoresAjuste(this.analise.manual);
+        this.carregarEquipes(this.analise);
+    }
+    carregarEquipes(analise: Analise) {
+        this.equipes = [];
+
+        if(analise.analisesComparadas.length > 1){
+            if(analise.analisesComparadas[0].equipeResponsavel.id !== analise.analisesComparadas[1].equipeResponsavel.id){
+                this.equipes.push({label: analise.analisesComparadas[0].equipeResponsavel.nome, value: analise.analisesComparadas[0].equipeResponsavel});
+                this.equipes.push({label: analise.analisesComparadas[1].equipeResponsavel.nome, value: analise.analisesComparadas[1].equipeResponsavel});
+                return ;
+            }
+        }
+
+        this.tipoEquipeService.dropDown().subscribe(equipes => {
+            equipes.forEach(equipe => {
+                this.equipes.push({label: equipe.nome, value: equipe});
+            })
+        })
+
     }
 
     public onRowDblclick(event) {
@@ -475,7 +498,8 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             'impactoFilter': { value: this.updateNameImpacto(fd.impacto), writable: true },
             'nomeFuncionalidade': { value: fd.funcionalidade.nome, writable: true },
             'nomeModulo': { value: fd.funcionalidade.modulo.nome, writable: true },
-            'nomeEquipe': { value: fd?.equipe?.nome, writable: true}
+            'nomeEquipe': { value: fd?.equipe?.nome, writable: true},
+            'statusFuncao': {value: fd?.statusFuncao, writable: true}
         });
     }
 
@@ -617,6 +641,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                                 this.pageNotificationService.addCreateMsg(funcaoDadosCalculada.name);
                                 funcaoDadosCalculada.id = funcaoDados.id;
                                 this.setFields(funcaoDadosCalculada);
+                                funcaoDadosCalculada.statusFuncao = funcaoDados.statusFuncao;
                                 this.funcoesDados.push(funcaoDadosCalculada);
                                 this.fecharDialog();
                                 this.atualizaResumo();
@@ -911,6 +936,14 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         });
     }
 
+    clonar() {
+        this.isEdit = false;
+        this.prepareToClone(this.funcaoDadosEditar[0]);
+        this.seletedFuncaoDados.id = undefined;
+        this.seletedFuncaoDados.artificialId = undefined;
+        this.textHeader = this.getLabel('Clonar Função de Dados');
+    }
+
     // Prepara para clonar
     private prepareToClone(funcaoDadosSelecionada: FuncaoDados) {
         this.blockUiService.show();
@@ -941,7 +974,19 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.carregarFatorDeAjusteNaEdicao(funcaoDadosSelecionada);
         this.carregarArquivos();
         this.carregarModuloFuncionalidade(funcaoDadosSelecionada);
+        this.carregarEquipeNaEdicao(funcaoDadosSelecionada);
     }
+
+    carregarEquipeNaEdicao(funcaoDadosSelecionada: FuncaoDados) {
+        if(funcaoDadosSelecionada.equipe != null || funcaoDadosSelecionada.equipe != undefined){
+            this.equipes.forEach(equipe => {
+                if(equipe.value.id === funcaoDadosSelecionada.equipe.id){
+                    funcaoDadosSelecionada.equipe = equipe.value;
+                }
+            })
+        }
+    }
+
     carregarModuloFuncionalidade(funcaoDadosSelecionada: FuncaoDados) {
         //CarregarModulo
         this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo);

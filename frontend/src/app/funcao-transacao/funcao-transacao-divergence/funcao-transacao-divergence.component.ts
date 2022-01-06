@@ -30,6 +30,7 @@ import { Sistema, SistemaService } from 'src/app/sistema';
 import { Upload } from 'src/app/upload/upload.model';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Utilitarios } from 'src/app/util/utilitarios.util';
+import { TipoEquipeService } from 'src/app/tipo-equipe/tipo-equipe.service';
 
 @Component({
     selector: 'app-analise-funcao-transacao',
@@ -45,6 +46,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     textHeader: string;
     @Input() isView: boolean;
     isEdit: boolean;
+    isClone: boolean = false;
     showAddComent = false;
     isFilter: boolean;
     nomeInvalido;
@@ -77,6 +79,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         { label: 'Conversão', value: 'CONVERSAO' },
         { label: 'Outros', value: 'ITENS_NAO_MENSURAVEIS' }
     ];
+
+    equipes: SelectItem[] = [];
 
     baselineResultados: any[] = [];
     classificacoes: SelectItem[] = [];
@@ -191,6 +195,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         private sistemaService: SistemaService,
         private funcionalidadeService: FuncionalidadeService,
         private moduloService: ModuloService,
+        private tipoEquipeService: TipoEquipeService,
         sanitizer: DomSanitizer
     ) {
         this.sanitizer = sanitizer;
@@ -243,6 +248,25 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.traduzirImpactos();
         this.subscribeDisplay();
         this.inicializaFatoresAjuste(this.analise.manual);
+        this.carregarEquipes(this.analise);
+    }
+
+    carregarEquipes(analise: Analise) {
+        this.equipes = [];
+        if(analise.analisesComparadas.length > 1){
+            if(analise.analisesComparadas[0].equipeResponsavel.id !== analise.analisesComparadas[1].equipeResponsavel.id){
+                this.equipes.push({label: analise.analisesComparadas[0].equipeResponsavel.nome, value: analise.analisesComparadas[0].equipeResponsavel});
+                this.equipes.push({label: analise.analisesComparadas[1].equipeResponsavel.nome, value: analise.analisesComparadas[1].equipeResponsavel});
+                return ;
+            }
+        }
+
+        this.tipoEquipeService.dropDown().subscribe(equipes => {
+            equipes.forEach(equipe => {
+                this.equipes.push({label: equipe.nome, value: equipe});
+            })
+        })
+
     }
 
     sortColumn(event: any) {
@@ -567,7 +591,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             if (this.currentFuncaoTransacao.fatorAjuste !== undefined) {
                 this.desconverterChips();
                 this.verificarModulo();
-                this.currentFuncaoTransacao.statusFuncao = StatusFunction.DIVERGENTE;
+                this.currentFuncaoTransacao.statusFuncao = this.isClone === true ? this.currentFuncaoTransacao.statusFuncao : StatusFunction.DIVERGENTE;
                 this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
                 const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(this.analise.metodoContagem,
                     this.currentFuncaoTransacao,
@@ -584,6 +608,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                                 funcaoTransacaoCalculada.id = value.id;
                                 this.pageNotificationService.addCreateMsg(funcaoTransacaoCalculada.name);
                                 this.setFields(funcaoTransacaoCalculada);
+                                funcaoTransacaoCalculada.statusFuncao = value.statusFuncao;
                                 this.funcoesTransacoes.push(funcaoTransacaoCalculada);
                                 this.fecharDialog();
                                 this.resetarEstadoPosSalvar();
@@ -708,6 +733,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.alrsChips = [];
         this.componenteFile.files = [];
         this.oldModuloId = undefined;
+        this.isClone = false;
     }
 
     limparMensagensErros() {
@@ -805,7 +831,46 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.carregarFatorDeAjusteNaEdicao(funcaoTransacaoSelecionada);
         this.carregarArquivos();
         this.carregarModuloFuncionalidade(funcaoTransacaoSelecionada);
+        this.carregarEquipeNaEdicao(funcaoTransacaoSelecionada);
     }
+
+    carregarEquipeNaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        if(funcaoTransacaoSelecionada.equipe != null || funcaoTransacaoSelecionada.equipe != undefined){
+            this.equipes.forEach(equipe => {
+                if(equipe.value.id === funcaoTransacaoSelecionada.equipe.id){
+                    funcaoTransacaoSelecionada.equipe = equipe.value;
+                }
+            })
+        }
+    }
+
+    clonar() {
+        this.isEdit = false;
+        this.isClone = true;
+        this.prepareToClone(this.funcaoTransacaoEditar[0]);
+        this.currentFuncaoTransacao.id = undefined;
+        this.currentFuncaoTransacao.artificialId = undefined;
+    }
+
+    // Prepara para clonar
+    private prepareToClone(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        this.blockUiService.show();
+        this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
+            this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+            this.currentFuncaoTransacao.id = null;
+            this.currentFuncaoTransacao.name = this.currentFuncaoTransacao.name + this.getLabel('- Cópia');
+            this.currentFuncaoTransacao.ordem = this.funcoesTransacoes.length + 1;
+            this.carregarValoresNaPaginaParaEdicao(this.currentFuncaoTransacao);
+            this.disableTRDER();
+            this.configurarDialog();
+            this.pageNotificationService.addInfoMessage(
+                `${this.getLabel('Clonando Função de Transação ')} '${funcaoTransacaoSelecionada.name}'`
+            );
+            this.textHeader = this.getLabel('Clonar Função de Transação');
+            this.blockUiService.hide();
+        });
+    }
+
     carregarModuloFuncionalidade(funcaoTransacaoSelecionada: FuncaoTransacao) {
         //CarregarModulo
         this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo);
@@ -1095,7 +1160,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     }
 
     public disableButtonsEditAndView(): boolean {
-        if (this.tables.selectedRow.length > 1) {
+        if (this.tables.selectedRow?.length > 1) {
             return this.selectModeButtonsEditAndView = true;
         }
         else {

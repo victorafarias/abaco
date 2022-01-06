@@ -657,7 +657,7 @@ public class AnaliseResource {
         Analise analiseDivergencia = analiseService.generateDivergence(analise, status);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analiseDivergencia));
     }
-    
+
 
     @GetMapping("/analises/gerar-divergencia/{idAnalisePadao}/{idAnaliseComparada}")
     @Timed
@@ -691,13 +691,14 @@ public class AnaliseResource {
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analise));
     }
 
+    
     @GetMapping("/divergencia")
     @Timed
     @Secured({"ROLE_ABACO_VALIDACAO_ACESSAR", "ROLE_ABACO_VALIDACAO_PESQUISAR"})
     public ResponseEntity<List<AnaliseDTO>> getDivergence(@RequestParam(defaultValue = "ASC", required = false) String order,
                                                           @RequestParam(defaultValue = "0", name = PAGE) int pageNumber,
                                                           @RequestParam(defaultValue = "20") int size,
-                                                          @RequestParam(defaultValue = "id") String sort,
+                                                          @RequestParam(defaultValue = "dataCriacaoOrdemServico") String sort,
                                                           @RequestParam(value = "identificador", required = false) String identificador,
                                                           @RequestParam(value = "sistema", required = false) Set<Long> sistema,
                                                           @RequestParam(value = "organizacao", required = false) Set<Long> organizacao)
@@ -705,7 +706,7 @@ public class AnaliseResource {
         log.debug("DEBUG Consulta Validação -  Inicio método");
         Sort.Direction sortOrder = PageUtils.getSortDirection(order);
         Pageable pageable = new PageRequest(pageNumber, size, sortOrder, sort);
-        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(SortOrder.ASC);
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(SortOrder.DESC);
         BoolQueryBuilder qb = analiseService.getBoolQueryBuilderDivergence(identificador, sistema, organizacao);
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(dynamicExportsService.obterPageableMaximoExportacao()).withSort(sortBuilder).build();
         Page<Analise> page = elasticsearchTemplate.queryForPage(searchQuery, Analise.class);

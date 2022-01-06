@@ -210,8 +210,9 @@ export class AnaliseFormComponent implements OnInit {
         this.routeSub = this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEdicao = true;
-                this.analiseService.find(params['id']).subscribe(analise => {
-                    analise = new  Analise().copyFromJSON(analise);
+                this.analiseService.findWithFuncoesNormal(params['id']).subscribe(analise => {
+                    let quantidadeFuncoes = analise[1].length + analise[2].length;
+                    analise = new Analise().copyFromJSON(analise[0]);
                     this.loadDataAnalise(analise);
 
                     if (!(this.verifyCanEditAnalise(analise))) {
@@ -220,6 +221,9 @@ export class AnaliseFormComponent implements OnInit {
                     }
                     this.disableFuncaoTrasacao = analise.metodoContagem === MessageUtil.INDICATIVA;
                     this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
+                    if(quantidadeFuncoes === 0){
+                        this.canEditMetodo = true;
+                    }                    
                     },
                     err => {
                         this.pageNotificationService.addErrorMessage(
@@ -227,6 +231,7 @@ export class AnaliseFormComponent implements OnInit {
                         );
                         this.router.navigate(['/analise']);
                     });
+
             } else {
                 this.analise = new Analise();
                 this.analise.status = new Status();
