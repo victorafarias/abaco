@@ -8,7 +8,7 @@ import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { DivergenciaService } from 'src/app/divergencia';
 import { Sistema, SistemaService } from 'src/app/sistema';
-import { TipoEquipeService } from 'src/app/tipo-equipe';
+import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
 import { Upload } from 'src/app/upload/upload.model';
 import { Utilitarios } from 'src/app/util/utilitarios.util';
 import { Alr } from '../../alr/alr.model';
@@ -141,6 +141,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     evidenciaEmLote: string;
     arquivosEmLote: Upload[] = [];
     quantidadeEmLote: number;
+    equipeEmLote: TipoEquipe;
     funcaoDadosEmLote: FuncaoDados[] = []
 
     isOrderning: boolean = false;
@@ -554,11 +555,12 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.analise.contrato.manual);
         for (const nome of this.parseResult.textos) {
             lstFuncaoDadosWithExist.push(
-                this.funcaoDadosService.existsWithName(
+                this.funcaoDadosService.existsWithNameAndEquipe(
                     nome,
                     this.analise.id,
                     this.seletedFuncaoDados.funcionalidade.id,
-                    this.seletedFuncaoDados.funcionalidade.modulo.id)
+                    this.seletedFuncaoDados.funcionalidade.modulo.id, 0,
+                    this.seletedFuncaoDados.equipe.id)
             );
             const funcaoDadosMultp: FuncaoDados = funcaoDadosCalculada.clone();
             funcaoDadosMultp.name = nome;
@@ -629,11 +631,13 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             const funcaoDadosCalculada = Calculadora.calcular(this.analise.metodoContagem,
                 this.seletedFuncaoDados,
                 this.analise.contrato.manual);
-            this.funcaoDadosService.existsWithName(
+            this.funcaoDadosService.existsWithNameAndEquipe(
                 this.seletedFuncaoDados.name,
                 this.analise.id,
                 this.seletedFuncaoDados.funcionalidade.id,
-                this.seletedFuncaoDados.funcionalidade.modulo.id).subscribe(value => {
+                this.seletedFuncaoDados.funcionalidade.modulo.id,
+                0,
+                this.seletedFuncaoDados.equipe.id).subscribe(value => {
                     if (value === false) {
                         funcaoDadosCalculada.ordem = this.funcoesDados.length + 1;
                         this.funcaoDadosService.createDivergence(funcaoDadosCalculada, this.analise.id, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(
@@ -743,12 +747,13 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
         } else {
-            this.funcaoDadosService.existsWithName(
+            this.funcaoDadosService.existsWithNameAndEquipe(
                 this.seletedFuncaoDados.name,
                 this.analise.id,
                 this.seletedFuncaoDados.funcionalidade.id,
                 this.seletedFuncaoDados.funcionalidade.modulo.id,
-                this.seletedFuncaoDados.id)
+                this.seletedFuncaoDados.id,
+                this.seletedFuncaoDados.equipe.id)
                 .subscribe(existFuncaoDado => {
                     this.desconverterChips();
                     this.verificarModulo();
@@ -806,6 +811,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.rlrsChips.forEach(c => c.id = undefined);
         }
 
+        this.selectModeButtonsEditAndView = false;
     }
 
     public verificarModulo() {
@@ -856,11 +862,13 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     }
 
     inserirCrud(funcaoTransacaoAtual: FuncaoTransacao) {
-        this.funcaoTransacaoService.existsWithName(
+        this.funcaoTransacaoService.existsWithNameAndEquipe(
             funcaoTransacaoAtual.name,
             this.analise.id,
             funcaoTransacaoAtual.funcionalidade.id,
-            funcaoTransacaoAtual.funcionalidade.modulo.id)
+            funcaoTransacaoAtual.funcionalidade.modulo.id,
+            0,
+            this.seletedFuncaoDados.equipe.id)
             .subscribe(existFuncaoTranasacao => {
                 if (!existFuncaoTranasacao) {
                     this.funcaoTransacaoService.create(funcaoTransacaoAtual, this.analise.id, funcaoTransacaoAtual.files?.map(item => item.logo)).subscribe(() => {
@@ -1323,10 +1331,12 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             });
         }
         this.carregarModuloSistema();
+        this.carregarEquipes(this.analise);
         this.mostrarDialogEditarEmLote = true;
         this.hideShowQuantidade = true;
     }
 
+    
     fecharDialogEditarEmLote() {
         this.evidenciaEmLote = null;
         this.classificacaoEmLote = null;
@@ -1334,6 +1344,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.moduloSelecionadoEmLote = null;
         this.funcionalidadeSelecionadaEmLote = null;
         this.quantidadeEmLote = null;
+        this.equipeEmLote = null;
         this.mostrarDialogEditarEmLote = false;
         this.funcaoDadosEmLote = [];
         this.arquivosEmLote = [];
@@ -1370,12 +1381,18 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                 funcaoDado.files = this.arquivosEmLote;
             })
         }
+        if(this.equipeEmLote){
+            this.funcaoDadosEmLote.forEach(funcaoDado => {
+                funcaoDado.equipe = this.equipeEmLote;
+            })
+        }
     }
 
     editarEmLote() {
         if (!this.funcionalidadeSelecionadaEmLote &&
             !this.classificacaoEmLote &&
             !this.deflatorEmLote &&
+            !this.equipeEmLote &&
             !this.evidenciaEmLote &&
             !this.arquivosEmLote) {
             return this.pageNotificationService.addErrorMessage("Para editar em lote, selecione ao menos um campo para editar.")

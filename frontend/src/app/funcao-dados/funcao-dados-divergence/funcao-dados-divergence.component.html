@@ -680,7 +680,15 @@
             </p-dropdown>
         </div>
     </div>
-
+    <div class="ui-g">
+        <div class="ui-g-3 ui-md-12 ui-sm-12">
+            <label>Equipe</label>
+            <p-dropdown [filter]="true" [options]="equipes" [appendTo]="pDialogEditLote"
+                id="idEquipeFuncaoDados" [(ngModel)]="equipeEmLote"
+                [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
+            </p-dropdown>
+        </div>
+    </div>
     <div class="ui-g">
         <div class="ui-g-11 ui-md-11 ui-sm-11">
             <label>Deflator: </label>
