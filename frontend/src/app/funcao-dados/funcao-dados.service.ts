@@ -236,6 +236,12 @@ export class FuncaoDadosService {
 
         return this.http.get<Boolean>(url);
     }
+
+    existsWithNameAndEquipe(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: number = 0, idEquipe: number): Observable<Boolean> {
+        const url = `${this.resourceUrl}/divergencia/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}&idEquipe=${idEquipe}`;
+
+        return this.http.get<Boolean>(url);
+    }
     public getVWFuncaoDadosByIdAnalise(id: Number): Observable<any[]> {
         const url = `${this.vwresourceUrl}/${id}`;
         return this.http.get<[]>(url);
