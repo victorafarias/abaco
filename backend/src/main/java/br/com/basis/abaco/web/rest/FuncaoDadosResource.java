@@ -80,6 +80,7 @@ public class FuncaoDadosResource {
     private final VwDerSearchRepository vwDerSearchRepository;
     private final VwRlrSearchRepository vwRlrSearchRepository;
 
+    
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
@@ -304,6 +305,27 @@ public class FuncaoDadosResource {
             existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
         } else {
             existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+        }
+        return ResponseEntity.ok(existInAnalise);
+    }
+
+    @GetMapping("/funcao-dados/divergencia/{idAnalise}/{idfuncionalidade}/{idModulo}")
+    @Timed
+    public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @PathVariable Long idModulo, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
+        log.debug("REST request to exist FuncaoDados");
+        Boolean existInAnalise = false;
+        if(idEquipe != null && idEquipe > 0){
+            if (id != null && id > 0) {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, id, idEquipe);
+            } else {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, idEquipe);
+            }
+        }else{
+            if (id != null && id > 0) {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
+            } else {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+            }
         }
         return ResponseEntity.ok(existInAnalise);
     }
