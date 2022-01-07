@@ -31,6 +31,7 @@ import { Upload } from 'src/app/upload/upload.model';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Utilitarios } from 'src/app/util/utilitarios.util';
 import { TipoEquipeService } from 'src/app/tipo-equipe/tipo-equipe.service';
+import { TipoEquipe } from 'src/app/tipo-equipe';
 
 @Component({
     selector: 'app-analise-funcao-transacao',
@@ -162,6 +163,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     evidenciaEmLote: string;
     arquivosEmLote: Upload[] = [];
     quantidadeEmLote: number;
+    equipeEmLote: TipoEquipe;
     funcaoTransacaoEmLote: FuncaoTransacao[] = [];
 
     private sanitizer: DomSanitizer;
@@ -424,11 +426,12 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.analise.contrato.manual);
         for (const nome of this.parseResult.textos) {
             lstFuncaotransacaoWithExist.push(
-                this.funcaoTransacaoService.existsWithName(
+                this.funcaoTransacaoService.existsWithNameAndEquipe(
                     nome,
                     this.analise.id,
                     this.currentFuncaoTransacao.funcionalidade.id,
-                    this.currentFuncaoTransacao.funcionalidade.modulo.id)
+                    this.currentFuncaoTransacao.funcionalidade.modulo.id,
+                    0, this.currentFuncaoTransacao.equipe.id)
             );
             const funcaoTransacaoMultp: FuncaoTransacao = funcaoTransacaoCalculada.clone();
             funcaoTransacaoMultp.name = nome;
@@ -596,11 +599,12 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(this.analise.metodoContagem,
                     this.currentFuncaoTransacao,
                     this.analise.contrato.manual);
-                this.funcaoTransacaoService.existsWithName(
+                this.funcaoTransacaoService.existsWithNameAndEquipe(
                     this.currentFuncaoTransacao.name,
                     this.analise.id,
                     this.currentFuncaoTransacao.funcionalidade.id,
-                    this.currentFuncaoTransacao.funcionalidade.modulo.id)
+                    this.currentFuncaoTransacao.funcionalidade.modulo.id,
+                    0, this.currentFuncaoTransacao.equipe.id)
                     .subscribe(existFuncaoTransaco => {
                         if (!existFuncaoTransaco) {
                             funcaoTransacaoCalculada.ordem = this.funcoesTransacoes.length + 1;
@@ -1191,6 +1195,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             });
         }
         this.carregarModuloSistema();
+        this.carregarEquipes(this.analise);
         this.mostrarDialogEditarEmLote = true;
         this.hideShowQuantidade = true;
     }
@@ -1201,6 +1206,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.deflatorEmLote = null;
         this.moduloSelecionadoEmLote = null;
         this.quantidadeEmLote = null;
+        this.equipeEmLote = null;
         this.funcionalidadeSelecionadaEmLote = null;
         this.mostrarDialogEditarEmLote = false;
         this.funcaoTransacaoEmLote = [];
@@ -1239,12 +1245,18 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 funcaoTransacao.quantidade = this.quantidadeEmLote;
             })
         }
+        if(this.equipeEmLote){
+            this.funcaoTransacaoEmLote.forEach(funcaoTransacao => {
+                funcaoTransacao.equipe = this.equipeEmLote;
+            })
+        }
     }
 
     editarEmLote() {
         if (!this.funcionalidadeSelecionadaEmLote &&
             !this.classificacaoEmLote &&
             !this.deflatorEmLote &&
+            !this.equipeEmLote &&
             !this.evidenciaEmLote &&
             !this.arquivosEmLote) {
             return this.pageNotificationService.addErrorMessage("Para editar em lote, selecione ao menos um campo para editar.")

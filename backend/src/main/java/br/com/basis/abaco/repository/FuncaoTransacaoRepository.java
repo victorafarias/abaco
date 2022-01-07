@@ -47,4 +47,8 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
     long countByFuncionalidadeId(Long id);
 
     Optional<List<FuncaoTransacao>> findAllByFuncionalidadeId(Long id);
+
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idModulo, Long id, Long idEquipe);
+
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idModulo, Long idEquipe);
 }

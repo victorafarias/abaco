@@ -137,6 +137,13 @@ export class FuncaoTransacaoService {
         return this.http.get<Boolean>(url);
     }
 
+    existsWithNameAndEquipe(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: number = 0, idEquipe: number): Observable<Boolean> {
+        const url = `${this.funcaoTransacaoResourceUrl}/divergencia/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}&idEquipe=${idEquipe}`;
+        console.log(url);
+        
+        return this.http.get<Boolean>(url);
+    }
+
     public getById(id: Number): Observable<FuncaoTransacao> {
         const url = `${this.funcaoTransacaoResourceUrl}/${id}`;
         return this.http.get<FuncaoTransacao>(url);
