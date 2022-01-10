@@ -1274,23 +1274,55 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         }
         for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
             let funcaoTransacao = this.funcaoTransacaoEmLote[i];
-            funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
-            const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(
-                this.analise.metodoContagem, funcaoTransacao, this.analise.contrato.manual);
-            this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacao.files?.map(item => item.logo)).subscribe(value => {
-                this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id !== funcaoTransacaoCalculada.id));
-                if (moduloSelecionado) {
-                    funcaoTransacaoCalculada.funcionalidade.modulo = moduloSelecionado;
-                }
-                this.setFields(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.push(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
-                this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
-                this.resetarEstadoPosSalvar();
-            });
+            if(this.verificarFuncoesEmLote(funcaoTransacao) == true){
+                this.pageNotificationService.addErrorMessage("Função "+funcaoTransacao.name+" já cadastrada.");
+                continue;
+            }
+            this.funcaoTransacaoService.existsWithNameAndEquipe(
+                funcaoTransacao.name,
+                this.analise.id,
+                funcaoTransacao.funcionalidade.id,
+                funcaoTransacao.funcionalidade.modulo.id,
+                funcaoTransacao.id,
+                funcaoTransacao.equipe.id)
+                .subscribe(existFuncaoTransacao => {
+                    if(!existFuncaoTransacao){
+                        funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+                        const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(
+                            this.analise.metodoContagem, funcaoTransacao, this.analise.contrato.manual);
+                        this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacao.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id !== funcaoTransacaoCalculada.id));
+                            if (moduloSelecionado) {
+                                funcaoTransacaoCalculada.funcionalidade.modulo = moduloSelecionado;
+                            }
+                            this.setFields(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.push(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+                            this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
+                            this.resetarEstadoPosSalvar();
+                            this.pageNotificationService.addSuccessMessage("Função "+funcaoTransacao.name+" editada com sucesso!");
+                        });
+                    }else{
+                            this.pageNotificationService.addErrorMessage("Função já "+funcaoTransacao.name+" cadastrada.")
+                        }
+                    });
+            }
+            this.fecharDialogEditarEmLote();
+    }
+
+    verificarFuncoesEmLote(funcaoTransacao: FuncaoTransacao) {
+        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
+            const funcao = this.funcaoTransacaoEmLote[i];
+            if(funcaoTransacao.name === funcao.name &&
+                funcaoTransacao.funcionalidade.id === funcao.funcionalidade.id &&
+                funcaoTransacao.funcionalidade.modulo.id === funcao.funcionalidade.modulo.id &&
+                funcaoTransacao.equipe.id === funcao.equipe.id &&
+                funcaoTransacao.id !== funcao.id){
+                    return true;
+            }
         }
-        this.pageNotificationService.addSuccessMessage("Funções de transações editadas com sucesso!")
-        this.fecharDialogEditarEmLote();
+
+        return false;
     }
 
     selecionarDeflatorEmLote(deflator: FatorAjuste) {

@@ -3,10 +3,10 @@ import {Injectable} from '@angular/core';
 
 import {FuncaoDados} from '.';
 import { environment } from 'src/environments/environment';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, asyncScheduler, asapScheduler, queueScheduler } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
-import { catchError } from 'rxjs/operators';
+import { catchError, observeOn } from 'rxjs/operators';
 import { Funcionalidade } from 'src/app/funcionalidade';
 import { ResponseWrapper } from 'src/app/shared';
 import { Manual } from 'src/app/manual';

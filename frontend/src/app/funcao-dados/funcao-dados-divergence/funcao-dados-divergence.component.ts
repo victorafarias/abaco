@@ -5,7 +5,8 @@ import { BlockUiService } from '@nuvem/angular-base';
 import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
 import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { asapScheduler, asyncScheduler, forkJoin, interval, Observable, queueScheduler, Subscription } from 'rxjs';
+import { observeOn, take } from 'rxjs/operators';
 import { DivergenciaService } from 'src/app/divergencia';
 import { Sistema, SistemaService } from 'src/app/sistema';
 import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
@@ -755,21 +756,26 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                 this.seletedFuncaoDados.id,
                 this.seletedFuncaoDados.equipe.id)
                 .subscribe(existFuncaoDado => {
-                    this.desconverterChips();
-                    this.verificarModulo();
-                    this.seletedFuncaoDados = new FuncaoDados().copyFromJSON(this.seletedFuncaoDados);
-                    const funcaoDadosCalculada = Calculadora.calcular(
-                        this.analise.metodoContagem, this.seletedFuncaoDados, this.analise.contrato.manual);
-                    this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
-                        this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
-                        this.setFields(funcaoDadosCalculada);
-                        this.funcoesDados.push(funcaoDadosCalculada);
-                        this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
-                        this.resetarEstadoPosSalvar();
-                        this.pageNotificationService.addCreateMsg(funcaoDadosCalculada.name);
-                        this.fecharDialog();
-                        this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
-                    });
+                    if(!existFuncaoDado){
+                        this.desconverterChips();
+                        this.verificarModulo();
+                        this.seletedFuncaoDados = new FuncaoDados().copyFromJSON(this.seletedFuncaoDados);
+                        const funcaoDadosCalculada = Calculadora.calcular(
+                            this.analise.metodoContagem, this.seletedFuncaoDados, this.analise.contrato.manual);
+                        this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
+                            this.setFields(funcaoDadosCalculada);
+                            this.funcoesDados.push(funcaoDadosCalculada);
+                            this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
+                            this.resetarEstadoPosSalvar();
+                            this.pageNotificationService.addCreateMsg(funcaoDadosCalculada.name);
+                            this.fecharDialog();
+                            this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                        });
+                    }else{
+                        this.pageNotificationService.addErrorMessage("Função já cadastrada.")
+                    }
+                    
                 });
         }
     }
@@ -1408,25 +1414,59 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         if (this.moduloSelecionadoEmLote) {
             moduloSelecionado = this.moduloSelecionadoEmLote;
         }
+        
         for (let i = 0; i < this.funcaoDadosEmLote.length; i++) {
             let funcaoDado = this.funcaoDadosEmLote[i];
-            funcaoDado = new FuncaoDados().copyFromJSON(funcaoDado);
-            const funcaoDadosCalculada = Calculadora.calcular(
-                this.analise.metodoContagem, funcaoDado, this.analise.contrato.manual);
-            this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
-                this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
-                if (moduloSelecionado) {
-                    funcaoDadosCalculada.funcionalidade.modulo = moduloSelecionado;
-                }
-                this.setFields(funcaoDadosCalculada);
-                this.funcoesDados.push(funcaoDadosCalculada);
-                this.funcoesDados.sort((a, b) => a.ordem - b.ordem)
-                this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
-                this.resetarEstadoPosSalvar();
-            });
+            if(this.verificarFuncoesEmLote(funcaoDado) == true){
+                this.pageNotificationService.addErrorMessage("Função "+funcaoDado.name+" já cadastrada.");
+                continue;
+            }
+            this.funcaoDadosService.existsWithNameAndEquipe(
+                funcaoDado.name,
+                this.analise.id,
+                funcaoDado.funcionalidade.id,
+                funcaoDado.funcionalidade.modulo.id,
+                funcaoDado.id,
+                funcaoDado.equipe.id)
+                .subscribe(existFuncaoDado => {
+                    if(!existFuncaoDado){
+                        funcaoDado = new FuncaoDados().copyFromJSON(funcaoDado);
+                        const funcaoDadosCalculada = Calculadora.calcular(
+                        this.analise.metodoContagem, funcaoDado, this.analise.contrato.manual);
+                        this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
+                            if (moduloSelecionado) {
+                                funcaoDadosCalculada.funcionalidade.modulo = moduloSelecionado;
+                            }
+                            this.setFields(funcaoDadosCalculada);
+                            this.funcoesDados.push(funcaoDadosCalculada);
+                            this.funcoesDados.sort((a, b) => a.ordem - b.ordem)
+                            this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
+                            this.resetarEstadoPosSalvar();
+                            this.pageNotificationService.addSuccessMessage("Função "+funcaoDado.name+" editada com sucesso!");
+                        });
+                    }
+                    else{
+                        this.pageNotificationService.addErrorMessage("Função já "+funcaoDado.name+" cadastrada.")
+                    }
+                });
         }
-        this.pageNotificationService.addSuccessMessage("Funções de dados editadas com sucesso!")
         this.fecharDialogEditarEmLote();
+    }
+
+    verificarFuncoesEmLote(funcaoDado: FuncaoDados) {
+        for (let i = 0; i < this.funcaoDadosEmLote.length; i++) {
+            const funcao = this.funcaoDadosEmLote[i];
+            if(funcaoDado.name === funcao.name &&
+                funcaoDado.funcionalidade.id === funcao.funcionalidade.id &&
+                funcaoDado.funcionalidade.modulo.id === funcao.funcionalidade.modulo.id &&
+                funcaoDado.equipe.id === funcao.equipe.id &&
+                funcaoDado.id !== funcao.id){
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     selecionarDeflatorEmLote(deflator: FatorAjuste) {

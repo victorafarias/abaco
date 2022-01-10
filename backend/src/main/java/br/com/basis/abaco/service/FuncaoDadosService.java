@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import br.com.basis.abaco.domain.FuncaoDados;
-import br.com.basis.abaco.domain.Manual;
 import br.com.basis.abaco.domain.UploadedFile;
-import br.com.basis.abaco.repository.UploadedFilesRepository;
 import br.com.basis.abaco.web.rest.errors.UploadException;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
@@ -60,6 +57,24 @@ public class FuncaoDadosService {
         } catch (IOException | NoSuchAlgorithmException e) {
             throw new UploadException("Erro ao efetuar o upload do arquivo", e);
         }
+    }
+
+    public Boolean existFuncaoDadosDivergencia(Long idAnalise, Long idfuncionalidade, Long idModulo, String name, Long id, Long idEquipe) {
+        Boolean existInAnalise = false;
+        if(idEquipe != null && idEquipe > 0){
+            if (id != null && id > 0) {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, id, idEquipe);
+            } else {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, idEquipe);
+            }
+        }else{
+            if (id != null && id > 0) {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
+            } else {
+                existInAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+            }
+        }
+        return existInAnalise;
     }
 
 }
