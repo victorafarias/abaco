@@ -705,25 +705,38 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         } else {
             this.desconverterChips();
             this.verificarModulo();
-            
-            this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
-            const funcaoTransacaoCalculada = CalculadoraTransacao.calcular(
-                this.analise.metodoContagem, this.currentFuncaoTransacao, this.analise.contrato.manual);
-            this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacaoCalculada.files?.map(item => item.logo)).subscribe(value => {
-                this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (
-                    funcaoTransacao.id !== funcaoTransacaoCalculada.id
-                ));
-                this.setFields(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.push(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
-                this.resetarEstadoPosSalvar();
-                this.fecharDialog();
-                this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
-                this.pageNotificationService
-                    .addSuccessMessage(`${this.getLabel('Função de Transação')}
-                        '${funcaoTransacaoCalculada.name}' ${this.getLabel(' alterada com sucesso')}`);
+            this.funcaoTransacaoService.existsWithNameAndEquipe(
+                this.currentFuncaoTransacao.name,
+                this.analise.id,
+                this.currentFuncaoTransacao.funcionalidade.id,
+                this.currentFuncaoTransacao.funcionalidade.modulo.id,
+                0, this.currentFuncaoTransacao.equipe.id)
+                .subscribe(existFuncaoTransaco => {
+                    if (!existFuncaoTransaco) {
+                        this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
+                        const funcaoTransacaoCalculada = CalculadoraTransacao.calcular(
+                            this.analise.metodoContagem, this.currentFuncaoTransacao, this.analise.contrato.manual);
+                        this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacaoCalculada.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (
+                                funcaoTransacao.id !== funcaoTransacaoCalculada.id
+                            ));
+                            this.setFields(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.push(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+                            this.resetarEstadoPosSalvar();
+                            this.fecharDialog();
+                            this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                            this.pageNotificationService
+                                .addSuccessMessage(`${this.getLabel('Função de Transação ')}
+                                    '${funcaoTransacaoCalculada.name}' ${this.getLabel(' alterada com sucesso')}`);
 
-            });
+                        });
+                    } else {
+                        this.pageNotificationService.addErrorMessage(
+                            this.getLabel('Registro já cadastrado')
+                        );
+                    }
+                });
         }
     }
 
@@ -805,6 +818,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     }
 
     private prepararParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        this.estadoInicial();
         this.blockUiService.show();
         this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
             this.disableTRDER();
@@ -823,6 +837,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.blockUiService.hide();
         });
     }
+    
 
     private carregarValoresNaPaginaParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
         this.updateIndex();
