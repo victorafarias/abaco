@@ -229,6 +229,7 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
         this.mostrarDialogModulo = false;
         this.novoModulo = new Modulo();
     }
+    
 
     adicionarModulo() {
         if (this.novoModulo.nome === undefined) {
@@ -236,7 +237,8 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
             this.pageNotificationService.addErrorMessage('Por favor preencher o campo obrigatório!');
             return;
         }
-        for (let modulo of this.sistema.modulos) {
+        for (let i = 0; i < this.sistema?.modulos?.length; i++) {
+            const modulo = this.sistema.modulos[i];
             if (modulo.nome.toLocaleLowerCase() === this.novoModulo.nome.toLocaleLowerCase()) {
                 this.valido = true;
                 return this.pageNotificationService.addErrorMessage('Nome de módulo já existente!');

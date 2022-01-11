@@ -30,6 +30,8 @@ import { Sistema, SistemaService } from 'src/app/sistema';
 import { Upload } from 'src/app/upload/upload.model';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Utilitarios } from 'src/app/util/utilitarios.util';
+import { TipoEquipeService } from 'src/app/tipo-equipe/tipo-equipe.service';
+import { TipoEquipe } from 'src/app/tipo-equipe';
 
 @Component({
     selector: 'app-analise-funcao-transacao',
@@ -45,6 +47,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     textHeader: string;
     @Input() isView: boolean;
     isEdit: boolean;
+    isClone: boolean = false;
     showAddComent = false;
     isFilter: boolean;
     nomeInvalido;
@@ -77,6 +80,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         { label: 'Conversão', value: 'CONVERSAO' },
         { label: 'Outros', value: 'ITENS_NAO_MENSURAVEIS' }
     ];
+
+    equipes: SelectItem[] = [];
 
     baselineResultados: any[] = [];
     classificacoes: SelectItem[] = [];
@@ -158,6 +163,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     evidenciaEmLote: string;
     arquivosEmLote: Upload[] = [];
     quantidadeEmLote: number;
+    equipeEmLote: TipoEquipe;
     funcaoTransacaoEmLote: FuncaoTransacao[] = [];
 
     private sanitizer: DomSanitizer;
@@ -191,6 +197,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         private sistemaService: SistemaService,
         private funcionalidadeService: FuncionalidadeService,
         private moduloService: ModuloService,
+        private tipoEquipeService: TipoEquipeService,
         sanitizer: DomSanitizer
     ) {
         this.sanitizer = sanitizer;
@@ -243,6 +250,25 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.traduzirImpactos();
         this.subscribeDisplay();
         this.inicializaFatoresAjuste(this.analise.manual);
+        this.carregarEquipes(this.analise);
+    }
+
+    carregarEquipes(analise: Analise) {
+        this.equipes = [];
+        if(analise.analisesComparadas.length > 1){
+            if(analise.analisesComparadas[0].equipeResponsavel.id !== analise.analisesComparadas[1].equipeResponsavel.id){
+                this.equipes.push({label: analise.analisesComparadas[0].equipeResponsavel.nome, value: analise.analisesComparadas[0].equipeResponsavel});
+                this.equipes.push({label: analise.analisesComparadas[1].equipeResponsavel.nome, value: analise.analisesComparadas[1].equipeResponsavel});
+                return ;
+            }
+        }
+
+        this.tipoEquipeService.dropDown().subscribe(equipes => {
+            equipes.forEach(equipe => {
+                this.equipes.push({label: equipe.nome, value: equipe});
+            })
+        })
+
     }
 
     sortColumn(event: any) {
@@ -400,11 +426,12 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.analise.contrato.manual);
         for (const nome of this.parseResult.textos) {
             lstFuncaotransacaoWithExist.push(
-                this.funcaoTransacaoService.existsWithName(
+                this.funcaoTransacaoService.existsWithNameAndEquipe(
                     nome,
                     this.analise.id,
                     this.currentFuncaoTransacao.funcionalidade.id,
-                    this.currentFuncaoTransacao.funcionalidade.modulo.id)
+                    this.currentFuncaoTransacao.funcionalidade.modulo.id,
+                    0, this.currentFuncaoTransacao.equipe.id)
             );
             const funcaoTransacaoMultp: FuncaoTransacao = funcaoTransacaoCalculada.clone();
             funcaoTransacaoMultp.name = nome;
@@ -567,16 +594,17 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             if (this.currentFuncaoTransacao.fatorAjuste !== undefined) {
                 this.desconverterChips();
                 this.verificarModulo();
-                this.currentFuncaoTransacao.statusFuncao = StatusFunction.DIVERGENTE;
+                this.currentFuncaoTransacao.statusFuncao = this.isClone === true ? this.currentFuncaoTransacao.statusFuncao : StatusFunction.DIVERGENTE;
                 this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
                 const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(this.analise.metodoContagem,
                     this.currentFuncaoTransacao,
                     this.analise.contrato.manual);
-                this.funcaoTransacaoService.existsWithName(
+                this.funcaoTransacaoService.existsWithNameAndEquipe(
                     this.currentFuncaoTransacao.name,
                     this.analise.id,
                     this.currentFuncaoTransacao.funcionalidade.id,
-                    this.currentFuncaoTransacao.funcionalidade.modulo.id)
+                    this.currentFuncaoTransacao.funcionalidade.modulo.id,
+                    0, this.currentFuncaoTransacao.equipe.id)
                     .subscribe(existFuncaoTransaco => {
                         if (!existFuncaoTransaco) {
                             funcaoTransacaoCalculada.ordem = this.funcoesTransacoes.length + 1;
@@ -584,6 +612,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                                 funcaoTransacaoCalculada.id = value.id;
                                 this.pageNotificationService.addCreateMsg(funcaoTransacaoCalculada.name);
                                 this.setFields(funcaoTransacaoCalculada);
+                                funcaoTransacaoCalculada.statusFuncao = value.statusFuncao;
                                 this.funcoesTransacoes.push(funcaoTransacaoCalculada);
                                 this.fecharDialog();
                                 this.resetarEstadoPosSalvar();
@@ -676,25 +705,38 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         } else {
             this.desconverterChips();
             this.verificarModulo();
-            
-            this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
-            const funcaoTransacaoCalculada = CalculadoraTransacao.calcular(
-                this.analise.metodoContagem, this.currentFuncaoTransacao, this.analise.contrato.manual);
-            this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacaoCalculada.files?.map(item => item.logo)).subscribe(value => {
-                this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (
-                    funcaoTransacao.id !== funcaoTransacaoCalculada.id
-                ));
-                this.setFields(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.push(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
-                this.resetarEstadoPosSalvar();
-                this.fecharDialog();
-                this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
-                this.pageNotificationService
-                    .addSuccessMessage(`${this.getLabel('Função de Transação')}
-                        '${funcaoTransacaoCalculada.name}' ${this.getLabel(' alterada com sucesso')}`);
+            this.funcaoTransacaoService.existsWithNameAndEquipe(
+                this.currentFuncaoTransacao.name,
+                this.analise.id,
+                this.currentFuncaoTransacao.funcionalidade.id,
+                this.currentFuncaoTransacao.funcionalidade.modulo.id,
+                0, this.currentFuncaoTransacao.equipe.id)
+                .subscribe(existFuncaoTransaco => {
+                    if (!existFuncaoTransaco) {
+                        this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
+                        const funcaoTransacaoCalculada = CalculadoraTransacao.calcular(
+                            this.analise.metodoContagem, this.currentFuncaoTransacao, this.analise.contrato.manual);
+                        this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacaoCalculada.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (
+                                funcaoTransacao.id !== funcaoTransacaoCalculada.id
+                            ));
+                            this.setFields(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.push(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+                            this.resetarEstadoPosSalvar();
+                            this.fecharDialog();
+                            this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                            this.pageNotificationService
+                                .addSuccessMessage(`${this.getLabel('Função de Transação ')}
+                                    '${funcaoTransacaoCalculada.name}' ${this.getLabel(' alterada com sucesso')}`);
 
-            });
+                        });
+                    } else {
+                        this.pageNotificationService.addErrorMessage(
+                            this.getLabel('Registro já cadastrado')
+                        );
+                    }
+                });
         }
     }
 
@@ -708,6 +750,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.alrsChips = [];
         this.componenteFile.files = [];
         this.oldModuloId = undefined;
+        this.isClone = false;
     }
 
     limparMensagensErros() {
@@ -775,6 +818,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     }
 
     private prepararParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        this.estadoInicial();
         this.blockUiService.show();
         this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
             this.disableTRDER();
@@ -793,6 +837,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.blockUiService.hide();
         });
     }
+    
 
     private carregarValoresNaPaginaParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
         this.updateIndex();
@@ -805,7 +850,46 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.carregarFatorDeAjusteNaEdicao(funcaoTransacaoSelecionada);
         this.carregarArquivos();
         this.carregarModuloFuncionalidade(funcaoTransacaoSelecionada);
+        this.carregarEquipeNaEdicao(funcaoTransacaoSelecionada);
     }
+
+    carregarEquipeNaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        if(funcaoTransacaoSelecionada.equipe != null || funcaoTransacaoSelecionada.equipe != undefined){
+            this.equipes.forEach(equipe => {
+                if(equipe.value.id === funcaoTransacaoSelecionada.equipe.id){
+                    funcaoTransacaoSelecionada.equipe = equipe.value;
+                }
+            })
+        }
+    }
+
+    clonar() {
+        this.isEdit = false;
+        this.isClone = true;
+        this.prepareToClone(this.funcaoTransacaoEditar[0]);
+        this.currentFuncaoTransacao.id = undefined;
+        this.currentFuncaoTransacao.artificialId = undefined;
+    }
+
+    // Prepara para clonar
+    private prepareToClone(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        this.blockUiService.show();
+        this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
+            this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+            this.currentFuncaoTransacao.id = null;
+            this.currentFuncaoTransacao.name = this.currentFuncaoTransacao.name + this.getLabel('- Cópia');
+            this.currentFuncaoTransacao.ordem = this.funcoesTransacoes.length + 1;
+            this.carregarValoresNaPaginaParaEdicao(this.currentFuncaoTransacao);
+            this.disableTRDER();
+            this.configurarDialog();
+            this.pageNotificationService.addInfoMessage(
+                `${this.getLabel('Clonando Função de Transação ')} '${funcaoTransacaoSelecionada.name}'`
+            );
+            this.textHeader = this.getLabel('Clonar Função de Transação');
+            this.blockUiService.hide();
+        });
+    }
+
     carregarModuloFuncionalidade(funcaoTransacaoSelecionada: FuncaoTransacao) {
         //CarregarModulo
         this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo);
@@ -1095,7 +1179,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     }
 
     public disableButtonsEditAndView(): boolean {
-        if (this.tables.selectedRow.length > 1) {
+        if (this.tables.selectedRow?.length > 1) {
             return this.selectModeButtonsEditAndView = true;
         }
         else {
@@ -1126,6 +1210,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             });
         }
         this.carregarModuloSistema();
+        this.carregarEquipes(this.analise);
         this.mostrarDialogEditarEmLote = true;
         this.hideShowQuantidade = true;
     }
@@ -1136,6 +1221,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.deflatorEmLote = null;
         this.moduloSelecionadoEmLote = null;
         this.quantidadeEmLote = null;
+        this.equipeEmLote = null;
         this.funcionalidadeSelecionadaEmLote = null;
         this.mostrarDialogEditarEmLote = false;
         this.funcaoTransacaoEmLote = [];
@@ -1174,12 +1260,18 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 funcaoTransacao.quantidade = this.quantidadeEmLote;
             })
         }
+        if(this.equipeEmLote){
+            this.funcaoTransacaoEmLote.forEach(funcaoTransacao => {
+                funcaoTransacao.equipe = this.equipeEmLote;
+            })
+        }
     }
 
     editarEmLote() {
         if (!this.funcionalidadeSelecionadaEmLote &&
             !this.classificacaoEmLote &&
             !this.deflatorEmLote &&
+            !this.equipeEmLote &&
             !this.evidenciaEmLote &&
             !this.arquivosEmLote) {
             return this.pageNotificationService.addErrorMessage("Para editar em lote, selecione ao menos um campo para editar.")
@@ -1197,23 +1289,55 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         }
         for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
             let funcaoTransacao = this.funcaoTransacaoEmLote[i];
-            funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
-            const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(
-                this.analise.metodoContagem, funcaoTransacao, this.analise.contrato.manual);
-            this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacao.files?.map(item => item.logo)).subscribe(value => {
-                this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id !== funcaoTransacaoCalculada.id));
-                if (moduloSelecionado) {
-                    funcaoTransacaoCalculada.funcionalidade.modulo = moduloSelecionado;
-                }
-                this.setFields(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.push(funcaoTransacaoCalculada);
-                this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
-                this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
-                this.resetarEstadoPosSalvar();
-            });
+            if(this.verificarFuncoesEmLote(funcaoTransacao) == true){
+                this.pageNotificationService.addErrorMessage("Função "+funcaoTransacao.name+" já cadastrada.");
+                continue;
+            }
+            this.funcaoTransacaoService.existsWithNameAndEquipe(
+                funcaoTransacao.name,
+                this.analise.id,
+                funcaoTransacao.funcionalidade.id,
+                funcaoTransacao.funcionalidade.modulo.id,
+                funcaoTransacao.id,
+                funcaoTransacao.equipe.id)
+                .subscribe(existFuncaoTransacao => {
+                    if(!existFuncaoTransacao){
+                        funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+                        const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(
+                            this.analise.metodoContagem, funcaoTransacao, this.analise.contrato.manual);
+                        this.funcaoTransacaoService.update(funcaoTransacaoCalculada, funcaoTransacao.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id !== funcaoTransacaoCalculada.id));
+                            if (moduloSelecionado) {
+                                funcaoTransacaoCalculada.funcionalidade.modulo = moduloSelecionado;
+                            }
+                            this.setFields(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.push(funcaoTransacaoCalculada);
+                            this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+                            this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
+                            this.resetarEstadoPosSalvar();
+                            this.pageNotificationService.addSuccessMessage("Função "+funcaoTransacao.name+" editada com sucesso!");
+                        });
+                    }else{
+                            this.pageNotificationService.addErrorMessage("Função já "+funcaoTransacao.name+" cadastrada.")
+                        }
+                    });
+            }
+            this.fecharDialogEditarEmLote();
+    }
+
+    verificarFuncoesEmLote(funcaoTransacao: FuncaoTransacao) {
+        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
+            const funcao = this.funcaoTransacaoEmLote[i];
+            if(funcaoTransacao.name === funcao.name &&
+                funcaoTransacao.funcionalidade.id === funcao.funcionalidade.id &&
+                funcaoTransacao.funcionalidade.modulo.id === funcao.funcionalidade.modulo.id &&
+                funcaoTransacao.equipe.id === funcao.equipe.id &&
+                funcaoTransacao.id !== funcao.id){
+                    return true;
+            }
         }
-        this.pageNotificationService.addSuccessMessage("Funções de transações editadas com sucesso!")
-        this.fecharDialogEditarEmLote();
+
+        return false;
     }
 
     selecionarDeflatorEmLote(deflator: FatorAjuste) {
