@@ -816,19 +816,6 @@ public class AnaliseResource {
         List<VwAnaliseFT> analises = analiseService.carregarAnalisesFromFuncaoFT(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
         return new ResponseEntity<>(analises, HttpStatus.OK);
     }
-    @GetMapping(value = "/divergencia/importar-excel/{id}/{modelo}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_EXCEL")
-    public ResponseEntity<byte[]> importarExcelDivergencia(@PathVariable Long id,@PathVariable Long modelo) throws IOException{
-//        Analise analise = analiseService.recuperarAnalise(id);
-//        analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
-//        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
-//        ByteArrayOutputStream outputStream = planilhaService.selecionarModelo(analise, modelo);
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
-//        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.xlsx", RelatorioUtil.pegarNomeRelatorio(analise)));
-//        return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
-        return null;
-    }
 }
 
 
