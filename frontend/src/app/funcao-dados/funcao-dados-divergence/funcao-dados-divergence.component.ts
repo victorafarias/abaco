@@ -1055,7 +1055,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
 
     setDivergence(funcaoDadosSelecionadas: FuncaoDados[]) {
         funcaoDadosSelecionadas.forEach(funcaoDadosSelecionada => {
-            this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
+            this.funcaoDadosService.divergence(funcaoDadosSelecionada.id).subscribe(value => {
                 funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
                 funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
                 this.showDialog = false;
@@ -1068,6 +1068,18 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     setApproved(funcaoDadosSelecionadas: FuncaoDados[]) {
         funcaoDadosSelecionadas.forEach(funcaoDadosSelecionada => {
             this.funcaoDadosService.approved(funcaoDadosSelecionada.id).subscribe(value => {
+                funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
+                funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
+                this.showDialog = false;
+            });
+
+        });
+        this.pageNotificationService.addSuccessMessage('Status da(s) funcionalidade(s) alterado(s).');
+    }
+
+    setPendente(funcaoDadosSelecionadas: FuncaoDados[]) {
+        funcaoDadosSelecionadas.forEach(funcaoDadosSelecionada => {
+            this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
                 funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
                 funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
                 this.showDialog = false;
@@ -1107,12 +1119,30 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         });
     }
 
+    confirmPendente(funcaoDadosSelecionada: FuncaoDados) {
+        this.confirmationService.confirm({
+            message: `${this.getLabel(
+                'Tem certeza que deseja alterar o status da Função de Dados ')} '${funcaoDadosSelecionada.name}' para Pendente ?`,
+            accept: () => {
+                this.blockUiService.show();
+                this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
+                    funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
+                    funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
+                    this.pageNotificationService.addSuccessMessage('Status da funcionalidade ' + funcaoDadosSelecionada.name + ' foi alterado.');
+                    this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                    this.showDialog = false;
+                    this.blockUiService.hide();
+                });
+            }
+        });
+    }
+
     confirmDivergence(funcaoDadosSelecionada: FuncaoDados) {
         this.confirmationService.confirm({
             message: `${this.getLabel(
                 'Tem certeza que deseja alterar o status da Função de Dados ')} '${funcaoDadosSelecionada.name}' para Divergente?`,
             accept: () => {
-                this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
+                this.funcaoDadosService.divergence(funcaoDadosSelecionada.id).subscribe(value => {
                     funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
                     funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
                     this.pageNotificationService.addSuccessMessage('Status da funcionalidade ' + funcaoDadosSelecionada.name + ' foi alterado.');

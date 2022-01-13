@@ -418,8 +418,8 @@ public class AnaliseResource {
     public @ResponseBody
     ResponseEntity<byte[]> downloadPdfDivergenciaDetalhadoBrowser(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
         Analise analise = analiseService.recuperarAnalise(id);
-        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
-        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
+        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         return relatorioAnaliseRest.downloadPdfBrowser(analise, TipoRelatorio.ANALISE_DETALHADA);
     }
@@ -447,8 +447,8 @@ public class AnaliseResource {
     public @ResponseBody
     ResponseEntity<byte[]> downloadDivergenciaRelatorioExcel(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
         Analise analise = analiseService.recuperarAnalise(id);
-        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
-        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
+        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         Long idLogo = analise.getOrganizacao().getLogoId();
         UploadedFile uploadedFiles = new UploadedFile();
@@ -690,7 +690,7 @@ public class AnaliseResource {
         analise = analiseService.updateDivergenceAnalise(analise);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analise));
     }
-    
+
     @GetMapping("/divergencia")
     @Timed
     @Secured({"ROLE_ABACO_VALIDACAO_ACESSAR", "ROLE_ABACO_VALIDACAO_PESQUISAR"})
@@ -816,7 +816,19 @@ public class AnaliseResource {
         List<VwAnaliseFT> analises = analiseService.carregarAnalisesFromFuncaoFT(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
         return new ResponseEntity<>(analises, HttpStatus.OK);
     }
-
+    @GetMapping(value = "/divergencia/importar-excel/{id}/{modelo}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_EXCEL")
+    public ResponseEntity<byte[]> importarExcelDivergencia(@PathVariable Long id,@PathVariable Long modelo) throws IOException{
+//        Analise analise = analiseService.recuperarAnalise(id);
+//        analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
+//        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
+//        ByteArrayOutputStream outputStream = planilhaService.selecionarModelo(analise, modelo);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
+//        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.xlsx", RelatorioUtil.pegarNomeRelatorio(analise)));
+//        return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
+        return null;
+    }
 }
 
 

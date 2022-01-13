@@ -117,6 +117,10 @@ export class FuncaoTransacaoService {
     }
 
     pending(id: number): Observable<Response> {
+        return this.http.get<Response>(`${this.funcaoTransacaoResourceUrl}/update-status/${id}/${StatusFunction.PENDENTE}`);
+    }
+
+    divergence(id: number): Observable<Response> {
         return this.http.get<Response>(`${this.funcaoTransacaoResourceUrl}/update-status/${id}/${StatusFunction.DIVERGENTE}`);
     }
 
@@ -174,4 +178,5 @@ enum StatusFunction {
     DIVERGENTE = 'DIVERGENTE',
     EXCLUIDO = 'EXCLUIDO',
     VALIDADO = 'VALIDADO',
+    PENDENTE = 'PENDENTE',
 }
