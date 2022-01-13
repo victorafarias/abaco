@@ -119,6 +119,10 @@ export class FuncaoDadosService {
     }
 
     pending(id: number): Observable<Response> {
+        return this.http.get<Response>(`${this.resourceUrl}/update-status/${id}/${StatusFunction.PENDENTE}`);
+    }
+
+    divergence(id: number): Observable<Response> {
         return this.http.get<Response>(`${this.resourceUrl}/update-status/${id}/${StatusFunction.DIVERGENTE}`);
     }
 
@@ -264,4 +268,5 @@ enum StatusFunction {
     DIVERGENTE = 'DIVERGENTE',
     EXCLUIDO = 'EXCLUIDO',
     VALIDADO = 'VALIDADO',
+    PENDENTE = 'PENDENTE'
   }

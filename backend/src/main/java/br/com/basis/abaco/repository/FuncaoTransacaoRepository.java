@@ -42,6 +42,8 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
 
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoOrderByOrdem(Long id, StatusFuncao statusFuncao);
 
+    Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(Long id, StatusFuncao statusFuncao);
+
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long id, StatusFuncao statusFuncao);
 
     long countByFuncionalidadeId(Long id);

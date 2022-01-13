@@ -367,4 +367,20 @@ export class DivergenciaService {
         const url = `${this.analiseResourceUrl}/change-status/${id}/${status.id}`
         return this.http.get<Analise>(url);
     }
+
+
+    exportarModeloExcel(id: number, modelo: any) {
+        this.blockUiService.show();
+        return this.http.request('get', this.resourceUrl + "/importar-excel/" + id + "/" + modelo, {
+            observe: "response",
+            responseType: "blob"
+        })
+            .pipe(catchError((error: any) => {
+                if (error.status === 500) {
+                    this.blockUiService.hide();
+                    this.pageNotificationService.addErrorMessage(this.getLabel('Erro ao gerar relatório'));
+                    return Observable.throw(new Error(error.status));
+                }
+            }))
+    }
 }

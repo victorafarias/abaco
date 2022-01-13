@@ -21,6 +21,13 @@ export enum TipoFuncaoTransacao {
   'INM' = 'INM'
 }
 
+enum StatusFunction {
+  DIVERGENTE = 'DIVERGENTE',
+  EXCLUIDO = 'EXCLUIDO',
+  VALIDADO = 'VALIDADO',
+  PENDENTE = 'PENDENTE'
+}
+
 export class Editor {
     constructor(public label?: string,
         public placeholder?: string,
@@ -55,7 +62,7 @@ export class FuncaoTransacao implements FuncaoResumivel, BaseEntity, FuncaoAnali
     public modulo?: Modulo,
     public impacto?: Impacto,
     public quantidade?: number,
-    public statusFuncao?: String,
+    public statusFuncao?: StatusFunction,
     public lstDivergenceComments?: CommentFuncaoTransacao[],
     public files?: any[],
     public ordem?: number,
