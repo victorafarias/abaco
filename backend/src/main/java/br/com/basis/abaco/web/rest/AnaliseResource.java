@@ -212,6 +212,7 @@ public class AnaliseResource {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
         }
     }
+    
 
     @GetMapping("/analises/clonar/{id}")
     @Timed
