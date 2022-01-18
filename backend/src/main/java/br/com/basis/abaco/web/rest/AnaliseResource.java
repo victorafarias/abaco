@@ -198,7 +198,7 @@ public class AnaliseResource {
     public ResponseEntity<AnaliseEditDTO> blockUnblockAnalise(@PathVariable Long id, @Valid @RequestBody Analise analiseUpdate) throws URISyntaxException {
         log.debug("REST request to block Analise : {}", id);
         Analise analise = analiseService.recuperarAnalise(id);
-        if (analise != null && !(analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() == null)) {
+        if (analise != null && (!(analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() == null) || analise.getIsDivergence())) {
             if (analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() != null) {
                 analise.setDataHomologacao(analiseUpdate.getDataHomologacao());
             }

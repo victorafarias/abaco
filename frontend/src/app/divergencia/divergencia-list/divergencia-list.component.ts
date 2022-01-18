@@ -375,7 +375,7 @@ export class DivergenciaListComponent implements OnInit {
                 this.statusService = undefined;
                 this.idDivergenceStatus = undefined;
                 this.pageNotificationService.addSuccessMessage('O status da validação ' + data.identificadorAnalise + ' foi alterado.');
-                if (this.analiseTemp && this.analiseTemp.dataHomologacao) {
+                if (this.analiseTemp) {
                     const copy = this.analiseTemp.toJSONState();
                     this.divergenciaService.block(copy).subscribe(() => {
                         const nome = this.analiseTemp.identificadorAnalise;

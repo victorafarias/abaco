@@ -710,7 +710,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 this.analise.id,
                 this.currentFuncaoTransacao.funcionalidade.id,
                 this.currentFuncaoTransacao.funcionalidade.modulo.id,
-                0, this.currentFuncaoTransacao.equipe.id)
+                this.currentFuncaoTransacao.id, 
+                this.currentFuncaoTransacao.equipe.id)
                 .subscribe(existFuncaoTransaco => {
                     if (!existFuncaoTransaco) {
                         this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
