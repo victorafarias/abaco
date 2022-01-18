@@ -198,7 +198,7 @@ public class AnaliseResource {
     public ResponseEntity<AnaliseEditDTO> blockUnblockAnalise(@PathVariable Long id, @Valid @RequestBody Analise analiseUpdate) throws URISyntaxException {
         log.debug("REST request to block Analise : {}", id);
         Analise analise = analiseService.recuperarAnalise(id);
-        if (analise != null && !(analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() == null)) {
+        if (analise != null && (!(analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() == null) || analise.getIsDivergence())) {
             if (analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() != null) {
                 analise.setDataHomologacao(analiseUpdate.getDataHomologacao());
             }
@@ -212,6 +212,7 @@ public class AnaliseResource {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
         }
     }
+    
 
     @GetMapping("/analises/clonar/{id}")
     @Timed
@@ -418,8 +419,8 @@ public class AnaliseResource {
     public @ResponseBody
     ResponseEntity<byte[]> downloadPdfDivergenciaDetalhadoBrowser(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
         Analise analise = analiseService.recuperarAnalise(id);
-        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
-        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
+        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         return relatorioAnaliseRest.downloadPdfBrowser(analise, TipoRelatorio.ANALISE_DETALHADA);
     }
@@ -447,8 +448,8 @@ public class AnaliseResource {
     public @ResponseBody
     ResponseEntity<byte[]> downloadDivergenciaRelatorioExcel(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
         Analise analise = analiseService.recuperarAnalise(id);
-        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
-        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoOrderByOrdem(id, StatusFuncao.VALIDADO));
+        analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         Long idLogo = analise.getOrganizacao().getLogoId();
         UploadedFile uploadedFiles = new UploadedFile();
@@ -690,7 +691,7 @@ public class AnaliseResource {
         analise = analiseService.updateDivergenceAnalise(analise);
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analise));
     }
-    
+
     @GetMapping("/divergencia")
     @Timed
     @Secured({"ROLE_ABACO_VALIDACAO_ACESSAR", "ROLE_ABACO_VALIDACAO_PESQUISAR"})
@@ -816,7 +817,6 @@ public class AnaliseResource {
         List<VwAnaliseFT> analises = analiseService.carregarAnalisesFromFuncaoFT(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
         return new ResponseEntity<>(analises, HttpStatus.OK);
     }
-
 }
 
 

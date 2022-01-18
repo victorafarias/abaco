@@ -26,7 +26,7 @@
                                     [enableButtonsScroll]="true" [filterOnColumn]="true"
                                     [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="true"
                                     [reorderableRows]="isOrderning" (onRowReorder)="updateIndex()"
-                                    [selectionMode]="'multiple'" [disableDelete]="true"
+                                    [selectionMode]="'multiple'"
                                     [disableEdit]="isView || selectModeButtonsEditAndView || isOrderning"
                                     [disableView]="selectModeButtonsEditAndView || isOrderning" #tables>
                                     <p-column header="Ordem" field="ordem">
@@ -39,11 +39,13 @@
                                     <p-column field="statusFuncao" header="Status" [sortable]="true">
                                         <ng-template let-statusFuncao="rowData.statusFuncao" pTemplate="body">
                                             <button type="button" pButton icon="ui-icon-schedule"
-                                                *ngIf="statusFuncao === 'DIVERGENTE'"></button>
-                                            <button type="button" pButton icon="ui-icon-delete" class="ui-button-danger"
+                                                *ngIf="statusFuncao === 'PENDENTE'"></button>
+                                            <button type="button" pButton icon="ui-icon-close" class="brown-btn"
                                                 *ngIf="statusFuncao === 'EXCLUIDO'"></button>
                                             <button type="button" pButton icon="ui-icon-check" class="ui-button-success"
                                                 *ngIf="statusFuncao === 'VALIDADO'"></button>
+                                            <button type="button" pButton icon="ui-icon-feedback" class="yellow-btn"
+                                                *ngIf="statusFuncao === 'DIVERGENTE'"></button>
                                         </ng-template>
                                     </p-column>
                                     <p-column field="nomeEquipe" header="Equipe" sortable="true"></p-column>
@@ -64,28 +66,34 @@
                                         class="ui-button-success" icon="add">
                                     </basis-datatable-button>
                                     <basis-datatable-button *ngIf="!isView && !isOrderning && !selectModeButtonsEditAndView"
-                                    [allowMultipleSelection]="false" name="clone" (click)="clonar()"
-                                    [pTooltip]="funcaoDadosEditar[0] != undefined ? this.getLabel('Clonar') : this.getLabel('Escolha um registro para clonar.')"
-                                    [disabled]="funcaoDadosEditar[0] == undefined" class="ui-button-dark"
-                                    icon="content-copy">
-                                </basis-datatable-button>
-                                    <basis-datatable-button name="delete" *ngIf="!isView && !isOrderning"
-                                        [bTooltip]="this.getLabel('Excluído')"
-                                        (click)="this.setDelete(funcaoDadosEditar)"
-                                        [disabled]="funcaoDadosEditar[0] == undefined" class="ui-button-danger"
-                                        icon="delete">
-                                    </basis-datatable-button>
-                                    <basis-datatable-button name="pending" *ngIf="!isView && !isOrderning"
-                                        [bTooltip]="this.getLabel('Pendente')"
-                                        (click)="this.setDivergence(funcaoDadosEditar);"
+                                        [allowMultipleSelection]="false" name="clone" (click)="clonar()"
+                                        [pTooltip]="funcaoDadosEditar[0] != undefined ? this.getLabel('Clonar') : this.getLabel('Escolha um registro para clonar.')"
                                         [disabled]="funcaoDadosEditar[0] == undefined" class="ui-button-dark"
-                                        icon="schedule">
+                                        icon="content-copy">
                                     </basis-datatable-button>
                                     <basis-datatable-button name="approve" *ngIf="!isView && !isOrderning"
                                         [bTooltip]="this.getLabel('Aprovado')"
                                         (click)="this.setApproved(funcaoDadosEditar);"
                                         [disabled]="funcaoDadosEditar[0] == undefined" class="ui-button-success"
                                         icon="done">
+                                    </basis-datatable-button>
+                                    <basis-datatable-button name="divergente" *ngIf="!isView && !isOrderning"
+                                        [bTooltip]="this.getLabel('Divergente')"
+                                        (click)="this.setDivergence(funcaoDadosEditar)"
+                                        [disabled]="funcaoDadosEditar[0] == undefined" class="yellow-btn"
+                                        icon="feedback">
+                                    </basis-datatable-button>
+                                    <basis-datatable-button name="inativar" *ngIf="!isView && !isOrderning"
+                                        [bTooltip]="this.getLabel('Inativar')"
+                                        (click)="this.setDelete(funcaoDadosEditar)"
+                                        [disabled]="funcaoDadosEditar[0] == undefined" class="brown-btn"
+                                        icon="close">
+                                    </basis-datatable-button>
+                                    <basis-datatable-button name="pending" *ngIf="!isView && !isOrderning"
+                                        [bTooltip]="this.getLabel('Pendente')"
+                                        (click)="this.setPendente(funcaoDadosEditar);"
+                                        [disabled]="funcaoDadosEditar[0] == undefined" class="ui-button-dark"
+                                        icon="schedule">
                                     </basis-datatable-button>
                                     <basis-datatable-button name="edicaoLote"
                                         *ngIf="!isView && funcaoDadosEditar?.length > 1 && !isOrderning"
@@ -446,21 +454,26 @@
                                 </app-green-button>
                             </div>
                             <div class="ui-md-2 ui-sm-12">
-                                <app-gray-button [buttonLabel]="'Divergente'" id="idDvergenceFormFuncaoDados"
-                                    buttonIcon="ui-icon-schedule" (click)="confirmDivergence(seletedFuncaoDados)">
+                                <app-yellow-button [buttonLabel]="'Divergente'" id="idDvergenceFormFuncaoDados"
+                                    buttonIcon="ui-icon-feedback" (click)="confirmDivergence(seletedFuncaoDados)">
+                                </app-yellow-button>
+                            </div>
+                            <div class="ui-md-2 ui-sm-12">
+                                <app-brown-button [buttonLabel]="'Inativar'" id="idDeleteFormFuncaoDados" class="brown-btn"
+                                    buttonIcon="ui-icon-close" (click)="confirmDelete(seletedFuncaoDados)">
+                                </app-brown-button>
+                            </div>
+                            <div class="ui-md-2 ui-sm-12">
+                                <app-gray-button [buttonLabel]="'Pendente'" id="idDvergenceFormFuncaoDados"
+                                    buttonIcon="ui-icon-schedule" (click)="confirmPendente(seletedFuncaoDados)">
                                 </app-gray-button>
                             </div>
-                            <div class="ui-md-2 ui-sm-12">
-                                <app-red-button [buttonLabel]="'Excluído'" id="idDeleteFormFuncaoDados"
-                                    buttonIcon="ui-icon-delete" (click)="confirmDelete(seletedFuncaoDados)">
-                                </app-red-button>
-                            </div>
-                            <div class="ui-md-2 ui-sm-12">
+                            <div class="ui-md-1 ui-sm-12">
                                 <app-blue-button [buttonLabel]="'Salvar' " id="idSalvarFormFuncaoDados"
                                     buttonIcon="ui-icon-add" (click)="buttonSaveEdit()">
                                 </app-blue-button>
                             </div>
-                            <div class="ui-md-2 ui-sm-12">
+                            <div class="ui-md-1 ui-sm-12">
                                 <app-white-button [buttonLabel]="'Fechar' " id="idBtnFecharFormFuncaoDados"
                                     (click)="cancelar()">
                                 </app-white-button>

@@ -710,7 +710,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 this.analise.id,
                 this.currentFuncaoTransacao.funcionalidade.id,
                 this.currentFuncaoTransacao.funcionalidade.modulo.id,
-                0, this.currentFuncaoTransacao.equipe.id)
+                this.currentFuncaoTransacao.id, 
+                this.currentFuncaoTransacao.equipe.id)
                 .subscribe(existFuncaoTransaco => {
                     if (!existFuncaoTransaco) {
                         this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(this.currentFuncaoTransacao);
@@ -777,6 +778,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.alrsChips.forEach(c => c.id = undefined);
         }
 
+        this.selectModeButtonsEditAndView = false;
+
     }
 
     public verificarModulo() {
@@ -813,6 +816,9 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             case 'view':
                 this.viewFuncaoTransacao = true;
                 this.prepararParaVisualizar(funcaoTransacaoSelecionadas[0]);
+                break;
+            case 'delete':
+                this.confirmarExclusao(funcaoTransacaoSelecionadas);
                 break;
         }
     }
@@ -937,7 +943,37 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.fecharDialog();
     }
 
+    confirmarExclusao(funcaoTransacaoSelecionada: FuncaoTransacao[]) {
+        this.confirmationService.confirm({
+            message: 'Tem certeza que deseja excluir as funções de transações selecionada?',
+            accept: () => {
+                funcaoTransacaoSelecionada.forEach((funcaoTransacao) => {
+                    this.funcaoTransacaoService.delete(funcaoTransacao.id).subscribe(value => {
+                        this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacaoEdit) => (
+                            funcaoTransacaoEdit.id !== funcaoTransacao.id
+                        ));
+                        this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                        this.updateIndex();
+                        this.resetarEstadoPosSalvar();
+                    });
+                })
+                this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+            }
+        });
+    }
+
     setDivergence(funcaoTransacaoSelecionadas: FuncaoTransacao[]) {
+        funcaoTransacaoSelecionadas.forEach(funcaoTransacaoSelecionada => {
+            this.funcaoTransacaoService.divergence(funcaoTransacaoSelecionada.id).subscribe(value => {
+                funcaoTransacaoSelecionada = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id === funcaoTransacaoSelecionada.id))[0];
+                funcaoTransacaoSelecionada['statusFuncao'] = value['statusFuncao'];
+            });
+
+        });
+        this.pageNotificationService.addSuccessMessage('Status da(s) funcionalidade(s) alterado(s).');
+    }
+
+    setPendente(funcaoTransacaoSelecionadas: FuncaoTransacao[]) {
         funcaoTransacaoSelecionadas.forEach(funcaoTransacaoSelecionada => {
             this.funcaoTransacaoService.pending(funcaoTransacaoSelecionada.id).subscribe(value => {
                 funcaoTransacaoSelecionada = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id === funcaoTransacaoSelecionada.id))[0];
@@ -974,7 +1010,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
     confirmDelete(funcaoTransacaoSelecionada: FuncaoTransacao) {
         this.confirmationService.confirm({
-            message: `${this.getLabel('Tem certeza que deseja alterar o status para Excluido a Função de Transação')
+            message: `${this.getLabel('Tem certeza que deseja alterar o status para Inativo a Função de Transação')
                 } '${funcaoTransacaoSelecionada.name}'?`,
             accept: () => {
                 this.funcaoTransacaoService.deleteStatus(funcaoTransacaoSelecionada.id).subscribe(value => {
@@ -991,6 +1027,21 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     confirmDivergence(funcaoTransacaoSelecionada: FuncaoTransacao) {
         this.confirmationService.confirm({
             message: `${this.getLabel('Tem certeza que deseja alterar o status para Divergente a Função de Transação')
+                } '${funcaoTransacaoSelecionada.name}'?`,
+            accept: () => {
+                this.funcaoTransacaoService.divergence(funcaoTransacaoSelecionada.id).subscribe(value => {
+                    funcaoTransacaoSelecionada = this.funcoesTransacoes.filter((funcaoTransacao) => (funcaoTransacao.id === funcaoTransacaoSelecionada.id))[0];
+                    funcaoTransacaoSelecionada['statusFuncao'] = value['statusFuncao'];
+                    this.pageNotificationService.addSuccessMessage('Status da funcionalidade ' + funcaoTransacaoSelecionada.name + ' foi alterado.');
+                    this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                });
+            }
+        });
+    }
+
+    confirmPendente(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        this.confirmationService.confirm({
+            message: `${this.getLabel('Tem certeza que deseja alterar o status para Pendente a Função de Transação')
                 } '${funcaoTransacaoSelecionada.name}'?`,
             accept: () => {
                 this.funcaoTransacaoService.pending(funcaoTransacaoSelecionada.id).subscribe(value => {

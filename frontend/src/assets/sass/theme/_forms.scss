@@ -506,6 +506,18 @@ body {
                 background-color: lighten($blue,10%);
             }
         }
+        &.yellow-btn {
+            background-color: $yellow;
+
+            &:enabled:not(:focus):hover {
+                background-color: $yellowHover;
+            }
+
+            &:focus {
+                outline: 0 none;
+                background-color: lighten($yellow,10%);
+            }
+        }
 
         &.flat {
             @include no-shadow();
