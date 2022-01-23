@@ -4,22 +4,19 @@ import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.FatorAjuste;
 import br.com.basis.abaco.domain.FuncaoDados;
 import br.com.basis.abaco.domain.FuncaoTransacao;
-import br.com.basis.abaco.domain.enumeration.MetodoContagem;
-import br.com.basis.abaco.domain.enumeration.TipoFatorAjuste;
-import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
-import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
+import br.com.basis.abaco.domain.enumeration.*;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.regexp.RE;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -564,9 +561,9 @@ public class PlanilhaService {
             this.setarFuncoesIndicativaExcelPadraoBasis(excelFile, funcaoDadosList, analise, nomeElaborador);
         }
         else{
-            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador);
+            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, true);
             if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-                this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador);
+                this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, true);
             }
             else if(analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)){
                 this.setarFuncoesEstimadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador);
@@ -636,7 +633,7 @@ public class PlanilhaService {
         }
     }
 
-    private void setarFuncoesDetalhadaExcelPadraoBasis(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
+    private void setarFuncoesDetalhadaExcelPadraoBasis(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador, boolean isDivergence) {
         XSSFSheet excelSheet = excelFile.getSheet(DETALHADA);
 
         FormulaEvaluator evaluator = excelFile.getCreationHelper().createFormulaEvaluator();
@@ -664,6 +661,9 @@ public class PlanilhaService {
             row.getCell(8).setCellValue(ders);
             row.getCell(17).setCellValue(Jsoup.parse(funcaoDados.getSustantation() != null ? funcaoDados.getSustantation() : "").text());
             evaluator.evaluateFormulaCell(row.getCell(16));
+            if(isDivergence == true){
+                row.getCell(19).setCellValue(this.pegarValorValidacao(funcaoDados.getStatusFuncao()));
+            }
         }
 
         for (int i = 0; i < funcaoTransacaoList.size(); i++){
@@ -685,6 +685,9 @@ public class PlanilhaService {
                 row.getCell(1).setCellValue(funcaoTransacao.getFatorAjuste().getNome());
                 row.getCell(17).setCellValue(Jsoup.parse(funcaoTransacao.getSustantation() != null ? funcaoTransacao.getSustantation() : "").text());
                 evaluator.evaluateFormulaCell(row.getCell(2));
+                if(isDivergence == true){
+                    row.getCell(19).setCellValue(this.pegarValorValidacao(funcaoTransacao.getStatusFuncao()));
+                }
             }
         }
         evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
@@ -756,7 +759,7 @@ public class PlanilhaService {
         evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
     }
 
-    private void setarFuncoesINMExcelPadraoBasis(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
+    private void setarFuncoesINMExcelPadraoBasis(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador, boolean isDivergence) {
         XSSFSheet excelSheet = excelFile.getSheet("AFP - INM");
         if(excelSheet != null){
             excelSheet.getRow(2).getCell(15).setCellValue(nomeElaborador);
@@ -780,12 +783,24 @@ public class PlanilhaService {
                     row.getCell(11).setCellValue(funcaoTransacao.getAlrs().size());
                     row.getCell(12).setCellValue("-------");
                     evaluator.evaluateFormulaCell(row.getCell(18));
+                    if(isDivergence == true){
+                        row.getCell(22).setCellValue(this.pegarValorValidacao(funcaoTransacao.getStatusFuncao()));
+                    }
                 }
             }
             evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
         }
     }
 
+    private String pegarValorValidacao(StatusFuncao statusFuncao) {
+        if(statusFuncao.equals(StatusFuncao.VALIDADO)){
+            return "OK";
+        }else if(statusFuncao.equals(StatusFuncao.DIVERGENTE)){
+            return "Divergente";
+        }else{
+            return "";
+        }
+    }
 
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
         XSSFSheet sheet = excelFile.getSheet(PF_POR_FUNCIONALIDADE);
@@ -816,5 +831,261 @@ public class PlanilhaService {
                 row.getCell(2).setCellValue(entry.getValue());
             }
         }
+    }
+
+
+    public ByteArrayOutputStream selecionarModeloDivergencia(Analise analise, Long modelo) throws IOException {
+        List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
+        List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacaos().stream().collect(Collectors.toList());
+        switch(modelo.intValue()) {
+            case 1:
+                return this.modeloPadraoBasisDivergencia(analise, funcaoDadosList, funcaoTransacaoList);
+            default:
+                return this.modeloPadraoBasisDivergencia(analise, funcaoDadosList, funcaoTransacaoList);
+        }
+    }
+
+    private ByteArrayOutputStream modeloPadraoBasisDivergencia(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo1-basis.xlsx");
+        XSSFWorkbook excelFile = new XSSFWorkbook(stream);
+        this.setarDeflatoresExcelPadraoBasis(excelFile, analise);
+
+        Analise analisePrincipal = null;
+        String nomeElaborador;
+        for (Analise analiseFor : analise.getAnalisesComparadas()) {
+            if(analiseFor.getEquipeResponsavel().getNome().contains("BASIS")){
+                analisePrincipal = analiseFor;
+            }
+        }
+        if(analisePrincipal != null){
+            nomeElaborador = analisePrincipal.getEquipeResponsavel().getCfpsResponsavel() != null ?
+                analisePrincipal.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analisePrincipal.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analisePrincipal.getEquipeResponsavel().getPreposto();
+        }else{
+            nomeElaborador = analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
+                analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
+        }
+
+        if(analise.getAnalisesComparadas().size() == 1){
+            this.setarResumoExcelPadraoBasis(excelFile, analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(0), nomeElaborador);
+            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, true);
+            this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, true);
+            this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
+        }else{
+            this.setarResumoExcelPadraoBasis(excelFile, analisePrincipal, nomeElaborador);
+            this.setarFuncoesINMExcelPadraoBasisDivergencia(excelFile, funcaoTransacaoList, analisePrincipal, nomeElaborador);
+            this.setarFuncoesDetalhadaExcelPadraoBasisDivergencia(excelFile, funcaoDadosList, funcaoTransacaoList, analisePrincipal, nomeElaborador);
+            this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
+        }
+
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        excelFile.write(outputStream);
+        return outputStream;
+    }
+
+    private void setarFuncoesDetalhadaExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
+        XSSFSheet excelSheet = excelFile.getSheet(DETALHADA);
+
+        FormulaEvaluator evaluator = excelFile.getCreationHelper().createFormulaEvaluator();
+
+        excelSheet.getRow(2).getCell(13).setCellValue(nomeElaborador);
+        excelSheet.getRow(3).getCell(13).setCellValue(analise.getDataCriacaoOrdemServico());
+
+        int rowNumero = 9;
+        int idRow = 1;
+
+        List<FuncaoDados> funcaoDadosPrimaria = new ArrayList<>();
+        List<FuncaoDados> funcaoDadosSecundaria = new ArrayList<>();
+        funcaoDadosList.forEach(funcao -> {
+            if(!funcao.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)){
+                if(funcao.getEquipe().getNome().toLowerCase().contains("basis")){
+                    funcaoDadosPrimaria.add(funcao);
+                }else{
+                    funcaoDadosSecundaria.add(funcao);
+                }
+            }
+        });
+
+        List<FuncaoTransacao> funcaoTransacaoPrimaria = new ArrayList<>();
+        List<FuncaoTransacao> funcaoTransacaoSecundaria = new ArrayList<>();
+        funcaoTransacaoList.forEach(funcao -> {
+            if(!funcao.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)){
+                if(funcao.getEquipe().getNome().toLowerCase().contains("basis")){
+                    funcaoTransacaoPrimaria.add(funcao);
+                }else{
+                    funcaoTransacaoSecundaria.add(funcao);
+                }
+            }
+        });
+
+        for (int i = 0; i < funcaoDadosPrimaria.size(); i++) {
+            FuncaoDados funcaoPrimaria = funcaoDadosPrimaria.get(i);
+            XSSFRow row = excelSheet.getRow(rowNumero++);
+
+            row.getCell(5).setCellValue(funcaoPrimaria.getName());
+            row.getCell(6).setCellValue(funcaoPrimaria.getTipo().toString());
+            row.getCell(7).setCellValue(funcaoPrimaria.getDers().size());
+            row.getCell(0).setCellValue(idRow++);
+            row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
+            evaluator.evaluateFormulaCell(row.getCell(2));
+            row.getCell(3).setCellValue(funcaoPrimaria.getFuncionalidade().getModulo().getNome());
+            row.getCell(4).setCellValue(funcaoPrimaria.getFuncionalidade().getNome());
+            row.getCell(9).setCellValue(funcaoPrimaria.getRlrs().size());
+            String rlrs = funcaoPrimaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+            row.getCell(10).setCellValue(rlrs);
+            String ders = funcaoPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+            row.getCell(8).setCellValue(ders);
+            row.getCell(17).setCellValue(Jsoup.parse(funcaoPrimaria.getSustantation() != null ? funcaoPrimaria.getSustantation() : "").text());
+            evaluator.evaluateFormulaCell(row.getCell(16));
+            row.getCell(19).setCellValue(this.pegarValorValidacao(funcaoPrimaria.getStatusFuncao()));
+            rowNumero = this.setarFuncoesDetalhadaSecundariaModeloBasis(excelSheet, row, rowNumero, funcaoDadosSecundaria, funcaoPrimaria);
+        }
+
+        for (int i = 0; i < funcaoTransacaoList.size(); i++){
+            FuncaoTransacao funcaoPrimaria = funcaoTransacaoList.get(i);
+            if(!funcaoPrimaria.getTipo().equals(TipoFuncaoTransacao.INM)){
+                XSSFRow row = excelSheet.getRow(rowNumero++);
+                row.getCell(6).setCellValue(funcaoPrimaria.getTipo().toString());
+                row.getCell(7).setCellValue(funcaoPrimaria.getDers().size());
+                row.getCell(3).setCellValue(funcaoPrimaria.getFuncionalidade().getModulo().getNome());
+                row.getCell(4).setCellValue(funcaoPrimaria.getFuncionalidade().getNome());
+                row.getCell(5).setCellValue(funcaoPrimaria.getName());
+                String ders = funcaoPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(8).setCellValue(ders);
+                String rlrs = funcaoPrimaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(10).setCellValue(rlrs);
+                row.getCell(9).setCellValue(funcaoPrimaria.getAlrs().size());
+                evaluator.evaluateFormulaCell(row.getCell(16));
+                row.getCell(0).setCellValue(idRow++);
+                row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
+                row.getCell(17).setCellValue(Jsoup.parse(funcaoPrimaria.getSustantation() != null ? funcaoPrimaria.getSustantation() : "").text());
+                evaluator.evaluateFormulaCell(row.getCell(2));
+                row.getCell(19).setCellValue(this.pegarValorValidacao(funcaoPrimaria.getStatusFuncao()));
+                rowNumero = this.setarFuncoesDetalhadaSecundariaModeloBasis(excelSheet, row, rowNumero, funcaoTransacaoSecundaria, funcaoPrimaria);
+
+            }
+        }
+        evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
+
+    }
+    private int setarFuncoesDetalhadaSecundariaModeloBasis(XSSFSheet excelSheet, XSSFRow row, int rowNumero, List<FuncaoTransacao> funcaoTransacaoSecundaria, FuncaoTransacao funcaoPrimaria){
+        List<FuncaoTransacao> funcaoNovasSecundaria = new ArrayList<>();
+        for (FuncaoTransacao funcaoSecundaria : funcaoTransacaoSecundaria) {
+            if (this.isFuncaoEquiparada(funcaoPrimaria, funcaoSecundaria) == true) {
+                funcaoNovasSecundaria.add(funcaoSecundaria);
+                row.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+                row.getCell(20).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
+                row.getCell(22).setCellValue(funcaoSecundaria.getTipo().toString());
+                String dersSecundaria = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(23).setCellValue(funcaoSecundaria.getDers().size());
+                row.getCell(24).setCellValue(dersSecundaria);
+                row.getCell(25).setCellValue(funcaoSecundaria.getAlrs().size());
+                String rlrsSecundaria = funcaoSecundaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(26).setCellValue(rlrsSecundaria);
+                row.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+                row.getCell(35).setCellValue(funcaoPrimaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+            }
+        }
+        for (FuncaoTransacao funcaoSecundaria : funcaoTransacaoSecundaria) {
+            if(!funcaoTransacaoSecundaria.contains(funcaoSecundaria)){
+                XSSFRow rowTwo = excelSheet.getRow(rowNumero++);
+                rowTwo.getCell(3).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
+                rowTwo.getCell(4).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
+                rowTwo.getCell(5).setCellValue(funcaoSecundaria.getName());
+                rowTwo.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+                rowTwo.getCell(20).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
+                rowTwo.getCell(22).setCellValue(funcaoSecundaria.getTipo().toString());
+                String dersSecundaria = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                rowTwo.getCell(23).setCellValue(funcaoSecundaria.getDers().size());
+                rowTwo.getCell(24).setCellValue(dersSecundaria);
+                rowTwo.getCell(25).setCellValue(funcaoSecundaria.getAlrs().size());
+                String rlrsSecundaria = funcaoSecundaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                rowTwo.getCell(26).setCellValue(rlrsSecundaria);
+                rowTwo.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+            }
+        }
+        return rowNumero;
+    }
+    private int setarFuncoesDetalhadaSecundariaModeloBasis(XSSFSheet excelSheet, XSSFRow row, int rowNumero, List<FuncaoDados> funcaoDadosSecundaria, FuncaoDados funcaoPrimaria) {
+        List<FuncaoDados> funcaoNovasSecundaria = new ArrayList<>();
+        for (FuncaoDados funcaoSecundaria : funcaoDadosSecundaria) {
+            if (this.isFuncaoEquiparada(funcaoPrimaria, funcaoSecundaria) == true) {
+                funcaoNovasSecundaria.add(funcaoSecundaria);
+                row.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+                row.getCell(20).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
+                row.getCell(22).setCellValue(funcaoSecundaria.getTipo().toString());
+                String dersSecundaria = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(23).setCellValue(funcaoSecundaria.getDers().size());
+                row.getCell(24).setCellValue(dersSecundaria);
+                row.getCell(25).setCellValue(funcaoSecundaria.getRlrs().size());
+                String rlrsSecundaria = funcaoSecundaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(26).setCellValue(rlrsSecundaria);
+                row.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+                row.getCell(35).setCellValue(funcaoPrimaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+            }
+        }
+        for (FuncaoDados funcaoSecundaria : funcaoDadosSecundaria) {
+            if(!funcaoNovasSecundaria.contains(funcaoSecundaria)){
+                XSSFRow rowTwo = excelSheet.getRow(rowNumero++);
+                rowTwo.getCell(3).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
+                rowTwo.getCell(4).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
+                rowTwo.getCell(5).setCellValue(funcaoSecundaria.getName());
+                rowTwo.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+                rowTwo.getCell(20).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
+                rowTwo.getCell(22).setCellValue(funcaoSecundaria.getTipo().toString());
+                String dersSecundaria = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                rowTwo.getCell(23).setCellValue(funcaoSecundaria.getDers().size());
+                rowTwo.getCell(24).setCellValue(dersSecundaria);
+                rowTwo.getCell(25).setCellValue(funcaoSecundaria.getRlrs().size());
+                String rlrsSecundaria = funcaoSecundaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                rowTwo.getCell(26).setCellValue(rlrsSecundaria);
+                rowTwo.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+            }
+        }
+
+        return rowNumero;
+    }
+
+    private String pegarValorValidacaoDuasFuncao(FuncaoDados funcaoPrimaria, FuncaoDados funcaoSecundaria) {
+        if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.VALIDADO) || funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
+            return "OK";
+        }else if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.DIVERGENTE) || funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.DIVERGENTE)){
+            return "Divergente";
+        }else {
+            return "";
+        }
+    }
+
+    private boolean isFuncaoEquiparada(FuncaoDados funcaoPrimaria, FuncaoDados funcaoSecundaria) {
+        if(funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) &&
+            funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) &&
+            funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome())){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private String pegarValorValidacaoDuasFuncao(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria) {
+        if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.VALIDADO) || funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
+            return "OK";
+        }else if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.DIVERGENTE) || funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.DIVERGENTE)){
+            return "Divergente";
+        }else {
+            return "";
+        }
+    }
+
+    private boolean isFuncaoEquiparada(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria) {
+        if(funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) &&
+            funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) &&
+            funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome())){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private void setarFuncoesINMExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
     }
 }
