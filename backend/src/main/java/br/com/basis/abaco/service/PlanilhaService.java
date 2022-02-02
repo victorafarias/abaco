@@ -65,7 +65,6 @@ public class PlanilhaService {
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
         }
     }
-    
 
     //EB 2
 
