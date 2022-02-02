@@ -6,6 +6,7 @@ import br.com.basis.abaco.domain.audit.AbacoAuditable;
 import br.com.basis.abaco.domain.enumeration.Complexidade;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -83,9 +84,9 @@ public abstract class FuncaoAnalise implements AbacoAuditable {
     //Responsável por identificar qual equipe criou essa função , campo será utilizado em validação
     @ManyToOne
     @JoinColumn(name = "equipe_id")
+    @JsonIgnoreProperties("cfpsResponsavel")
     private TipoEquipe equipe;
-
-
+    
     @Embedded
     // XXX deve ter o new() mesmo?
     private AbacoAudit audit = new AbacoAudit();

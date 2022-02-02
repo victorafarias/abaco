@@ -3,6 +3,7 @@ package br.com.basis.abaco.domain;
 import br.com.basis.abaco.config.Constants;
 import br.com.basis.dynamicexports.pojo.ReportObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -128,6 +129,7 @@ public class User extends AbstractAuditingEntity implements Serializable, Report
     @Field(type = FieldType.Nested)
     @ManyToMany
     @JoinTable(name = "user_tipo_equipe", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tipo_equipe_id"))
+    @JsonIgnoreProperties("cfpsResponsavel")
     private Set<TipoEquipe> tipoEquipes = new HashSet<>();
 
     @JsonIgnore
