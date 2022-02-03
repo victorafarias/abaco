@@ -35,7 +35,7 @@ public class PlanilhaService {
     private final static String ESTIMATIVA = "AFP - Estimativa";
     private final static String DETALHADA = "AFP - Detalhada";
     private final static String RESUMO = "Resumo";
-    private final static String PF_POR_FUNCIONALIDADE = "PF por Funcionalidade";
+    private final static String PF_POR_FUNCIONALIDADE = "Funcionalidade";
 
 
     private final static String METODO_DETALHADO = "Detalhada";
@@ -787,7 +787,7 @@ public class PlanilhaService {
     }
 
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
-        XSSFSheet sheet = excelFile.getSheet("Fundamentação");
+        XSSFSheet sheet = excelFile.getSheet(PF_POR_FUNCIONALIDADE);
         Map<String, Double> pfPorFunc = new HashMap<>();
         if(sheet != null){
             for (int i = 0; i < funcaoDadosList.size(); i++) {
