@@ -421,6 +421,7 @@ public class RelatorioUtil {
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
     }
 
+    
     /**
      * Método responsável por exibir o PDF da base line no browser.
      * @param caminhoJasperResolucao
