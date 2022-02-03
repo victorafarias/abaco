@@ -786,7 +786,6 @@ public class PlanilhaService {
         }
     }
 
-
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
         XSSFSheet sheet = excelFile.getSheet(PF_POR_FUNCIONALIDADE);
         Map<String, Double> pfPorFunc = new HashMap<>();
