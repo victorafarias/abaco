@@ -445,7 +445,7 @@ public class AnaliseService extends BaseService {
         Set<FuncaoDados> funcaoDados = new HashSet<>();
         analise.getFuncaoDados().forEach(fd -> {
             FuncaoDados funcaoDado = bindFuncaoDados(analiseClone, fd);
-            funcaoDado.setStatusFuncao(StatusFuncao.DIVERGENTE);
+            funcaoDado.setStatusFuncao(StatusFuncao.PENDENTE);
             funcaoDados.add(funcaoDado);
         });
         return funcaoDados;
@@ -464,7 +464,7 @@ public class AnaliseService extends BaseService {
         Set<FuncaoTransacao> funcaoTransacoes = new HashSet<>();
         analise.getFuncaoTransacaos().forEach(ft -> {
             FuncaoTransacao funcaoTransacao = bindFuncaoTransacao(analiseClone, ft);
-            funcaoTransacao.setStatusFuncao(StatusFuncao.DIVERGENTE);
+            funcaoTransacao.setStatusFuncao(StatusFuncao.PENDENTE);
             funcaoTransacoes.add(funcaoTransacao);
         });
         return funcaoTransacoes;
@@ -731,6 +731,7 @@ public class AnaliseService extends BaseService {
             User user = optUser.get();
             Analise analiseDivergencia = new Analise(analise, user);
             analiseDivergencia = bindDivergenceAnalise(analiseDivergencia, analise, user);
+            analiseDivergencia.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
             analiseDivergencia.setStatus(status);
             analiseDivergencia.setIsDivergence(true);
             analiseDivergencia = save(analiseDivergencia);
@@ -792,7 +793,7 @@ public class AnaliseService extends BaseService {
         }
         return new Analise();
     }
-    
+
 
 
     private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise analiseDivergenciaPrincipal) {

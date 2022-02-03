@@ -43,6 +43,7 @@
     <include file="classpath:config/liquibase/changelog/20211220170742_add_pf_original_aprovado_divergencia.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20211221113949_alter_type_divergence_comments.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220103151459_add_novidades_versao_2.8.4.xml" relativeToChangelogFile="false"/>
-
+    <include file="classpath:config/liquibase/changelog/20220111145726_add_more_novidades_versao_2.8.4.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20220107144842_alter_view_divergence.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 

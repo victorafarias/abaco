@@ -5,9 +5,11 @@ import { BlockUiService } from '@nuvem/angular-base';
 import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
 import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { asapScheduler, asyncScheduler, forkJoin, interval, Observable, queueScheduler, Subscription } from 'rxjs';
+import { observeOn, take } from 'rxjs/operators';
 import { DivergenciaService } from 'src/app/divergencia';
 import { Sistema, SistemaService } from 'src/app/sistema';
+import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
 import { Upload } from 'src/app/upload/upload.model';
 import { Utilitarios } from 'src/app/util/utilitarios.util';
 import { Alr } from '../../alr/alr.model';
@@ -107,6 +109,8 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         { label: 'AIE - Arquivo de Interface Externa', value: 'AIE' }
     ];
 
+    equipes: SelectItem[] = [];
+
     crud: string[] = ['Excluir', 'Editar', 'Inserir', 'Pesquisar', 'Consultar'];
 
     idAnalise: number;
@@ -138,6 +142,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     evidenciaEmLote: string;
     arquivosEmLote: Upload[] = [];
     quantidadeEmLote: number;
+    equipeEmLote: TipoEquipe;
     funcaoDadosEmLote: FuncaoDados[] = []
 
     isOrderning: boolean = false;
@@ -166,6 +171,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         private route: ActivatedRoute,
         private pageNotificationService: PageNotificationService,
         private changeDetectorRef: ChangeDetectorRef,
+        private tipoEquipeService: TipoEquipeService,
         private funcaoDadosService: FuncaoDadosService,
         private funcaoTransacaoService: FuncaoTransacaoService,
         private divergenciaService: DivergenciaService,
@@ -228,6 +234,25 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.traduzirClassificacoes();
         this.traduzirImpactos();
         this.inicializaFatoresAjuste(this.analise.manual);
+        this.carregarEquipes(this.analise);
+    }
+    carregarEquipes(analise: Analise) {
+        this.equipes = [];
+
+        if(analise.analisesComparadas.length > 1){
+            if(analise.analisesComparadas[0].equipeResponsavel.id !== analise.analisesComparadas[1].equipeResponsavel.id){
+                this.equipes.push({label: analise.analisesComparadas[0].equipeResponsavel.nome, value: analise.analisesComparadas[0].equipeResponsavel});
+                this.equipes.push({label: analise.analisesComparadas[1].equipeResponsavel.nome, value: analise.analisesComparadas[1].equipeResponsavel});
+                return ;
+            }
+        }
+
+        this.tipoEquipeService.dropDown().subscribe(equipes => {
+            equipes.forEach(equipe => {
+                this.equipes.push({label: equipe.nome, value: equipe});
+            })
+        })
+
     }
 
     public onRowDblclick(event) {
@@ -475,7 +500,8 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             'impactoFilter': { value: this.updateNameImpacto(fd.impacto), writable: true },
             'nomeFuncionalidade': { value: fd.funcionalidade.nome, writable: true },
             'nomeModulo': { value: fd.funcionalidade.modulo.nome, writable: true },
-            'nomeEquipe': { value: fd?.equipe?.nome, writable: true}
+            'nomeEquipe': { value: fd?.equipe?.nome, writable: true},
+            'statusFuncao': {value: fd?.statusFuncao, writable: true}
         });
     }
 
@@ -530,11 +556,12 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.analise.contrato.manual);
         for (const nome of this.parseResult.textos) {
             lstFuncaoDadosWithExist.push(
-                this.funcaoDadosService.existsWithName(
+                this.funcaoDadosService.existsWithNameAndEquipe(
                     nome,
                     this.analise.id,
                     this.seletedFuncaoDados.funcionalidade.id,
-                    this.seletedFuncaoDados.funcionalidade.modulo.id)
+                    this.seletedFuncaoDados.funcionalidade.modulo.id, 0,
+                    this.seletedFuncaoDados.equipe.id)
             );
             const funcaoDadosMultp: FuncaoDados = funcaoDadosCalculada.clone();
             funcaoDadosMultp.name = nome;
@@ -605,11 +632,13 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             const funcaoDadosCalculada = Calculadora.calcular(this.analise.metodoContagem,
                 this.seletedFuncaoDados,
                 this.analise.contrato.manual);
-            this.funcaoDadosService.existsWithName(
+            this.funcaoDadosService.existsWithNameAndEquipe(
                 this.seletedFuncaoDados.name,
                 this.analise.id,
                 this.seletedFuncaoDados.funcionalidade.id,
-                this.seletedFuncaoDados.funcionalidade.modulo.id).subscribe(value => {
+                this.seletedFuncaoDados.funcionalidade.modulo.id,
+                0,
+                this.seletedFuncaoDados.equipe.id).subscribe(value => {
                     if (value === false) {
                         funcaoDadosCalculada.ordem = this.funcoesDados.length + 1;
                         this.funcaoDadosService.createDivergence(funcaoDadosCalculada, this.analise.id, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(
@@ -617,6 +646,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                                 this.pageNotificationService.addCreateMsg(funcaoDadosCalculada.name);
                                 funcaoDadosCalculada.id = funcaoDados.id;
                                 this.setFields(funcaoDadosCalculada);
+                                funcaoDadosCalculada.statusFuncao = funcaoDados.statusFuncao;
                                 this.funcoesDados.push(funcaoDadosCalculada);
                                 this.fecharDialog();
                                 this.atualizaResumo();
@@ -718,28 +748,34 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
         } else {
-            this.funcaoDadosService.existsWithName(
+            this.funcaoDadosService.existsWithNameAndEquipe(
                 this.seletedFuncaoDados.name,
                 this.analise.id,
                 this.seletedFuncaoDados.funcionalidade.id,
                 this.seletedFuncaoDados.funcionalidade.modulo.id,
-                this.seletedFuncaoDados.id)
+                this.seletedFuncaoDados.id,
+                this.seletedFuncaoDados.equipe.id)
                 .subscribe(existFuncaoDado => {
-                    this.desconverterChips();
-                    this.verificarModulo();
-                    this.seletedFuncaoDados = new FuncaoDados().copyFromJSON(this.seletedFuncaoDados);
-                    const funcaoDadosCalculada = Calculadora.calcular(
-                        this.analise.metodoContagem, this.seletedFuncaoDados, this.analise.contrato.manual);
-                    this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
-                        this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
-                        this.setFields(funcaoDadosCalculada);
-                        this.funcoesDados.push(funcaoDadosCalculada);
-                        this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
-                        this.resetarEstadoPosSalvar();
-                        this.pageNotificationService.addCreateMsg(funcaoDadosCalculada.name);
-                        this.fecharDialog();
-                        this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
-                    });
+                    if(!existFuncaoDado){
+                        this.desconverterChips();
+                        this.verificarModulo();
+                        this.seletedFuncaoDados = new FuncaoDados().copyFromJSON(this.seletedFuncaoDados);
+                        const funcaoDadosCalculada = Calculadora.calcular(
+                            this.analise.metodoContagem, this.seletedFuncaoDados, this.analise.contrato.manual);
+                        this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
+                            this.setFields(funcaoDadosCalculada);
+                            this.funcoesDados.push(funcaoDadosCalculada);
+                            this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
+                            this.resetarEstadoPosSalvar();
+                            this.pageNotificationService.addCreateMsg(funcaoDadosCalculada.name);
+                            this.fecharDialog();
+                            this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                        });
+                    }else{
+                        this.pageNotificationService.addErrorMessage("Função já cadastrada.")
+                    }
+                    
                 });
         }
     }
@@ -781,6 +817,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.rlrsChips.forEach(c => c.id = undefined);
         }
 
+        this.selectModeButtonsEditAndView = false;
     }
 
     public verificarModulo() {
@@ -831,11 +868,13 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     }
 
     inserirCrud(funcaoTransacaoAtual: FuncaoTransacao) {
-        this.funcaoTransacaoService.existsWithName(
+        this.funcaoTransacaoService.existsWithNameAndEquipe(
             funcaoTransacaoAtual.name,
             this.analise.id,
             funcaoTransacaoAtual.funcionalidade.id,
-            funcaoTransacaoAtual.funcionalidade.modulo.id)
+            funcaoTransacaoAtual.funcionalidade.modulo.id,
+            0,
+            this.seletedFuncaoDados.equipe.id)
             .subscribe(existFuncaoTranasacao => {
                 if (!existFuncaoTranasacao) {
                     this.funcaoTransacaoService.create(funcaoTransacaoAtual, this.analise.id, funcaoTransacaoAtual.files?.map(item => item.logo)).subscribe(() => {
@@ -911,6 +950,14 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         });
     }
 
+    clonar() {
+        this.isEdit = false;
+        this.prepareToClone(this.funcaoDadosEditar[0]);
+        this.seletedFuncaoDados.id = undefined;
+        this.seletedFuncaoDados.artificialId = undefined;
+        this.textHeader = this.getLabel('Clonar Função de Dados');
+    }
+
     // Prepara para clonar
     private prepareToClone(funcaoDadosSelecionada: FuncaoDados) {
         this.blockUiService.show();
@@ -941,7 +988,19 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.carregarFatorDeAjusteNaEdicao(funcaoDadosSelecionada);
         this.carregarArquivos();
         this.carregarModuloFuncionalidade(funcaoDadosSelecionada);
+        this.carregarEquipeNaEdicao(funcaoDadosSelecionada);
     }
+
+    carregarEquipeNaEdicao(funcaoDadosSelecionada: FuncaoDados) {
+        if(funcaoDadosSelecionada.equipe != null || funcaoDadosSelecionada.equipe != undefined){
+            this.equipes.forEach(equipe => {
+                if(equipe.value.id === funcaoDadosSelecionada.equipe.id){
+                    funcaoDadosSelecionada.equipe = equipe.value;
+                }
+            })
+        }
+    }
+
     carregarModuloFuncionalidade(funcaoDadosSelecionada: FuncaoDados) {
         //CarregarModulo
         this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo);
@@ -996,7 +1055,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
 
     setDivergence(funcaoDadosSelecionadas: FuncaoDados[]) {
         funcaoDadosSelecionadas.forEach(funcaoDadosSelecionada => {
-            this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
+            this.funcaoDadosService.divergence(funcaoDadosSelecionada.id).subscribe(value => {
                 funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
                 funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
                 this.showDialog = false;
@@ -1009,6 +1068,18 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     setApproved(funcaoDadosSelecionadas: FuncaoDados[]) {
         funcaoDadosSelecionadas.forEach(funcaoDadosSelecionada => {
             this.funcaoDadosService.approved(funcaoDadosSelecionada.id).subscribe(value => {
+                funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
+                funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
+                this.showDialog = false;
+            });
+
+        });
+        this.pageNotificationService.addSuccessMessage('Status da(s) funcionalidade(s) alterado(s).');
+    }
+
+    setPendente(funcaoDadosSelecionadas: FuncaoDados[]) {
+        funcaoDadosSelecionadas.forEach(funcaoDadosSelecionada => {
+            this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
                 funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
                 funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
                 this.showDialog = false;
@@ -1048,12 +1119,30 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         });
     }
 
+    confirmPendente(funcaoDadosSelecionada: FuncaoDados) {
+        this.confirmationService.confirm({
+            message: `${this.getLabel(
+                'Tem certeza que deseja alterar o status da Função de Dados ')} '${funcaoDadosSelecionada.name}' para Pendente ?`,
+            accept: () => {
+                this.blockUiService.show();
+                this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
+                    funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
+                    funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
+                    this.pageNotificationService.addSuccessMessage('Status da funcionalidade ' + funcaoDadosSelecionada.name + ' foi alterado.');
+                    this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                    this.showDialog = false;
+                    this.blockUiService.hide();
+                });
+            }
+        });
+    }
+
     confirmDivergence(funcaoDadosSelecionada: FuncaoDados) {
         this.confirmationService.confirm({
             message: `${this.getLabel(
                 'Tem certeza que deseja alterar o status da Função de Dados ')} '${funcaoDadosSelecionada.name}' para Divergente?`,
             accept: () => {
-                this.funcaoDadosService.pending(funcaoDadosSelecionada.id).subscribe(value => {
+                this.funcaoDadosService.divergence(funcaoDadosSelecionada.id).subscribe(value => {
                     funcaoDadosSelecionada = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id === funcaoDadosSelecionada.id))[0];
                     funcaoDadosSelecionada['statusFuncao'] = value['statusFuncao'];
                     this.pageNotificationService.addSuccessMessage('Status da funcionalidade ' + funcaoDadosSelecionada.name + ' foi alterado.');
@@ -1278,10 +1367,12 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             });
         }
         this.carregarModuloSistema();
+        this.carregarEquipes(this.analise);
         this.mostrarDialogEditarEmLote = true;
         this.hideShowQuantidade = true;
     }
 
+    
     fecharDialogEditarEmLote() {
         this.evidenciaEmLote = null;
         this.classificacaoEmLote = null;
@@ -1289,6 +1380,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.moduloSelecionadoEmLote = null;
         this.funcionalidadeSelecionadaEmLote = null;
         this.quantidadeEmLote = null;
+        this.equipeEmLote = null;
         this.mostrarDialogEditarEmLote = false;
         this.funcaoDadosEmLote = [];
         this.arquivosEmLote = [];
@@ -1325,12 +1417,18 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                 funcaoDado.files = this.arquivosEmLote;
             })
         }
+        if(this.equipeEmLote){
+            this.funcaoDadosEmLote.forEach(funcaoDado => {
+                funcaoDado.equipe = this.equipeEmLote;
+            })
+        }
     }
 
     editarEmLote() {
         if (!this.funcionalidadeSelecionadaEmLote &&
             !this.classificacaoEmLote &&
             !this.deflatorEmLote &&
+            !this.equipeEmLote &&
             !this.evidenciaEmLote &&
             !this.arquivosEmLote) {
             return this.pageNotificationService.addErrorMessage("Para editar em lote, selecione ao menos um campo para editar.")
@@ -1346,25 +1444,59 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         if (this.moduloSelecionadoEmLote) {
             moduloSelecionado = this.moduloSelecionadoEmLote;
         }
+        
         for (let i = 0; i < this.funcaoDadosEmLote.length; i++) {
             let funcaoDado = this.funcaoDadosEmLote[i];
-            funcaoDado = new FuncaoDados().copyFromJSON(funcaoDado);
-            const funcaoDadosCalculada = Calculadora.calcular(
-                this.analise.metodoContagem, funcaoDado, this.analise.contrato.manual);
-            this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
-                this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
-                if (moduloSelecionado) {
-                    funcaoDadosCalculada.funcionalidade.modulo = moduloSelecionado;
-                }
-                this.setFields(funcaoDadosCalculada);
-                this.funcoesDados.push(funcaoDadosCalculada);
-                this.funcoesDados.sort((a, b) => a.ordem - b.ordem)
-                this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
-                this.resetarEstadoPosSalvar();
-            });
+            if(this.verificarFuncoesEmLote(funcaoDado) == true){
+                this.pageNotificationService.addErrorMessage("Função "+funcaoDado.name+" já cadastrada.");
+                continue;
+            }
+            this.funcaoDadosService.existsWithNameAndEquipe(
+                funcaoDado.name,
+                this.analise.id,
+                funcaoDado.funcionalidade.id,
+                funcaoDado.funcionalidade.modulo.id,
+                funcaoDado.id,
+                funcaoDado.equipe.id)
+                .subscribe(existFuncaoDado => {
+                    if(!existFuncaoDado){
+                        funcaoDado = new FuncaoDados().copyFromJSON(funcaoDado);
+                        const funcaoDadosCalculada = Calculadora.calcular(
+                        this.analise.metodoContagem, funcaoDado, this.analise.contrato.manual);
+                        this.funcaoDadosService.update(funcaoDadosCalculada, funcaoDadosCalculada.files?.map(item => item.logo)).subscribe(value => {
+                            this.funcoesDados = this.funcoesDados.filter((funcaoDados) => (funcaoDados.id !== funcaoDadosCalculada.id));
+                            if (moduloSelecionado) {
+                                funcaoDadosCalculada.funcionalidade.modulo = moduloSelecionado;
+                            }
+                            this.setFields(funcaoDadosCalculada);
+                            this.funcoesDados.push(funcaoDadosCalculada);
+                            this.funcoesDados.sort((a, b) => a.ordem - b.ordem)
+                            this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
+                            this.resetarEstadoPosSalvar();
+                            this.pageNotificationService.addSuccessMessage("Função "+funcaoDado.name+" editada com sucesso!");
+                        });
+                    }
+                    else{
+                        this.pageNotificationService.addErrorMessage("Função já "+funcaoDado.name+" cadastrada.")
+                    }
+                });
         }
-        this.pageNotificationService.addSuccessMessage("Funções de dados editadas com sucesso!")
         this.fecharDialogEditarEmLote();
+    }
+
+    verificarFuncoesEmLote(funcaoDado: FuncaoDados) {
+        for (let i = 0; i < this.funcaoDadosEmLote.length; i++) {
+            const funcao = this.funcaoDadosEmLote[i];
+            if(funcaoDado.name === funcao.name &&
+                funcaoDado.funcionalidade.id === funcao.funcionalidade.id &&
+                funcaoDado.funcionalidade.modulo.id === funcao.funcionalidade.modulo.id &&
+                funcaoDado.equipe.id === funcao.equipe.id &&
+                funcaoDado.id !== funcao.id){
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     selecionarDeflatorEmLote(deflator: FatorAjuste) {

@@ -117,6 +117,10 @@ export class FuncaoTransacaoService {
     }
 
     pending(id: number): Observable<Response> {
+        return this.http.get<Response>(`${this.funcaoTransacaoResourceUrl}/update-status/${id}/${StatusFunction.PENDENTE}`);
+    }
+
+    divergence(id: number): Observable<Response> {
         return this.http.get<Response>(`${this.funcaoTransacaoResourceUrl}/update-status/${id}/${StatusFunction.DIVERGENTE}`);
     }
 
@@ -134,6 +138,11 @@ export class FuncaoTransacaoService {
     
     existsWithName(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: Number = 0): Observable<Boolean> {
         const url = `${this.funcaoTransacaoResourceUrl}/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}`;
+        return this.http.get<Boolean>(url);
+    }
+
+    existsWithNameAndEquipe(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: number = 0, idEquipe: number): Observable<Boolean> {
+        const url = `${this.funcaoTransacaoResourceUrl}/divergencia/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}&idEquipe=${idEquipe}`; 
         return this.http.get<Boolean>(url);
     }
 
@@ -169,4 +178,5 @@ enum StatusFunction {
     DIVERGENTE = 'DIVERGENTE',
     EXCLUIDO = 'EXCLUIDO',
     VALIDADO = 'VALIDADO',
+    PENDENTE = 'PENDENTE',
 }

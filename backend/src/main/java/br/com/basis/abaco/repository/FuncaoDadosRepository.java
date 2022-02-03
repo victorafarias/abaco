@@ -47,6 +47,8 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
 
     Set<FuncaoDados> findByAnaliseIdAndStatusFuncaoOrderByOrdem(Long id, StatusFuncao statusFuncao);
 
+    Set<FuncaoDados> findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(Long id, StatusFuncao statusFuncao);
+
     Set<FuncaoDados> findByAnaliseIdOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long idAnalise);
 
     Set<FuncaoDados> findByAnaliseIdAndStatusFuncaoOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long idAnalise, StatusFuncao statusFuncao);
@@ -54,6 +56,11 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
     Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(String name, Long analiseId, Long idFuncionalidade, Long idModulo);
 
     Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(String name, Long analiseId, Long idFuncionalidade, Long idModulo, Long id);
+
+
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(String name, Long analiseId, Long idFuncionalidade, Long idModulo, Long equipeId);
+
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(String name, Long analiseId, Long idFuncionalidade, Long idModulo, Long id, Long equipeId);
 
     long countByFuncionalidadeId(Long id);
 

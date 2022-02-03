@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -70,6 +71,7 @@ import io.github.jhipster.web.util.ResponseUtil;
 /**
  * REST controller for managing FuncaoDados.
  */
+
 @RestController
 @RequestMapping("/api")
 public class FuncaoDadosResource {
@@ -86,6 +88,7 @@ public class FuncaoDadosResource {
     private final AnaliseRepository analiseRepository;
     private final VwDerSearchRepository vwDerSearchRepository;
     private final VwRlrSearchRepository vwRlrSearchRepository;
+
 
     @Autowired
     private ModelMapper modelMapper;
@@ -163,7 +166,6 @@ public class FuncaoDadosResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping(value = "/funcao-dados/{id}", consumes = {"multipart/form-data"})
-    @Timed
     public ResponseEntity<FuncaoDadosEditDTO> updateFuncaoDados(@PathVariable Long id, @RequestPart("funcaoDados")FuncaoDadosSaveDTO funcaoDadosSaveDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException {
         log.debug("REST request to update FuncaoDados : {}", funcaoDadosSaveDTO);
         FuncaoDados funcaoDadosOld = funcaoDadosRepository.findById(id);
@@ -314,8 +316,13 @@ public class FuncaoDadosResource {
         }
         return ResponseEntity.ok(existInAnalise);
     }
-    
 
+    @GetMapping("/funcao-dados/divergencia/{idAnalise}/{idfuncionalidade}/{idModulo}")
+    @Timed
+    public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @PathVariable Long idModulo, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
+        log.debug("REST request to exist FuncaoDados");
+        return ResponseEntity.ok(funcaoDadosService.existFuncaoDadosDivergencia(idAnalise, idfuncionalidade, idModulo, name, id, idEquipe));
+    }
 
 
     /**
@@ -467,6 +474,7 @@ public class FuncaoDadosResource {
         funcaoDadosOld.setStatusFuncao(funcaoDados.getStatusFuncao());
         funcaoDadosOld.setQuantidade(funcaoDados.getQuantidade());
         funcaoDadosOld.setOrdem(funcaoDados.getOrdem());
+        funcaoDadosOld.setEquipe(funcaoDados.getEquipe());
         return  funcaoDadosOld;
     }
 

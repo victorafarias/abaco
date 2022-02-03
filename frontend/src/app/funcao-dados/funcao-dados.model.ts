@@ -22,6 +22,7 @@ enum StatusFunction {
     DIVERGENTE = 'DIVERGENTE',
     EXCLUIDO = 'EXCLUIDO',
     VALIDADO = 'VALIDADO',
+    PENDENTE = 'PENDENTE'
   }
 
 export class Editor {

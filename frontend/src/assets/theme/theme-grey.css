@@ -29980,6 +29980,18 @@ body .ui-button.blue-btn:focus, body .ui-button.ui-info-button:focus, body .ui-d
   outline: 0 none;
   background-color: #2ebcfc;
 }
+
+body .ui-button.yellow-btn, body .ui-datepicker-buttonpane > button.yellow-btn {
+  background-color: #d8c200;
+}
+body .ui-button.yellow-btn:enabled:not(:focus):hover, body .ui-datepicker-buttonpane > button.yellow-btn:enabled:not(:focus):hover {
+  background-color: #b4a200;
+}
+body .ui-button.yellow-btn:focus, body .ui-datepicker-buttonpane > button.yellow-btn:focus {
+  outline: 0 none;
+  background-color: #ffe600;
+}
+
 body .ui-button.flat, body .ui-datepicker-buttonpane > button.flat {
   box-shadow: none;
   -webkit-box-shadow: none;

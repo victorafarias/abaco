@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1641913070715-1">
+       <insert tableName="novidades">
+           <column name="id" value="11"></column>
+           <column name="novidades_versao_id" value="2"></column>
+           <column name="ocorrencia" value="BASIS-246071"></column>
+           <column name="novidades" value="Evolução 1: Cadastrar/Editar Função - Criar um campo dentro do cadastro/edição de função de dados E transação para informar/visualizar a Equipe 'dona' da função.
+
+            Evolução 1.1: O novo campo 'Equipe' deve ser incluído também na funcionalidade 'Editar em lote'.
+
+            Evolução 2: Clonar Função - Incluido a opção de clonar uma função (de dados E de transação) em uma validação.
+
+            Evolução 3: Listar Validações - Alterar ordenação da Pesquisa de Validação para exibir primeiro as validações mais recentes (Menu: Análise > Validação).
+
+            Evolução 4: Editar Análise - Permitir que o campo 'Método de Contagem' seja editado enquanto a Análise não tiver nenhuma função cadastrada."></column>
+       </insert>
+   </changeSet>
+</databaseChangeLog>

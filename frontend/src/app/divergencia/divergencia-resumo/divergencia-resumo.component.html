@@ -96,7 +96,27 @@
                       (click)="geraRelatorioPdfDetalhadoBrowser()">
               </app-gray-button>
             </div>
+            <div class="ui-g-2 ui-md-2 ui-sm-12">
+              <app-blue-button [buttonLabel]="this.getLabel('Exportar Planilha Excel')"
+                (click)="openModalImportarExcel(this.analise)">
+              </app-blue-button>
+            </div>
           </div>
       </div>
     </p-tabPanel>
 </p-tabView>
+
+
+<p-dialog header="Exportar planilha excel" [(visible)]="showDialogImportarExcel" [style]="{width: '50vw'}"
+    [minHeight]="300" [modal]="true" #dialogPlanilha>
+
+    <p-dropdown [style]="{'width':'100%', 'margin-bottom': '55px'}" [appendTo]="dialogPlanilha" [options]="lstModelosExcel" optionLabel="label"
+        id="idModeloExcel" [(ngModel)]="modeloSelecionado" placeholder="Selecione um modelo">
+    </p-dropdown>
+
+    <app-green-button buttonLabel="Exportar" (click)="exportarPlanilha()" style="float:right; margin: 5px">
+    </app-green-button>
+    <app-white-button buttonLabel="Cancelar" (click)="closeModalExportarExcel()" style="float:right; margin: 5px">
+    </app-white-button>
+
+</p-dialog>

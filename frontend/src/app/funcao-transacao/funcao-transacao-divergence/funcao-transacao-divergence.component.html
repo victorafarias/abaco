@@ -29,7 +29,7 @@
                                     (onRowReorder)="updateIndex()" [paginator]="false" [rows]="20"
                                     [enableButtonsScroll]="true" [filterOnColumn]="true"
                                     [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="true"
-                                    [selectionMode]="'multiple'" [disableDelete]="true"
+                                    [selectionMode]="'multiple'"
                                     [disableEdit]="isView || selectModeButtonsEditAndView  || isOrderning"
                                     [disableView]="selectModeButtonsEditAndView || isOrderning" #tables>
                                     <p-column header="Ordem" field="ordem">
@@ -41,11 +41,13 @@
                                     <p-column field="statusFuncao" header="Status" [sortable]="true">
                                         <ng-template let-statusFuncao="rowData.statusFuncao" pTemplate="body">
                                             <button type="button" pButton icon="ui-icon-schedule"
-                                                *ngIf="statusFuncao === 'DIVERGENTE'"></button>
-                                            <button type="button" pButton icon="ui-icon-delete" class="ui-button-danger"
+                                                *ngIf="statusFuncao === 'PENDENTE'"></button>
+                                            <button type="button" pButton icon="ui-icon-close" class="brown-btn"
                                                 *ngIf="statusFuncao === 'EXCLUIDO'"></button>
                                             <button type="button" pButton icon="ui-icon-check" class="ui-button-success"
                                                 *ngIf="statusFuncao === 'VALIDADO'"></button>
+                                            <button type="button" pButton icon="ui-icon-feedback" class="yellow-btn"
+                                                *ngIf="statusFuncao === 'DIVERGENTE'"></button>
                                         </ng-template>
                                     </p-column>
                                     <p-column field="nomeEquipe" header="Equipe" sortable="true"></p-column>
@@ -70,23 +72,35 @@
                                         (click)="openDialog(false)" bTooltip="Incluir nova função"
                                         class="ui-button-success" icon="add">
                                     </basis-datatable-button>
-                                    <basis-datatable-button name="delete" *ngIf="!isView && !isOrderning"
-                                        (click)="this.setDelete(funcaoTransacaoEditar);"
-                                        [bTooltip]="this.getLabel('Excluído')"
-                                        [disabled]="funcaoTransacaoEditar[0] == undefined" class="ui-button-danger"
-                                        icon="delete">
-                                    </basis-datatable-button>
-                                    <basis-datatable-button name="divergence" *ngIf="!isView && !isOrderning"
-                                        (click)="this.setDivergence(funcaoTransacaoEditar);"
-                                        [bTooltip]="this.getLabel('Pendente')"
+                                    <basis-datatable-button [allowMultipleSelection]="false" name="clone"
+                                        (click)="clonar()" *ngIf="!isView && !isOrderning && !selectModeButtonsEditAndView"
+                                        [bTooltip]="funcaoTransacaoEditar[0] != undefined ? this.getLabel('Clonar') : this.getLabel('Escolha um registro para clonar.')"
                                         [disabled]="funcaoTransacaoEditar[0] == undefined" class="ui-button-dark"
-                                        icon="schedule">
+                                        icon="content-copy">
                                     </basis-datatable-button>
                                     <basis-datatable-button name="approve" *ngIf="!isView && !isOrderning"
                                         (click)="this.setApproved(funcaoTransacaoEditar);"
                                         [bTooltip]="this.getLabel('Aprovado')"
                                         [disabled]="funcaoTransacaoEditar[0] == undefined" class="ui-button-success"
                                         icon="done">
+                                    </basis-datatable-button>
+                                    <basis-datatable-button name="divergente" *ngIf="!isView && !isOrderning"
+                                        [bTooltip]="this.getLabel('Divergente')"
+                                        (click)="this.setDivergence(funcaoTransacaoEditar)"
+                                        [disabled]="funcaoTransacaoEditar[0] == undefined" class="yellow-btn"
+                                        icon="feedback">
+                                    </basis-datatable-button>
+                                    <basis-datatable-button name="inativar" *ngIf="!isView && !isOrderning"
+                                        (click)="this.setDelete(funcaoTransacaoEditar);"
+                                        [bTooltip]="this.getLabel('Inativar')"
+                                        [disabled]="funcaoTransacaoEditar[0] == undefined" class="brown-btn"
+                                        icon="close">
+                                    </basis-datatable-button>
+                                    <basis-datatable-button name="pending" *ngIf="!isView && !isOrderning"
+                                        [bTooltip]="this.getLabel('Pendente')"
+                                        (click)="this.setPendente(funcaoTransacaoEditar);"
+                                        [disabled]="funcaoTransacaoEditar[0] == undefined" class="ui-button-dark"
+                                        icon="schedule">
                                     </basis-datatable-button>
                                     <basis-datatable-button name="edicaoLote"
                                         *ngIf="!isView && funcaoTransacaoEditar?.length > 1 && !isOrderning"
@@ -256,6 +270,17 @@
                                 </span>
                             </div>
                         </div>
+
+                        <div class="ui-g">
+                            <div class="ui-g-3 ui-md-12 ui-sm-12">
+                                <label>Equipe</label>
+                                <p-dropdown [filter]="true" [options]="equipes"
+                                    id="idEquipeFuncaoTransacao" [(ngModel)]="currentFuncaoTransacao.equipe"
+                                    [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
+                                </p-dropdown>
+                            </div>
+                        </div>
+
                         <div class="ui-g">
                             <div class="ui-g-11 ui-md-11 ui-sm-11">
                                 <label>Deflator *</label>
@@ -421,7 +446,7 @@
                         <div class="ui-g ui-md-12 ui-sm-12" style="justify-content: flex-end">
                             <div class="ui-md-2 ui-sm-12">
                                 <app-blue-button [buttonLabel]="'Comentário'" *ngIf="isEdit"
-                                    id="idDeleteFormFuncaoDados" buttonIcon="ui-icon-comment"
+                                    id="idComentarioFormFuncaoTransacao" buttonIcon="ui-icon-comment"
                                     (click)="showDialogAddComent()">
                                 </app-blue-button>
                             </div>
@@ -431,21 +456,26 @@
                                 </app-green-button>
                             </div>
                             <div class="ui-md-2 ui-sm-12">
-                                <app-gray-button [buttonLabel]="'Divergente' " id="idDvergenceViewFuncaoTransacao"
-                                    buttonIcon="ui-icon-schedule" (click)="confirmDivergence(currentFuncaoTransacao)">
-                                </app-gray-button>
+                                <app-yellow-button [buttonLabel]="'Divergente'" id="idDivergenteFormFuncaoTransacao"
+                                    buttonIcon="ui-icon-feedback" (click)="confirmDivergence(currentFuncaoTransacao)">
+                                </app-yellow-button>
                             </div>
                             <div class="ui-md-2 ui-sm-12" *ngIf="isEdit">
-                                <app-red-button [buttonLabel]="'Excluído' " id="idDeleteFormFuncaoDados"
-                                    buttonIcon="ui-icon-delete" (click)="confirmDelete(currentFuncaoTransacao)">
-                                </app-red-button>
+                                <app-brown-button [buttonLabel]="'Inativar' " id="idDeleteFormFuncaoTransacao" class="brown-btn"
+                                    buttonIcon="ui-icon-close" (click)="confirmDelete(currentFuncaoTransacao)">
+                                </app-brown-button>
                             </div>
                             <div class="ui-md-2 ui-sm-12">
+                                <app-gray-button [buttonLabel]="'Pendente'" id="idPendenteFormFuncaoTransacao"
+                                    buttonIcon="ui-icon-schedule" (click)="confirmPendente(currentFuncaoTransacao)">
+                                </app-gray-button>
+                            </div>
+                            <div class="ui-md-1 ui-sm-12">
                                 <app-blue-button [buttonLabel]="'Salvar'" id="idBtnSalvarFormFuncaoTransacao"
                                     buttonIcon="ui-icon-add" (click)="buttonSaveEdit()">
                                 </app-blue-button>
                             </div>
-                            <div class="ui-md-2 ui-sm-12">
+                            <div class="ui-md-1 ui-sm-12">
                                 <app-white-button [buttonLabel]="'Fechar'" id="idBtnFecharFormFuncaoTransacao"
                                     (click)="cancelar()">
                                 </app-white-button>
@@ -484,6 +514,13 @@
                                     <label><b>Complexidade: </b></label>
                                     {{currentFuncaoTransacao.complexidade}}
                                 </div>
+                                 <div class="ui-md-6 ui-sm-12">
+                                    <label><b>Equipe: </b></label>
+                                    {{currentFuncaoTransacao.equipe.nome}}
+                                </div>
+                                
+                            </div>
+                            <div class="ui-g">
                                 <div class="ui-md-6 ui-sm-12">
                                     <div>
                                         <label><b>Deflator: </b></label>
@@ -647,7 +684,15 @@
             </p-dropdown>
         </div>
     </div>
-
+    <div class="ui-g">
+        <div class="ui-g-3 ui-md-12 ui-sm-12">
+            <label>Equipe</label>
+            <p-dropdown [filter]="true" [options]="equipes" [appendTo]="pDialogEditLote"
+                id="idEquipeFuncaoTransacao" [(ngModel)]="equipeEmLote"
+                [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
+            </p-dropdown>
+        </div>
+    </div>
     <div class="ui-g">
         <div class="ui-g-11 ui-md-11 ui-sm-11">
             <label>Deflator: </label>

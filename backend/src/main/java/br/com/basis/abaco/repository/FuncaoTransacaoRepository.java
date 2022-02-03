@@ -42,9 +42,15 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
 
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoOrderByOrdem(Long id, StatusFuncao statusFuncao);
 
+    Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(Long id, StatusFuncao statusFuncao);
+
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long id, StatusFuncao statusFuncao);
 
     long countByFuncionalidadeId(Long id);
 
     Optional<List<FuncaoTransacao>> findAllByFuncionalidadeId(Long id);
+
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idModulo, Long id, Long idEquipe);
+
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idModulo, Long idEquipe);
 }

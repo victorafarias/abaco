@@ -9,6 +9,8 @@ import { RedButtonComponent } from './red-button/red-button.component';
 import { SubmitButtonComponent } from './submit-button/submit-button.component';
 
 import { SharedModule } from 'src/app/shared/shared.module';
+import { YellowButtonComponent } from './yellow-button/yellow-button.component';
+import { BrownButtonComponent } from './brown-button/brown-button.component';
 
 
 @NgModule({
@@ -23,7 +25,9 @@ import { SharedModule } from 'src/app/shared/shared.module';
     WhiteButtonComponent,
     SubmitButtonComponent,
     RedButtonComponent,
-    ExportButtonComponent
+    ExportButtonComponent,
+    YellowButtonComponent,
+    BrownButtonComponent
   ],
   exports: [
     GrayButtonComponent,
@@ -32,7 +36,9 @@ import { SharedModule } from 'src/app/shared/shared.module';
     WhiteButtonComponent,
     SubmitButtonComponent,
     RedButtonComponent,
-    ExportButtonComponent
+    ExportButtonComponent,
+    YellowButtonComponent,
+    BrownButtonComponent
   ]
 })
 export class AbacoButtonsModule { }
