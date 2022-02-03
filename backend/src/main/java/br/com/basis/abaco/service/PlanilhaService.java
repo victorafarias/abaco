@@ -806,7 +806,6 @@ public class PlanilhaService {
                     pfPorFunc.put(funcaoTransacao.getFuncionalidade().getNome(), pfPorFunc.get(funcaoTransacao.getFuncionalidade().getNome()) + funcaoTransacao.getPf().doubleValue());
                 }
             }
-
             int rowNum = 4;
             int num = 1;
             for (Map.Entry<String, Double> entry : pfPorFunc.entrySet()) {
