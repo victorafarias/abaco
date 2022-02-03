@@ -787,7 +787,7 @@ public class PlanilhaService {
     }
 
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
-        XSSFSheet sheet = excelFile.getSheet(PF_POR_FUNCIONALIDADE);
+        XSSFSheet sheet = excelFile.getSheet("Fundamentação");
         Map<String, Double> pfPorFunc = new HashMap<>();
         if(sheet != null){
             for (int i = 0; i < funcaoDadosList.size(); i++) {
@@ -807,10 +807,11 @@ public class PlanilhaService {
                 }
             }
 
-            int rowNum = 1;
+            int rowNum = 4;
+            int num = 1;
             for (Map.Entry<String, Double> entry : pfPorFunc.entrySet()) {
-                XSSFRow row = sheet.getRow(rowNum);
-                row.getCell(0).setCellValue(rowNum++);
+                XSSFRow row = sheet.getRow(rowNum++);
+                row.getCell(0).setCellValue(num++);
                 row.getCell(1).setCellValue(entry.getKey());
                 row.getCell(2).setCellValue(entry.getValue());
             }
