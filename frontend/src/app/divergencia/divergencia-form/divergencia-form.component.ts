@@ -413,7 +413,6 @@ export class DivergenciaFormComponent implements OnInit {
             }
         });
     }
-    
 
     resetManuais() {
         this.manuais = [];
