@@ -79,6 +79,7 @@ public class PlanilhaService {
                 this.setarFuncoesDetalhadaExcelPadraoEB2(excelFile, funcaoDadosList, funcaoTransacaoList, analise);
             }
         }
+
         this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
@@ -556,6 +557,7 @@ public class PlanilhaService {
     private ByteArrayOutputStream modeloPadraoBasis(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
         InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo1-basis.xlsx");
         XSSFWorkbook excelFile = new XSSFWorkbook(stream);
+        this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         this.setarDeflatoresExcelPadraoBasis(excelFile, analise);
         String nomeElaborador = analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
             analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
@@ -572,7 +574,6 @@ public class PlanilhaService {
                 this.setarFuncoesEstimadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador);
             }
         }
-        this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
@@ -786,7 +787,7 @@ public class PlanilhaService {
         }
     }
 
-    
+
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
         XSSFSheet sheet = excelFile.getSheet(PF_POR_FUNCIONALIDADE);
         Map<String, Double> pfPorFunc = new HashMap<>();
