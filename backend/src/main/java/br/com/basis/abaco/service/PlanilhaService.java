@@ -555,7 +555,7 @@ public class PlanilhaService {
     //Padrão BASIS
 
     private ByteArrayOutputStream modeloPadraoBasis(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
-        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo1-basis.xlsx");
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo1-basis.xls");
         XSSFWorkbook excelFile = new XSSFWorkbook(stream);
         this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         this.setarDeflatoresExcelPadraoBasis(excelFile, analise);
@@ -565,6 +565,7 @@ public class PlanilhaService {
         if(analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)){
             this.setarFuncoesIndicativaExcelPadraoBasis(excelFile, funcaoDadosList, analise, nomeElaborador);
         }
+        
         else{
             this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador);
             if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
