@@ -559,6 +559,7 @@ public class PlanilhaService {
         XSSFWorkbook excelFile = new XSSFWorkbook(stream);
         this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         this.setarDeflatoresExcelPadraoBasis(excelFile, analise);
+        
         String nomeElaborador = analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
             analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
         this.setarResumoExcelPadraoBasis(excelFile, analise, nomeElaborador);
