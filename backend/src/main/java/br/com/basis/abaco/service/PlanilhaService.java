@@ -565,7 +565,6 @@ public class PlanilhaService {
         if(analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)){
             this.setarFuncoesIndicativaExcelPadraoBasis(excelFile, funcaoDadosList, analise, nomeElaborador);
         }
-        
         else{
             this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador);
             if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
