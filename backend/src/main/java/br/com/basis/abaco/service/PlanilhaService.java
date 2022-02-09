@@ -551,7 +551,6 @@ public class PlanilhaService {
         excelSheet.getRow(22).getCell(0).setCellValue(analise.getEscopo());
         excelSheet.getRow(11).getCell(0).setCellValue(analise.getPropositoContagem());
     }
-
     //Padrão BASIS
 
     private ByteArrayOutputStream modeloPadraoBasis(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
