@@ -178,7 +178,6 @@ export class AnaliseService {
             });
         return null;
     }
-    
 
     /**
      *
