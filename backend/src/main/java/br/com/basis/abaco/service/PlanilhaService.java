@@ -1078,6 +1078,7 @@ public class PlanilhaService {
         }
     }
 
+    
     private String pegarValorValidacaoDuasFuncao(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria) {
         if(funcaoPrimaria.getName() != null && funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.VALIDADO) ||
             funcaoSecundaria != null && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
