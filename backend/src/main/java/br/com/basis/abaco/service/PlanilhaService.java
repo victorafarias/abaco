@@ -919,6 +919,7 @@ public class PlanilhaService {
             if(this.testarFuncaoTransacaoDivergencia(funcaoPrimaria, funcaoSecundaria) == true) {
                 break;
             }
+            
             XSSFRow row = excelSheet.getRow(rowNumero++);
             if(funcaoPrimaria.getName() != null){
                 row.getCell(5).setCellValue(funcaoPrimaria.getName());
