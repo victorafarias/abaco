@@ -36,7 +36,7 @@ public class PlanilhaService {
     private final static String ESTIMATIVA = "AFP - Estimativa";
     private final static String DETALHADA = "AFP - Detalhada";
     private final static String RESUMO = "Resumo";
-    private final static String PF_POR_FUNCIONALIDADE = "PF por Funcionalidade";
+    private final static String PF_POR_FUNCIONALIDADE = "Funcionalidade";
 
 
     private final static String METODO_DETALHADO = "Detalhada";
@@ -82,6 +82,7 @@ public class PlanilhaService {
                 this.setarFuncoesDetalhadaExcelPadraoEB2(excelFile, funcaoDadosList, funcaoTransacaoList, analise);
             }
         }
+
         this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
@@ -553,12 +554,12 @@ public class PlanilhaService {
         excelSheet.getRow(22).getCell(0).setCellValue(analise.getEscopo());
         excelSheet.getRow(11).getCell(0).setCellValue(analise.getPropositoContagem());
     }
-
     //Padrão BASIS
 
     private ByteArrayOutputStream modeloPadraoBasis(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
         InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo1-basis.xlsx");
         XSSFWorkbook excelFile = new XSSFWorkbook(stream);
+        this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         this.setarDeflatoresExcelPadraoBasis(excelFile, analise);
         String nomeElaborador = analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
             analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
@@ -575,7 +576,6 @@ public class PlanilhaService {
                 this.setarFuncoesEstimadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador);
             }
         }
-        this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
@@ -828,11 +828,11 @@ public class PlanilhaService {
                     pfPorFunc.put(funcaoTransacao.getFuncionalidade().getNome(), pfPorFunc.get(funcaoTransacao.getFuncionalidade().getNome()) + funcaoTransacao.getPf().doubleValue());
                 }
             }
-
-            int rowNum = 1;
+            int rowNum = 4;
+            int num = 1;
             for (Map.Entry<String, Double> entry : pfPorFunc.entrySet()) {
-                XSSFRow row = sheet.getRow(rowNum);
-                row.getCell(0).setCellValue(rowNum++);
+                XSSFRow row = sheet.getRow(rowNum++);
+                row.getCell(0).setCellValue(num++);
                 row.getCell(1).setCellValue(entry.getKey());
                 row.getCell(2).setCellValue(entry.getValue());
             }
