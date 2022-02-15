@@ -426,6 +426,7 @@ export class DivergenciaFormComponent implements OnInit {
             this.analise.esforcoFases = _.cloneDeep(manual.esforcoFases);
         }
     }
+    
 
     private formataData(data: Date): String {
         const dt = `${data.getDay()}/${(data.getMonth() + 1)}/${data.getFullYear()}`;
