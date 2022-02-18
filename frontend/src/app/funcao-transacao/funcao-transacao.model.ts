@@ -1,14 +1,14 @@
-import {BaseEntity} from '../shared';
-import {FatorAjuste} from '../fator-ajuste/index';
-import {Funcionalidade} from '../funcionalidade/index';
-import {Complexidade} from '../analise-shared/complexidade-enum';
-import {DerTextParser, ParseResult} from '../analise-shared/der-text/der-text-parser';
-import {FuncaoAnalise} from '../analise-shared/funcao-analise';
-import {Der} from '../der/der.model';
-import {DerChipConverter} from '../analise-shared/der-chips/der-chip-converter';
-import {Alr} from '../alr/alr.model';
-import {Impacto} from '../analise-shared/impacto-enum';
-import {FuncaoResumivel} from '../analise-shared';
+import { BaseEntity } from '../shared';
+import { FatorAjuste } from '../fator-ajuste/index';
+import { Funcionalidade } from '../funcionalidade/index';
+import { Complexidade } from '../analise-shared/complexidade-enum';
+import { DerTextParser, ParseResult } from '../analise-shared/der-text/der-text-parser';
+import { FuncaoAnalise } from '../analise-shared/funcao-analise';
+import { Der } from '../der/der.model';
+import { DerChipConverter } from '../analise-shared/der-chips/der-chip-converter';
+import { Alr } from '../alr/alr.model';
+import { Impacto } from '../analise-shared/impacto-enum';
+import { FuncaoResumivel } from '../analise-shared';
 import { CommentFuncaoTransacao } from './comment.model';
 import { Status } from '../status/status.model';
 import { Modulo } from '../modulo';
@@ -29,16 +29,17 @@ enum StatusFunction {
 }
 
 export class Editor {
-    constructor(public label?: string,
-        public placeholder?: string,
-        public formControlName?: string
-    ) { }
+  constructor(public label?: string,
+    public placeholder?: string,
+    public formControlName?: string
+  ) { }
 }
 
 export class FuncaoTransacao implements FuncaoResumivel, BaseEntity, FuncaoAnalise {
 
   detStr: string;
   ftrStr: string;
+  rlrs: any;
 
   constructor(
     public id?: number,
@@ -79,7 +80,7 @@ export class FuncaoTransacao implements FuncaoResumivel, BaseEntity, FuncaoAnali
   static convertTransacaoJsonToObject(json: any) {
     const sintetico = Object.create(FuncaoTransacao.prototype);
     return Object.assign(sintetico, json, {
-        created: new Date(json.created)
+      created: new Date(json.created)
     });
   }
 
@@ -104,8 +105,8 @@ export class FuncaoTransacao implements FuncaoResumivel, BaseEntity, FuncaoAnali
 
   comparar(funcaoTransacao: FuncaoTransacao): boolean {
     return funcaoTransacao.name === this.name &&
-    funcaoTransacao.funcionalidade.id === this.funcionalidade.id &&
-    funcaoTransacao.funcionalidade.modulo.id === this.funcionalidade.modulo.id;
+      funcaoTransacao.funcionalidade.id === this.funcionalidade.id &&
+      funcaoTransacao.funcionalidade.modulo.id === this.funcionalidade.modulo.id;
   }
 
   copyFromJSON(json: any): FuncaoTransacao {
@@ -219,7 +220,7 @@ class FuncaoTransacaoCopyFromJSON {
   private converteDers() {
     if (this._json.ders) {
       this._funcaoTransacao.ders = this._json.ders.map(
-          der => new Der().copyFromJSON(der)
+        der => new Der().copyFromJSON(der)
       );
     }
   }

@@ -17,3 +17,5 @@ RUN \
 ADD  dist.tar.gz /usr/share/nginx/html/
 
 CMD ["sh", "-c", "/etc/nginx/env.sh ; nginx -g 'daemon off;'"]
+
+

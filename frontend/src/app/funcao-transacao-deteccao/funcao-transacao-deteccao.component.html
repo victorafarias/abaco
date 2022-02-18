@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+</style>
+
+<body>
+    <div class="card">
+        <div class="card-header">
+            <h3>Detecção automatica de Funcão de Transação</h3>
+            <div class="card-body">
+                <div class="ui-g-6 ui-md-6 ui-sm-12">
+                    <!-- Módulo -->
+                    <div class="ui-g-10 ui-md-10 ui-sm-10">
+                        <label>Módulo* </label>
+                        <div class="ui-12 ui-g-fuild">
+                            <p-dropdown [filter]="true" optionLabel="nome" name="modulo" datakey="id"
+                                [placeholder]="this.getLabel('Selecione')" [options]="modulosTeste"
+                                [(ngModel)]="teste">
+                            </p-dropdown>
+                        </div>
+                    </div>
+                    <div class="ui-g-2 ui-md-2 ui-sm-2">
+                        <app-blue-button buttonIcon="ui-icon-add" (click)="editModulo()">
+                        </app-blue-button>
+                    </div>
+                </div>
+                <!-- funcionalidade -->
+                <div class="ui-g-6 ui-md-6 ui-sm-12">
+                    <div class="ui-g-6 ui-md-10 ui-sm-12">
+                        <label>Funcionalidade* </label>
+                        <div class="ui-12 ui-g-fluild">
+                            <p-dropdown [filter]="true" optionLabel="nome" name="funcionalidade"
+                                [placeholder]="'Selecione um Módulo para carregar a funcionalidade'" >
+                            </p-dropdown>
+                        </div>
+                    </div>
+                    <div class="ui-g-2 ui-md-2 ui-sm-2">
+                        <app-blue-button buttonIcon="ui-icon-add" (click)="editFuncionalidade()">
+                        </app-blue-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visão PF -->
+        <p-fieldset legend="Visão PF" [toggleable]="true" [collapsed]="true">
+            <div class="ui-g-12 ui-md-12">
+                <button pButton style="width: 20%; margin-left: 77%;" type="button" label="Detectar Componentes"
+                    (click)="detectarComponentesVpf()"> </button>
+            </div>
+        </p-fieldset>
+        <br>
+        <!--tabela de dados e transação-->
+        <div *ngIf="resultFuncaoTransacao.length > 0">
+            <p-accordion [multiple]="true">
+                <!--Função de dados-->
+                <p-accordionTab header="Função de Dados">
+                    <ng-template pTemplate="body" let-tela let-expanded="expanded">
+                        <tr>
+                            <td>
+                                <button type="button" pButton pRipple></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="rowexpansion" let-tela>
+                            <div *ngFor="let tela of resultFuncaoDados[0]; let i = index;">
+                                <p-accordionTab header="Tela {{i+1}}">
+                                    <p-table [value]="tela">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th pSortableColumn style="width: 100px;">Ordem<p-sortIcon></p-sortIcon>
+                                                </th>
+                                                <th pSortableColumn="Nome do componete">Nome do Componente</th>
+                                                <th pSortableColumn>Tipo do Componente<p-sortIcon></p-sortIcon>
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-tela let-rowIndex="rowIndex">
+                                            <tr>
+                                                <td style="text-align: center;">{{rowIndex+1}}</td>
+                                                <td style="text-align: center;">{{tela.nome}}</td>
+                                                <td style="text-align: center;">{{tela.tipo}}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </p-accordionTab>
+                            </div>
+                        
+                    </ng-template>
+                </p-accordionTab>
+                <!--Função de transação-->
+                <p-accordionTab header="Função de Transação">
+                    <ng-template pTemplate="body" let-product let-expanded="expanded">
+                        <tr>
+                            <td>
+                                <button type="button" pButton pRipple></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="rowexpansion" let-product>
+                        <div *ngFor="let tela of resultFuncaoTransacao; let i = index">
+                            <p-accordionTab header="Tela {{i+1}}">
+                                <p-table [value]="tela">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th pSortableColumn style="width: 100px;">Ordem<p-sortIcon></p-sortIcon>
+                                            </th>
+                                            <th pSortableColumn="Nome do componete">Nome do Componente<p-sortIcon>
+                                                </p-sortIcon>
+                                            </th>
+                                            <th pSortableColumn>Tipo do Componente<p-sortIcon></p-sortIcon>
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-tela let-rowIndex="rowIndex">
+                                        <tr>
+                                            <td style="text-align: center;">{{rowIndex+1}}</td>
+                                            <td style="text-align: center;">{{tela.nome}}</td>
+                                            <td style="text-align: center;">{{tela.tipo}}</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </p-accordionTab>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+            </p-accordion>
+        </div>
+        <!-- Voltar e Salvar -->
+        <div class="ui-g ui-md-12" style="justify-content: right; margin-bottom: 05px; margin-top: 05px;">
+            <div class="p-buttonset">
+                <button class="white-btn" pButton type="button" label="Cancelar" icon="pi pi-times"
+                    (click)="cancelarDeteccao()" style="right: 10px;"></button>
+                <button class="blue-btn" pButton type="button" label="Salvar" icon="pi pi-plus"
+                    (click)="salvarDeteccao()"></button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
