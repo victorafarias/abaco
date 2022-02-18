@@ -20,21 +20,21 @@ import { DerService } from '../der/der.service';
 import { AlrService } from '../alr/alr.service';
 
 @NgModule({
-    imports: [
-        CommonModule,
-        FormsModule,
-        DatatableModule,
-        AbacoButtonsModule,
-        SecurityModule,
-        ReactiveFormsModule,
-        AbacoAnaliseSharedModule,
-        AbacoAnaliseBotaoSalvarModule,
-        AbacoDerChipsModule,
-        SharedModule,
-        RouterModule.forRoot(funcaoTransacaoRoute, {useHash: true}),
-        PesquisarFuncaoTransacaoModule,
+  imports: [
+    CommonModule,
+    FormsModule,
+    DatatableModule,
+    AbacoButtonsModule,
+    SecurityModule,
+    ReactiveFormsModule,
+    AbacoAnaliseSharedModule,
+    AbacoAnaliseBotaoSalvarModule,
+    AbacoDerChipsModule,
+    SharedModule,
+    RouterModule.forRoot(funcaoTransacaoRoute, { useHash: true }),
+    PesquisarFuncaoTransacaoModule,
 
-    ],
+  ],
   declarations: [
     FuncaoTransacaoFormComponent,
     FuncaoTransacaoDivergenceComponent,
@@ -51,4 +51,4 @@ import { AlrService } from '../alr/alr.service';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class FuncaoTransacaoModule {}
+export class FuncaoTransacaoModule { }

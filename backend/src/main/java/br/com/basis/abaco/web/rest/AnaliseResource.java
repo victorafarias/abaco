@@ -244,7 +244,6 @@ public class AnaliseResource {
         if(analise.getClonadaParaEquipe() == null){
             analise.setClonadaParaEquipe(false);
         }
-
         if (analise.getId() != null && tipoEquipe.getId() != null && !(analise.getClonadaParaEquipe())) {
             Analise analiseClone = new Analise(analise, userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get());
             analiseService.bindAnaliseCloneForTipoEquipe(analise, tipoEquipe, analiseClone);

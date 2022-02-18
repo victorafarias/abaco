@@ -1,4 +1,4 @@
-
+import { FuncaoTransacaoDeteccaoComponent } from '../funcao-transacao-deteccao/funcao-transacao-deteccao.component';
 import { AuthGuard } from '@nuvem/angular-base';
 import { Routes } from '@angular/router';
 import { FuncaoTransacaoFormComponent } from './funcao-transacao-form.component';
@@ -12,7 +12,7 @@ export const funcaoTransacaoRoute: Routes = [
         canActivate: [AuthGuard, AuthGuardService],
         data: {
             roleParaVerificar: ['ROLE_ABACO_ANALISE_CONSULTAR',
-            'ROLE_ABACO_ANALISE_EDITAR'],
+                'ROLE_ABACO_ANALISE_EDITAR'],
             breadcrumb: "Função de transação"
         }
     },
@@ -22,7 +22,7 @@ export const funcaoTransacaoRoute: Routes = [
         canActivate: [AuthGuard, AuthGuardService],
         data: {
             roleParaVerificar: ['ROLE_ABACO_ANALISE_CONSULTAR',
-            'ROLE_ABACO_ANALISE_EDITAR'],
+                'ROLE_ABACO_ANALISE_EDITAR'],
             breadcrumb: "Função de transação"
         }
     },
@@ -41,6 +41,26 @@ export const funcaoTransacaoRoute: Routes = [
         canActivate: [AuthGuard, AuthGuardService],
         data: {
             roleParaVerificar: ['ROLE_ABACO_VALIDACAO_EDITAR'],
+            breadcrumb: "Função de transação"
+        }
+    },
+    {
+        path: 'analise/:id/funcao-transacao-deteccao',
+        component: FuncaoTransacaoDeteccaoComponent,
+        canActivate: [AuthGuard, AuthGuardService],
+        data: {
+            roleParaVerificar: ['ROLE_ABACO_ANALISE_CONSULTAR',
+                'ROLE_ABACO_ANALISE_EDITAR'],
+            breadcrumb: "Função de transação"
+        }
+    },
+    {
+        path: 'analise/funcao-transacao-deteccao',
+        component: FuncaoTransacaoDeteccaoComponent,
+        canActivate: [AuthGuard, AuthGuardService],
+        data: {
+            roleParaVerificar: ['ROLE_ABACO_ANALISE_CONSULTAR',
+                'ROLE_ABACO_ANALISE_EDITAR'],
             breadcrumb: "Função de transação"
         }
     }
