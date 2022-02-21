@@ -983,6 +983,7 @@ public class PlanilhaService {
         }
     }
 
+    
     private boolean testarFuncaoTransacaoDivergencia(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria, boolean isINM) {
         if(isINM == false){
             if((funcaoSecundaria != null && funcaoPrimaria.getName() != null
