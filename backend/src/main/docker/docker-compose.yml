@@ -25,8 +25,6 @@ services:
       SPRING_MAIL_PORT: '25'
       SPRING_MAIL_USERNAME: '""'
       SPRING_PROFILES_ACTIVE: prod,swagger
-    ports:
-      - 8080:8080
   pgsql-abaco:
     image: postgres:11.7-alpine
     environment:
@@ -35,18 +33,12 @@ services:
       POSTGRES_USER: abaco
       TZ: America/Sao_Paulo
     volumes:
-    - ./abaco-pgsql-vol:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
+    - abaco-pgsql-vol:/var/lib/postgresql/data
   es-abaco:
     image: elasticsearch:2.4-alpine
     environment:
       ES_JAVA_OPTS: -Xms1g -Xmx1g -Des.path.conf=/usr/share/elasticsearch/config -Des.cluster.name=abaco -Des.discovery.zen.minimum_master_nodes=1 -Des.discovery.zen.ping.unicast.hosts=es-abaco
     volumes:
-    - abaco-es-vol:/usr/share/elasticsearch/data  
+    - abaco-es-vol:/usr/share/elasticsearch/data
     command:
     - -Dcluster.name=abaco
-    ports:
-      - 9300:9300
-      - 9200:9200
-    

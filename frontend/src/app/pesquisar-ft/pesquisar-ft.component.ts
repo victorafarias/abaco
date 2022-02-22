@@ -135,6 +135,7 @@ export class PesquisarFtComponent implements OnInit {
 
     campoDers: string = "";
 
+
     analisesFromFuncao: any[] = [];
     mostrarDialogPesquisarAnalises: boolean = false;
     headerDialog: String = "";
@@ -579,7 +580,6 @@ export class PesquisarFtComponent implements OnInit {
                         this.derService.getDersByFuncaoDadosId(funcao.idfuncaodados).subscribe(response =>{
                             funcao.qtdDers = response.length;
                         })
-
                         this.rlrService.getRlrsByFuncaoDadosId(funcao.idfuncaodados).subscribe(response =>{
                             funcao.qtdRlrs = response.length;
                         })
@@ -587,8 +587,6 @@ export class PesquisarFtComponent implements OnInit {
                         //     funcao.qtdDers = funcaoDados.totalDers
                         //     funcao.qtdRlrs = funcaoDados.totalRlrs;
                         // })
-
-
                     })
                 });
             } else {

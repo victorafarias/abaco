@@ -2,19 +2,5 @@
     "/api": {
         "target": "http://localhost:8080",
         "secure": false
-    },
-
-    "/visaopf": {
-        "target": "http://localhost:4444",
-        "secure": false,
-        "pathRewrite": {
-          "^/visaopf": ""
-        }
-
-    },
-
-    "/tfserver": {
-        "target": "http://localhost:5000",
-        "secure": false
     }
 }

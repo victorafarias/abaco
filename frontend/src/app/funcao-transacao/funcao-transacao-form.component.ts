@@ -166,6 +166,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
 
     numberPages = 20;
 
+
     //Variável para o p-editor
     formatsEditor = ["background", "bold", "color", "font", "code", "italic",
         "link", "size", "strike", "script", "underline", "blockquote",
@@ -450,10 +451,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             : this.getLabel('Adicionar Função de Transação');
     }
 
-    detectarTransacao() {
-        var routeNavigate = 'analise/' + this.idAnalise + '/funcao-transacao-deteccao'
-        this.router.navigate([routeNavigate])
-    }
+
     /**
      * Este método gera os campos dinâmicos necessários para realizar filtros
      */

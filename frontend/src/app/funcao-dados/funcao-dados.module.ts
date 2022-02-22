@@ -19,7 +19,6 @@ import { SharedModule } from '../shared/shared.module';
 import { PesquisarFuncaoTransacaoModule } from '../pesquisar-ft/pesquisar-ft.module';
 import { FuncaoTransacaoDivergenceComponent } from '../funcao-transacao';
 import { FuncaoDadosDivergenceComponent } from './funcao-dados-divergence/funcao-dados-divergence.component';
-import { PaginatorModule } from 'primeng';
 import { RlrService } from '../rlr/rlr.service';
 
 
@@ -41,7 +40,6 @@ import { RlrService } from '../rlr/rlr.service';
         ReactiveFormsModule,
         SharedModule,
         PesquisarFuncaoTransacaoModule,
-        PaginatorModule,
     ],
   declarations: [
     FuncaoDadosFormComponent,
