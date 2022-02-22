@@ -944,7 +944,7 @@ public class PlanilhaService {
             row.getCell(10).setCellValue(funcaoPrimaria.getDers().size());
             row.getCell(11).setCellValue(funcaoPrimaria.getAlrs().size());
             row.getCell(12).setCellValue(TIPO_INM);
-            row.getCell(19).setCellValue(Jsoup.parse(funcaoPrimaria.getSustantation() != null ? funcaoPrimaria.getSustantation() : "").text());
+            row.getCell(19).setCellValue(this.getFundamentacao(funcaoPrimaria));
             row.getCell(22).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
             evaluator.evaluateFormulaCell(row.getCell(16));
             evaluator.evaluateFormulaCell(row.getCell(18));
@@ -960,7 +960,7 @@ public class PlanilhaService {
                     row.getCell(10).setCellValue(funcaoSecundaria.getDers().size());
                     row.getCell(11).setCellValue(funcaoSecundaria.getAlrs().size());
                     row.getCell(12).setCellValue(TIPO_INM);
-                    row.getCell(19).setCellValue(Jsoup.parse(funcaoSecundaria.getSustantation() != null ? funcaoSecundaria.getSustantation() : "").text());
+                    row.getCell(19).setCellValue(this.getFundamentacao(funcaoSecundaria));
                     row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoSecundaria, funcaoSecundaria));
                     evaluator.evaluateFormulaCell(row.getCell(16));
                     evaluator.evaluateFormulaCell(row.getCell(18));
@@ -978,10 +978,14 @@ public class PlanilhaService {
             row.getCell(26).setCellValue(funcaoSecundaria.getDers().size());
             row.getCell(27).setCellValue(funcaoSecundaria.getAlrs().size());
             row.getCell(28).setCellValue(TIPO_INM);
-            row.getCell(35).setCellValue(Jsoup.parse(funcaoSecundaria.getSustantation() != null ? funcaoSecundaria.getSustantation() : "").text());
+            row.getCell(35).setCellValue(this.getFundamentacao(funcaoSecundaria));
             evaluator.evaluateFormulaCell(row.getCell(31));
             evaluator.evaluateFormulaCell(row.getCell(34));
         }
+    }
+
+    private String getFundamentacao(FuncaoTransacao funcao) {
+        return Jsoup.parse(funcao.getSustantation() != null ? funcao.getSustantation() : "").text();
     }
 
     private Integer getQuantidadeFuncao(FuncaoTransacao funcao) {
@@ -1081,7 +1085,7 @@ public class PlanilhaService {
             row.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
         }
     }
-    
+
 
     private boolean testarFuncaoTransacaoDivergencia(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria) {
         if((funcaoSecundaria != null && funcaoPrimaria.getName() != null
