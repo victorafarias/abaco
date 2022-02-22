@@ -1081,8 +1081,7 @@ public class PlanilhaService {
             row.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
         }
     }
-
-
+    
 
     private boolean testarFuncaoTransacaoDivergencia(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria) {
         if((funcaoSecundaria != null && funcaoPrimaria.getName() != null
