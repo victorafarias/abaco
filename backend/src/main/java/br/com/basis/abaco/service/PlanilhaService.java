@@ -983,6 +983,7 @@ public class PlanilhaService {
             }
         }
     }
+    
 
     private void setarFuncoesDetalhadaExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
         XSSFSheet excelSheet = excelFile.getSheet(DETALHADA);
