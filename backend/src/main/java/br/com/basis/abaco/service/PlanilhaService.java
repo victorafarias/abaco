@@ -931,7 +931,6 @@ public class PlanilhaService {
             if(this.testarFuncaoTransacaoDivergenciaINM(funcaoPrimaria, funcaoSecundaria) == true) {
                 canContinue = false;
             }
-
             if(canContinue){
                 XSSFRow row = excelSheet.getRow(rowNumero++);
                 this.setarFuncoesINMTransacaoExcelDivergencia(funcaoPrimaria, funcaoSecundaria, row, idRow, evaluator);
