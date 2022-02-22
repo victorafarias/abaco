@@ -1155,6 +1155,7 @@ public class PlanilhaService {
         }
     }
 
+    
     private boolean isFuncaoEquiparada(FuncaoDados funcaoPrimaria, FuncaoDados funcaoSecundaria) {
         if(funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) &&
             funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) &&
