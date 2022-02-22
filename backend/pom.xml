@@ -607,12 +607,6 @@
             <groupId>org.springframework.social</groupId>
             <artifactId>spring-social-twitter</artifactId>
         </dependency>
-    
-      <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>1.4.199</version>
-      </dependency>
     </dependencies>
     <build>
         <defaultGoal>spring-boot:run</defaultGoal>

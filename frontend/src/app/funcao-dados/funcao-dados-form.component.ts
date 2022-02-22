@@ -28,8 +28,6 @@ import { BaselineAnalitico } from './../baseline/baseline-analitico.model';
 import { BaselineService } from './../baseline/baseline.service';
 import { Der } from './../der/der.model';
 import { FuncaoTransacao, TipoFuncaoTransacao } from './../funcao-transacao/funcao-transacao.model';
-import { Visaopf } from '../visao-pf/visao-pf.model'
-import { Rlr } from '../rlr/rlr.model';
 import { FuncaoDados, TipoFuncaoDados } from './funcao-dados.model';
 import { FuncaoDadosService } from './funcao-dados.service';
 import { BlockUiService } from '@nuvem/angular-base';
@@ -37,9 +35,9 @@ import { Sistema, SistemaService } from '../sistema';
 import { UploadService } from '../upload/upload.service';
 import { Upload } from '../upload/upload.model';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-// import { timeStamp } from 'console';
-// import { table } from 'node:console';
-// import { DerService } from '../der/der.service';
+import { timeStamp } from 'console';
+import { table } from 'node:console';
+import { DerService } from '../der/der.service';
 import { Utilitarios } from '../util/utilitarios.util';
 
 @Component({
@@ -139,8 +137,6 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
     public seletedFuncaoDados: FuncaoDados = new FuncaoDados();
     public display = false;
 
-    public visaopf: Visaopf = new Visaopf();
-    public routeState: any
     public modulos: Modulo[];
     private sanitizer: DomSanitizer;
     private lastObjectUrl: string;
@@ -180,9 +176,6 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
         private moduloService: ModuloService,
         sanitizer: DomSanitizer,
     ) {
-        if (this.router.getCurrentNavigation().extras.state) {
-            this.routeState = this.router.getCurrentNavigation().extras.state;
-        }
         this.sanitizer = sanitizer;
         this.lastObjectUrl = "";
     }
@@ -222,69 +215,10 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
                         this.impactos = AnaliseSharedUtils.impactos;
                         this.disableTRDER();
                         this.blockUiService.hide();
-                        this.updateVisaopfResults();
                     });
                 }
             });
         });
-    }
-
-    paginatorVisaopfResult(event){
-        this.seletedFuncaoDados.sustantation=  '<img src="'+this.visaopf.cenario.telasResult[event.page].dataUrlResult+'" width="1222">'
-    }
-
-    detectarComponentes(){
-        var url = window.location.href.split("/")
-        var id = url[url.length-2]
-        var routerNavigate = `visaopf/${id}/deteccomponentes/funcao-dados`
-        var funcDados = this.seletedFuncaoDados
-        this.desconverterChips()
-        if(this.visaopf){
-            funcDados.ders = []
-            funcDados.rlrs = []
-            funcDados.sustantation= ""
-        }
-        this.router.navigate([routerNavigate], {
-            state: {
-                isEdit : this.isEdit,
-                idAnalise : this.idAnalise,
-                seletedFuncaoDados : JSON.stringify(funcDados),
-            }
-        })
-    }
-
-    updateVisaopfResults(){
-        if(this.routeState){
-            this.seletedFuncaoDados = JSON.parse(this.routeState.seletedFuncaoDados)
-            if(this.routeState.telasResult){
-                this.visaopf.cenario.telasResult = JSON.parse(this.routeState.telasResult)
-                this.seletedFuncaoDados.sustantation=  '<img src="'+this.visaopf.cenario.telasResult[0].dataUrlResult+'" width="1222">'
-                this.seletedFuncaoDados.ders = []
-                for(const tela of this.visaopf.cenario.telasResult){
-                    tela.componentes.forEach( comp => {
-                        if(comp.tipo === "campo" || comp.tipo ==="dropdown" || comp.tipo ==="checkbox" || comp.tipo ==="radio button"  ){
-                            if(comp.nome == null){
-                                this.seletedFuncaoDados.ders.push(new Der(undefined,"Sem nome - " + comp.tipo ))
-                            }else{
-                                this.seletedFuncaoDados.ders.push(new Der(undefined, comp.nome ))
-                            }
-                        }
-                    })
-                    if(tela.rlrName){
-                        this.seletedFuncaoDados.rlrs.push(new Rlr(undefined, tela.rlrName))
-                    }
-                }
-            }
-            if(this.routeState.isEdit){
-                this.carregarValoresNaPaginaParaEdicao(this.seletedFuncaoDados)
-            }else if(this.seletedFuncaoDados.ders.length > 0 ){
-                this.carregarDerERlr(this.seletedFuncaoDados)
-                this.carregarFatorDeAjusteNaEdicao(this.seletedFuncaoDados)
-            }
-            this.disableTRDER()
-            this.configurarDialog()
-            this.routeState=undefined
-        }
     }
 
     estadoInicial() {
@@ -1112,7 +1046,7 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
     }
 
     private carregarDerERlr(fd: FuncaoDados) {
-        if (fd.ders || fd.derValues) {
+        if (fd.ders && fd.derValues) {
             const ders = this.loadReference(fd.ders, fd.derValues);
             this.dersChips = ders.filter(der => {
                 return !(der.text === 'Mensagem' || der.text === 'Ação');
@@ -1141,8 +1075,6 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
     }
 
     cancelar() {
-        this.showDialog = false;
-        this.visaopf = new Visaopf()
         this.fecharDialog();
     }
 

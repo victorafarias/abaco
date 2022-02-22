@@ -31,31 +31,19 @@ import { IndexadorModule } from './indexador/indexador.module';
 import { LoginModule } from './login/login.module';
 import { ManualModule } from './manual/manual.module';
 import { ModuloModule } from './modulo/modulo.module';
+import { NomenclaturaModule } from './nomenclatura/nomenclatura.module';
 import { OrganizacaoModule } from './organizacao/organizacao.module';
+import { PerfilModule } from './perfil/perfil.module';
 import { PesquisarFuncaoTransacaoModule } from './pesquisar-ft/pesquisar-ft.module';
 import { SenhaModule } from './senha/senha.module';
 import { SharedModule } from './shared/shared.module';
 import { SistemaModule } from './sistema/sistema.module';
 import { StatusModule } from './status/status.module';
-import { NomenclaturaModule } from './nomenclatura/nomenclatura.module';
-import { VisaopfModule } from './visao-pf/visao-pf.module';
-import { VisaopfModelModule } from './visao-pf-model/visao-pf-model.module';
-import { VisaopfListsModelsModule } from './visaopf-list-models/visao-pf-list-models.module';
-import { VisaopfExportModelModule } from './visao-pf-export-model/visao-pf-export-model.module';
-
-import { PerfilModule } from './perfil/perfil.module';
 import { TipoEquipeModule } from './tipo-equipe/tipo-equipe.module';
 import { UploadService } from './upload/upload.service';
 import { UserModule } from './user/user.module';
 import { AuthGuardService } from './util/auth.guard.service';
 import { AuthService } from './util/auth.service';
-
-import { FuncaoDadosVisaoPfComponent } from './funcao-dados-visao-pf/funcao-dados-visao-pf.component';
-import { FuncaoTransacaoVisaoPfComponent } from './funcao-transacao-visao-pf/funcao-transacao-visao-pf.component';
-import { FuncaoTransacaoDeteccaoComponent } from './funcao-transacao-deteccao/funcao-transacao-deteccao.component';
-
-import { TableModule } from 'primeng/table';
-import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
     declarations: [
@@ -64,11 +52,7 @@ import { AccordionModule } from 'primeng/accordion';
         AppFooterComponent,
         AppRightpanelComponent,
         AppInlineProfileComponent,
-        DiarioErrosComponent,
-        FuncaoTransacaoVisaoPfComponent,
-        FuncaoDadosVisaoPfComponent,
-        FuncaoTransacaoDeteccaoComponent,
-
+        DiarioErrosComponent
     ],
     imports: [
         BrowserModule,
@@ -108,13 +92,7 @@ import { AccordionModule } from 'primeng/accordion';
         NomenclaturaModule,
         DivergenciaModule,
         ConfiguracaoBaselineModule,
-        VisaopfModule,
-        VisaopfModelModule,
-        VisaopfListsModelsModule,
-        VisaopfExportModelModule,
-        PerfilModule,
-        TableModule,
-        AccordionModule
+        PerfilModule
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

@@ -804,21 +804,6 @@ export class AnaliseListComponent implements OnInit {
             this.showDialogAnaliseBlock = false;
             this.analisesBlocks = [];
         }
-        if (this.analisesBlocks.length > 0) {
-            this.analisesBlocks.forEach(analise => {
-                const copy = analise.toJSONState();
-                this.analiseService.block(copy).subscribe(() => {
-                    const nome = copy.identificadorAnalise;
-                    const bloqueado = copy.bloqueiaAnalise;
-                    this.mensagemAnaliseBloqueada(bloqueado, nome);
-                    this.recarregarDataTable();
-                    this.datatable.filter();
-                });
-            });
-            this.datatable.selectedRow = null;
-            this.showDialogAnaliseBlock = false;
-            this.analisesBlocks = [];
-        }
     }
 
     private mensagemDialogBloquear(retorno: boolean) {
@@ -923,8 +908,8 @@ export class AnaliseListComponent implements OnInit {
 
             this.searchGroup = this.loadingGroupSearch();
             this.searchGroup.usuario = null;
-            // this.recarregarDataTable();
-            // this.datatable.filter();
+            this.recarregarDataTable();
+            this.datatable.filter();
             this.isLoadFilter = false;
             this.datatable.pDatatableComponent.metaKeySelection = true;
             this.updateVisibleColumns(this.columnsVisible);

@@ -101,10 +101,6 @@
                                         *ngIf="!isView && isOrderning" bTooltip="Salvar ordenação."
                                         class="ui-button-success" icon="save">
                                     </basis-datatable-button>
-                                    <basis-datatable-button name="add" *ngIf="!isView && !isOrderning"
-                                        (click)="detectarTransacao()" bTooltip="Incluir nova função de transação" 
-                                        class="ui-button-success" icon="add-to-queue">
-                                    </basis-datatable-button>
                                 </basis-datatable>
                             </div>
                             <!-- fim table -->
@@ -172,8 +168,7 @@
 
                         <div *ngIf="!isEdit">
                             <div class="ui-g" *ngIf="!showMultiplos">
-
-                                <div class="ui-g-9" *ngIf="!showMultiplos">
+                                <div class="ui-g-9">
                                     <label>Nome do Processo Elementar *</label>
                                     <p-autoComplete [(ngModel)]="currentFuncaoTransacao.name"
                                         [suggestions]="baselineResultados"
@@ -202,7 +197,7 @@
                             <div class="ui-g" *ngIf="showMultiplos">
                                 <div class="ui-g-9">
                                     <label>Nomes dos
-                                        Processos *</label>
+                                        Processos*</label>
                                     <textarea pInputTextarea [(ngModel)]="text"
                                         style="white-space: nowrap; overflow: auto;" [autoResize]="false"
                                         (keyup.enter)="textChanged()" id="idNomesFormFuncaoTransacao"

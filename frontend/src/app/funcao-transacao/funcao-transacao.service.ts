@@ -24,7 +24,7 @@ export class FuncaoTransacaoService {
     constructor(private http: HttpClient, private pageNotificationService: PageNotificationService) {
     }
 
-    autoCompletePEAnalitico(name: String, idFuncionalidade: number): Observable<any> {
+    autoCompletePEAnalitico(name: String, idFuncionalidade : number): Observable<any> {
         const url = `${this.resourceUrlPEAnalitico}ft?name=${name}&idFuncionalidade=${idFuncionalidade}`;
         return this.http.get(url);
     }
