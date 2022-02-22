@@ -903,7 +903,6 @@ public class PlanilhaService {
 
     private void setarFuncoesINMExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
         XSSFSheet excelSheet = excelFile.getSheet(SHEET_INM);
-
         FormulaEvaluator evaluator = excelFile.getCreationHelper().createFormulaEvaluator();
 
         excelSheet.getRow(2).getCell(15).setCellValue(nomeElaborador);
