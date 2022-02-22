@@ -1013,7 +1013,6 @@ public class PlanilhaService {
         idRow += funcaoDados.size();
         this.setarFuncoesTransacaoExcelDivergenciaPadraoBasis(funcaoTransacao, excelSheet, rowNumero, idRow, evaluator);
         evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
-
     }
 
     private void setarFuncoesTransacaoExcelDivergenciaPadraoBasis(Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao, XSSFSheet excelSheet, int rowNumero, int idRow, FormulaEvaluator evaluator) {
