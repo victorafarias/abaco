@@ -43,6 +43,8 @@ public class PlanilhaService {
     private final static String METODO_ESTIMATIVA = "Estimativa";
     private final static String METODO_INDICATIVA = "Indicativa";
 
+    private final static String TIPO_INM = "-------";
+
     private final static String DIVERGENTE = "Divergente";
 
     private final static String BASIS_MINUSCULO = "basis";
@@ -789,7 +791,7 @@ public class PlanilhaService {
                     row.getCell(9).setCellValue(funcaoTransacao.getQuantidade() != null ? funcaoTransacao.getQuantidade() : Integer.valueOf(0));
                     row.getCell(10).setCellValue(funcaoTransacao.getDers().size());
                     row.getCell(11).setCellValue(funcaoTransacao.getAlrs().size());
-                    row.getCell(12).setCellValue("-------");
+                    row.getCell(12).setCellValue(TIPO_INM);
                     evaluator.evaluateFormulaCell(row.getCell(18));
                     if(isDivergence == true){
                         row.getCell(22).setCellValue(this.pegarValorValidacao(funcaoTransacao.getStatusFuncao()));
@@ -929,61 +931,64 @@ public class PlanilhaService {
             if(this.testarFuncaoTransacaoDivergenciaINM(funcaoPrimaria, funcaoSecundaria) == true) {
                 canContinue = false;
             }
-
             if(canContinue){
                 XSSFRow row = excelSheet.getRow(rowNumero++);
-                if(funcaoPrimaria.getName() != null){
-                    row.getCell(5).setCellValue(funcaoPrimaria.getFuncionalidade().getModulo().getNome());
-                    row.getCell(6).setCellValue(funcaoPrimaria.getFuncionalidade().getNome());
-                    row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
-                    row.getCell(7).setCellValue(funcaoPrimaria.getName());
-                    row.getCell(0).setCellValue(idRow++);
-                    row.getCell(9).setCellValue(funcaoPrimaria.getQuantidade() != null ? funcaoPrimaria.getQuantidade() : Integer.valueOf(0));
-                    row.getCell(10).setCellValue(funcaoPrimaria.getDers().size());
-                    row.getCell(11).setCellValue(funcaoPrimaria.getAlrs().size());
-                    row.getCell(12).setCellValue("-------");
-                    row.getCell(19).setCellValue(Jsoup.parse(funcaoPrimaria.getSustantation() != null ? funcaoPrimaria.getSustantation() : "").text());
-                    row.getCell(22).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
-                    evaluator.evaluateFormulaCell(row.getCell(16));
-                    evaluator.evaluateFormulaCell(row.getCell(18));
-                }else{
-                    if(funcaoSecundaria != null){
-                        if(funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
-                            row.getCell(1).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
-                            row.getCell(5).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
-                            row.getCell(6).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
-                            row.getCell(7).setCellValue(funcaoSecundaria.getName());
-                            row.getCell(0).setCellValue(idRow++);
-                            row.getCell(9).setCellValue(funcaoSecundaria.getQuantidade() != null ? funcaoSecundaria.getQuantidade() : Integer.valueOf(0));
-                            row.getCell(10).setCellValue(funcaoSecundaria.getDers().size());
-                            row.getCell(11).setCellValue(funcaoSecundaria.getAlrs().size());
-                            row.getCell(12).setCellValue("-------");
-                            row.getCell(19).setCellValue(Jsoup.parse(funcaoSecundaria.getSustantation() != null ? funcaoSecundaria.getSustantation() : "").text());
-                            row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoSecundaria, funcaoSecundaria));
-                            evaluator.evaluateFormulaCell(row.getCell(16));
-                            evaluator.evaluateFormulaCell(row.getCell(18));
-                        }else{
-                            row.getCell(6).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
-                            row.getCell(5).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
-                            row.getCell(7).setCellValue(funcaoSecundaria.getName());
-                        }
-                    }
-                }
-                if(funcaoSecundaria != null){
-                    row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
-                    row.getCell(22).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
-                    row.getCell(25).setCellValue(funcaoSecundaria.getQuantidade() != null ? funcaoPrimaria.getQuantidade() : Integer.valueOf(0));
-                    row.getCell(26).setCellValue(funcaoSecundaria.getDers().size());
-                    row.getCell(27).setCellValue(funcaoSecundaria.getAlrs().size());
-                    row.getCell(28).setCellValue("-------");
-                    row.getCell(35).setCellValue(Jsoup.parse(funcaoSecundaria.getSustantation() != null ? funcaoSecundaria.getSustantation() : "").text());
-                    evaluator.evaluateFormulaCell(row.getCell(31));
-                    evaluator.evaluateFormulaCell(row.getCell(34));
-                }
+                this.setarFuncoesINMTransacaoExcelDivergencia(funcaoPrimaria, funcaoSecundaria, row, idRow, evaluator);
             }
         }
     }
-    
+
+    private void setarFuncoesINMTransacaoExcelDivergencia(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria, XSSFRow row, int idRow, FormulaEvaluator evaluator) {
+        if(funcaoPrimaria.getName() != null){
+            row.getCell(5).setCellValue(funcaoPrimaria.getFuncionalidade().getModulo().getNome());
+            row.getCell(6).setCellValue(funcaoPrimaria.getFuncionalidade().getNome());
+            row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
+            row.getCell(7).setCellValue(funcaoPrimaria.getName());
+            row.getCell(0).setCellValue(idRow++);
+            row.getCell(9).setCellValue(funcaoPrimaria.getQuantidade() != null ? funcaoPrimaria.getQuantidade() : Integer.valueOf(0));
+            row.getCell(10).setCellValue(funcaoPrimaria.getDers().size());
+            row.getCell(11).setCellValue(funcaoPrimaria.getAlrs().size());
+            row.getCell(12).setCellValue(TIPO_INM);
+            row.getCell(19).setCellValue(Jsoup.parse(funcaoPrimaria.getSustantation() != null ? funcaoPrimaria.getSustantation() : "").text());
+            row.getCell(22).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+            evaluator.evaluateFormulaCell(row.getCell(16));
+            evaluator.evaluateFormulaCell(row.getCell(18));
+        }else{
+            if(funcaoSecundaria != null){
+                if(funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
+                    row.getCell(1).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
+                    row.getCell(5).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
+                    row.getCell(6).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
+                    row.getCell(7).setCellValue(funcaoSecundaria.getName());
+                    row.getCell(0).setCellValue(idRow++);
+                    row.getCell(9).setCellValue(funcaoSecundaria.getQuantidade() != null ? funcaoSecundaria.getQuantidade() : Integer.valueOf(0));
+                    row.getCell(10).setCellValue(funcaoSecundaria.getDers().size());
+                    row.getCell(11).setCellValue(funcaoSecundaria.getAlrs().size());
+                    row.getCell(12).setCellValue(TIPO_INM);
+                    row.getCell(19).setCellValue(Jsoup.parse(funcaoSecundaria.getSustantation() != null ? funcaoSecundaria.getSustantation() : "").text());
+                    row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoSecundaria, funcaoSecundaria));
+                    evaluator.evaluateFormulaCell(row.getCell(16));
+                    evaluator.evaluateFormulaCell(row.getCell(18));
+                }else{
+                    row.getCell(6).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
+                    row.getCell(5).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
+                    row.getCell(7).setCellValue(funcaoSecundaria.getName());
+                }
+            }
+        }
+        if(funcaoSecundaria != null){
+            row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+            row.getCell(22).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
+            row.getCell(25).setCellValue(funcaoSecundaria.getQuantidade() != null ? funcaoPrimaria.getQuantidade() : Integer.valueOf(0));
+            row.getCell(26).setCellValue(funcaoSecundaria.getDers().size());
+            row.getCell(27).setCellValue(funcaoSecundaria.getAlrs().size());
+            row.getCell(28).setCellValue(TIPO_INM);
+            row.getCell(35).setCellValue(Jsoup.parse(funcaoSecundaria.getSustantation() != null ? funcaoSecundaria.getSustantation() : "").text());
+            evaluator.evaluateFormulaCell(row.getCell(31));
+            evaluator.evaluateFormulaCell(row.getCell(34));
+        }
+    }
+
 
     private void setarFuncoesDetalhadaExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
         XSSFSheet excelSheet = excelFile.getSheet(DETALHADA);
