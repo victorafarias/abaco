@@ -900,6 +900,7 @@ public class PlanilhaService {
         return false;
 
     }
+    
 
     private void setarFuncoesINMExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
         XSSFSheet excelSheet = excelFile.getSheet(SHEET_INM);
