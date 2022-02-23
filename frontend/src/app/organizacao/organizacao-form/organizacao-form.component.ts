@@ -352,7 +352,6 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
             this.pageNotificationService.addErrorMessage('Por favor preencher campos obrigatórios.');
             form.controls.nome.markAsTouched();
             form.controls.siglaOrganizacao.markAsTouched();
-            form.controls.cnpjOrganizacao.markAsTouched();
             return;
         }
         if (!this.organizacao.nome) {
@@ -377,7 +376,7 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
             if (!ValidacaoUtil.validarCNPJ(this.organizacao.cnpj)) {
                 this.cnpjValido = true;
                 form.controls.cnpjOrganizacao.markAsTouched();
-                this.pageNotificationService.addErrorMessage('CNPJ inválidoo');
+                this.pageNotificationService.addErrorMessage('CNPJ inválido');
                 return;
             }
         }
@@ -439,10 +438,10 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
         let isFieldsValid = false;
 
         if (!this.organizacao.nome || this.organizacao.nome === undefined) {
-            this.invalidFields.push('Cadastros.Organizacao.Nome*');
+            this.invalidFields.push('Nome');
         }
         if (!this.organizacao.sigla || this.organizacao.sigla === undefined) {
-            this.invalidFields.push('Cadastros.Organizacao.Sigla');
+            this.invalidFields.push('Sigla');
         }
         // if (!this.organizacao.cnpj || this.organizacao.cnpj === undefined) {
         //     this.invalidFields.push('Cadastros.Organizacao.CNPJ');
@@ -455,11 +454,11 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
     privateExibirMensagemCamposInvalidos(codErro: number) {
         switch (codErro) {
             case 1:
-                this.pageNotificationService.addErrorMessage('Cadastros.Mensagens.msgCamposInvalidos' + this.getInvalidFieldsString());
+                this.pageNotificationService.addErrorMessage('Campos inválidos' + this.getInvalidFieldsString());
                 this.invalidFields = [];
                 return;
             case 2:
-                this.pageNotificationService.addErrorMessage('Cadastros.Organizacao.msgCampoArquivoManualEstaInvalido');
+                this.pageNotificationService.addErrorMessage('Campo arquivo manual está inválido');
                 return;
         }
     }
@@ -484,7 +483,7 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
             organizacoesRegistradas.forEach(each => {
                 if (each.nome.toUpperCase() === this.organizacao.nome.toUpperCase() && each.id !== this.organizacao.id) {
                     isAlreadyRegistered = true;
-                    this.pageNotificationService.addErrorMessage('Cadastros.Organizacao.Mensagens.msgJaExisteUmaOrganizacaoRegistradaComEsteNome');
+                    this.pageNotificationService.addErrorMessage('Já existe organização cadastrada com esse nome');
                 }
             });
         }
@@ -495,9 +494,9 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
         let isAlreadyRegistered = false;
         if (organizacoesRegistradas) {
             organizacoesRegistradas.forEach(each => {
-                if (each.cnpj === this.organizacao.cnpj && each.id !== this.organizacao.id) {
+                if (each.cnpj === this.organizacao.cnpj && each.id !== this.organizacao.id && this.organizacao.cnpj.length > 0) {
                     isAlreadyRegistered = true;
-                    this.pageNotificationService.addErrorMessage('Cadastros.Organizacao.Mensagens.msgJaExisteOrganizacaoRegistradaComEsteCNPJ');
+                    this.pageNotificationService.addErrorMessage('Já existe organização cadastrada com esse CNPJ');
                 }
             });
         }
@@ -515,59 +514,7 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
         result.subscribe((res: Organizacao) => {
             this.isSaving = false;
             this.router.navigate(['/organizacao']);
-
             this.isEdit ? this.pageNotificationService.addUpdateMsg() : this.pageNotificationService.addCreateMsg();
-        }, (error: Response) => {
-            this.isSaving = false;
-            if (error.status === 400) {
-                const errorType: string = error.headers['x-abacoapp-error'][0];
-
-                switch (errorType) {
-                    case 'error.orgNomeInvalido': {
-                        this.pageNotificationService.addErrorMessage('O campo Nome possui caracteres inválidos!'
-                            + 'Cadastros.Organizacao.Mensagens.msgVerifiqueSeHaEspacosNoInicioNoFinalOuMaisDeUmEspacoEntrePalavras');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                    case 'error.orgCnpjInvalido': {
-                        this.pageNotificationService.addErrorMessage('O campo CPNJ possui caracteres inválidos!'
-                            + 'Verifique se há espaços no início ou no final.');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                    case 'error.orgSiglaInvalido': {
-                        this.pageNotificationService.addErrorMessage('O campo Sigla possui caracteres inválidos!'
-                            + 'Verifique se há espaços no início ou no final.');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                    case 'error.orgNumOcorInvalido': {
-                        this.pageNotificationService.addErrorMessage('Cadastros.Organizacao.Mensagens.O campo Número da Ocorrência possui caracteres inválidos'
-                            + 'Verifique se há espaços no início ou no final.');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                    case 'error.organizacaoexists': {
-                        this.pageNotificationService.addErrorMessage('Já existe organização cadastrada com mesmo nome!');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                    case 'error.cnpjexists': {
-                        this.pageNotificationService.addErrorMessage('Já existe organização cadastrada com mesmo CNPJ!');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                    case 'error.beggindateGTenddate': {
-                        this.pageNotificationService.addErrorMessage('Início Vigência não pode ser posterior a Final Vigência');
-                        //document.getElementById('login').setAttribute('style', 'border-color: red;');
-                        break;
-                    }
-                }
-                let invalidFieldNamesString = '';
-                const fieldErrors = JSON.parse(error['_body']).fieldErrors;
-                // invalidFieldNamesString = this.pageNotificationService.getInvalidFields(fieldErrors);
-                this.pageNotificationService.addErrorMessage('Campos inválidos: ' + invalidFieldNamesString);
-            }
         });
     }
 

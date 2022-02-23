@@ -129,7 +129,7 @@ public class User extends AbstractAuditingEntity implements Serializable, Report
     @Field(type = FieldType.Nested)
     @ManyToMany
     @JoinTable(name = "user_tipo_equipe", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tipo_equipe_id"))
-    @JsonIgnoreProperties("cfpsResponsavel")
+    @JsonIgnoreProperties(value = "cfpsResponsavel", allowSetters = true)
     private Set<TipoEquipe> tipoEquipes = new HashSet<>();
 
     @JsonIgnore
