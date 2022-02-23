@@ -573,9 +573,9 @@ public class PlanilhaService {
             this.setarFuncoesIndicativaExcelPadraoBasis(excelFile, funcaoDadosList, analise, nomeElaborador);
         }
         else{
-            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, true);
+            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, false);
             if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-                this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, true);
+                this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, false);
             }
             else if(analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)){
                 this.setarFuncoesEstimadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador);
