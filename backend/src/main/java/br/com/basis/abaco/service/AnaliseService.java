@@ -980,6 +980,7 @@ public class AnaliseService extends BaseService {
         funcaoTransacaos.forEach(funcaoTransacao -> {
             funcaoTransacao.setId(null);
             funcaoTransacao.setAnalise(analise);
+            funcaoTransacao.setEquipe(null);
             if(!analise.getManual().getFatoresAjuste().contains(funcaoTransacao.getFatorAjuste())){
                 funcaoTransacao.setFatorAjuste(analise.getManual().getFatoresAjuste().stream().collect(Collectors.toList()).get(0));
                 analise.getManual().getFatoresAjuste().forEach(fatorAjuste ->{
