@@ -582,7 +582,7 @@ public class PlanilhaService {
             }
         }
 
-        
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
         return outputStream;

@@ -276,7 +276,7 @@ public class UserService extends BaseService {
 
     @Transactional(readOnly = true)
     public List<UserAnaliseDTO> getAllUserDtosOrgEquip(Long idOrg, Long idEquip) {
-        List<User> lista = userRepository.findAllUsersOrgEquip(idOrg, idEquip);
+        List<User> lista = userRepository.findALlByOrgAndEquip(idOrg, idEquip);
         List<UserAnaliseDTO> lst = new ArrayList<>();
         for (int i = 0; i < lista.size(); i++) {
             lst.add(modelMapper.map(lista.get(i), UserAnaliseDTO.class));
