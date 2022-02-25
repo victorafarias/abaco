@@ -677,6 +677,7 @@ public class PlanilhaService {
                 row.getCell(19).setCellValue(this.pegarValorValidacao(funcaoDados.getStatusFuncao()));
             }
         }
+        
 
         for (int i = 0; i < funcaoTransacaoList.size(); i++){
             FuncaoTransacao funcaoTransacao = funcaoTransacaoList.get(i);
