@@ -939,6 +939,7 @@ public class PlanilhaService {
             }
         }
     }
+    
 
     private void setarFuncoesINMTransacaoExcelDivergencia(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria, XSSFRow row, int idRow, FormulaEvaluator evaluator) {
         if(funcaoPrimaria.getName() != null){
