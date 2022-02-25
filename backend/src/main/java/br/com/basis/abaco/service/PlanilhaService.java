@@ -582,7 +582,7 @@ public class PlanilhaService {
             }
         }
 
-        
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
         return outputStream;
@@ -805,13 +805,17 @@ public class PlanilhaService {
     }
 
     private String pegarValorValidacao(StatusFuncao statusFuncao) {
-        if(statusFuncao.equals(StatusFuncao.VALIDADO)){
-            return "OK";
-        }else if(statusFuncao.equals(StatusFuncao.DIVERGENTE)){
-            return DIVERGENTE;
-        }else{
-            return "";
+        if(statusFuncao != null){
+            if(statusFuncao.equals(StatusFuncao.VALIDADO)){
+                return "OK";
+            }else if(statusFuncao.equals(StatusFuncao.DIVERGENTE)){
+                return DIVERGENTE;
+            }else{
+                return "";
+            }
         }
+
+        return "";
     }
 
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {

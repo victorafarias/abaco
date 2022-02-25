@@ -48,7 +48,7 @@ import { Utilitarios } from '../util/utilitarios.util';
     templateUrl: './funcao-dados-form.component.html',
     providers: [ConfirmationService]
 })
-export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChanges {
+export class FuncaoDadosFormComponent implements OnInit, OnChanges {
     emptySustantion = '<p><br></p>';
     @Output()
     valueChange: EventEmitter<string> = new EventEmitter<string>();
@@ -232,8 +232,6 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
         if (this.colunasOptions) {
             this.colunasOptions.map(selectItem => this.colunasAMostrar.push(selectItem.value));
         }
-        this.traduzirClassificacoes();
-        this.traduzirImpactos();
         this.inicializaFatoresAjuste(this.analise.manual);
         if (localStorage.getItem("numberPagesFD") != null) {
             this.tables.pDatatableComponent._rows = Number.parseInt(localStorage.getItem("numberPagesFD"));
@@ -248,27 +246,6 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
         }
     }
 
-    ngAfterViewInit() {
-        this.setSotableFields();
-    }
-
-    setSotableFields() {
-        if (this.colunasAMostrar) {
-            return;
-        }
-        // este forEach rodará apenas 1 vez, devido ao @ViewChildren retornar um array
-        // this.tables.forEach(table => {
-        //     table.columns.forEach(column => {
-        //         const item = this.colunasAMostrar.find(element =>
-        //             (element.header === column.header)
-        //         );
-        //         column.sortField = this.getField(item.header);
-        //         column.filterField = this.getField(item.header);
-        //         this.exceptions(column, item.header);
-        //         column.ngAfterContentInit();
-        //     });
-        // });
-    }
 
     sortColumn(event: any) {
         this.funcoesDados.sort((a, b) => {
@@ -367,37 +344,6 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
     public onChange(editor) {
         const data = editor.getData();
         return data;
-    }
-
-    /*
-    *   Metodo responsavel por traduzir as classificacoes que ficam em função de dados
-    */
-    traduzirClassificacoes() {
-        // this.translate.stream(['Cadastros.FuncaoDados.Classificacoes.ALI', 'Cadastros.FuncaoDados.Classificacoes.AIE'])
-        //     .subscribe((traducao) => {
-        //         this.classificacoes = [
-        //             {label: traducao['Cadastros.FuncaoDados.Classificacoes.ALI'], value: 'ALI'},
-        //             {label: traducao['Cadastros.FuncaoDados.Classificacoes.AIE'], value: 'AIE'},
-        //         ];
-
-        //     });
-    }
-
-    /*
-    *   Metodo responsavel por traduzir os tipos de impacto em função de dados
-    */
-    traduzirImpactos() {
-        // this.translate.stream(['Cadastros.FuncaoDados.Impactos.Inclusao', 'Cadastros.FuncaoDados.Impactos.Alteracao',
-        //     'Cadastros.FuncaoDados.Impactos.Exclusao', 'Cadastros.FuncaoDados.Impactos.Conversao',
-        //     'Cadastros.FuncaoDados.Impactos.Outros']).subscribe((traducao) => {
-        //     this.impacto = [
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Inclusao'], value: 'INCLUSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Alteracao'], value: 'ALTERACAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Exclusao'], value: 'EXCLUSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Conversao'], value: 'CONVERSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Outros'], value: 'ITENS_NAO_MENSURAVEIS'}
-        //     ];
-        // });
     }
 
     updateNameImpacto(impacto: string) {
@@ -763,8 +709,7 @@ export class FuncaoDadosFormComponent implements OnInit, AfterViewInit, OnChange
                         this.setFields(funcaoDadosCalculada);
                         this.funcoesDados.push(funcaoDadosCalculada);
                         this.resetarEstadoPosSalvar();
-                        this.pageNotificationService.addSuccessMessage(`${this.getLabel('Cadastros.FuncaoDados.Mensagens.msgFuncaoDados')}
-                '${funcaoDadosCalculada.name}' ${this.getLabel(' alterada com sucesso')}`);
+                        this.pageNotificationService.addSuccessMessage(`'${funcaoDadosCalculada.name}' ${this.getLabel(' alterada com sucesso')}`);
                         this.fecharDialog();
                         this.analiseService.updateSomaPf(this.analise.id).subscribe();
                     });

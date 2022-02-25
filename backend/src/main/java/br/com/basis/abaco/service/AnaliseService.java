@@ -310,9 +310,8 @@ public class AnaliseService extends BaseService {
 
     private Boolean checarPermissao(Long idAnalise) {
         Optional<User> logged = userRepository.findOneWithAuthoritiesByLogin(SecurityUtils.getCurrentUserLogin());
-        List<BigInteger> equipesIds = userRepository.findUserEquipes(logged.get().getId());
-        List<Long> convertidos = equipesIds.stream().map(bigInteger -> bigInteger.longValue()).collect(Collectors.toList());
-        Integer analiseDaEquipe = analiseRepository.analiseEquipe(idAnalise, convertidos);
+        List<Long> equipesIds = logged.get().getTipoEquipes().stream().map(tipoEquipe -> tipoEquipe.getId()).collect(Collectors.toList());
+        Integer analiseDaEquipe = analiseRepository.analiseEquipe(idAnalise, equipesIds);
         if (analiseDaEquipe.intValue() == 0) {
             return verificaCompartilhada(idAnalise);
         } else {
