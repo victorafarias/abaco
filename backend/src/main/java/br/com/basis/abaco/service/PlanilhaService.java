@@ -952,7 +952,7 @@ public class PlanilhaService {
             row.getCell(11).setCellValue(funcaoPrimaria.getAlrs().size());
             row.getCell(12).setCellValue(TIPO_INM);
             row.getCell(19).setCellValue(this.getFundamentacao(funcaoPrimaria));
-            row.getCell(22).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
+            row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
             evaluator.evaluateFormulaCell(row.getCell(16));
             evaluator.evaluateFormulaCell(row.getCell(18));
         }else{
