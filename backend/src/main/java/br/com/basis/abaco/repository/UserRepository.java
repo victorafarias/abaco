@@ -50,6 +50,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
             " WHERE e.tipo_equipe_id = :idEquip AND o.organizacao_id = :idOrg", nativeQuery = true)
     List<User> findAllUsersOrgEquip(@Param("idOrg") Long idOrg, @Param("idEquip") Long idEquip);
 
+    @Query(value = "SELECT u FROM User u JOIN u.organizacoes o JOIN u.tipoEquipes te ON o.id = :idOrg AND te.id = :idEquip")
+    List<User> findALlByOrgAndEquip(@Param("idOrg") Long idOrg, @Param("idEquip") Long idEquip);
+
     Page<User> findAllByLoginNot(Pageable pageable, String login);
 
     @Query(value = "select tipo_equipe_id from user_tipo_equipe where user_id = :idUser", nativeQuery = true)

@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -572,14 +573,15 @@ public class PlanilhaService {
             this.setarFuncoesIndicativaExcelPadraoBasis(excelFile, funcaoDadosList, analise, nomeElaborador);
         }
         else{
-            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, true);
+            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, false);
             if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-                this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, true);
+                this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, false);
             }
             else if(analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)){
                 this.setarFuncoesEstimadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador);
             }
         }
+
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
@@ -803,13 +805,17 @@ public class PlanilhaService {
     }
 
     private String pegarValorValidacao(StatusFuncao statusFuncao) {
-        if(statusFuncao.equals(StatusFuncao.VALIDADO)){
-            return "OK";
-        }else if(statusFuncao.equals(StatusFuncao.DIVERGENTE)){
-            return DIVERGENTE;
-        }else{
-            return "";
+        if(statusFuncao != null){
+            if(statusFuncao.equals(StatusFuncao.VALIDADO)){
+                return "OK";
+            }else if(statusFuncao.equals(StatusFuncao.DIVERGENTE)){
+                return DIVERGENTE;
+            }else{
+                return "";
+            }
         }
+
+        return "";
     }
 
     private void setarPFPorFuncionalidade(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
@@ -900,7 +906,7 @@ public class PlanilhaService {
         return false;
 
     }
-    
+
 
     private void setarFuncoesINMExcelPadraoBasisDivergencia(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador) {
         XSSFSheet excelSheet = excelFile.getSheet(SHEET_INM);
@@ -912,7 +918,7 @@ public class PlanilhaService {
         int rowNumero = 10;
         int idRow = 1;
 
-        Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao = new HashMap<>();
+        Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao = new LinkedHashMap<>();
         this.carregarFuncoesTransacaoDivergencia(funcaoTransacaoList, funcaoTransacao);
         this.setarINMExcelDivergenciaPadraoBasis(funcaoTransacao, excelSheet, rowNumero, idRow, evaluator);
         evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
@@ -1004,15 +1010,14 @@ public class PlanilhaService {
         int rowNumero = 9;
         int idRow = 1;
 
-        Map<FuncaoDados, FuncaoDados> funcaoDados = new HashMap<>();
-        Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao = new HashMap<>();
+        Map<FuncaoDados, FuncaoDados> funcaoDados = new LinkedHashMap<>();
+        Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao = new LinkedHashMap<>();
         this.carregarFuncoesDivergencia(funcaoDadosList, funcaoTransacaoList, funcaoDados, funcaoTransacao);
         this.setarFuncoesDadosExcelDivergenciaPadraoBasis(funcaoDados, excelSheet, rowNumero, idRow, evaluator);
         rowNumero += funcaoDados.size();
         idRow += funcaoDados.size();
         this.setarFuncoesTransacaoExcelDivergenciaPadraoBasis(funcaoTransacao, excelSheet, rowNumero, idRow, evaluator);
         evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
-
     }
 
     private void setarFuncoesTransacaoExcelDivergenciaPadraoBasis(Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao, XSSFSheet excelSheet, int rowNumero, int idRow, FormulaEvaluator evaluator) {

@@ -233,7 +233,6 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         this.currentFuncaoTransacao = new FuncaoTransacao();
         this.dersChips = [];
         this.alrsChips = [];
-        this.traduzirImpactos();
         this.subscribeDisplay();
         this.inicializaFatoresAjuste(this.analise.manual);
         if (localStorage.getItem("numberPagesFT") != null) {
@@ -317,23 +316,6 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         this.prepararParaEdicao(this.funcaoTransacaoEditar[0]);
     }
 
-    /*
-    *   Metodo responsavel por traduzir os tipos de impacto em função de dados
-    */
-    traduzirImpactos() {
-        // this.translate.stream(['Cadastros.FuncaoDados.Impactos.Inclusao', 'Cadastros.FuncaoDados.Impactos.Alteracao',
-        //     'Cadastros.FuncaoDados.Impactos.Exclusao', 'Cadastros.FuncaoDados.Impactos.Conversao',
-        //     'Cadastros.FuncaoDados.Impactos.Outros']).subscribe((traducao) => {
-        //     this.impacto = [
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Inclusao'], value: 'INCLUSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Alteracao'], value: 'ALTERACAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Exclusao'], value: 'EXCLUSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Conversao'], value: 'CONVERSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Outros'], value: 'ITENS_NAO_MENSURAVEIS'}
-        //     ];
-
-        // });
-    }
 
     public onChange(editor: HashChangeEvent) {
         // const data = editor.getData();

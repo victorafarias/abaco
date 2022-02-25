@@ -231,8 +231,6 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         if (this.colunasOptions) {
             this.colunasOptions.map(selectItem => this.colunasAMostrar.push(selectItem.value));
         }
-        this.traduzirClassificacoes();
-        this.traduzirImpactos();
         this.inicializaFatoresAjuste(this.analise.manual);
         this.carregarEquipes(this.analise);
     }
@@ -361,37 +359,6 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     public onChange(editor) {
         const data = editor.getData();
         return data;
-    }
-
-    /*
-    *   Metodo responsavel por traduzir as classificacoes que ficam em função de dados
-    */
-    traduzirClassificacoes() {
-        // this.translate.stream(['Cadastros.FuncaoDados.Classificacoes.ALI', 'Cadastros.FuncaoDados.Classificacoes.AIE'])
-        //     .subscribe((traducao) => {
-        //         this.classificacoes = [
-        //             {label: traducao['Cadastros.FuncaoDados.Classificacoes.ALI'], value: 'ALI'},
-        //             {label: traducao['Cadastros.FuncaoDados.Classificacoes.AIE'], value: 'AIE'},
-        //         ];
-
-        //     });
-    }
-
-    /*
-    *   Metodo responsavel por traduzir os tipos de impacto em função de dados
-    */
-    traduzirImpactos() {
-        // this.translate.stream(['Cadastros.FuncaoDados.Impactos.Inclusao', 'Cadastros.FuncaoDados.Impactos.Alteracao',
-        //     'Cadastros.FuncaoDados.Impactos.Exclusao', 'Cadastros.FuncaoDados.Impactos.Conversao',
-        //     'Cadastros.FuncaoDados.Impactos.Outros']).subscribe((traducao) => {
-        //     this.impacto = [
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Inclusao'], value: 'INCLUSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Alteracao'], value: 'ALTERACAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Exclusao'], value: 'EXCLUSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Conversao'], value: 'CONVERSAO'},
-        //         {label: traducao['Cadastros.FuncaoDados.Impactos.Outros'], value: 'ITENS_NAO_MENSURAVEIS'}
-        //     ];
-        // });
     }
 
     updateNameImpacto(impacto: string) {

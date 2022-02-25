@@ -1,9 +1,14 @@
 package br.com.basis.abaco.web.rest;
 
 import br.com.basis.abaco.domain.Organizacao;
+import br.com.basis.abaco.domain.Perfil;
+import br.com.basis.abaco.domain.PerfilOrganizacao;
+import br.com.basis.abaco.domain.User;
 import br.com.basis.abaco.repository.OrganizacaoRepository;
 import br.com.basis.abaco.repository.UploadedFilesRepository;
+import br.com.basis.abaco.repository.UserRepository;
 import br.com.basis.abaco.repository.search.OrganizacaoSearchRepository;
+import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.OrganizacaoService;
 import br.com.basis.abaco.service.PerfilService;
 import br.com.basis.abaco.service.UserService;
@@ -49,10 +54,14 @@ import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
@@ -64,147 +73,172 @@ import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 @RequestMapping("/api")
 public class OrganizacaoResource {
 
-  private final Logger log = LoggerFactory.getLogger(OrganizacaoResource.class);
+    private final Logger log = LoggerFactory.getLogger(OrganizacaoResource.class);
 
-  private static final String ENTITY_NAME = "organizacao";
+    private static final String ENTITY_NAME = "organizacao";
 
-  private final OrganizacaoRepository organizacaoRepository;
+    private final OrganizacaoRepository organizacaoRepository;
 
-  private final OrganizacaoSearchRepository organizacaoSearchRepository;
+    private final OrganizacaoSearchRepository organizacaoSearchRepository;
 
-  private final UploadedFilesRepository filesRepository;
+    private final UploadedFilesRepository filesRepository;
 
-  private String[] erro = { "orgNomeInvalido", "orgCnpjInvalido", "orgSiglaInvalido", "orgNumOcorInvalido",
-      "organizacaoexists", "cnpjexists" };
-  private String[] mensagem = { "Nome de organização inválido", "CNPJ de organização inválido",
-      "Sigla de organização inválido", "Numero da Ocorrência de organização inválido",
-      "Organizacao already in use", "CNPJ already in use" };
+    private String[] erro = { "orgNomeInvalido", "orgSiglaInvalido",
+        "organizacaoexists", "cnpjexists" };
+    private String[] mensagem = { "Nome de organização inválido",
+        "Sigla de organização inválido",
+        "Organizacao already in use", "CNPJ already in use" };
 
-  private final DynamicExportsService dynamicExportsService;
+    private final DynamicExportsService dynamicExportsService;
 
     private final OrganizacaoService organizacaoService;
 
     private final PerfilService perfilService;
 
+    private final UserService userService;
+
+    private final UserRepository userRepository;
+
     public OrganizacaoResource(OrganizacaoRepository organizacaoRepository,
                                OrganizacaoSearchRepository organizacaoSearchRepository, UploadedFilesRepository filesRepository, DynamicExportsService dynamicExportsService,
-                               OrganizacaoService organizacaoService, PerfilService perfilService) {
+                               OrganizacaoService organizacaoService, PerfilService perfilService, UserService userService, UserRepository userRepository) {
         this.organizacaoRepository = organizacaoRepository;
         this.organizacaoSearchRepository = organizacaoSearchRepository;
         this.filesRepository = filesRepository;
         this.dynamicExportsService = dynamicExportsService;
         this.organizacaoService = organizacaoService;
         this.perfilService = perfilService;
+        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
-  /**
-   * Function to format a bad request URL to be returned to frontend
-   *
-   * @param errorKey       The key identifing the error occured
-   * @param defaultMessage Default message to display to user
-   * @return The bad request URL
-   */
-  private ResponseEntity<Organizacao> createBadRequest(String errorKey, String defaultMessage) {
-    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, errorKey, defaultMessage))
-        .body(null);
-  }
-
-  public boolean validaCampo(String campo) {
-    final String regra = "^\\S+(\\s{1}\\S+)*$";
-    Pattern padrao = Pattern.compile(regra);
-    Matcher matcherCampo = padrao.matcher(campo);
-    return matcherCampo.find();
-  }
-
-  private int validaCamposOrganizacao(Organizacao org) {
-    String[] campos = { org.getNome(), org.getSigla(), org.getNumeroOcorrencia() };
-    int i = 0;
-
-    while (i < campos.length) {
-      if (campos[i] != null && !validaCampo(campos[i])) {
-        return i;
-      }
-      i++;
-    }
-    /* Verifing if there is an existing Organizacao with same name */
-    Optional<Organizacao> existingOrganizacao = organizacaoSearchRepository.findOneByNome(org.getNome());
-    if (existingOrganizacao.isPresent() && (!existingOrganizacao.get().getId().equals(org.getId()))) {
-      return 4;
-    }
-    if(org.getCnpj() != null){
-        existingOrganizacao = organizacaoSearchRepository.findOneByCnpj(org.getCnpj());
-
-    }
-    if (org.getCnpj() != null && existingOrganizacao.isPresent()
-        && (!existingOrganizacao.get().getId().equals(org.getId()))) {
-      return 5;
-    }
-    return -1;
-  }
-
-  /**
-   * POST /organizacaos : Create a new organizacao.
-   *
-   * @param organizacao the organizacao to create
-   * @return the ResponseEntity with status 201 (Created) and with body the new
-   *         organizacao, or with status 400 (Bad Request) if the organizacao has
-   *         already an ID
-   * @throws URISyntaxException if the Location URI syntax is incorrect
-   */
-  @PostMapping("/organizacaos")
-  @Timed
-  @Secured("ROLE_ABACO_ORGANIZACAO_CADASTRAR")
-  public ResponseEntity<Organizacao> createOrganizacao(@Valid @RequestBody Organizacao organizacao)
-      throws URISyntaxException {
-    int i;
-    log.debug("REST request to save Organizacao : {}", organizacao);
-    if (organizacao.getId() != null) {
-      return this.createBadRequest("idoexists", "A new organizacao cannot already have an ID");
+    /**
+     * Function to format a bad request URL to be returned to frontend
+     *
+     * @param errorKey       The key identifing the error occured
+     * @param defaultMessage Default message to display to user
+     * @return The bad request URL
+     */
+    private ResponseEntity<Organizacao> createBadRequest(String errorKey, String defaultMessage) {
+        return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, errorKey, defaultMessage))
+            .body(null);
     }
 
-    i = validaCamposOrganizacao(organizacao);
-    if (i >= 0) {
-      return this.createBadRequest(this.erro[i], this.mensagem[i]);
-    }
-    Organizacao result = organizacaoRepository.save(organizacao);
-    organizacaoSearchRepository.save(result);
-
-    return ResponseEntity.created(new URI("/api/organizacaos/" + result.getId()))
-        .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);
-  }
-
-  /**
-   * PUT /organizacaos : Updates an existing organizacao.
-   *
-   * @param organizacao the organizacao to update
-   * @return the ResponseEntity with status 200 (OK) and with body the updated
-   *         organizacao, or with status 400 (Bad Request) if the organizacao is
-   *         not valid, or with status 500 (Internal Server Error) if the
-   *         organizacao couldnt be updated
-   * @throws URISyntaxException if the Location URI syntax is incorrect
-   */
-  @PutMapping("/organizacaos")
-  @Timed
-  @Secured("ROLE_ABACO_ORGANIZACAO_EDITAR")
-  public ResponseEntity<Organizacao> updateOrganizacao(@Valid @RequestBody Organizacao organizacao)
-      throws URISyntaxException {
-    int i;
-    log.debug("REST request to update Organizacao : {}", organizacao);
-    if (organizacao.getId() == null) {
-      return createOrganizacao(organizacao);
+    public boolean validaCampo(String campo) {
+        final String regra = "^\\S+(\\s{1}\\S+)*$";
+        Pattern padrao = Pattern.compile(regra);
+        Matcher matcherCampo = padrao.matcher(campo);
+        return matcherCampo.find();
     }
 
-    i = validaCamposOrganizacao(organizacao);
-    if (i >= 0) {
-      return this.createBadRequest(this.erro[i], this.mensagem[i]);
+    private int validaCamposOrganizacao(Organizacao org) {
+        String[] campos = { org.getNome(), org.getSigla() };
+        int i = 0;
+
+        while (i < campos.length) {
+            if (campos[i] != null && !validaCampo(campos[i])) {
+                return i;
+            }
+            i++;
+        }
+        /* Verifing if there is an existing Organizacao with same name */
+        Optional<Organizacao> existingOrganizacao = organizacaoSearchRepository.findOneByNome(org.getNome());
+        if (existingOrganizacao.isPresent() && (!existingOrganizacao.get().getId().equals(org.getId()))) {
+            return 2;
+        }
+        if(org.getCnpj() != null){
+            existingOrganizacao = organizacaoSearchRepository.findOneByCnpj(org.getCnpj());
+
+        }
+        if (org.getCnpj() != null && existingOrganizacao.isPresent()
+            && (!existingOrganizacao.get().getId().equals(org.getId()))) {
+            return 3;
+        }
+        return -1;
     }
 
-    Organizacao result = organizacaoRepository.saveAndFlush(organizacao);
-    organizacaoSearchRepository.save(result);
+    /**
+     * POST /organizacaos : Create a new organizacao.
+     *
+     * @param organizacao the organizacao to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new
+     *         organizacao, or with status 400 (Bad Request) if the organizacao has
+     *         already an ID
+     * @throws URISyntaxException if the Location URI syntax is incorrect
+     */
+    @PostMapping("/organizacaos")
+    @Timed
+    @Secured("ROLE_ABACO_ORGANIZACAO_CADASTRAR")
+    public ResponseEntity<Organizacao> createOrganizacao(@Valid @RequestBody Organizacao organizacao)
+        throws URISyntaxException {
+        int i;
+        log.debug("REST request to save Organizacao : {}", organizacao);
+        if (organizacao.getId() != null) {
+            return this.createBadRequest("idoexists", "A new organizacao cannot already have an ID");
+        }
 
-    return ResponseEntity.ok()
-        .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, organizacao.getId().toString())).body(result);
-  }
+        i = validaCamposOrganizacao(organizacao);
+        if (i >= 0) {
+            return this.createBadRequest(this.erro[i], this.mensagem[i]);
+        }
+        Organizacao result = organizacaoRepository.save(organizacao);
+        organizacaoSearchRepository.save(result);
+
+        Optional<Perfil> perfilAdminIsPresent = perfilService.findOne(Long.valueOf(0));
+        if(perfilAdminIsPresent.isPresent()){
+            Perfil perfilAdmin = perfilAdminIsPresent.get();
+            userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).ifPresent(usuarioAtivo -> {
+                if(!usuarioAtivo.getPerfilOrganizacoes().isEmpty()){
+                    List<Organizacao> organizacoes = usuarioAtivo.getPerfilOrganizacoes().get(0).getOrganizacoes();
+                    organizacoes.add(result);
+                    usuarioAtivo.getPerfilOrganizacoes().get(0).setOrganizacoes(organizacoes);
+                }else{
+                    PerfilOrganizacao perfilOrganizacao = new PerfilOrganizacao();
+                    perfilOrganizacao.setPerfil(perfilAdmin);
+                    perfilOrganizacao.setOrganizacoes(Arrays.asList(result));
+                    perfilOrganizacao.setUser(usuarioAtivo);
+                    usuarioAtivo.setPerfilOrganizacoes(Arrays.asList(perfilOrganizacao));
+                }
+                userService.salvarUsuario(usuarioAtivo);
+            });
+        }
+
+            return ResponseEntity.created(new URI("/api/organizacaos/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);
+    }
+
+    /**
+     * PUT /organizacaos : Updates an existing organizacao.
+     *
+     * @param organizacao the organizacao to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated
+     *         organizacao, or with status 400 (Bad Request) if the organizacao is
+     *         not valid, or with status 500 (Internal Server Error) if the
+     *         organizacao couldnt be updated
+     * @throws URISyntaxException if the Location URI syntax is incorrect
+     */
+    @PutMapping("/organizacaos")
+    @Timed
+    @Secured("ROLE_ABACO_ORGANIZACAO_EDITAR")
+    public ResponseEntity<Organizacao> updateOrganizacao(@Valid @RequestBody Organizacao organizacao)
+        throws URISyntaxException {
+        int i;
+        log.debug("REST request to update Organizacao : {}", organizacao);
+        if (organizacao.getId() == null) {
+            return createOrganizacao(organizacao);
+        }
+
+        i = validaCamposOrganizacao(organizacao);
+        if (i >= 0) {
+            return this.createBadRequest(this.erro[i], this.mensagem[i]);
+        }
+
+        Organizacao result = organizacaoRepository.saveAndFlush(organizacao);
+        organizacaoSearchRepository.save(result);
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, organizacao.getId().toString())).body(result);
+    }
 
     @GetMapping("/organizacaos/drop-down")
     @Timed
@@ -220,75 +254,99 @@ public class OrganizacaoResource {
         return organizacaoService.getOrganizacaoDropdownAtivo();
     }
 
-  @GetMapping("/organizacaos/ativas")
-  @Timed
-  public List<Organizacao> searchActiveOrganizations() {
-    log.debug("REST request to get all Organizacaos");
-    return organizacaoRepository.searchActiveOrganizations();
-  }
+    @GetMapping("/organizacaos/ativas")
+    @Timed
+    public List<Organizacao> searchActiveOrganizations() {
+        log.debug("REST request to get all Organizacaos");
+        return organizacaoRepository.searchActiveOrganizations();
+    }
 
-  /**
-   * GET /organizacaos/:id : get the "id" organizacao.
-   *
-   * @param id the id of the organizacao to retrieve
-   * @return the ResponseEntity with status 200 (OK) and with body the
-   *         organizacao, or with status 404 (Not Found)
-   */
-  @GetMapping("/organizacaos/{id}")
-  @Timed
-  @Secured({"ROLE_ABACO_ORGANIZACAO_CONSULTAR", "ROLE_ABACO_ORGANIZACAO_EDITAR"})
-  public ResponseEntity<Organizacao> getOrganizacao(@PathVariable Long id) {
-    log.debug("REST request to get Organizacao : {}", id);
-    Organizacao organizacao = organizacaoRepository.findOne(id);
-    return ResponseUtil.wrapOrNotFound(Optional.ofNullable(organizacao));
-  }
+    /**
+     * GET /organizacaos/:id : get the "id" organizacao.
+     *
+     * @param id the id of the organizacao to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the
+     *         organizacao, or with status 404 (Not Found)
+     */
+    @GetMapping("/organizacaos/{id}")
+    @Timed
+    @Secured({"ROLE_ABACO_ORGANIZACAO_CONSULTAR", "ROLE_ABACO_ORGANIZACAO_EDITAR"})
+    public ResponseEntity<Organizacao> getOrganizacao(@PathVariable Long id) {
+        log.debug("REST request to get Organizacao : {}", id);
+        Organizacao organizacao = organizacaoRepository.findOne(id);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(organizacao));
+    }
 
-  /**
-   * DELETE /organizacaos/:id : delete the "id" organizacao.
-   *
-   * @param id the id of the organizacao to delete
-   * @return the ResponseEntity with status 200 (OK)
-   */
-  @DeleteMapping("/organizacaos/{id}")
-  @Timed
-  @Secured("ROLE_ABACO_ORGANIZACAO_EXCLUIR")
-  public ResponseEntity<Void> deleteOrganizacao(@PathVariable Long id) {
-      log.debug("REST request to delete Organizacao : {}", id);
-      organizacaoRepository.delete(id);
-      organizacaoSearchRepository.delete(id);
-      Organizacao organizacao = organizacaoRepository.findOne(id);
-      if(organizacao.getLogoId() != null && filesRepository.exists(organizacao.getLogoId())){
-          filesRepository.delete(organizacao.getLogoId());
-      }
-      return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
-  }
+    /**
+     * DELETE /organizacaos/:id : delete the "id" organizacao.
+     *
+     * @param id the id of the organizacao to delete
+     * @return the ResponseEntity with status 200 (OK)
+     */
+    @DeleteMapping("/organizacaos/{id}")
+    @Timed
+    @Secured("ROLE_ABACO_ORGANIZACAO_EXCLUIR")
+    public ResponseEntity<Void> deleteOrganizacao(@PathVariable Long id) {
+        log.debug("REST request to delete Organizacao : {}", id);
+        Organizacao organizacao = organizacaoRepository.findOne(id);
+        List<User> usuarios = userRepository.findAll();
+        for (int i = 0; i<usuarios.size(); i++){
+            User user = usuarios.get(i);
+            if(user.getOrganizacoes().contains(organizacao)){
+                List<Organizacao> organizacoes = new ArrayList<>();
+                organizacoes.addAll(user.getOrganizacoes());
+                organizacoes.remove(organizacao);
+                user.setOrganizacoes(organizacoes.stream().collect(Collectors.toSet()));
+            }
+            user.getPerfilOrganizacoes().forEach(perfilOrganizacao -> {
+                if(perfilOrganizacao.getOrganizacoes().contains(organizacao)){
+                    List<Organizacao> organizacoes = new ArrayList<>();
+                    organizacoes.addAll(perfilOrganizacao.getOrganizacoes());
+                    organizacoes.remove(organizacao);
+                    perfilOrganizacao.setOrganizacoes(organizacoes);
+                }
+            });
 
-  /**
-   * SEARCH /_search/organizacaos?query=:query : search for the organizacao
-   * corresponding to the query.
-   *
-   * @param query the query of the organizacao search
-   * @return the result of the search
-   * @throws URISyntaxException
-   */
-  @GetMapping("/_search/organizacaos")
-  @Timed
-  @Secured({"ROLE_ABACO_ORGANIZACAO_PESQUISAR", "ROLE_ABACO_ORGANIZACAO_ACESSAR"})
-  public ResponseEntity<List<Organizacao>> searchOrganizacaos(@RequestParam(defaultValue = "*") String query,
-                                                              @RequestParam(defaultValue = "ASC") String order, @RequestParam(name = "page") int pageNumber, @RequestParam int size,
-                                                              @RequestParam(defaultValue = "id", required = false) String sort) throws URISyntaxException {
-      log.debug("REST request to search Organizacaos for query {}", query);
+            user.getPerfilOrganizacoes().stream().filter(perfilOrganizacao -> {
+                return perfilOrganizacao.getOrganizacoes().size() == 0;
+            });
+            userService.prepareUserToBeSaved(user);
+        }
 
-      Sort.Direction sortOrder = PageUtils.getSortDirection(order);
-      Pageable newPageable = new PageRequest(pageNumber, size, sortOrder, sort);
+        organizacaoRepository.delete(id);
+        organizacaoSearchRepository.delete(id);
+        if(organizacao.getLogoId() != null && filesRepository.exists(organizacao.getLogoId())){
+            filesRepository.delete(organizacao.getLogoId());
+        }
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
 
-      Page<Organizacao> page = organizacaoSearchRepository.search(queryStringQuery(query), dynamicExportsService.obterPageableMaximoExportacao());
-      Page<Organizacao> pageNew = perfilService.validarPerfilOrganizacoes(page, newPageable);
+    /**
+     * SEARCH /_search/organizacaos?query=:query : search for the organizacao
+     * corresponding to the query.
+     *
+     * @param query the query of the organizacao search
+     * @return the result of the search
+     * @throws URISyntaxException
+     */
+    @GetMapping("/_search/organizacaos")
+    @Timed
+    @Secured({"ROLE_ABACO_ORGANIZACAO_PESQUISAR", "ROLE_ABACO_ORGANIZACAO_ACESSAR"})
+    public ResponseEntity<List<Organizacao>> searchOrganizacaos(@RequestParam(defaultValue = "*") String query,
+                                                                @RequestParam(defaultValue = "ASC") String order, @RequestParam(name = "page") int pageNumber, @RequestParam int size,
+                                                                @RequestParam(defaultValue = "id", required = false) String sort) throws URISyntaxException {
+        log.debug("REST request to search Organizacaos for query {}", query);
 
-      HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, pageNew,
-          "/api/_search/organizacaos");
-    return new ResponseEntity<>(pageNew.getContent(), headers, HttpStatus.OK);
-  }
+        Sort.Direction sortOrder = PageUtils.getSortDirection(order);
+        Pageable newPageable = new PageRequest(pageNumber, size, sortOrder, sort);
+
+        Page<Organizacao> page = organizacaoSearchRepository.search(queryStringQuery(query), dynamicExportsService.obterPageableMaximoExportacao());
+        Page<Organizacao> pageNew = perfilService.validarPerfilOrganizacoes(page, newPageable);
+
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, pageNew,
+            "/api/_search/organizacaos");
+        return new ResponseEntity<>(pageNew.getContent(), headers, HttpStatus.OK);
+    }
 
     @GetMapping("/organizacaos/active")
     public List<Organizacao> getAllOrganizationsActive() {
