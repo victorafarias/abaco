@@ -797,7 +797,7 @@ public class PlanilhaService {
                     row.getCell(19).setCellValue(this.getFundamentacao(funcaoTransacao));
                     evaluator.evaluateFormulaCell(row.getCell(18));
                     if(isDivergence == true){
-                        row.getCell(22).setCellValue(this.pegarValorValidacao(funcaoTransacao.getStatusFuncao()));
+                        row.getCell(21).setCellValue(this.pegarValorValidacao(funcaoTransacao.getStatusFuncao()));
                     }
                 }
             }
@@ -939,7 +939,7 @@ public class PlanilhaService {
             }
         }
     }
-    
+
 
     private void setarFuncoesINMTransacaoExcelDivergencia(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria, XSSFRow row, int idRow, FormulaEvaluator evaluator) {
         if(funcaoPrimaria.getName() != null){
