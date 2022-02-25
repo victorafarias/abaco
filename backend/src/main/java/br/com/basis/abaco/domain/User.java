@@ -136,7 +136,6 @@ public class User extends AbstractAuditingEntity implements Serializable, Report
     @ManyToMany(mappedBy = "users")
     private Set<Analise> analises = new HashSet<>();
 
-
     @Field(type = FieldType.Nested)
     @ManyToMany
     @JoinTable(name = "user_organizacao", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "organizacao_id", referencedColumnName = "id"))
