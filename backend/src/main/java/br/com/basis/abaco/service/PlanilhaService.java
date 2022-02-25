@@ -794,6 +794,7 @@ public class PlanilhaService {
                     row.getCell(10).setCellValue(funcaoTransacao.getDers().size());
                     row.getCell(11).setCellValue(funcaoTransacao.getAlrs().size());
                     row.getCell(12).setCellValue(TIPO_INM);
+                    row.getCell(19).setCellValue(this.getFundamentacao(funcaoTransacao));
                     evaluator.evaluateFormulaCell(row.getCell(18));
                     if(isDivergence == true){
                         row.getCell(22).setCellValue(this.pegarValorValidacao(funcaoTransacao.getStatusFuncao()));
