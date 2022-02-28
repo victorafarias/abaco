@@ -677,7 +677,7 @@ public class PlanilhaService {
                 row.getCell(19).setCellValue(this.pegarValorValidacao(funcaoDados.getStatusFuncao()));
             }
         }
-        
+
 
         for (int i = 0; i < funcaoTransacaoList.size(); i++){
             FuncaoTransacao funcaoTransacao = funcaoTransacaoList.get(i);
@@ -878,18 +878,10 @@ public class PlanilhaService {
                 analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
         }
 
-        if(analise.getAnalisesComparadas().size() == 1){
-            this.setarResumoExcelPadraoBasis(excelFile, analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(0), nomeElaborador);
-            this.setarFuncoesINMExcelPadraoBasis(excelFile, funcaoTransacaoList, analise, nomeElaborador, true);
-            this.setarFuncoesDetalhadaExcelPadraoBasis(excelFile, funcaoDadosList, funcaoTransacaoList, analise, nomeElaborador, true);
-            this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
-        }else{
-            this.setarResumoExcelPadraoBasis(excelFile, analisePrincipal, nomeElaborador);
-            this.setarFuncoesDetalhadaExcelPadraoBasisDivergencia(excelFile, funcaoDadosList, funcaoTransacaoList, analisePrincipal, nomeElaborador);
-            this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
-            this.setarFuncoesINMExcelPadraoBasisDivergencia(excelFile, funcaoTransacaoList, analisePrincipal, nomeElaborador);
-
-        }
+        this.setarResumoExcelPadraoBasis(excelFile, analisePrincipal, nomeElaborador);
+        this.setarFuncoesDetalhadaExcelPadraoBasisDivergencia(excelFile, funcaoDadosList, funcaoTransacaoList, analisePrincipal, nomeElaborador);
+        this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
+        this.setarFuncoesINMExcelPadraoBasisDivergencia(excelFile, funcaoTransacaoList, analisePrincipal, nomeElaborador);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
