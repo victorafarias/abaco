@@ -883,7 +883,6 @@ public class PlanilhaService {
         this.setarPFPorFuncionalidade(excelFile, funcaoDadosList, funcaoTransacaoList);
         this.setarFuncoesINMExcelPadraoBasisDivergencia(excelFile, funcaoTransacaoList, analisePrincipal, nomeElaborador);
 
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
         return outputStream;
