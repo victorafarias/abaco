@@ -188,8 +188,7 @@ public class RelatorioUtil {
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format(ATTACHMENT_FILENAME_S_PDF, pegarNomeRelatorio(analise)));
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
     }
-
-
+    
     public ResponseEntity<InputStreamResource> buildReport(@NotNull Analise analise) throws IOException {
         Document document = buildDocument();
         ReportFactory factory = new ReportFactory();
