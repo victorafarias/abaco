@@ -834,7 +834,28 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                 this.viewFuncaoDados = true;
                 this.prepararParaVisualizar(funcaoDadosSelecionadas[0]);
                 break;
+            case 'delete':
+                this.confirmarExclusao(funcaoDadosSelecionadas);
+                break;
         }
+    }
+    confirmarExclusao(funcaoDadosSelecionada: FuncaoDados[]) {
+        this.confirmationService.confirm({
+            message: 'Tem certeza que deseja excluir as funções de dados selecionada?',
+            accept: () => {
+                funcaoDadosSelecionada.forEach((funcaoDado) => {
+                    this.funcaoDadosService.delete(funcaoDado.id).subscribe(value => {
+                        this.funcoesDados = this.funcoesDados.filter((funcaoDadoEdit) => (
+                            funcaoDadoEdit.id !== funcaoDado.id
+                        ));
+                        this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
+                        this.updateIndex();
+                        this.resetarEstadoPosSalvar();
+                    });
+                })
+                this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+            }
+        });
     }
 
     inserirCrud(funcaoTransacaoAtual: FuncaoTransacao) {
@@ -1800,9 +1821,16 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         
     }
 
-    trocarOrdem(numero){
+    trocarOrdem(numero, funcao: FuncaoDados){
         if(numero != null){
+            if(numero < funcao.ordem){
+                funcao.ordem = --numero;
+            }else{
+                funcao.ordem = ++numero;
+            }
             this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
+            this.updateIndex();
+            this.tables.selectedRow = [];
         }
     }
 }

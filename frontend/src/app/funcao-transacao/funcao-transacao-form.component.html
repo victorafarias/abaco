@@ -30,7 +30,7 @@
                                         <ng-template let-col let-funcaoTransacao="rowData" pTemplate="body">
                                             <span *ngIf="!habilitaEditarOrdem" (click)="habilitarEdicaoOrdem(funcaoTransacao)">{{ funcaoTransacao?.ordem ? funcaoTransacao?.ordem :
                                                 funcoesTransacoes?.indexOf(funcaoTransacao) +1 }}</span>
-                                                <input (ngModelChange)="trocarOrdem($event)" *ngIf="habilitaEditarOrdem" type="number" class="ui-inputtext" min="1"
+                                                <input (ngModelChange)="trocarOrdem($event, funcaoTransacao)" *ngIf="habilitaEditarOrdem" type="number" class="ui-inputtext" min="1"
                                                 [(ngModel)]="funcaoTransacao.ordem" id="idEditOrdem">
                                         </ng-template>
                                     </p-column>

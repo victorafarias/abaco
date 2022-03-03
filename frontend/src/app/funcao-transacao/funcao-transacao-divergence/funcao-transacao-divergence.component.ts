@@ -1725,9 +1725,16 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         
     }
 
-    trocarOrdem(numero){
+    trocarOrdem(numero, funcao: FuncaoTransacao){
         if(numero != null){
+            if(numero < funcao.ordem){
+                funcao.ordem = --numero;
+            }else{
+                funcao.ordem = ++numero;
+            }
             this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+            this.updateIndex();
+            this.tables.selectedRow = [];
         }
     }
 }

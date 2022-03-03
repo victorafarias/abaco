@@ -499,6 +499,7 @@ export class DivergenciaFormComponent implements OnInit {
         const analise = new Analise().copyFromJSON(this.analise);
         this.analiseService.update(analise).subscribe(() =>{
             this.pageNotificationService.addSuccessMessage('Dados alterados com sucesso!');
+            this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
         })
     }
 
