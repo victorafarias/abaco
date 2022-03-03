@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author eduardo.andrade
@@ -200,6 +201,18 @@ public class RelatorioUtil {
     }
 
     public static String pegarNomeRelatorio(Analise analise){
+        if(analise.getIsDivergence()){
+            if(analise.getAnalisesComparadas().size() == 1){
+                analise = analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(0);
+            }else{
+                for (int i = 0; i < analise.getAnalisesComparadas().size(); i++){
+                    Analise analiseTestar = analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(i);
+                    if(analiseTestar.getEquipeResponsavel().getNome().toLowerCase().contains("basis")){
+                        analise = analiseTestar;
+                    }
+                }
+            }
+        }
         String nomeRelatorio = "";
         String[] numeroOs;
         if(analise.getNumeroOs() != null){

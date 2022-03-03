@@ -852,7 +852,7 @@ public class AnaliseService extends BaseService {
         }
     }
 
-    
+
     private void carregarFuncoesDados(Set<FuncaoDados> lstFuncaoDados, Set<FuncaoDados> lstOrganizadaFuncaoDados) {
         int ordem = 1;
         for(FuncaoDados funcao : lstFuncaoDados){

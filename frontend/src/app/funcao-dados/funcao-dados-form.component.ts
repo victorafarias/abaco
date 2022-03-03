@@ -1619,9 +1619,16 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         
     }
 
-    trocarOrdem(numero){
+    trocarOrdem(numero, funcao: FuncaoDados){
         if(numero != null){
+            if(numero < funcao.ordem){
+                funcao.ordem = --numero;
+            }else{
+                funcao.ordem = ++numero;
+            }
             this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
+            this.updateIndex();
+            this.tables.selectedRow = [];
         }
     }
 }
