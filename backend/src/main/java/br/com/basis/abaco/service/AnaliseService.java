@@ -1,25 +1,6 @@
 package br.com.basis.abaco.service;
 
-import br.com.basis.abaco.domain.Alr;
-import br.com.basis.abaco.domain.Analise;
-import br.com.basis.abaco.domain.Compartilhada;
-import br.com.basis.abaco.domain.Contrato;
-import br.com.basis.abaco.domain.Der;
-import br.com.basis.abaco.domain.EsforcoFase;
-import br.com.basis.abaco.domain.FuncaoDados;
-import br.com.basis.abaco.domain.FuncaoDadosVersionavel;
-import br.com.basis.abaco.domain.FuncaoTransacao;
-import br.com.basis.abaco.domain.Manual;
-import br.com.basis.abaco.domain.Organizacao;
-import br.com.basis.abaco.domain.Rlr;
-import br.com.basis.abaco.domain.Sistema;
-import br.com.basis.abaco.domain.Status;
-import br.com.basis.abaco.domain.TipoEquipe;
-import br.com.basis.abaco.domain.User;
-import br.com.basis.abaco.domain.VwAnaliseDivergenteSomaPf;
-import br.com.basis.abaco.domain.VwAnaliseFD;
-import br.com.basis.abaco.domain.VwAnaliseFT;
-import br.com.basis.abaco.domain.VwAnaliseSomaPf;
+import br.com.basis.abaco.domain.*;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.repository.AnaliseRepository;
@@ -84,6 +65,8 @@ public class AnaliseService extends BaseService {
     public static final String ORGANIZACAO_ID = "organizacao.id";
     public static final String EQUIPE_RESPONSAVEL_ID = "equipeResponsavel.id";
     public static final String COMPARTILHADAS_EQUIPE_ID = "compartilhadas.equipeId";
+
+    private final static String BASIS_MINUSCULO = "basis";
 
     private static final String BASIS = "basis";
     private BigDecimal percent = new BigDecimal("100");
@@ -441,7 +424,7 @@ public class AnaliseService extends BaseService {
     }
 
     public Set<FuncaoDados> bindDivergenceFuncaoDados(Analise analise, Analise analiseClone) {
-        Set<FuncaoDados> funcaoDados = new HashSet<>();
+        Set<FuncaoDados> funcaoDados = new LinkedHashSet<>();
         analise.getFuncaoDados().forEach(fd -> {
             FuncaoDados funcaoDado = bindFuncaoDados(analiseClone, fd);
             funcaoDado.setStatusFuncao(StatusFuncao.PENDENTE);
@@ -460,7 +443,7 @@ public class AnaliseService extends BaseService {
     }
 
     public Set<FuncaoTransacao> bindDivergenceFuncaoTransacaos(Analise analise, Analise analiseClone) {
-        Set<FuncaoTransacao> funcaoTransacoes = new HashSet<>();
+        Set<FuncaoTransacao> funcaoTransacoes = new LinkedHashSet<>();
         analise.getFuncaoTransacaos().forEach(ft -> {
             FuncaoTransacao funcaoTransacao = bindFuncaoTransacao(analiseClone, ft);
             funcaoTransacao.setStatusFuncao(StatusFuncao.PENDENTE);
@@ -796,21 +779,88 @@ public class AnaliseService extends BaseService {
 
 
     private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise analiseDivergenciaPrincipal) {
-        Set<FuncaoDados> lstFuncaoDados = new HashSet<>();
-        Set<FuncaoTransacao> lstFuncaoTransacaos = new HashSet<>();
+        Set<FuncaoDados> lstFuncaoDados = new LinkedHashSet<>();
+        Set<FuncaoTransacao> lstFuncaoTransacaos = new LinkedHashSet<>();
+
+        Set<FuncaoDados> lstOrganizadaFuncaoDados = new LinkedHashSet<>();
+        Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao = new LinkedHashSet<>();
+
         analisePrincipal.getFuncaoDados().forEach(funcao -> funcao.setEquipe(analisePrincipal.getEquipeResponsavel()));
         analisePrincipal.getFuncaoTransacaos().forEach(funcao -> funcao.setEquipe(analisePrincipal.getEquipeResponsavel()));
         analiseSecundaria.getFuncaoDados().forEach(funcao -> funcao.setEquipe(analiseSecundaria.getEquipeResponsavel()));
         analiseSecundaria.getFuncaoTransacaos().forEach(funcao -> funcao.setEquipe(analiseSecundaria.getEquipeResponsavel()));
+
         lstFuncaoDados.addAll(analisePrincipal.getFuncaoDados());
         lstFuncaoDados.addAll(analiseSecundaria.getFuncaoDados());
+
         lstFuncaoTransacaos.addAll(analisePrincipal.getFuncaoTransacaos());
         lstFuncaoTransacaos.addAll(analiseSecundaria.getFuncaoTransacaos());
-        analisePrincipal.setFuncaoDados(lstFuncaoDados);
-        analisePrincipal.setFuncaoTransacaos(lstFuncaoTransacaos);
+
+        this.carregarFuncoes(lstFuncaoDados, lstFuncaoTransacaos, lstOrganizadaFuncaoDados, lstOrganizadaFuncaoTransacao);
+
+        analisePrincipal.setFuncaoDados(lstOrganizadaFuncaoDados);
+        analisePrincipal.setFuncaoTransacaos(lstOrganizadaFuncaoTransacao);
         analiseDivergenciaPrincipal.setFuncaoDados(bindDivergenceFuncaoDados(analisePrincipal, analiseDivergenciaPrincipal));
         analiseDivergenciaPrincipal.setFuncaoTransacaos(bindDivergenceFuncaoTransacaos(analisePrincipal, analiseDivergenciaPrincipal));
     }
+
+    private void carregarFuncoes(Set<FuncaoDados> lstFuncaoDados, Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoDados> lstOrganizadaFuncaoDados, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
+        int ordem = 1;
+
+        for(FuncaoDados funcao : lstFuncaoDados){
+            if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
+                funcao.setOrdem(Long.valueOf(ordem++));
+                lstOrganizadaFuncaoDados.add(funcao);
+                for(FuncaoDados funcaoSecundaria : lstFuncaoDados){
+                    if(!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true){
+                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                        lstOrganizadaFuncaoDados.add(funcaoSecundaria);
+                    }
+                }
+            }
+        }
+
+        for(FuncaoDados funcao : lstFuncaoDados){
+            if(!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)){
+                funcao.setOrdem(Long.valueOf(ordem++));
+                lstOrganizadaFuncaoDados.add(funcao);
+            }
+        }
+
+        ordem = 1;
+
+        for(FuncaoTransacao funcao : lstFuncaoTransacaos){
+            if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
+                funcao.setOrdem(Long.valueOf(ordem++));
+                lstOrganizadaFuncaoTransacao.add(funcao);
+                for(FuncaoTransacao funcaoSecundaria : lstFuncaoTransacaos){
+                    if(!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true){
+                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                        lstOrganizadaFuncaoTransacao.add(funcaoSecundaria);
+                    }
+                }
+            }
+        }
+
+        for(FuncaoTransacao funcao : lstFuncaoTransacaos){
+            if(!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoTransacao.contains(funcao)){
+                funcao.setOrdem(Long.valueOf(ordem++));
+                lstOrganizadaFuncaoTransacao.add(funcao);
+            }
+        }
+
+    }
+
+    private boolean isFuncaoEquiparada(FuncaoAnalise funcaoPrimaria, FuncaoAnalise funcaoSecundaria) {
+        if(funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) &&
+            funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) &&
+            funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome())){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     public Analise save(Analise analise) {
         analise = analiseRepository.save(analise);

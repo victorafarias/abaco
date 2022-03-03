@@ -137,6 +137,60 @@
                             </tr>
                         </ng-template>
                     </p-table>
+                    <div class="ui-g-12 ui-md-12 ui-sm-12">
+                        <label>Fundamentação</label>
+                        <span class="md-inputfield">
+                            <p-editor maxlength="5000" [rows]="3" id="idEvidenciaFormFuncaoDados" [cols]="180"
+                                [formats]="formatsEditor" pInputTextarea
+                                name="funcaoDadosSustentacao" [(ngModel)]="fundamentacao">
+                                <!-- Inicio configuração toolbar-->
+                                <p-header>
+                                    <span class="ql-formats">
+                                        <select class="ql-header">
+                                            <option value="1">Heading</option>
+                                            <option value="2">Subheading</option>
+                                            <option selected>Normal</option>
+                                        </select>
+                                        <select class="ql-font">
+                                            <option selected>Sans Serif</option>
+                                            <option value="serif">Serif</option>
+                                            <option value="monospace">Monospace</option>
+                                        </select>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-bold" aria-label="Bold" type="button"></button>
+                                        <button class="ql-italic" aria-label="Italic" type="button"></button>
+                                        <button class="ql-underline" aria-label="Underline" type="button"></button>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <select class="ql-color"></select>
+                                        <select class="ql-background"></select>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-list" value="ordered" aria-label="Ordered List"
+                                            type="button"></button>
+                                        <button class="ql-list" value="bullet" aria-label="Unordered List"
+                                            type="button"></button>
+                                        <select class="ql-align">
+                                            <option selected></option>
+                                            <option value="center"></option>
+                                            <option value="right"></option>
+                                            <option value="justify"></option>
+                                        </select>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-link" aria-label="Insert Link" type="button"></button>
+                                        <button class="ql-code-block" aria-label="Insert Code Block"
+                                            type="button"></button>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-clean" aria-label="Remove Styles" type="button"></button>
+                                    </span>
+                                </p-header>
+                                <!-- fim configuração toolbar-->
+                            </p-editor>
+                        </span>
+                    </div>
                     <div class=" ui-g-12 ui-helper-clearfix" style="text-align: left">
                         <div class="ui-g-12 ui-md-2 ui-sm-2">
                             <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
