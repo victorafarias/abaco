@@ -624,7 +624,7 @@ public class AnaliseResource {
                 .body(new AnaliseEditDTO());
         }
     }
-    
+
 
     @GetMapping("/analises/change-status/{id}/{idStatus}")
     @Timed
