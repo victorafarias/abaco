@@ -1,6 +1,26 @@
 package br.com.basis.abaco.service;
 
-import br.com.basis.abaco.domain.*;
+import br.com.basis.abaco.domain.Alr;
+import br.com.basis.abaco.domain.Analise;
+import br.com.basis.abaco.domain.Compartilhada;
+import br.com.basis.abaco.domain.Contrato;
+import br.com.basis.abaco.domain.Der;
+import br.com.basis.abaco.domain.EsforcoFase;
+import br.com.basis.abaco.domain.FuncaoAnalise;
+import br.com.basis.abaco.domain.FuncaoDados;
+import br.com.basis.abaco.domain.FuncaoDadosVersionavel;
+import br.com.basis.abaco.domain.FuncaoTransacao;
+import br.com.basis.abaco.domain.Manual;
+import br.com.basis.abaco.domain.Organizacao;
+import br.com.basis.abaco.domain.Rlr;
+import br.com.basis.abaco.domain.Sistema;
+import br.com.basis.abaco.domain.Status;
+import br.com.basis.abaco.domain.TipoEquipe;
+import br.com.basis.abaco.domain.User;
+import br.com.basis.abaco.domain.VwAnaliseDivergenteSomaPf;
+import br.com.basis.abaco.domain.VwAnaliseFD;
+import br.com.basis.abaco.domain.VwAnaliseFT;
+import br.com.basis.abaco.domain.VwAnaliseSomaPf;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.repository.AnaliseRepository;
@@ -805,30 +825,12 @@ public class AnaliseService extends BaseService {
     }
 
     private void carregarFuncoes(Set<FuncaoDados> lstFuncaoDados, Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoDados> lstOrganizadaFuncaoDados, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
+        this.carregarFuncoesDados(lstFuncaoDados, lstOrganizadaFuncaoDados);
+        this.carregarFuncoesTransacao(lstFuncaoTransacaos, lstOrganizadaFuncaoTransacao);
+    }
+
+    private void carregarFuncoesTransacao(Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
         int ordem = 1;
-
-        for(FuncaoDados funcao : lstFuncaoDados){
-            if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
-                funcao.setOrdem(Long.valueOf(ordem++));
-                lstOrganizadaFuncaoDados.add(funcao);
-                for(FuncaoDados funcaoSecundaria : lstFuncaoDados){
-                    if(!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true){
-                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
-                        lstOrganizadaFuncaoDados.add(funcaoSecundaria);
-                    }
-                }
-            }
-        }
-
-        for(FuncaoDados funcao : lstFuncaoDados){
-            if(!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)){
-                funcao.setOrdem(Long.valueOf(ordem++));
-                lstOrganizadaFuncaoDados.add(funcao);
-            }
-        }
-
-        ordem = 1;
-
         for(FuncaoTransacao funcao : lstFuncaoTransacaos){
             if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
                 funcao.setOrdem(Long.valueOf(ordem++));
@@ -848,7 +850,30 @@ public class AnaliseService extends BaseService {
                 lstOrganizadaFuncaoTransacao.add(funcao);
             }
         }
+    }
 
+    
+    private void carregarFuncoesDados(Set<FuncaoDados> lstFuncaoDados, Set<FuncaoDados> lstOrganizadaFuncaoDados) {
+        int ordem = 1;
+        for(FuncaoDados funcao : lstFuncaoDados){
+            if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
+                funcao.setOrdem(Long.valueOf(ordem++));
+                lstOrganizadaFuncaoDados.add(funcao);
+                for(FuncaoDados funcaoSecundaria : lstFuncaoDados){
+                    if(!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true){
+                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                        lstOrganizadaFuncaoDados.add(funcaoSecundaria);
+                    }
+                }
+            }
+        }
+
+        for(FuncaoDados funcao : lstFuncaoDados){
+            if(!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)){
+                funcao.setOrdem(Long.valueOf(ordem++));
+                lstOrganizadaFuncaoDados.add(funcao);
+            }
+        }
     }
 
     private boolean isFuncaoEquiparada(FuncaoAnalise funcaoPrimaria, FuncaoAnalise funcaoSecundaria) {
