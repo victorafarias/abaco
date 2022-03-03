@@ -188,7 +188,7 @@ public class RelatorioUtil {
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format(ATTACHMENT_FILENAME_S_PDF, pegarNomeRelatorio(analise)));
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
     }
-    
+
     public ResponseEntity<InputStreamResource> buildReport(@NotNull Analise analise) throws IOException {
         Document document = buildDocument();
         ReportFactory factory = new ReportFactory();
@@ -200,18 +200,7 @@ public class RelatorioUtil {
     }
 
     public static String pegarNomeRelatorio(Analise analise){
-        if(analise.getIsDivergence()){
-            if(analise.getAnalisesComparadas().size() == 1){
-                analise = analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(0);
-            }else{
-                for (int i = 0; i < analise.getAnalisesComparadas().size(); i++){
-                    Analise analiseTestar = analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(i);
-                    if(analiseTestar.getEquipeResponsavel().getNome().toLowerCase().contains("basis")){
-                        analise = analiseTestar;
-                    }
-                }
-            }
-        }
+        analise = pegarAnaliseDivergencia(analise);
         String nomeRelatorio = "";
         String[] numeroOs;
         if(analise.getNumeroOs() != null){
@@ -233,6 +222,24 @@ public class RelatorioUtil {
         }
         return nomeRelatorio += "_Contagem";
     }
+
+    private static Analise pegarAnaliseDivergencia(Analise analise) {
+        if(analise.getIsDivergence()){
+            if(analise.getAnalisesComparadas().size() == 1){
+                return analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(0);
+            }else{
+                for (int i = 0; i < analise.getAnalisesComparadas().size(); i++){
+                    Analise analiseTestar = analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(i);
+                    if(analiseTestar.getEquipeResponsavel().getNome().toLowerCase().contains("basis")){
+                        return analiseTestar;
+                    }
+                }
+            }
+        }
+
+        return analise;
+    }
+
 
     /**
      * Cria o corpo do relatório de contagem
