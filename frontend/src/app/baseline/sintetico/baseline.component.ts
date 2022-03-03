@@ -193,7 +193,6 @@ export class BaselineComponent implements OnInit {
                     this.performSearch();
                 }, error => {
                     this.pageNotificationService.addErrorMessage('Não foi possível localizar Análise para gerar Baseline do sistema informado.');
-                    console.log(error.message);
                     this.showUpdateBaseline = false;
             });
         }

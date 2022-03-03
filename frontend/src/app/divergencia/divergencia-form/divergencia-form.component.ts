@@ -156,6 +156,7 @@ export class DivergenciaFormComponent implements OnInit {
                 this.isEdicao = true;
                 this.divergenciaService.find(params['id']).subscribe(analise => {
                     this.analise = analise;
+                    this.carregarAnalise(this.analise);
                     },
                     err => {
                         this.pageNotificationService.addErrorMessage(
@@ -172,6 +173,13 @@ export class DivergenciaFormComponent implements OnInit {
             }
         });
     }
+
+    carregarAnalise(analise: Analise) {
+        if (analise.contrato !== undefined && analise.contrato.manualContrato) {
+            this.setManual(analise.manual ? analise.manual : new Manual());
+        }
+    }
+
     private verifyCanEditAnalise(analise: Divergencia): Boolean {
         let canEditAnalise: Boolean = false;
         this.tipoEquipesLoggedUser.forEach(equip => {
@@ -243,13 +251,7 @@ export class DivergenciaFormComponent implements OnInit {
     setManual(manualSelected: Manual) {
         if (manualSelected) {
             this.manualService.find(manualSelected.id).subscribe((manual) => {
-                this.nomeManual = manual.nome;
                 this.carregarEsforcoFases(manual);
-                this.carregarMetodosContagem(manual);
-                this.inicializaFatoresAjuste(manual);
-                this.manualSelecionado(manual);
-                this.setManuais(this.analise.contrato);
-                this.carregaFatorAjusteNaEdicao();
             });
         }
     }

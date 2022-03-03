@@ -4,8 +4,8 @@ public class SistemaDropdownDTO extends DropdownDTO {
 
     private DropdownDTO organizacao;
 
-    public SistemaDropdownDTO(Long id, String nome, Long idOrganizacao, String sigla) {
-        super(id, nome + " - " + sigla);
+    public SistemaDropdownDTO(Long id, String siglaSis,  String nome, Long idOrganizacao, String sigla) {
+        super(id, siglaSis + " - "+ nome + " - " + sigla);
         this.organizacao = new DropdownDTO(idOrganizacao, null);
     }
 

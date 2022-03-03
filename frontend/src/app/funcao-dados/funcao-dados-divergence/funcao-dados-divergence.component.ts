@@ -165,6 +165,9 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     novaFuncionalidade: Funcionalidade = new Funcionalidade();
     oldModuloId: number;
 
+
+    habilitaEditarOrdem: boolean = false;
+
     constructor(
         private analiseSharedDataService: AnaliseSharedDataService,
         private confirmationService: ConfirmationService,
@@ -1618,6 +1621,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         })
         this.pageNotificationService.addSuccessMessage("Ordenação salva com sucesso.");
         this.isOrderning = false;
+        this.habilitaEditarOrdem = false;
     }
 
     // Funcionalidade Selecionada
@@ -1787,5 +1791,18 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.pageNotificationService.addSuccessMessage("Comentário editado com sucesso!");
             this.cancelEditComment();
         })
+    }
+
+    habilitarEdicaoOrdem(funcao: FuncaoDados){ 
+        if(this.habilitaEditarOrdem == false && this.isOrderning){
+            this.habilitaEditarOrdem = true;
+        }
+        
+    }
+
+    trocarOrdem(numero){
+        if(numero != null){
+            this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
+        }
     }
 }

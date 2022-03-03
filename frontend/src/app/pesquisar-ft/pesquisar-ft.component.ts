@@ -140,6 +140,13 @@ export class PesquisarFtComponent implements OnInit {
     mostrarDialogPesquisarAnalises: boolean = false;
     headerDialog: String = "";
 
+    fundamentacao: any;
+
+    //Variável para o p-editor
+    formatsEditor = ["background", "bold", "color", "font", "code", "italic",
+        "link", "size", "strike", "script", "underline", "blockquote",
+        "header", "indent", "list", "align", "direction", "code-block"];
+
 
     constructor(
         private analiseService: AnaliseService,
@@ -462,6 +469,10 @@ export class PesquisarFtComponent implements OnInit {
                                 });
                             }
                             if (this.novoDeflator != null) {
+                                funcaoTransacaoResp.sustantation = "";
+                                if(this.fundamentacao != null){
+                                    funcaoTransacaoResp.sustantation = this.fundamentacao;
+                                }
                                 funcaoTransacaoResp.fatorAjuste = this.novoDeflator;
                                 if (this.novoDeflator.tipoAjuste === 'UNITARIO') {
                                     funcaoTransacaoResp.quantidade = this.quantidadeINM;
@@ -475,7 +486,6 @@ export class PesquisarFtComponent implements OnInit {
                             this.validaCamposObrigatorios();
                             if (this.verificarCamposObrigatorios()) {
                                 this.blockUiService.show();
-                                funcaoTransacaoResp.sustantation = "";
                                 saveFuncaoTransacoes.push(this.funcaoTransacaoService.create(funcaoTransacaoResp, this.analise.id));
                             }
                         });
@@ -535,6 +545,11 @@ export class PesquisarFtComponent implements OnInit {
                                 });
                             }
                             if (this.novoDeflator != null) {
+                                funcaoDadosResp.sustantation = "";
+                                if(this.fundamentacao != null){
+                                    funcaoDadosResp.sustantation = this.fundamentacao;   
+                                }
+
                                 funcaoDadosResp.fatorAjuste = this.novoDeflator;
                                 if (this.novoDeflator.tipoAjuste === 'UNITARIO') {
                                     funcaoDadosResp.quantidade = this.quantidadeINM;
@@ -548,7 +563,6 @@ export class PesquisarFtComponent implements OnInit {
                             this.validaCamposObrigatorios();
                             if (this.verificarCamposObrigatorios()) {
                                 this.blockUiService.show();
-                                funcaoDadosResp.sustantation = "";
                                 saveFuncaoDados.push(this.funcaoDadosService.create(funcaoDadosResp, this.analise.id));
                             }
                         });

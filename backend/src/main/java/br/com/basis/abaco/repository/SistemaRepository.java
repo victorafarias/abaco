@@ -36,7 +36,7 @@ public interface SistemaRepository extends JpaRepository<Sistema, Long> {
     @EntityGraph(attributePaths = {"modulos"})
     Sistema findOne(Long id);
 
-    @Query("SELECT new br.com.basis.abaco.service.dto.SistemaDropdownDTO(s.id, s.nome, s.organizacao.id, s.organizacao.sigla) FROM Sistema s")
+    @Query("SELECT new br.com.basis.abaco.service.dto.SistemaDropdownDTO(s.id, s.sigla, s.nome, s.organizacao.id, s.organizacao.sigla) FROM Sistema s")
     List<SistemaDropdownDTO> getSistemaDropdown();
 
     @Query("SELECT s from Sistema s where (:nome is null or s.nome like CAST(CONCAT('%', :nome, '%') AS text)) "

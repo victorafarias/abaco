@@ -114,6 +114,7 @@ export class DivergenciaService {
     public geraRelatorioPdfDetalhadoBrowser(id: Number): Observable<string> {
         this.blockUiService.show();
         this.http.request('get', `${this.relatoriosDetalhadoUrl}/${id}`, {
+            observe: "response",
             responseType: 'blob',
         }).pipe(catchError((error: any) => {
             if (error.status === 500) {
@@ -123,11 +124,12 @@ export class DivergenciaService {
             }
         })).subscribe(
             (response) => {
+                let filename = response.headers.get("content-disposition").split("filename=");
                 const mediaType = 'application/pdf';
-                const blob = new Blob([response], {type: mediaType});
+                const blob = new Blob([response.body], {type: mediaType});
                 const fileURL = window.URL.createObjectURL(blob);
                 const anchor = document.createElement('a');
-                anchor.download = 'analise.pdf';
+                anchor.download = filename[1];
                 anchor.href = fileURL;
                 document.body.appendChild(anchor);
                 anchor.click();
@@ -143,6 +145,7 @@ export class DivergenciaService {
     public gerarRelatorioExcel(id: Number): Observable<string> {
         this.blockUiService.show();
         this.http.request('get',`${this.relatorioExcelUrl}/${id}`, {
+            observe: "response",
             responseType: 'blob',
         }).pipe(catchError((error: any) => {
             if (error.status === 500) {
@@ -152,11 +155,12 @@ export class DivergenciaService {
             }
         })).subscribe(
             (response) => {
+                let filename = response.headers.get("content-disposition").split("filename=");
                 const mediaType = 'application/vnd.ms-excel';
-                const blob = new Blob([response], {type: mediaType});
+                const blob = new Blob([response.body], {type: mediaType});
                 const fileURL = window.URL.createObjectURL(blob);
                 const anchor = document.createElement('a');
-                anchor.download = 'analise.xls';
+                anchor.download = filename[1];
                 anchor.href = fileURL;
                 document.body.appendChild(anchor);
                 anchor.click();
