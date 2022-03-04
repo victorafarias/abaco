@@ -69,6 +69,7 @@ spring:
 
 liquibase:
     contexts: dev
+    default-schema: abaco
 
 # ===================================================================
 # To enable SSL, generate a certificate using:
