@@ -199,7 +199,7 @@ public class RelatorioUtil {
         return DynamicExporter.output(byteArray, pegarNomeRelatorio(analise));
     }
 
-    
+
     public static String pegarNomeRelatorio(Analise analise){
         analise = pegarAnaliseDivergencia(analise);
         String nomeRelatorio = "";
