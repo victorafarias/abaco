@@ -173,6 +173,9 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         "header", "indent", "list", "align", "direction", "code-block"]
 
 
+    habilitaEditarOrdem: boolean = false;
+
+
     constructor(
         private analiseSharedDataService: AnaliseSharedDataService,
         private confirmationService: ConfirmationService,
@@ -1305,6 +1308,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         })
         this.pageNotificationService.addSuccessMessage("Ordenação salva com sucesso.");
         this.isOrderning = false;
+        this.habilitaEditarOrdem = false;
     }
 
     // Funcionalidade Selecionada
@@ -1426,5 +1430,25 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     private criarMensagemDeSucessoDaCriacaoDoModulo(nomeModulo: string, nomeSistema: string) {
         this.pageNotificationService
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
+    }
+
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao){ 
+        if(this.habilitaEditarOrdem == false && this.isOrderning){
+            this.habilitaEditarOrdem = true;
+        }
+        
+    }
+
+    trocarOrdem(numero, funcao: FuncaoTransacao){
+        if(numero != null){
+            if(numero < funcao.ordem){
+                funcao.ordem = --numero;
+            }else{
+                funcao.ordem = ++numero;
+            }
+            this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+            this.updateIndex();
+            this.tables.selectedRow = [];
+        }
     }
 }

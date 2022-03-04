@@ -183,6 +183,8 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     oldModuloId: number;
 
 
+    habilitaEditarOrdem: boolean = false;
+
     constructor(
         private analiseSharedDataService: AnaliseSharedDataService,
         private confirmationService: ConfirmationService,
@@ -1545,6 +1547,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.pageNotificationService.addSuccessMessage("Ordenação salva com sucesso.");
         this.isOrderning = false;
         this.resetarEstadoPosSalvar();
+        this.habilitaEditarOrdem = false;
     }
     
     // Funcionalidade Selecionada
@@ -1713,6 +1716,26 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.pageNotificationService.addSuccessMessage("Comentário editado com sucesso!");
             this.cancelEditComment();
         })
+    }
+
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao){ 
+        if(this.habilitaEditarOrdem == false && this.isOrderning){
+            this.habilitaEditarOrdem = true;
+        }
+        
+    }
+
+    trocarOrdem(numero, funcao: FuncaoTransacao){
+        if(numero != null){
+            if(numero < funcao.ordem){
+                funcao.ordem = --numero;
+            }else{
+                funcao.ordem = ++numero;
+            }
+            this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
+            this.updateIndex();
+            this.tables.selectedRow = [];
+        }
     }
 }
 

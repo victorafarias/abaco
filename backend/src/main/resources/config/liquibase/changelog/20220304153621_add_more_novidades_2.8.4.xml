@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1646408204626-1">
+       <insert tableName="novidades">
+           <column name="id" value="12"></column>
+           <column name="novidades_versao_id" value="2"></column>
+           <column name="ocorrencia" value="BASIS-246701"></column>
+           <column name="novidades" value="Evolução 1: Criar a funcionalidade de Exportar Planilha em uma Validação.
+
+            Evolução 2: Alterar a regra de Geração de Relatório em pdf/excel.
+
+            Evolução 3: Acrescentar mais um status de função na validação (Divergente).
+
+            Evolução 4: Trocar o label do status 'Excluir' que existe para 'Inativado' nos botões.
+
+            Evolução 5: Criar uma nova funcionalidade na barra de ações chamada 'Excluir' que irá apagar de fato a função da validação.
+
+            Evolução 6: Gerar Validação - quando uma validação for gerada, a data de criação deve ser a data da geração realizada."></column>
+       </insert>
+       <insert tableName="novidades">
+           <column name="id" value="13"></column>
+           <column name="novidades_versao_id" value="2"></column>
+           <column name="ocorrencia" value="BASIS-241480"></column>
+           <column name="novidades" value="Evolução 1: Incluir na combo de Sistema a sigla do Sistema, concatenando da seguinte forma: Sigla - Nome - Cliente
+
+Evolução 2: Melhoria: permitir que o campo ordem se torne editável ao clicar sobre ele, para inserção da ordenação manualmente, evitando a movimentação da função pelos controles ou pelo drag'n drop. Isso facilitará a reordenação de contagens com muitas funções.
+
+Evolução 3: Melhoria: Ao se aproveitar FD ou FT, disponibilizar o campo de fundamentação para preenchimento.
+
+Evolução 4: Padronizar o nome do relatório em pdf gerado na validação.
+
+Evolução 5: Ajustar a ordem da validação gerada com duas análises. A ordem deve seguir a da análise da equipe Basis e em seguida o sistema deve procurar na análise da outra equipe as funções equivalentes (iguais) à da equipe Basis e intercalar as funções. De modo que fique a função da Basis em cima e equivalente da outra equipe logo abaixo.
+
+Evolução 6: Implementar a tabela de percentual de fases na validação. A validação deve ser gerada copiando as fases selecionadas da Análise Basis.
+
+Evolução 7: Implementar no cadastro e edição em lote de DERs e RLR/ALR, nas funções de dados e de transação (na análise E na validação), para interpretar ',' (vírgula) e ', ' (vírgula e espaço) como quebra de linha, contabilizando os registros individualmente nestas situações. "></column>
+       </insert>
+   </changeSet>
+</databaseChangeLog>

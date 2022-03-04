@@ -30,10 +30,10 @@ export class DivergenciaResumoComponent implements OnInit {
 
     resumoTotal: ResumoTotal;
     public linhaResumo: Resumo[] = [];
-    public pfTotal: number;
-    public pfAjustada: number;
+    public pfTotal: any;
+    public pfAjustada: any;
 
-    pfOriginal: string;
+    pfOriginal: any;
     complexidades: string[];
 
     public analise: Analise = null;
@@ -101,8 +101,8 @@ export class DivergenciaResumoComponent implements OnInit {
                         this.complexidades = AnaliseSharedUtils.complexidades;
                         this.resumoTotal = this.analiseSharedDataService.analise.resumoTotal;
                         this.esforcoFases = this.analiseSharedDataService.analise.esforcoFases;
-                        this.pfTotal = parseFloat(analise.pfTotal);
-                        this.pfAjustada = parseFloat(analise.adjustPFTotal);
+                        this.pfTotal = parseFloat(analise.pfTotal).toFixed(2);
+                        this.pfAjustada = parseFloat(analise.adjustPFTotal).toFixed(2);
                         this.pfOriginal = parseFloat(analise.pfTotalOriginal).toFixed(2);;
                         this.divergenciaService.getDivergenciaResumo(this.idAnalise)
                         .subscribe(res => {

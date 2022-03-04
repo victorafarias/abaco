@@ -1007,12 +1007,10 @@ export class AnaliseListComponent implements OnInit {
                                     this.blockUiService.hide();
                                 }, err => {
                                     this.pageNotificationService.addErrorMessage('Ocorreu um erro ao tentar gerar Validação.');
-                                    console.log(err);
                                     this.blockUiService.hide();
                                 });
                             }, err => {
                                 this.pageNotificationService.addErrorMessage('Ocorreu um erro ao tentar gerar Validação.');
-                                console.log(err);
                                 this.blockUiService.hide();
                             });
                 }

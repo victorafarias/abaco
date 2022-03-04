@@ -167,6 +167,48 @@
                                     </div>
                                 </div>
                             </p-fieldset>
+
+                            <p-fieldset [legend]="this.getLabel('Fases')" [toggleable]="true" [collapsed]="true">
+                                <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 05px">
+                                    <p-table
+                                            dataKey="id"
+                                            [rowHover]="true"
+                                            [emptyMessage]="this.getLabel('Selecione um Contrato para escolher Fases')"
+                                            [value]="esforcoFases"
+                                            id="idTabelaFases"
+                                            [resizableColumns]="true"
+                                            [(selection)]="analise.esforcoFases">
+                                        <ng-template pTemplate="caption">
+                                            Fase
+                                        </ng-template>
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align:left"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                                <th pSortableColumn="fase.nome">Nome <p-sortIcon></p-sortIcon></th>
+                                                <th pSortableColumn="esforco">Esforço <p-sortIcon></p-sortIcon></th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-esforcoFase>
+                                            <tr class="ui-selectable-row">
+                                                <td >
+                                                    <p-tableCheckbox [value]="esforcoFase"></p-tableCheckbox>
+                                                </td>
+                                                <td>
+                                                    {{esforcoFase.fase.nome}}
+                                                </td>
+                                                <td>
+                                                    {{esforcoFase.esforco}}%
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="footer">
+                                            <tr>
+                                                <td colspan="3" style="text-align:center">{{this.getLabel('Total')}} {{ totalEsforcoFases() }}%</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </p-fieldset>
                     </div>
 
                     <div class="ui-g ui-md-12"

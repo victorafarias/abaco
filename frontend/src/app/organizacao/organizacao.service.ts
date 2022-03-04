@@ -39,8 +39,6 @@ export class OrganizacaoService {
                 }
                 if (error.status === 400) {
                     const errorType: string = error.headers.get('x-abacoapp-error');
-                    console.log(errorType);
-                    
                     switch (errorType) {
                         case 'error.orgNomeInvalido': {
                             this.pageNotificationService.addErrorMessage('O campo Nome possui caracteres inválidos!');
