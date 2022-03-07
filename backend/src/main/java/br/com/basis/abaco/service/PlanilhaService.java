@@ -889,12 +889,16 @@ public class PlanilhaService {
     }
 
 
-    private boolean testarFuncaoTransacaoDivergenciaINM(FuncaoTransacao funcaoPrimaria, FuncaoTransacao funcaoSecundaria) {
-        if((funcaoSecundaria != null && funcaoPrimaria.getName() != null
-            && funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)
-            && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)) ||
-            funcaoPrimaria.getName() != null && !funcaoPrimaria.getTipo().equals(TipoFuncaoTransacao.INM) ||
-            funcaoSecundaria != null && !funcaoSecundaria.getTipo().equals(TipoFuncaoTransacao.INM)){
+    private boolean testarFuncaoTransacaoDivergenciaINM(FuncaoTransacao funcaoPrimariaINM, FuncaoTransacao funcaoSecundariaINM) {
+        if((funcaoSecundariaINM != null && funcaoPrimariaINM.getName() != null
+            && funcaoPrimariaINM.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)
+            && funcaoSecundariaINM.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)) ||
+            funcaoSecundariaINM == null && funcaoPrimariaINM.getName() != null
+                && funcaoPrimariaINM.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) ||
+            funcaoSecundariaINM != null && funcaoPrimariaINM.getName() == null
+                && funcaoSecundariaINM.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) ||
+            funcaoPrimariaINM.getName() != null && !funcaoPrimariaINM.getTipo().equals(TipoFuncaoTransacao.INM) ||
+            funcaoSecundariaINM != null && !funcaoSecundariaINM.getTipo().equals(TipoFuncaoTransacao.INM)){
             return true;
         }
         return false;
@@ -1008,10 +1012,9 @@ public class PlanilhaService {
         Map<FuncaoDados, FuncaoDados> funcaoDados = new LinkedHashMap<>();
         Map<FuncaoTransacao, FuncaoTransacao> funcaoTransacao = new LinkedHashMap<>();
         this.carregarFuncoesDivergencia(funcaoDadosList, funcaoTransacaoList, funcaoDados, funcaoTransacao);
-        this.setarFuncoesDadosExcelDivergenciaPadraoBasis(funcaoDados, excelSheet, rowNumero, idRow, evaluator);
-        rowNumero += funcaoDados.size();
-        idRow += funcaoDados.size();
-        this.setarFuncoesTransacaoExcelDivergenciaPadraoBasis(funcaoTransacao, excelSheet, rowNumero, idRow, evaluator);
+        idRow = this.setarFuncoesDadosExcelDivergenciaPadraoBasis(funcaoDados, excelSheet, rowNumero, idRow, evaluator);
+        rowNumero += idRow;
+        this.setarFuncoesTransacaoExcelDivergenciaPadraoBasis(funcaoTransacao, excelSheet, --rowNumero, idRow, evaluator);
         evaluator.evaluateFormulaCell(excelSheet.getRow(4).getCell(3));
     }
 
@@ -1091,6 +1094,10 @@ public class PlanilhaService {
         if((funcaoSecundaria != null && funcaoPrimaria.getName() != null
             && funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)
             && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)) ||
+            funcaoSecundaria == null && funcaoPrimaria.getName() != null
+                && funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) ||
+            funcaoSecundaria != null && funcaoPrimaria.getName() == null
+                && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) ||
             funcaoPrimaria.getName() != null && funcaoPrimaria.getTipo().equals(TipoFuncaoTransacao.INM) ||
             funcaoSecundaria != null && funcaoSecundaria.getTipo().equals(TipoFuncaoTransacao.INM)){
             return true;
@@ -1098,7 +1105,7 @@ public class PlanilhaService {
         return false;
     }
 
-    private void setarFuncoesDadosExcelDivergenciaPadraoBasis(Map<FuncaoDados, FuncaoDados> funcaoDados, XSSFSheet excelSheet, int rowNumero, int idRow, FormulaEvaluator evaluator) {
+    private int setarFuncoesDadosExcelDivergenciaPadraoBasis(Map<FuncaoDados, FuncaoDados> funcaoDados, XSSFSheet excelSheet, int rowNumero, int idRow, FormulaEvaluator evaluator) {
         for (Map.Entry<FuncaoDados, FuncaoDados> funcao : funcaoDados.entrySet()) {
             boolean canContinue = true;
             FuncaoDados funcaoDadosPrimaria = funcao.getKey();
@@ -1111,6 +1118,7 @@ public class PlanilhaService {
                 this.setarFuncoesDadosExcelDivergencia(funcaoDadosPrimaria, funcaoDadosSecundaria, row, idRow++, evaluator);
             }
         }
+        return idRow;
     }
 
     private void setarFuncoesDadosExcelDivergencia(FuncaoDados funcaoDadosPrimaria, FuncaoDados funcaoDadosSecundaria, XSSFRow row, int idRow, FormulaEvaluator evaluator){
@@ -1171,7 +1179,11 @@ public class PlanilhaService {
     private boolean testarFuncaoDadoDivergencia(FuncaoDados funcaoDadosPrimaria, FuncaoDados funcaoDadosSecundaria) {
         if((funcaoDadosSecundaria != null && funcaoDadosPrimaria.getName() != null
             && funcaoDadosPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)
-            && funcaoDadosSecundaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO))){
+            && funcaoDadosSecundaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)) ||
+            funcaoDadosSecundaria == null && funcaoDadosPrimaria.getName() != null
+                && funcaoDadosPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) ||
+            funcaoDadosSecundaria != null && funcaoDadosPrimaria.getName() == null
+                && funcaoDadosSecundaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)){
             return true;
         }
         return false;
