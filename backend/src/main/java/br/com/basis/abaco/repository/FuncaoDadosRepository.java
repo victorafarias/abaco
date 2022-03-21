@@ -4,6 +4,7 @@ import br.com.basis.abaco.domain.FuncaoDados;
 import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.service.dto.DropdownDTO;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +28,7 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.analise.id = ?1 ")
     List<FuncaoDados> findByAnalise(Long id);
 
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.id = ?1")
     FuncaoDados findById(Long id);
 
@@ -40,18 +42,16 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
         + " WHERE a.enviarBaseline = true AND a.bloqueiaAnalise = true")
     List<DropdownDTO> getFuncaoDadosDropdown();
 
+
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     @Query("SELECT fd FROM FuncaoDados fd WHERE fd.analise.id = :idAnalise Order by fd.funcionalidade.modulo.nome ")
     Set<FuncaoDados> findByAnaliseId(@Param("idAnalise") Long idAnalise);
 
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     Set<FuncaoDados> findAllByAnaliseIdOrderByOrdem(Long idAnalise);
 
-    Set<FuncaoDados> findByAnaliseIdAndStatusFuncaoOrderByOrdem(Long id, StatusFuncao statusFuncao);
-
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     Set<FuncaoDados> findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(Long id, StatusFuncao statusFuncao);
-
-    Set<FuncaoDados> findByAnaliseIdOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long idAnalise);
-
-    Set<FuncaoDados> findByAnaliseIdAndStatusFuncaoOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long idAnalise, StatusFuncao statusFuncao);
 
     Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(String name, Long analiseId, Long idFuncionalidade, Long idModulo);
 
@@ -64,6 +64,7 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
 
     long countByFuncionalidadeId(Long id);
 
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     FuncaoDados findByIdOrderByDersIdAscRlrsIdAsc(Long id);
 
     Optional<List<FuncaoDados>> findAllByFuncionalidadeId(Long id);

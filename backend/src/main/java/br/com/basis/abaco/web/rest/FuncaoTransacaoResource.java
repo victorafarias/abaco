@@ -265,8 +265,7 @@ public class FuncaoTransacaoResource {
         FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
-
-
+    
     /**
      * DELETE  /funcao-transacaos/:id : delete the "id" funcaoTransacao.
      *
@@ -479,7 +478,7 @@ public class FuncaoTransacaoResource {
             }
         }
     }
-    
+
     private void saveVwDers(Set<Der> ders, List<VwDer> vwDerList, Long idSistema, Long idFuncao, List<VwDerAll> vwDerAllList) {
         List<VwDer> vwDers = new ArrayList<>();
         List<VwDerAll> vwDerAlls = new ArrayList<>();
