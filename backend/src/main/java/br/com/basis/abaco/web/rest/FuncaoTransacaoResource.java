@@ -265,7 +265,7 @@ public class FuncaoTransacaoResource {
         FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
-    
+
     /**
      * DELETE  /funcao-transacaos/:id : delete the "id" funcaoTransacao.
      *
