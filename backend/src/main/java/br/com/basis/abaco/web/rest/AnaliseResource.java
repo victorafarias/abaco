@@ -202,7 +202,6 @@ public class AnaliseResource {
             if (analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() != null) {
                 analise.setDataHomologacao(analiseUpdate.getDataHomologacao());
             }
-            analiseService.linkFuncoesToAnalise(analise);
             analise.setBloqueiaAnalise(!analise.isBloqueiaAnalise());
             analiseRepository.save(analise);
             analise.setAnaliseClonadaParaEquipe(null);

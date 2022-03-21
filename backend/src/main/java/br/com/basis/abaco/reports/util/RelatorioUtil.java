@@ -225,7 +225,7 @@ public class RelatorioUtil {
     }
 
     private static Analise pegarAnaliseDivergencia(Analise analise) {
-        if(analise.getIsDivergence()){
+        if(analise.getIsDivergence() != null && analise.getIsDivergence()){
             if(analise.getAnalisesComparadas().size() == 1){
                 return analise.getAnalisesComparadas().stream().collect(Collectors.toList()).get(0);
             }else{

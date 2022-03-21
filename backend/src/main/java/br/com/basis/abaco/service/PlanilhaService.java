@@ -887,7 +887,7 @@ public class PlanilhaService {
         excelFile.write(outputStream);
         return outputStream;
     }
-    
+
     private boolean testarFuncaoTransacaoDivergenciaINM(FuncaoTransacao funcaoPrimariaINM, FuncaoTransacao funcaoSecundariaINM) {
         if((funcaoSecundariaINM != null && funcaoPrimariaINM.getName() != null
             && funcaoPrimariaINM.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)
