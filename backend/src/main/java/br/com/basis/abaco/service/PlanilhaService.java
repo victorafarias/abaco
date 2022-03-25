@@ -1169,6 +1169,7 @@ public class PlanilhaService {
         }
     }
 
+    
     private boolean testarFuncaoDadoDivergencia(FuncaoDados funcaoDadosPrimaria, FuncaoDados funcaoDadosSecundaria) {
         if((funcaoDadosSecundaria != null && funcaoDadosPrimaria.getName() != null
             && funcaoDadosPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO)
