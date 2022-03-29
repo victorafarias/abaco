@@ -381,7 +381,6 @@ export class DivergenciaListComponent implements OnInit {
         }
         
         public alterValidacaoStatusBlock(divergencia:Analise) {
-        
             if (divergencia && this.statusToChange) {
                 this.divergenciaService.changeStatusDivergence(divergencia.id, this.statusToChange).subscribe(data => {
                     this.analiseTemp = new Analise().copyFromJSON(data);
