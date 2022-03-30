@@ -65,7 +65,6 @@ public class PEAnaliticoService {
         return lstPeAnaliticos.stream().map(this::convertToPEAnaliticoDTO).collect(Collectors.toSet());
     }
 
-
     @Transactional
     public Set<PEAnaliticoDTO> getPeAnaliticoEstimadaDTOS(Long idModulo, Long idFuncionalidade, String name, Long idSistema, String tipo, Long idEquipeResponsavel) {
         Set<PEAnaliticoEstimada> lstPeAnaliticos;
