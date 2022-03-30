@@ -24,8 +24,8 @@ export class FuncaoTransacaoService {
     constructor(private http: HttpClient, private pageNotificationService: PageNotificationService) {
     }
 
-    autoCompletePEAnalitico(name: String, idFuncionalidade : number): Observable<any> {
-        const url = `${this.resourceUrlPEAnalitico}ft?name=${name}&idFuncionalidade=${idFuncionalidade}`;
+    autoCompletePEAnalitico(name: String, idFuncionalidade : number, idEquipeResponsavel: number): Observable<any> {
+        const url = `${this.resourceUrlPEAnalitico}ft?name=${name}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get(url);
     }
 
@@ -151,13 +151,13 @@ export class FuncaoTransacaoService {
         return this.http.get<FuncaoTransacao>(url);
     }
 
-    public getFuncaoTransacaoByModuloOrFuncionalidade(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number): Observable<any[]> {
-        const url = `${this.resourceUrlPEAnalitico}funcaoTransacao/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}`;
+    public getFuncaoTransacaoByModuloOrFuncionalidade(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number, idEquipeResponsavel?: number): Observable<any[]> {
+        const url = `${this.resourceUrlPEAnalitico}funcaoTransacao/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get<[]>(url);
     }
 
-    public getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number): Observable<any[]> {
-        const url = `${this.resourceUrlPEAnalitico}funcaoTransacao/estimada/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}`;
+    public getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number, idEquipeResponsavel?: number): Observable<any[]> {
+        const url = `${this.resourceUrlPEAnalitico}funcaoTransacao/estimada/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get<[]>(url);
     }
 

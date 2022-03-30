@@ -31,40 +31,40 @@ public class PEAnaliticoResource {
 
     @GetMapping("/peanalitico/{tipo}")
     @Timed
-    public Set<DropdownFuncaoDadosDTO> getFuncaoBySistemaAndModuloAndFuncionalidade(@PathVariable String tipo, @RequestParam Long idFuncionalidade, @RequestParam String name) {
-        Set<PEAnalitico> peAnaliticoSet = peAnaliticoRepository.findByIdFuncionalidadeAndTipoAndNameContainingIgnoreCaseOrderByName(idFuncionalidade, tipo, name);
+    public Set<DropdownFuncaoDadosDTO> getFuncaoBySistemaAndModuloAndFuncionalidade(@PathVariable String tipo, @RequestParam Long idFuncionalidade, @RequestParam String name, @RequestParam Long idEquipeResponsavel) {
+        Set<PEAnalitico> peAnaliticoSet = peAnaliticoRepository.findByIdFuncionalidadeAndTipoAndNameContainingIgnoreCaseAndEquipeResponsavelIdOrderByName(idFuncionalidade, tipo, name, idEquipeResponsavel);
         return peAnaliticoSet.stream().map(this::convertToDto).collect(Collectors.toSet());
     }
 
-    @GetMapping("/peanalitico/drop-down/{id}")
+    @GetMapping("/peanalitico/drop-down/{id}/{idEquipeResponsavel}")
     @Timed
-    public Set<DropdownFuncaoDadosDTO> getFuncaoDadosByAnalise(@PathVariable Long id) {
-        Set<PEAnalitico> peAnaliticos = peAnaliticoRepository.findAllByidsistemaAndTipoOrderByName(id, FUNCAO_DADOS);
+    public Set<DropdownFuncaoDadosDTO> getFuncaoDadosByAnalise(@PathVariable Long id, @PathVariable Long idEquipeResponsavel) {
+        Set<PEAnalitico> peAnaliticos = peAnaliticoRepository.findAllByidsistemaAndTipoAndEquipeResponsavelIdOrderByName(id, FUNCAO_DADOS, idEquipeResponsavel);
         return peAnaliticos.stream().map(this::convertToDto).collect(Collectors.toSet());
     }
 
     @GetMapping("/peanalitico/funcaoTransacao/{idSistema}")
     @Timed
-    public Set<PEAnaliticoDTO> getFuncaoTransacaoByModuloOrFuncionalidade(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema) {
-        return this.peAnaliticoService.getPeAnaliticoDTOS(idModulo, idFuncionalidade, name, idSistema, "ft");
+    public Set<PEAnaliticoDTO> getFuncaoTransacaoByModuloOrFuncionalidade(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema, @RequestParam Long idEquipeResponsavel) {
+        return this.peAnaliticoService.getPeAnaliticoDTOS(idModulo, idFuncionalidade, name, idSistema, "ft", idEquipeResponsavel);
     }
 
     @GetMapping("/peanalitico/funcaoDados/{idSistema}")
     @Timed
-    public Set<PEAnaliticoDTO> getFuncaoDadosyModuloOrFuncionalidade(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema) {
-        return this.peAnaliticoService.getPeAnaliticoDTOS(idModulo, idFuncionalidade, name, idSistema, "fd");
+    public Set<PEAnaliticoDTO> getFuncaoDadosyModuloOrFuncionalidade(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema, @RequestParam Long idEquipeResponsavel) {
+        return this.peAnaliticoService.getPeAnaliticoDTOS(idModulo, idFuncionalidade, name, idSistema, "fd", idEquipeResponsavel);
     }
 
     @GetMapping("/peanalitico/funcaoTransacao/estimada/{idSistema}")
     @Timed
-    public Set<PEAnaliticoDTO> getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema) {
-        return this.peAnaliticoService.getPeAnaliticoEstimadaDTOS(idModulo, idFuncionalidade, name, idSistema, "ft");
+    public Set<PEAnaliticoDTO> getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema, @RequestParam Long idEquipeResponsavel) {
+        return this.peAnaliticoService.getPeAnaliticoEstimadaDTOS(idModulo, idFuncionalidade, name, idSistema, "ft", idEquipeResponsavel);
     }
 
     @GetMapping("/peanalitico/funcaoDados/estimada/{idSistema}")
     @Timed
-    public Set<PEAnaliticoDTO> getFuncaoDadosyModuloOrFuncionalidadeEstimada(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema) {
-        return this.peAnaliticoService.getPeAnaliticoEstimadaDTOS(idModulo, idFuncionalidade, name, idSistema, "fd");
+    public Set<PEAnaliticoDTO> getFuncaoDadosyModuloOrFuncionalidadeEstimada(@RequestParam(required = false) Long idModulo, @RequestParam(required = false) Long idFuncionalidade, @RequestParam(required = false) String name, @PathVariable(required = false) Long idSistema, @RequestParam Long idEquipeResponsavel) {
+        return this.peAnaliticoService.getPeAnaliticoEstimadaDTOS(idModulo, idFuncionalidade, name, idSistema, "fd", idEquipeResponsavel);
     }
 
 

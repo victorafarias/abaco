@@ -45,12 +45,12 @@ export class FuncaoDadosService {
         return this.http.get(this.resourceUrl + '/drop-down');
     }
 
-    dropDownPEAnalitico(idSistema): Observable<any> {
-        return this.http.get(this.resourceUrlPEAnalitico + 'drop-down/' + idSistema);
+    dropDownPEAnalitico(idSistema, idEquipeResponsavel): Observable<any> {
+        return this.http.get(this.resourceUrlPEAnalitico + 'drop-down/' + idSistema + "/" +idEquipeResponsavel);
     }
 
-    autoCompletePEAnalitico(name: String, idFuncionalidade: number): Observable<any> {
-        const url = `${this.resourceUrlPEAnalitico}/fd?name=${name}&idFuncionalidade=${idFuncionalidade}`;
+    autoCompletePEAnalitico(name: String, idFuncionalidade: number, idEquipeResponsavel: number): Observable<any> {
+        const url = `${this.resourceUrlPEAnalitico}/fd?name=${name}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get(url);
     }
 
@@ -245,13 +245,13 @@ export class FuncaoDadosService {
         const url = `${this.vwresourceUrl}/${id}`;
         return this.http.get<[]>(url);
     }
-    public getFuncaoDadosByModuloOrFuncionalidade(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number): Observable<any[]> {
-        const url = `${this.resourceUrlPEAnalitico}funcaoDados/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}`;
+    public getFuncaoDadosByModuloOrFuncionalidade(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number, idEquipeResponsavel?: number): Observable<any[]> {
+        const url = `${this.resourceUrlPEAnalitico}funcaoDados/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get<[]>(url);
     }
 
-    public getFuncaoDadosByModuloOrFuncionalidadeEstimada(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number): Observable<any[]> {
-        const url = `${this.resourceUrlPEAnalitico}funcaoDados/estimada/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}`;
+    public getFuncaoDadosByModuloOrFuncionalidadeEstimada(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number, idEquipeResponsavel?: number): Observable<any[]> {
+        const url = `${this.resourceUrlPEAnalitico}funcaoDados/estimada/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get<[]>(url);
     }
 
