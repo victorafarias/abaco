@@ -587,7 +587,7 @@ export class PesquisarFtComponent implements OnInit {
         if (this.isFuncaoDados) {
             this.blockUiService.show();
             if (this.metodoContagem === 1) {
-                this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id).subscribe(value => {
+                this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
                     this.fn = value;
                     this.fn.forEach(funcao => {
@@ -604,7 +604,7 @@ export class PesquisarFtComponent implements OnInit {
                     })
                 });
             } else {
-                this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id).subscribe(value => {
+                this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
                     this.fn = value;
                 });
@@ -613,7 +613,7 @@ export class PesquisarFtComponent implements OnInit {
         } else {
             this.blockUiService.show();
             if (this.metodoContagem === 1) {
-                this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id).subscribe(value => {
+                this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
                     this.fn = value;
                     this.fn.forEach(funcao => {
@@ -630,7 +630,7 @@ export class PesquisarFtComponent implements OnInit {
                     })
                 });
             } else {
-                this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id).subscribe(value => {
+                this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
                     this.fn = value;
                 });
