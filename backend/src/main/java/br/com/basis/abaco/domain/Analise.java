@@ -250,6 +250,16 @@ public class Analise implements Serializable, ReportObject {
     @Column(name = "pf_total_aprovado")
     private String pfTotalAprovado;
 
+
+    //Campos novos de data para análise
+    @Column(name = "is_encerrada")
+    private Boolean isEncerrada;
+
+    @JsonInclude
+    @Column(name = "dt_encerramento")
+    @Field(type = FieldType.Date)
+    private Timestamp dtEncerramento;
+
     public Analise(Analise analise, User user) {
         this.id = null;
         this.identificadorAnalise = analise.identificadorAnalise;
@@ -300,6 +310,17 @@ public class Analise implements Serializable, ReportObject {
 
     public Timestamp getDataCriacaoOrdemServico() {
         return this.dataCriacaoOrdemServico != null ? new Timestamp(this.dataCriacaoOrdemServico.getTime()) : null;
+    }
+    public void setDtEncerramento(Timestamp dtEncerramento) {
+        if (dtEncerramento != null) {
+            this.dtEncerramento = new Timestamp(dtEncerramento.getTime());
+        } else {
+            this.dtEncerramento = null;
+        }
+    }
+
+    public Timestamp getDtEncerramento() {
+        return this.dtEncerramento != null ? new Timestamp(this.dtEncerramento.getTime()) : null;
     }
 
     public String getMetodoContagemString() {

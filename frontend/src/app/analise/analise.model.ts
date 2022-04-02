@@ -89,6 +89,8 @@ export class Analise implements BaseEntity {
         public pfTotalOriginal?: string,
         public pfTotalAprovado?: string,
         public analiseDivergence?: Analise,
+        public dtEncerramento?: any,
+        public isEncerrada?: boolean
     ) {
         this.inicializaMappables(funcaoDados, funcaoTransacaos);
         this.inicializaResumos();
@@ -325,7 +327,12 @@ export class Analise implements BaseEntity {
             this.fatorCriticidade,
             this.valorCriticidade,
             this.scopeCreep,
-            this.motivo
+            this.motivo,
+            this.pfTotalOriginal,
+            this.pfTotalAprovado,
+            this.analiseDivergence,
+            this.dtEncerramento,
+            this.isEncerrada
             );
     }
 
@@ -375,8 +382,12 @@ class AnaliseCopyFromJSON {
         this._analiseConverted.propositoContagem = this._json.propositoContagem;
         this._analiseConverted.observacoes = this._json.observacoes;
         this._analiseConverted.baselineImediatamente = this._json.baselineImediatamente;
-        this._analiseConverted.dataHomologacao = this._json.dataHomologacao;
-        this._analiseConverted.dataCriacaoOrdemServico = this._json.dataCriacaoOrdemServico;
+        if(this._json.dataHomologacao){
+            this._analiseConverted.dataHomologacao = new Date(this._json.dataHomologacao);
+        }
+        if(this._json.dataCriacaoOrdemServico){
+            this._analiseConverted.dataCriacaoOrdemServico = new Date(this._json.dataCriacaoOrdemServico);
+        }
         this._analiseConverted.identificadorAnalise = this._json.identificadorAnalise;
         this._analiseConverted.equipeResponsavel = this._json.equipeResponsavel;
         if (this._json.audit) {
@@ -404,6 +415,13 @@ class AnaliseCopyFromJSON {
         this._analiseConverted.pfTotalAprovado = this._json.pfTotalAprovado;
         this._analiseConverted.pfTotalOriginal = this._json.pfTotalOriginal;
         this._analiseConverted.analiseDivergence = this._json.analiseDivergence;
+        
+        if(this._json.dtEncerramento){
+            this._analiseConverted.dtEncerramento = new Date(this._json.dtEncerramento);
+        }
+        this._analiseConverted.isEncerrada = this._json.isEncerrada;
+
+
     }
 
     private converteFuncoes() {

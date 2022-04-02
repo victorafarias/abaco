@@ -56,7 +56,7 @@
                                 </div>
                             </fieldset>
                         </div>
-                        <div style="margin-bottom: 25px; margin-top: 25px" *ngIf="isEdicao">
+                        <div style="margin-bottom: 105px; margin-top: 25px" *ngIf="isEdicao">
                             <div class="ui-g">
                                 <div class="ui-g-6 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
                                     <label >Identificador da Analise*</label>
@@ -70,18 +70,6 @@
                                                 [disabled]="this.isView"
                                                 [(ngModel)]="analise.identificadorAnalise"
                                                 pInputText/>
-                                    </span>
-                                </div>
-
-                                <div class="ui-g-6 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
-                                    <label >Data da Criação da Ordem
-                                        de Serviço *</label>
-                                    <span class="md-inputfield">
-                                        <input type="text"
-                                               name="dataCriacaoOrdemServico"
-                                               [disabled]="this.isView"
-                                               pInputText [ngModel]="analise.dataCriacaoOrdemServico|date:'dd/MM/y'"
-                                               readonly/>
                                     </span>
                                 </div>
 
@@ -237,20 +225,6 @@
 
                                 </div>
 
-                                <div class="ui-g-4 ui-md-6 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <span class="md-inputfield">
-                                         <p-calendar
-                                                 name="dataHomol"
-                                                 [disabled]="this.isView"
-                                                 id="idDataHomologacaoViewAnalise"
-                                                 [(ngModel)]="analise.dataHomologacao"
-                                                 dateFormat="dd/mm/yy">
-                                         </p-calendar>
-                                         <label>{{this.getLabel('Data Homologação')}} {{analise.baselineImediatamente ? " *" : null}}</label>
-                                    </span>
-                                </div>
-
                                 <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px"
                                      [hidden]="validacaoCampos">
                                     <p-table
@@ -281,22 +255,62 @@
                                 </div>
 
                                 <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <label>Observações</label>
-                                    <span class="md-inputfield">
-                                        <textarea
-                                                [rows]="3"
-                                                [cols]="180"
-                                                id="idObservacoesViewAnalise"
-                                                autoResize=true
-                                                pInputTextarea
-                                                name="observacoes"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="analise.observacoes"
-                                                maxlength="4000">
-                                        </textarea>
-                                    </span>
+                                        [hidden]="validacaoCampos">
+                                        <label>Observações</label>
+                                        <span class="md-inputfield">
+                                            <textarea
+                                                    [rows]="3"
+                                                    [cols]="180"
+                                                    id="idObservacoesViewAnalise"
+                                                    autoResize=true
+                                                    pInputTextarea
+                                                    name="observacoes"
+                                                    [disabled]="this.isView"
+                                                    [(ngModel)]="analise.observacoes"
+                                                    maxlength="4000">
+                                            </textarea>
+                                        </span>
+                                    </div>
                                 </div>
+
+                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
+                                [hidden]="validacaoCampos">
+                                <label >Data da Criação</label>
+                                <span class="md-inputfield">
+                                    <input type="text"
+                                           name="Data da Criação"                                                
+                                           [disabled]="true"
+                                           pInputText [ngModel]="analise.dataCriacaoOrdemServico|date:'dd/MM/y'"
+                                           readonly/>
+                                </span>
+                            </div>
+
+                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
+                                    [hidden]="validacaoCampos">
+                                    <label>{{this.getLabel('Data de Conclusão/Bloqueio')}} {{analise.baselineImediatamente ? " *" : null}}</label>
+                                <span class="md-inputfield">
+                                    <p-calendar
+                                        name="dataHomol"                                                
+                                        [disabled]="true"
+                                        id="idDataHomologacaoViewAnalise"
+                                        [(ngModel)]="analise.dataHomologacao"
+                                        dateFormat="dd/mm/yy">
+                                    </p-calendar>
+                                </span>
+                            </div>
+
+                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
+                                    [hidden]="validacaoCampos">
+                                    <label>Data de Encerramento</label>
+                                <span class="md-inputfield">
+                                    <p-calendar
+                                        name="dtEncerramento"                                                
+                                        [disabled]="true"
+                                        id="dtEncerramento"
+                                        [(ngModel)]="analise.dtEncerramento"
+                                        dateFormat="dd/mm/yy">
+                                    </p-calendar>
+                                </span>
                             </div>
 
                             <div class="ui-g-2 ui-md-2 ui-sm-12" style="margin-bottom: 25px">
@@ -306,7 +320,6 @@
                                         routerLink="/analise">
                                 </app-white-button>
                             </div>
-
                         </div>
                     </form>
                 </div>

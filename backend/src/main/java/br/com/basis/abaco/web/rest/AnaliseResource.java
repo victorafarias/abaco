@@ -28,10 +28,7 @@ import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.PerfilService;
 import br.com.basis.abaco.service.PlanilhaService;
-import br.com.basis.abaco.service.dto.AnaliseDTO;
-import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
-import br.com.basis.abaco.service.dto.AnaliseEditDTO;
-import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
+import br.com.basis.abaco.service.dto.*;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.service.relatorio.RelatorioAnaliseColunas;
@@ -67,16 +64,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -87,6 +75,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -198,9 +188,9 @@ public class AnaliseResource {
     public ResponseEntity<AnaliseEditDTO> blockUnblockAnalise(@PathVariable Long id, @Valid @RequestBody Analise analiseUpdate) throws URISyntaxException {
         log.debug("REST request to block Analise : {}", id);
         Analise analise = analiseService.recuperarAnalise(id);
-        if (analise != null && (!(analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() == null) || analise.getIsDivergence())) {
-            if (analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() != null) {
-                analise.setDataHomologacao(analiseUpdate.getDataHomologacao());
+        if (analise != null || analise.getIsDivergence()) {
+            if (analise.getDataHomologacao() == null) {
+                analise.setDataHomologacao(Timestamp.from(Instant.now()));
             }
             analise.setBloqueiaAnalise(!analise.isBloqueiaAnalise());
             analiseRepository.save(analise);
@@ -276,7 +266,7 @@ public class AnaliseResource {
                 if(analise.getAnaliseDivergence() != null){
                     analiseEditDTO.setAnaliseDivergence(analiseService.convertToDto(analise.getAnaliseDivergence()));
                 }
-                return ResponseUtil.wrapOrNotFound(Optional.ofNullable(analiseEditDTO));
+                 return ResponseUtil.wrapOrNotFound(Optional.ofNullable(analiseEditDTO));
             }
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
@@ -634,7 +624,6 @@ public class AnaliseResource {
         User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
         if (analise.getId() != null && status.getId() != null && analiseService.changeStatusAnalise(analise, status, user)) {
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analise));
@@ -829,6 +818,23 @@ public class AnaliseResource {
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.xlsx", RelatorioUtil.pegarNomeRelatorio(analise)));
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
+    }
+
+
+    @PatchMapping("/analises/atualizar-encerramento")
+    @Timed
+    @Secured("ROLE_ABACO_ANALISE_EDITAR")
+    public ResponseEntity<Void> atualizarEncerramentoAnalise(@Valid @RequestBody AnaliseEncerramentoDTO analiseDTO) throws URISyntaxException {
+        Analise analise = analiseRepository.findOne(analiseDTO.getId());
+        if(analiseDTO.isEncerrada() == false) {
+            analise.setDtEncerramento(null);
+        }else{
+            analise.setDtEncerramento(analiseDTO.getDtEncerramento());
+        }
+        analise.setIsEncerrada(analiseDTO.isEncerrada());
+        analiseRepository.save(analise);
+        analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+        return ResponseEntity.ok().build();
     }
 
 }

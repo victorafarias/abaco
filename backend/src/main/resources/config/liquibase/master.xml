@@ -47,5 +47,6 @@
     <include file="classpath:config/liquibase/changelog/20220107144842_alter_view_divergence.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220304153621_add_more_novidades_2.8.4.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220330182847_reajustar_pe_analitico_add_equipe.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20220402014350_add_dt_encerramento.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 
