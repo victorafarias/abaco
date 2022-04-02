@@ -39,4 +39,7 @@ public class AnaliseEditDTO extends AnaliseBaseDTO implements ReportObject {
     private Status status;
 
     private AnaliseDTO analiseDivergence;
+
+    private Timestamp dtEncerramento;
+    private boolean isEncerrada;
 }

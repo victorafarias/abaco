@@ -47,6 +47,7 @@ export class AnaliseFormComponent implements OnInit {
     isEdit: boolean;
     isSaving: boolean;
     dataAnalise: any;
+    dataEncerramento: any;
     dataHomologacao: any;
     dataCriacao: any;
     loggedUser: User;
@@ -210,20 +211,18 @@ export class AnaliseFormComponent implements OnInit {
         this.routeSub = this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEdicao = true;
-                this.analiseService.findWithFuncoesNormal(params['id']).subscribe(analise => {
-                    let quantidadeFuncoes = analise[1].length + analise[2].length;
-                    analise = new Analise().copyFromJSON(analise[0]);
+                this.analiseService.find(params['id']).subscribe(analise => {
+                    this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
+                    if(parseInt(analise.pfTotal) <= 0){
+                        this.canEditMetodo = true;
+                    }
+                    analise = new  Analise().copyFromJSON(analise);
                     this.loadDataAnalise(analise);
-
                     if (!(this.verifyCanEditAnalise(analise))) {
                         this.pageNotificationService.addErrorMessage('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...');
                         this.router.navigate(['/analise', analise.id, 'view']);
                     }
                     this.disableFuncaoTrasacao = analise.metodoContagem === MessageUtil.INDICATIVA;
-                    this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
-                    if(quantidadeFuncoes === 0){
-                        this.canEditMetodo = true;
-                    }                    
                     },
                     err => {
                         this.pageNotificationService.addErrorMessage(
@@ -238,7 +237,7 @@ export class AnaliseFormComponent implements OnInit {
                 this.analise.esforcoFases = [];
                 this.analise.enviarBaseline = true;
                 this.analise.fatorCriticidade = false;
-                this.canEditMetodo = true;
+                this.canEditMetodo = true;                
             }
         });
     }
@@ -258,24 +257,6 @@ export class AnaliseFormComponent implements OnInit {
             });
         });
         return canEditAnalise;
-    }
-
-    setDataHomologacao() {
-        if (this.dataAnalise.dataHomologacao !== null) {
-            this.dataHomologacao.setMonth(Number(this.dataAnalise.dataHomologacao.substring(5, 7)) - 1);
-            this.dataHomologacao.setDate(Number(this.dataAnalise.dataHomologacao.substring(8, 10)));
-            this.dataHomologacao.setFullYear(Number(this.dataAnalise.dataHomologacao.substring(0, 4)));
-            this.analise.dataHomologacao = this.dataHomologacao;
-        }
-    }
-
-    setDataOrdemServico() {
-        if (this.dataAnalise.dataCriacaoOrdemServico !== null) {
-            this.dataCriacao.setMonth(Number(this.dataAnalise.dataCriacaoOrdemServico.substring(5, 7)) - 1);
-            this.dataCriacao.setDate(Number(this.dataAnalise.dataCriacaoOrdemServico.substring(8, 10)));
-            this.dataCriacao.setFullYear(Number(this.dataAnalise.dataCriacaoOrdemServico.substring(0, 4)));
-            this.analise.dataCriacaoOrdemServico = this.dataCriacao;
-        }
     }
 
     getGarantia(): any {
@@ -308,6 +289,7 @@ export class AnaliseFormComponent implements OnInit {
             this.analise = new Analise();
             this.analise.manual = new Manual();
             this.analise.organizacao = org;
+            this.analise.dataCriacaoOrdemServico = new Date();
         }
         this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
@@ -572,8 +554,8 @@ export class AnaliseFormComponent implements OnInit {
             this.pageNotificationService.addErrorMessage(this.getLabel('Informe o Contrato para continuar'));
             isValid = false;
         }
-        if (!this.analise.dataCriacaoOrdemServico) {
-            this.pageNotificationService.addErrorMessage(this.getLabel('Informe a data de criação da ordem de serviço para continuar'));
+        if (!this.analise.numeroOs) {
+            this.pageNotificationService.addErrorMessage(this.getLabel('Informe o número da OS para continuar'));
             isValid = false;
         }
         if (!this.analise.metodoContagem) {
@@ -735,11 +717,10 @@ export class AnaliseFormComponent implements OnInit {
     private loadDataAnalise(analise: Analise) {
         this.inicializaValoresAposCarregamento(analise);
         this.dataAnalise = this.analise;
+        
         this.aguardarGarantia = this.analise.baselineImediatamente;
         this.enviarParaBaseLine = this.analise.enviarBaseline;
         this.analise.fatorCriticidade = analise.fatorCriticidade;
-        this.setDataHomologacao();
-        this.setDataOrdemServico();
         this.diasGarantia = this.getGarantia();
         this.contratoSelected(this.analise.contrato);
         this.populaComboUsers();

@@ -73,7 +73,7 @@ export class AnaliseListComponent implements OnInit {
         'PF Ajustado'];
     private lastColumn: any[] = [];
 
-    
+
     visible: any;
 
     searchUrl: string = this.grupoService.grupoUrl;
@@ -304,6 +304,7 @@ export class AnaliseListComponent implements OnInit {
         this.recuperarUsuarios();
         this.recuperarStatus();
         this.inicial = false;
+
     }
 
     getEquipesFromActiveLoggedUser() {
@@ -768,14 +769,11 @@ export class AnaliseListComponent implements OnInit {
             this.analisesBlocks.forEach(analise => {
                 if (!analise.dataHomologacao && !bloquear) {
                     analise.dataHomologacao = new Date();
-                    mostrarDialogBlock = true;
                 }
             })
-            if (mostrarDialogBlock !== false) {
-                this.showDialogAnaliseBlock = true;
-            } else {
-                this.alterAnaliseBlock();
-            }
+
+            this.alterAnaliseBlock();
+
         } else {
             this.pageNotificationService.addErrorMessage(this.getLabel('Nenhuma análise selecionada é permitida para essa ação.'));
         }
@@ -880,28 +878,41 @@ export class AnaliseListComponent implements OnInit {
         }
     }
 
-    public openModalChangeStatus(id: number) {
+    public openModalChangeStatus(analise: Analise) {
         this.statusToChange = undefined;
-        this.idAnaliseChangeStatus = id;
+        this.idAnaliseChangeStatus = analise.id;
         this.showDialogAnaliseChangeStatus = true;
     }
 
-    public alterStatusAnalise() {
+    public alterStatusAnalise(analiseSelecionada: Analise) {
         if (this.idAnaliseChangeStatus && this.statusToChange) {
-            this.analiseService.changeStatusAnalise(this.idAnaliseChangeStatus, this.statusToChange).subscribe(data => {
-                this.statusToChange = undefined;
-                this.idAnaliseChangeStatus = undefined;
-                this.showDialogAnaliseChangeStatus = false;
-                this.recarregarDataTable();
-                this.datatable.filter();
-                this.pageNotificationService.addSuccessMessage('O status da analise ' + data.identificadorAnalise + ' foi alterado.');
-            },
-                err => this.pageNotificationService.addErrorMessage('Não foi possivel alterar o status da Analise.'));
+			if(analiseSelecionada.isEncerrada == true && !analiseSelecionada.dtEncerramento){
+				this.pageNotificationService.addErrorMessage('Escolha uma data de encerramento!');
+			}else{
+				this.analiseService.changeStatusAnalise(this.idAnaliseChangeStatus, this.statusToChange).subscribe(data => {
+					this.analiseService.atualizarEncerramento(new Analise().copyFromJSON(analiseSelecionada)).subscribe(r =>{
+						this.recarregarDataTable();
+						this.datatable.filter();
+					});
+					this.statusToChange = undefined;
+					this.idAnaliseChangeStatus = undefined;
+					this.showDialogAnaliseChangeStatus = false;
+
+					this.pageNotificationService.addSuccessMessage('O status da analise ' + data.identificadorAnalise + ' foi alterado.');
+				},
+					err => this.pageNotificationService.addErrorMessage('Não foi possivel alterar o status da Analise.'));
+			}
         } else {
             this.pageNotificationService.addErrorMessage('Selecione uma Analise e um Status para continuar.');
 
         }
     }
+
+	mudarEncerramento(event){
+		if(event.checked == false){
+			this.analiseSelecionada.dtEncerramento = null;
+		}
+	}
 
     public setParamsLoad() {
         if (this.isLoadFilter) {

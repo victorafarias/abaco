@@ -130,11 +130,10 @@ export class AnaliseViewComponent implements OnInit {
             if (params['id']) {
                 this.isEdicao = true;
                 this.analiseService.findView(params['id']).subscribe(analise => {
+                    analise = new Analise().copyFromJSON(analise);
                     this.inicializaValoresAposCarregamento(analise);
                     this.analiseSharedDataService.analiseCarregada();
                     this.dataAnalise = this.analise;
-                    this.setData(this.analise.dataHomologacao);
-                    this.setData(this.analise.dataCriacaoOrdemServico);
                     this.diasGarantia = this.getGarantia();
                 });
             } else {
@@ -153,15 +152,6 @@ export class AnaliseViewComponent implements OnInit {
         //     ];
 
         // });
-    }
-
-    setData(data) {
-        if (data !== null) {
-            this.dataHomol.setMonth(Number(data.substring(5, 7)) - 1);
-            this.dataHomol.setDate(Number(data.substring(8, 10)));
-            this.dataHomol.setFullYear(Number(data.substring(0, 4)));
-            this.analise.dataHomologacao = this.dataHomol;
-        }
     }
 
     getGarantia(): any {
@@ -203,7 +193,7 @@ export class AnaliseViewComponent implements OnInit {
 
     setEquipeOrganizacao(org: Organizacao) {
         this.equipeService.findAllByOrganizacaoId(org.id).subscribe((res: TipoEquipe[]) => {
-            this.equipeResponsavel = res;
+            this.equipeResponsavel = res;            
             if (this.equipeResponsavel !== null) {
                 this.hideShowSelectEquipe = false;
             }

@@ -499,7 +499,10 @@ public class AnaliseService extends BaseService {
         analiseClone.setAnaliseClonadaParaEquipe(analise);
         analiseClone.setAnaliseClonou(false);
         salvaNovaData(analiseClone);
-        analiseClone.setDataCriacaoOrdemServico(analise.getDataHomologacao());
+        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+        analiseClone.setDataHomologacao(null);
+        analiseClone.setDtEncerramento(null);
+        analiseClone.setIsEncerrada(false);
     }
 
     private void bindFuncaoDados(Analise analiseClone, FuncaoDados fd, Set<Rlr> rlrs, Set<Der> ders, FuncaoDados funcaoDado) {
@@ -680,7 +683,10 @@ public class AnaliseService extends BaseService {
         analiseClone.setFronteiras(EMPTY_STRING);
         analiseClone.setPropositoContagem(EMPTY_STRING);
         analiseClone.setEscopo(EMPTY_STRING);
-        analiseClone.setDataCriacaoOrdemServico(analise.getDataHomologacao());
+        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+        analiseClone.setDataHomologacao(null);
+        analiseClone.setDtEncerramento(null);
+        analiseClone.setIsEncerrada(false);
         analiseClone.setFuncaoDados(bindCloneFuncaoDados(analise, analiseClone));
         analiseClone.setFuncaoTransacaos(bindCloneFuncaoTransacaos(analise, analiseClone));
         analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
