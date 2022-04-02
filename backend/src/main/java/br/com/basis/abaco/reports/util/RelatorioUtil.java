@@ -202,26 +202,15 @@ public class RelatorioUtil {
 
     public static String pegarNomeRelatorio(Analise analise){
         analise = pegarAnaliseDivergencia(analise);
-        String nomeRelatorio = "";
-        String[] numeroOs;
+        String nomeRelatorio;
         if(analise.getNumeroOs() != null){
-            numeroOs = analise.getNumeroOs().split("-");
-            nomeRelatorio += numeroOs[0];
-            if(numeroOs.length > 1) {
-                nomeRelatorio += "_OS";
-                nomeRelatorio += numeroOs[1];
-            }
+            nomeRelatorio = analise.getNumeroOs();
         }else if(analise.getIdentificadorAnalise() != null){
-            numeroOs = analise.getIdentificadorAnalise().split("-");
-            nomeRelatorio += numeroOs[0];
-            if(numeroOs.length > 1){
-                nomeRelatorio += "_OS";
-                nomeRelatorio += numeroOs[1];
-            }
+            nomeRelatorio = analise.getIdentificadorAnalise();
         }else{
-            nomeRelatorio += "_OS_Contagem";
+            nomeRelatorio = "Analise";
         }
-        return nomeRelatorio += "_Contagem";
+        return nomeRelatorio;
     }
 
     private static Analise pegarAnaliseDivergencia(Analise analise) {
