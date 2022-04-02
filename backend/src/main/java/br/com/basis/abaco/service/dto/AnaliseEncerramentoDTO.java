@@ -22,8 +22,7 @@ public class AnaliseEncerramentoDTO implements ReportObject, Serializable {
     private Long id;
     private boolean isEncerrada;
     private Timestamp dtEncerramento;
-
-
+    
     public void setDtEncerramento(Timestamp dtEncerramento) {
         this.dtEncerramento = dtEncerramento == null ? null : new Timestamp(dtEncerramento.getTime());
     }
