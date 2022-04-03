@@ -30,6 +30,8 @@ import { Manual, ManualService } from 'src/app/manual';
 import { ManualContrato } from 'src/app/organizacao/ManualContrato.model';
 import { FatorAjuste } from 'src/app/fator-ajuste';
 import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
+import { HistoricoService } from 'src/app/historico/historico.service';
+import { HistoricoDTO } from 'src/app/historico/historico.dto';
 
 @Component({
     selector: 'app-analise',
@@ -197,6 +199,8 @@ export class AnaliseListComponent implements OnInit {
         {label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA}
     ];
 
+	offset: any;
+
     constructor(
         private router: Router,
         private confirmationService: ConfirmationService,
@@ -216,7 +220,8 @@ export class AnaliseListComponent implements OnInit {
         private perfilService: PerfilService,
         private analiseSharedDataService: AnaliseSharedDataService,
         private contratoService: ContratoService,
-        private manualService: ManualService
+        private manualService: ManualService,
+		private historicoService: HistoricoService
     ) {
 
     }
@@ -225,6 +230,7 @@ export class AnaliseListComponent implements OnInit {
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.estadoInicial();
         this.verificarPermissoes();
+		this.offset = new Date().getTimezoneOffset();
     }
 
     getLabel(label) {
@@ -886,7 +892,7 @@ export class AnaliseListComponent implements OnInit {
 
     public alterStatusAnalise(analiseSelecionada: Analise) {
         if (this.idAnaliseChangeStatus && this.statusToChange) {
-			if(analiseSelecionada.isEncerrada == true && !analiseSelecionada.dtEncerramento){
+			if(analiseSelecionada.encerrada == true && !analiseSelecionada.dtEncerramento){
 				this.pageNotificationService.addErrorMessage('Escolha uma data de encerramento!');
 			}else{
 				this.analiseService.changeStatusAnalise(this.idAnaliseChangeStatus, this.statusToChange).subscribe(data => {
@@ -1330,4 +1336,26 @@ export class AnaliseListComponent implements OnInit {
             }
         })
     }
+
+	showDialogHistorico: boolean = false;
+	listHistoricos: HistoricoDTO[] = [];
+
+	listarHistorico(analiseSelecionada: Analise){
+		if(analiseSelecionada.id){
+			this.historicoService.findAllByAnaliseId(analiseSelecionada.id).subscribe(historicos => {
+				this.listHistoricos = historicos;
+				this.showDialogHistorico = true;
+			}, error => {
+				if(error.status == 404){
+					this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
+				}
+
+			})
+		}
+	}
+
+	fecharDialogHistorico(){
+		this.showDialogHistorico = false;
+
+	}
 }

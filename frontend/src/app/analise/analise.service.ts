@@ -485,14 +485,9 @@ export class AnaliseService {
         return this.http.get<any[]>(this.resourceUrl+"/FT?nomeFuncao="+nomeFuncao+"&nomeModulo="+nomeModulo+"&nomeFuncionalidade="+nomeFuncionalidade+"&nomeSistema="+nomeSistema+"&nomeEquipe="+nomeEquipe);
     }
 
-
-
-
     public atualizarEncerramento(analise: Analise): Observable<Analise> {
 		const reqHeader = new HttpHeaders({ 'Content-Type': 'application/json', 'No-Auth': 'True' });
         return this.http.patch<Analise>(this.resourceUrl+"/atualizar-encerramento", analise.toJSONState(), {headers: reqHeader}).pipe(catchError((error: any) => {
-			console.log(error);
-
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
                 return Observable.throw(new Error(error.status));

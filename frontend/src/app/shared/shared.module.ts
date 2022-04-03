@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { HistoricoService } from '../historico/historico.service';
 import { JhiDateUtils } from './date-util.service';
 import { PRIMENG_IMPORTS } from './primeng-imports';
 
@@ -7,7 +8,8 @@ import { PRIMENG_IMPORTS } from './primeng-imports';
         PRIMENG_IMPORTS,
     ],
     providers: [
-        JhiDateUtils
+        JhiDateUtils,
+		HistoricoService
     ],
     exports: [
         PRIMENG_IMPORTS,

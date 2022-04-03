@@ -90,7 +90,7 @@ export class Analise implements BaseEntity {
         public pfTotalAprovado?: string,
         public analiseDivergence?: Analise,
         public dtEncerramento?: any,
-        public isEncerrada?: boolean
+        public encerrada?: boolean
     ) {
         this.inicializaMappables(funcaoDados, funcaoTransacaos);
         this.inicializaResumos();
@@ -332,7 +332,7 @@ export class Analise implements BaseEntity {
             this.pfTotalAprovado,
             this.analiseDivergence,
             this.dtEncerramento,
-            this.isEncerrada
+            this.encerrada
             );
     }
 
@@ -415,11 +415,11 @@ class AnaliseCopyFromJSON {
         this._analiseConverted.pfTotalAprovado = this._json.pfTotalAprovado;
         this._analiseConverted.pfTotalOriginal = this._json.pfTotalOriginal;
         this._analiseConverted.analiseDivergence = this._json.analiseDivergence;
-        
+
         if(this._json.dtEncerramento){
             this._analiseConverted.dtEncerramento = new Date(this._json.dtEncerramento);
         }
-        this._analiseConverted.isEncerrada = this._json.isEncerrada;
+        this._analiseConverted.encerrada = this._json.encerrada;
 
 
     }
