@@ -856,9 +856,12 @@ public class PlanilhaService {
 
 
     public ByteArrayOutputStream selecionarModeloDivergencia(Analise analise, Long modelo) throws IOException {
-        List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
-        List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacaos().stream().collect(Collectors.toList());
-        return this.modeloPadraoBasisDivergencia(analise, funcaoDadosList, funcaoTransacaoList);
+        if(modelo == 1){
+            List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
+            List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacaos().stream().collect(Collectors.toList());
+            return this.modeloPadraoBasisDivergencia(analise, funcaoDadosList, funcaoTransacaoList);
+        }
+        return new ByteArrayOutputStream();
     }
 
     private ByteArrayOutputStream modeloPadraoBasisDivergencia(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {

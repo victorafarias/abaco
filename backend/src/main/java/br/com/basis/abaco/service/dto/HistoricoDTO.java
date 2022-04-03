@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class HistoricoDTO implements ReportObject, Serializable {
 
     private Long id;

@@ -37,18 +37,23 @@ public class HistoricoService {
                 for (Historico historico : historicos) {
                     AnaliseDTO analiseDTO = analiseService.convertToDto(historico.getAnalise());
                     UserDTO userDTO = new UserDTO(historico.getUsuario());
-                    HistoricoDTO historicoDTO = new HistoricoDTO(historico.getId(), analiseDTO, historico.getDtAcao(), userDTO, historico.getAcao());
+                    HistoricoDTO historicoDTO = new HistoricoDTO();
+                    historicoDTO.setAcao(historico.getAcao());
+                    historicoDTO.setAnalise(analiseDTO);
+                    historicoDTO.setDtAcao(historico.getDtAcao());
+                    historicoDTO.setUsuario(userDTO);
+                    historicoDTO.setId(historico.getId());
                     listaHistoricoDTO.add(historicoDTO);
                 }
                 return listaHistoricoDTO;
             }
         }
-        return null;
+        return new ArrayList<>();
     }
 
     public void inserirHistoricoAnalise(Analise analise, User usuario, String acao){
         if(usuario == null){
-            usuario = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
+            usuario = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
         }
         Historico historico = new Historico();
         historico.setAnalise(analise);
