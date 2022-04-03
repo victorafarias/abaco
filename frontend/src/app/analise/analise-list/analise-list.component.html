@@ -187,6 +187,11 @@
 							icon="block" (click)="bloqueiaAnalise(blocked)" [disabled]="datatable.selectedRow == null"
 							class="ui-button-danger">
 						</basis-datatable-button>
+						<basis-datatable-button name="bloquear"
+							[bTooltip]="datatable.selectedRow != null ? 'Listar Histórico' : 'Escolha um registro para listar histórico.'"
+							icon="history" (click)="listarHistorico(analiseSelecionada)"
+							[disabled]="datatable.selectedRow == null" class="ui-button-warning">
+						</basis-datatable-button>
 						<basis-datatable-button name="compartilhar" *ngIf="canCompartilhar"
 							[bTooltip]="compartilharTooltip()" icon="share" class="ui-button-info"
 							(click)="compartilharAnalise()" [disabled]="datatable.selectedRow == null">
@@ -367,20 +372,21 @@
 			</div>
 			<div class="ui-g-12 ui-md-12 ui-sm-12"></div>
 			<div class="ui-g-4 ui-md-4 ui-sm-12">
-				<p-checkbox name="isEncerrada" id="idIsEncerrada" binary="true" label="Encerrada análise" (onChange)="mudarEncerramento($event)"
-					[(ngModel)]="analiseSelecionada.isEncerrada">
+				<p-checkbox name="encerrada" id="idIsEncerrada" binary="true" label="Encerrada análise"
+					(onChange)="mudarEncerramento($event)" [(ngModel)]="analiseSelecionada.encerrada">
 				</p-checkbox>
 			</div>
-			<div class="ui-g-4 ui-md-4 ui-sm-12" *ngIf="analiseSelecionada.isEncerrada">
+			<div class="ui-g-4 ui-md-4 ui-sm-12" *ngIf="analiseSelecionada.encerrada">
 				<span class="md-inputfield">
-					<p-calendar required name="dtEncerramento" [(ngModel)]="analiseSelecionada.dtEncerramento"[appendTo]="dialogAlterarStatus"
-						id="dtEncerramento" dateFormat="dd/mm/yy" showIcon="true">
+					<p-calendar required name="dtEncerramento" [(ngModel)]="analiseSelecionada.dtEncerramento"
+						[appendTo]="dialogAlterarStatus" id="dtEncerramento" dateFormat="dd/mm/yy" showIcon="true">
 					</p-calendar>
 					<label>Data de Encerramento</label>
 				</span>
 			</div>
 		</div>
-		<app-green-button buttonLabel="Alterar" (click)="alterStatusAnalise(analiseSelecionada)" style="position: absolute; top: 70%; right: 5%;">
+		<app-green-button buttonLabel="Alterar" (click)="alterStatusAnalise(analiseSelecionada)"
+			style="position: absolute; top: 70%; right: 5%;">
 		</app-green-button>
 	</div>
 </p-dialog>
@@ -665,4 +671,40 @@
 	<app-white-button *ngIf="!carregadaAnalise" buttonLabel="Cancelar" (click)="closeModalImportAnalise()"
 		style="float:right; margin: 5px">
 	</app-white-button>
+</p-dialog>
+
+
+
+<p-dialog header="Histórico da análise" [(visible)]="showDialogHistorico" [style]="{width: '50vw'}"
+	[contentStyle]="{'height': ['windowHeightDialog']}" [modal]="true" #dialogHistorico>
+	<!-- Datatable Permissao -->
+	<basis-datatable type="memory" [value]="listHistoricos" [disableView]="true" [disableEdit]="true"
+		[disableDelete]="true" [selectionMode]="'multiple'" [filterOnColumn]="true" [enableScroll]="true"
+		[appendTo]="dialogHistorico"
+		[scrollHeight]="'300px'" [enableButtonsScroll]="true" [rowsPerPageOptions]="rowsPerPageOptions" [rows]="20"
+		#datatableHistorico>
+		<p-column header="Analise" field="analise.numeroOs" [sortable]="true">
+			<ng-template let-row="rowData" pTemplate="body">
+				{{ row.analise.numeroOs == undefined || row.analise.numeroOs == null ? row.analise.identificadorAnalise : row.analise.numeroOs }}
+			</ng-template>
+		</p-column>
+
+		<p-column header="Data e Hora" field="dtAcao" [sortable]="true">
+			<ng-template let-row="rowData" pTemplate="body">
+				{{ row.dtAcao | date: 'dd/MM/yyyy HH:mm:ss' : 'UTC+offset'}}
+			</ng-template>
+		</p-column>
+
+		<p-column header="Usuário" field="usuario.firstName" [sortable]="true">
+			<ng-template let-row="rowData" pTemplate="body">
+				{{ row.usuario.firstName }}
+			</ng-template>
+		</p-column>
+
+		<p-column header="Ação" field="acao" [sortable]="true">
+			<ng-template let-row="rowData" pTemplate="body">
+				{{ row.acao }}
+			</ng-template>
+		</p-column>
+	</basis-datatable>
 </p-dialog>

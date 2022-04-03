@@ -69,6 +69,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -133,6 +134,9 @@ public class AnaliseService extends BaseService {
 
     @Autowired
     private VwAnaliseFTRepository vwAnaliseFTRepository;
+
+    @Autowired
+    private HistoricoService historicoService;
 
 
     public AnaliseService(AnaliseRepository analiseRepository,
@@ -608,14 +612,19 @@ public class AnaliseService extends BaseService {
             Analise analise = analiseRepository.findOne(idAnalise);
             analise.setCompartilhadas(lstCompartilhadas);
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(convertToEntity(convertToDto(analise)));
+            List<String> nomeDasEquipes = new ArrayList<>();
             lstCompartilhadas.forEach(compartilhada -> {
                 TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
+                nomeDasEquipes.add(tipoEquipe.getNome());
                 if (!(StringUtils.isEmptyString(tipoEquipe.getEmailPreposto()) && StringUtils.isEmptyString(tipoEquipe.getPreposto()))) {
                     this.mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
                 }
             });
+
+            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+
+
         }
     }
 
@@ -744,6 +753,8 @@ public class AnaliseService extends BaseService {
             analiseDivergencia.setIsDivergence(true);
             analiseDivergencia = save(analiseDivergencia);
             updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
+
+            this.historicoService.inserirHistoricoAnalise(analise, user, "Gerou a validação "+analiseDivergencia.getId());
             return analiseDivergencia;
         }
         return new Analise();
