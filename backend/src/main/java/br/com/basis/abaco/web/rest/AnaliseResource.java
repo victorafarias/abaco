@@ -217,8 +217,7 @@ public class AnaliseResource {
             analiseRepository.save(analise);
             analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
-
-
+            
             this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString())).body(analiseService.convertToAnaliseEditDTO(analise));
         } else {
