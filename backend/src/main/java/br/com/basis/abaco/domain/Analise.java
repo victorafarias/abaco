@@ -50,9 +50,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @ApiModel(description = "<Enter note text here>")
 @Entity
@@ -250,6 +248,10 @@ public class Analise implements Serializable, ReportObject {
     @Column(name = "pf_total_aprovado")
     private String pfTotalAprovado;
 
+    //Campo histórico
+
+    @OneToMany(mappedBy = "analise", cascade = CascadeType.ALL)
+    private List<Historico> historicos = new ArrayList<>();
 
     //Campos novos de data para análise
     @Column(name = "is_encerrada")
