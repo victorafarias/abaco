@@ -69,7 +69,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Analise implements Serializable, ReportObject {
 
-    
+
     private static final String ANALISE = "analise";
 
     @Id

@@ -47,8 +47,22 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private AnaliseDTO analiseClonadaParaEquipe;
     private Boolean analiseClonou;
 
+    private Timestamp dataHomologacao;
     private Timestamp dtEncerramento;
     private boolean isEncerrada;
+
+    public void setDataHomologacao(Timestamp dataHomologacao) {
+        if (dataHomologacao != null) {
+            this.dataHomologacao = new Timestamp(dataHomologacao.getTime());
+        } else {
+            this.dataHomologacao = null;
+        }
+    }
+
+    public Timestamp getDataHomologacao() {
+        return this.dataHomologacao != null ? new Timestamp(this.dataHomologacao.getTime()) : null;
+    }
+
 
     public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
         this.dataCriacaoOrdemServico = dataCriacaoOrdemServico == null ? null : new Timestamp(dataCriacaoOrdemServico.getTime());
