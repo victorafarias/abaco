@@ -1,8 +1,10 @@
 package br.com.basis.abaco.service.dto.filter;
 
+import java.util.Date;
 import java.util.List;
 
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
+import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.service.dto.OrganizacaoDTO;
 import br.com.basis.abaco.service.dto.SistemaDTO;
 import br.com.basis.abaco.service.dto.StatusDTO;
@@ -21,5 +23,8 @@ public class AnaliseFilterDTO {
     private MetodoContagem metodoContagem;
     private UserDTO usuario;
     private StatusDTO status;
+    private TipoDeDataAnalise data;
+    private Date dataInicio;
+    private Date dataFim;
     private List<String> columnsVisible;
 }
