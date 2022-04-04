@@ -99,7 +99,6 @@ import java.util.Set;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 
-
 @RestController
 @RequestMapping("/api")
 public class AnaliseResource {
