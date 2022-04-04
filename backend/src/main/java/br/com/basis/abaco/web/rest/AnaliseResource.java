@@ -865,6 +865,9 @@ public class AnaliseResource {
     public ResponseEntity<Void> atualizarEncerramentoAnalise(@RequestBody AnaliseEncerramentoDTO analiseDTO) throws URISyntaxException {
         Analise analise = analiseRepository.findOne(analiseDTO.getId());
         boolean gerarHistorico = false;
+        if(analise.getIsEncerrada() == null){
+            analise.setIsEncerrada(false);
+        }
         if(analiseDTO.isEncerrada() != analise.getIsEncerrada() || analise.getDtEncerramento() == null && analiseDTO.getDtEncerramento() != null || analise.getDtEncerramento() != null && !analise.getDtEncerramento().equals(analiseDTO.getDtEncerramento())){
             gerarHistorico = true;
         }
