@@ -42,6 +42,9 @@ export class SearchGroup {
         public metodoContagem?: string,
         public usuario?: User,
         public status?: Status,
+		public data?: string,
+		public dataInicio?: any,
+		public dataFim?: any,
         public columnsVisible?: any,
     ) {
     }
@@ -50,6 +53,7 @@ export class SearchGroup {
         const grupo = Object.create(Grupo.prototype);
         return Object.assign(grupo, json, {
             created: new Date(json.created)
+
         });
     }
 }

@@ -12,6 +12,7 @@ import br.com.basis.abaco.domain.VwAnaliseFD;
 import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
+import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.domain.enumeration.TipoRelatorio;
 import br.com.basis.abaco.reports.rest.RelatorioAnaliseRest;
 import br.com.basis.abaco.reports.util.RelatorioUtil;
@@ -90,13 +91,13 @@ import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
-
 
 @RestController
 @RequestMapping("/api")
@@ -590,13 +591,23 @@ public class AnaliseResource {
                                                                   @RequestParam(value = "organizacao", required = false) Set<Long> organizacao,
                                                                   @RequestParam(value = "equipe", required = false) Long equipe,
                                                                   @RequestParam(value = "status", required = false) Set<Long> status,
-                                                                  @RequestParam(value = "usuario", required = false) Set<Long> usuario)
+                                                                  @RequestParam(value = "usuario", required = false) Set<Long> usuario,
+                                                                  @RequestParam(value = "data", required = false) TipoDeDataAnalise data,
+                                                                  @RequestParam(value = "dataInicio", required = false) Date dataInicio,
+                                                                  @RequestParam(value = "dataFim", required = false) Date dataFim)
         throws URISyntaxException {
         log.debug("DEBUG Consulta Analises - Inicio metodo");
+
+       SortOrder sortOrderQb;
+        if(order.equals("asc")){
+            sortOrderQb = SortOrder.ASC;
+        }else{
+            sortOrderQb = SortOrder.DESC;
+        }
         Sort.Direction sortOrder = PageUtils.getSortDirection(order);
         Pageable pageable = new PageRequest(pageNumber, size, sortOrder, sort);
-        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(SortOrder.ASC);
-        BoolQueryBuilder qb = analiseService.getBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, status);
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(sortOrderQb);
+        BoolQueryBuilder qb = analiseService.getBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, status, data, dataInicio, dataFim);
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(dynamicExportsService.obterPageableMaximoExportacao()).withSort(sortBuilder).build();
         Page<Analise> page = elasticsearchTemplate.queryForPage(searchQuery, Analise.class);
         log.debug("DEBUG Consulta Analises -  Consulta realizada");

@@ -1,37 +1,36 @@
-import { Component, OnInit, ViewChild, ContentChildren } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { DatatableClickEvent, DatatableComponent, PageNotificationService, Column } from '@nuvem/primeng-components';
-import { ConfirmationService, BlockUIModule, SelectItem } from 'primeng';
-import { Subscription } from 'rxjs';
+import { BlockUiService } from '@nuvem/angular-base';
+import { DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
+import { ConfirmationService, SelectItem } from 'primeng';
+import { Subscription } from 'rxjs';
+import { Contrato, ContratoService } from 'src/app/contrato';
+import { DivergenciaService } from 'src/app/divergencia';
+import { EsforcoFase } from 'src/app/esforco-fase';
+import { FatorAjuste } from 'src/app/fator-ajuste';
+import { HistoricoDTO } from 'src/app/historico/historico.dto';
+import { HistoricoService } from 'src/app/historico/historico.service';
+import { Manual, ManualService } from 'src/app/manual';
 import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
+import { ManualContrato } from 'src/app/organizacao/ManualContrato.model';
+import { PerfilOrganizacao } from 'src/app/perfil/perfil-organizacao.model';
+import { PerfilService } from 'src/app/perfil/perfil.service';
+import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
+import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
 import { Sistema, SistemaService } from 'src/app/sistema';
+import { StatusService } from 'src/app/status';
+import { Status } from 'src/app/status/status.model';
 import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
 import { User, UserService } from 'src/app/user';
+import { AuthService } from 'src/app/util/auth.service';
+import { MessageUtil } from 'src/app/util/message.util';
 import { AnaliseShareEquipe } from '../analise-share-equipe.model';
 import { Analise, MetodoContagem } from '../analise.model';
 import { AnaliseService } from '../analise.service';
 import { SearchGroup } from '../grupo/grupo.model';
 import { GrupoService } from '../grupo/grupo.service';
-import { BlockUiService } from '@nuvem/angular-base';
-import { StatusService } from 'src/app/status';
-import { Status } from 'src/app/status/status.model';
-import { Divergencia, DivergenciaService } from 'src/app/divergencia';
-import { FaseFilter } from 'src/app/fase/model/fase.filter';
-import { AuthService } from 'src/app/util/auth.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { PerfilOrganizacao } from 'src/app/perfil/perfil-organizacao.model';
-import { PerfilService } from 'src/app/perfil/perfil.service';
-import { Contrato, ContratoService } from 'src/app/contrato';
-import { EsforcoFase } from 'src/app/esforco-fase';
-import { MessageUtil } from 'src/app/util/message.util';
-import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
-import { Manual, ManualService } from 'src/app/manual';
-import { ManualContrato } from 'src/app/organizacao/ManualContrato.model';
-import { FatorAjuste } from 'src/app/fator-ajuste';
-import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
-import { HistoricoService } from 'src/app/historico/historico.service';
-import { HistoricoDTO } from 'src/app/historico/historico.dto';
 
 @Component({
     selector: 'app-analise',
@@ -55,6 +54,8 @@ export class AnaliseListComponent implements OnInit {
         { value: 'pfTotal', label: 'PF total' },
         { value: 'adjustPFTotal', label: 'PF Ajustado' },
         { value: 'dataCriacaoOrdemServico', label: 'Data de criação' },
+        { value: 'dataHomologacao', label: 'Data de conclusão/bloqueio' },
+        { value: 'dtEncerramento', label: 'Data de encerramento' },
         { value: 'bloqueiaAnalise', label: 'Bloqueado' },
         { value: 'clonadaParaEquipe', label: 'Clonada para outra equipe' },
         { value: 'analiseClonadaParaEquipe', label: "Análise Relacionada" },
@@ -122,6 +123,12 @@ export class AnaliseListComponent implements OnInit {
         { label: 'Indicativa', value: 'INDICATIVA' },
         { label: 'Estimada', value: 'ESTIMADA' }
     ];
+
+	lstDatas = [
+		{ label: 'Data de criação', value: "CRIACAO"},
+		{ label: 'Data de conclusão/bloqueio', value: "BLOQUEIO"},
+		{ label: 'Data de encerramento', value: "ENCERRAMENTO"}
+	];
     blocked;
     inicial: boolean;
     showDialogAnaliseCloneTipoEquipe = false;
@@ -158,7 +165,7 @@ export class AnaliseListComponent implements OnInit {
 
     showDialogImportarExcel: boolean = false;
     analiseImportarExcel: Analise = new Analise();
-    lstModelosExcel = [
+    lstModelosExcel: SelectItem[] = [
         { label: "Modelo padrão BASIS", value: 1 },
         { label: "Modelo padrão BNDES", value: 2 },
         { label: "Modelo padrão ANAC", value: 3 },
@@ -200,6 +207,9 @@ export class AnaliseListComponent implements OnInit {
     ];
 
 	offset: any;
+
+	showDialogHistorico: boolean = false;
+	listHistoricos: HistoricoDTO[] = [];
 
     constructor(
         private router: Router,
@@ -443,6 +453,12 @@ export class AnaliseListComponent implements OnInit {
     loadingGroupSearch(): SearchGroup {
         const sessionSearchGroup: SearchGroup = JSON.parse(sessionStorage.getItem('searchGroup'));
         if (sessionSearchGroup) {
+			if(sessionSearchGroup.dataInicio){
+				sessionSearchGroup.dataInicio = new Date(sessionSearchGroup.dataInicio);
+			}
+			if(sessionSearchGroup.dataFim){
+				sessionSearchGroup.dataFim = new Date(sessionSearchGroup.dataFim);
+			}
             return sessionSearchGroup;
         } else {
             return new SearchGroup();
@@ -632,6 +648,9 @@ export class AnaliseListComponent implements OnInit {
         this.searchGroup.equipe = undefined;
         this.searchGroup.usuario = undefined;
         this.searchGroup.status = undefined;
+		this.searchGroup.data = undefined;
+		this.searchGroup.dataInicio = undefined;
+		this.searchGroup.dataFim = undefined;
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.enableTable = false;
         this.recarregarDataTable();
@@ -673,6 +692,17 @@ export class AnaliseListComponent implements OnInit {
             }
             if (this.searchGroup && this.searchGroup.status && this.searchGroup.status.id) {
                 this.datatable.filterParams['status'] = this.searchGroup.status.id;
+            }
+			if (this.searchGroup && this.searchGroup.metodoContagem) {
+                this.datatable.filterParams['metodoContagem'] = this.searchGroup.metodoContagem;
+            }
+			if (this.searchGroup && this.searchGroup.data && this.searchGroup.dataInicio) {
+                this.datatable.filterParams['data'] = this.searchGroup.data;
+                this.datatable.filterParams['dataInicio'] = this.searchGroup.dataInicio;
+            }
+			if (this.searchGroup && this.searchGroup.data && this.searchGroup.dataFim) {
+                this.datatable.filterParams['data'] = this.searchGroup.data;
+                this.datatable.filterParams['dataFim'] = this.searchGroup.dataFim;
             }
         }
     }
@@ -720,6 +750,16 @@ export class AnaliseListComponent implements OnInit {
         querySearch = querySearch.concat((this.searchGroup.usuario && this.searchGroup.usuario.id) ?
             `usuario=${this.searchGroup.usuario.id}&` : '');
 
+
+		querySearch = querySearch.concat((this.searchGroup.data) ?
+        `data=${this.searchGroup.data}&` : '');
+
+		querySearch = querySearch.concat((this.searchGroup.dataInicio) ?
+        `dataInicio=${this.searchGroup.dataInicio}&` : '');
+
+		querySearch = querySearch.concat((this.searchGroup.dataFim) ?
+        `dataFim=${this.searchGroup.dataFim}&` : '');
+
         querySearch = (querySearch === '') ? '' : '&' + querySearch;
 
         querySearch = (querySearch.endsWith('&')) ? querySearch.slice(0, -1) : querySearch;
@@ -727,6 +767,9 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public performSearch() {
+		if(!this.searchGroup.data && this.searchGroup.dataInicio || !this.searchGroup.data && this.searchGroup.dataFim){
+			return this.pageNotificationService.addErrorMessage("Selecione qual data será pesquisado o período")
+		}
         this.enableTable = true;
         sessionStorage.setItem('searchGroup', JSON.stringify(this.searchGroup));
         this.recarregarDataTable();
@@ -1336,9 +1379,6 @@ export class AnaliseListComponent implements OnInit {
             }
         })
     }
-
-	showDialogHistorico: boolean = false;
-	listHistoricos: HistoricoDTO[] = [];
 
 	listarHistorico(analiseSelecionada: Analise){
 		if(analiseSelecionada.id){

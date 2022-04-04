@@ -50,6 +50,31 @@
 						[placeholder]="this.getLabel('Status')">
 					</p-dropdown>
 				</div>
+
+				<div class="ui-g-4 ui-md-4 ui-sm-12">
+					<p-dropdown [filter]="true" [options]="lstDatas" id="idStatusAnalise"
+						[(ngModel)]="searchGroup.data" [autoWidth]="false"
+						[placeholder]="this.getLabel('Data')">
+					</p-dropdown>
+				</div>
+
+				<div class="ui-g-2 ui-md-2 ui-sm-12">
+					<span class="md-inputfield">
+						<p-calendar required name="dataInicio" [(ngModel)]="searchGroup.dataInicio"
+							 id="dataInicio" dateFormat="dd/mm/yy" showIcon="true">
+						</p-calendar>
+						<label>Periodo de: </label>
+					</span>
+				</div>
+
+				<div class="ui-g-2 ui-md-2 ui-sm-12">
+					<span class="md-inputfield">
+						<p-calendar required name="dataFim" [(ngModel)]="searchGroup.dataFim"
+							 id="dataFim" dateFormat="dd/mm/yy" showIcon="true">
+						</p-calendar>
+						<label>Até: </label>
+					</span>
+				</div>
 			</div>
 			<div class="ui-g">
 				<div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 25px; margin-top: 25px">
@@ -147,6 +172,18 @@
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
 								{{ analise.dataCriacaoOrdemServico | date: 'dd/MM/y - HH:mm' }}
+							</ng-template>
+						</p-column>
+						<p-column [styleClass]="'data-conclusao'" header="Data de conclusão/bloqueio" field="dataHomologacao"
+							[sortable]="true" filterType="">
+							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
+								{{ analise.dataHomologacao | date: 'dd/MM/y - HH:mm' }}
+							</ng-template>
+						</p-column>
+						<p-column [styleClass]="'data-encerramento'" header="Data de encerramento" field="dtEncerramento"
+							[sortable]="true" filterType="">
+							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
+								{{ analise.dtEncerramento | date: 'dd/MM/y' }}
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'bloqueado'" header="Bloqueado" field="bloqueiaAnalise"
@@ -681,7 +718,7 @@
 	<basis-datatable type="memory" [value]="listHistoricos" [disableView]="true" [disableEdit]="true"
 		[disableDelete]="true" [selectionMode]="'multiple'" [filterOnColumn]="true" [enableScroll]="true"
 		[appendTo]="dialogHistorico"
-		[scrollHeight]="'300px'" [enableButtonsScroll]="true" [rowsPerPageOptions]="rowsPerPageOptions" [rows]="20"
+		[scrollHeight]="'500px'" [enableButtonsScroll]="true" [rowsPerPageOptions]="rowsPerPageOptions" [rows]="20"
 		#datatableHistorico>
 		<p-column header="Analise" field="analise.numeroOs" [sortable]="true">
 			<ng-template let-row="rowData" pTemplate="body">
