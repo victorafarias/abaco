@@ -84,6 +84,7 @@ import java.util.stream.Collectors;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
 
+
 @Service
 public class AnaliseService extends BaseService {
     public static final String ORGANIZACAO_ID = "organizacao.id";
@@ -205,6 +206,23 @@ public class AnaliseService extends BaseService {
             qb.must(boolQueryBuilderStatus);
         }
 
+        if (usuario != null && usuario.size() > 0) {
+            BoolQueryBuilder queryBuilderUsers = QueryBuilders.boolQuery()
+                .must(
+                    nestedQuery(
+                        "users",
+                        boolQuery().must(QueryBuilders.termsQuery("users.id", usuario)
+                        )
+                    )
+                );
+            qb.must(queryBuilderUsers);
+        }
+
+
+        bindFilterDataAnalise(qb, data, dataInicio, dataFim);
+    }
+
+    private void bindFilterDataAnalise(BoolQueryBuilder qb, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
         if(data != null && (dataInicio != null || dataFim != null)){
 
             Timestamp start = Timestamp.from(Instant.ofEpochMilli(1L));
@@ -222,21 +240,9 @@ public class AnaliseService extends BaseService {
                 end = new Timestamp(cal.getTimeInMillis());
             }
 
-            BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery()
+            BoolQueryBuilder boolQueryBuilderData = QueryBuilders.boolQuery()
                 .must(QueryBuilders.rangeQuery(getNomeData(data)).gte(start).lte(end));
-            qb.must(boolQueryBuilderStatus);
-        }
-
-        if (usuario != null && usuario.size() > 0) {
-            BoolQueryBuilder queryBuilderUsers = QueryBuilders.boolQuery()
-                .must(
-                    nestedQuery(
-                        "users",
-                        boolQuery().must(QueryBuilders.termsQuery("users.id", usuario)
-                        )
-                    )
-                );
-            qb.must(queryBuilderUsers);
+            qb.must(boolQueryBuilderData);
         }
     }
 
@@ -980,7 +986,7 @@ public class AnaliseService extends BaseService {
         preencheFiltro(sistema,metodo,organizacao,usuario,status, filter);
 
         pageable = dynamicExportsService.obterPageableMaximoExportacao();
-        BoolQueryBuilder qb =  getBoolQueryBuilder(filter.getIdentificadorAnalise(), sistema, metodo, organizacao, filter.getEquipe() == null ? null : filter.getEquipe().getId(), usuario, status, null, null, null);
+        BoolQueryBuilder qb =  getBoolQueryBuilder(filter.getIdentificadorAnalise(), sistema, metodo, organizacao, filter.getEquipe() == null ? null : filter.getEquipe().getId(), usuario, status, filter.getData(), filter.getDataInicio(), filter.getDataFim());
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
         return searchQuery;
     }
