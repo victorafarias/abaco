@@ -607,6 +607,7 @@ public class AnaliseResource {
         return new ResponseEntity<>(newDTOPage.getContent(), headers, HttpStatus.OK);
     }
 
+    
     @GetMapping("/analises/update-pf/{id}")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EDITAR")
