@@ -209,7 +209,7 @@ public class AnaliseResource {
     public ResponseEntity<AnaliseEditDTO> blockUnblockAnalise(@PathVariable Long id, @Valid @RequestBody Analise analiseUpdate) throws URISyntaxException {
         log.debug("REST request to block Analise : {}", id);
         Analise analise = analiseService.recuperarAnalise(id);
-        if (analise.getIsDivergence()) {
+        if (analise != null) {
             if (analise.getDataHomologacao() == null) {
                 analise.setDataHomologacao(Timestamp.from(Instant.now()));
             }
@@ -224,7 +224,6 @@ public class AnaliseResource {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
         }
     }
-
 
     @GetMapping("/analises/clonar/{id}")
     @Timed
