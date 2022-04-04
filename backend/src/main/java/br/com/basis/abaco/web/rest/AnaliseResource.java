@@ -225,7 +225,6 @@ public class AnaliseResource {
         }
     }
 
-
     @GetMapping("/analises/clonar/{id}")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_CLONAR")
