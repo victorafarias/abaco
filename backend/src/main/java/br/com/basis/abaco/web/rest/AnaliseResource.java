@@ -165,7 +165,7 @@ public class AnaliseResource {
             return ResponseEntity.badRequest().headers(
                 HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new analise cannot already have an ID")).body(null);
         }
-        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
+        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
         analise.setCreatedBy(user);
         analise.getUsers().add(analise.getCreatedBy());
         analiseService.salvaNovaData(analise);

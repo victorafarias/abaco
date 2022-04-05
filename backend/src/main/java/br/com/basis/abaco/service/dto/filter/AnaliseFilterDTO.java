@@ -1,5 +1,6 @@
 package br.com.basis.abaco.service.dto.filter;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -27,4 +28,21 @@ public class AnaliseFilterDTO {
     private Date dataInicio;
     private Date dataFim;
     private List<String> columnsVisible;
+
+
+    public void setDataInicio(Date dataInicio) {
+        this.dataInicio = dataInicio == null ? null : new Date(dataInicio.getTime());
+    }
+
+    public Date getDataInicio() {
+        return dataInicio == null ? null : new Date(this.dataInicio.getTime());
+    }
+
+    public void setDataFim(Date dataFim) {
+        this.dataFim = dataFim == null ? null : new Date(dataFim.getTime());
+    }
+
+    public Date getDataFim() {
+        return dataFim == null ? null : new Date(this.dataFim.getTime());
+    }
 }
