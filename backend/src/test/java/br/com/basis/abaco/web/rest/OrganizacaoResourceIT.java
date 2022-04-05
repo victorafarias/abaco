@@ -96,13 +96,14 @@ public class OrganizacaoResourceIT {
 
     private UserService userService;
 
+    @Autowired
     private UserRepository userRepository;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         OrganizacaoResource organizacaoResource = new OrganizacaoResource(organizacaoRepository,
-                organizacaoSearchRepository, filesRepository, dynamicExportsService, organizacaoService, perfilService, userService, userRepository);
+                organizacaoSearchRepository, filesRepository, dynamicExportsService, organizacaoService, perfilService, userService);
         this.restOrganizacaoMockMvc = MockMvcBuilders.standaloneSetup(organizacaoResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
