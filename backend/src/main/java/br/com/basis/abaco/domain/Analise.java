@@ -104,6 +104,7 @@ public class Analise implements Serializable, ReportObject {
     @Field(index = FieldIndex.not_analyzed, type = FieldType.Double)
     private Double pfTotalAjustadoValor;
 
+    
     @Size(max = 4000)
     @Column(name = "escopo", length = 4000)
     @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
