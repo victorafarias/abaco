@@ -60,19 +60,17 @@
 
 				<div class="ui-g-2 ui-md-2 ui-sm-12">
 					<span class="md-inputfield">
-						<p-calendar required name="dataInicio" [(ngModel)]="searchGroup.dataInicio"
+						<p-calendar required name="dataInicio" [(ngModel)]="searchGroup.dataInicio" placeholder="Periodo de: "
 							 id="dataInicio" dateFormat="dd/mm/yy" showIcon="true">
 						</p-calendar>
-						<label>Periodo de: </label>
 					</span>
 				</div>
 
 				<div class="ui-g-2 ui-md-2 ui-sm-12">
 					<span class="md-inputfield">
-						<p-calendar required name="dataFim" [(ngModel)]="searchGroup.dataFim"
+						<p-calendar required name="dataFim" [(ngModel)]="searchGroup.dataFim" placeholder="Até: "
 							 id="dataFim" dateFormat="dd/mm/yy" showIcon="true">
 						</p-calendar>
-						<label>Até: </label>
 					</span>
 				</div>
 			</div>
@@ -116,21 +114,12 @@
 						<p-column header="Organização" field="organizacao.nome" [sortable]="true" filterType="select"
 							[filter]="true">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
-								{{ analise.organizacao.nome}}
+								{{ analise.organizacao.sigla}}
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'organizacao'" header="Identificador Analise"
 							field="identificadorAnalise" [sortable]="true"></p-column>
 						<p-column [styleClass]="'numero-os'" header="Número Os." field="numeroOs" [sortable]="true">
-						</p-column>
-						<p-column [styleClass]="'analise-divergence'" header="Identificador da Divergência"
-							field="analiseDivergence.identificadorAnalise" [sortable]="true" filterType="select"
-							[filter]="true">
-							<ng-template let-col let-analise="rowData" pTemplate="body">
-								<a style="cursor: pointer; color: blue"
-									(click)="goToPageDivergencia(analise.analiseDivergence)">
-									{{ analise.analiseDivergence?.identificadorAnalise }}</a>
-							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'equipe'" header="Equipe" field="equipeResponsavel.nome"
 							[sortable]="true" filterType="select" [filter]="true">
@@ -156,28 +145,28 @@
 								{{ analise.status && analise.status.nome? analise.status.nome : ''}}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'pf-total'" header="PF total" field="pfTotal" [sortable]="true"
+						<p-column [styleClass]="'pf-total'" header="PF total" field="pfTotalValor" [sortable]="true"
 							filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
-								{{ analise.pfTotal > 0 ? analise.pfTotal : 0 | number: '00.00'}}
+								{{ (analise.pfTotalValor | number: '1.2-2')?.replace(".", ",")}}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'pf-ajustado'" header="PF Ajustado" field="adjustPFTotal"
+						<p-column [styleClass]="'pf-ajustado'" header="PF Ajustado" field="pfTotalAjustadoValor"
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
-								{{ analise.adjustPFTotal > 0 ? analise.adjustPFTotal : 0 | number: '00.00'}}
+								{{ (analise.pfTotalAjustadoValor | number: '1.2-2')?.replace(".", ",")}}
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'data-criacao'" header="Data de criação" field="dataCriacaoOrdemServico"
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
-								{{ analise.dataCriacaoOrdemServico | date: 'dd/MM/y - HH:mm' }}
+								{{ analise.dataCriacaoOrdemServico | date: 'dd/MM/y ' }}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'data-conclusao'" header="Data de conclusão/bloqueio" field="dataHomologacao"
+						<p-column [styleClass]="'data-conclusao'" header="Data de conclusão" field="dataHomologacao"
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
-								{{ analise.dataHomologacao | date: 'dd/MM/y - HH:mm' }}
+								{{ analise.dataHomologacao | date: 'dd/MM/y' }}
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'data-encerramento'" header="Data de encerramento" field="dtEncerramento"
@@ -196,6 +185,15 @@
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
 								{{ analise.clonadaParaEquipe ? 'Sim' : 'Não' }}
+							</ng-template>
+						</p-column>
+						<p-column [styleClass]="'analise-divergence'" header="Identificador da Divergência"
+							field="analiseDivergence.identificadorAnalise" [sortable]="true" filterType="select"
+							[filter]="true">
+							<ng-template let-col let-analise="rowData" pTemplate="body">
+								<a style="cursor: pointer; color: blue"
+									(click)="goToPageDivergencia(analise.analiseDivergence)">
+									{{ analise.analiseDivergence?.identificadorAnalise }}</a>
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'usuario'" header="Usuários" field="users" [sortable]="false"

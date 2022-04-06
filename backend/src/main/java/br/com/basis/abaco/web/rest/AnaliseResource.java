@@ -597,7 +597,6 @@ public class AnaliseResource {
                                                                   @RequestParam(value = "dataFim", required = false) Date dataFim)
         throws URISyntaxException {
         log.debug("DEBUG Consulta Analises - Inicio metodo");
-
        SortOrder sortOrderQb;
         if(order.equals("asc")){
             sortOrderQb = SortOrder.ASC;

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,6 +43,9 @@ public class AnaliseDTO implements ReportObject, Serializable {
 
     private String pfTotalOriginal;
     private String pfTotalAprovado;
+
+    private Double pfTotalValor;
+    private Double pfTotalAjustadoValor;
 
     @JsonIgnoreProperties("analiseClonadaParaEquipe")
     private AnaliseDTO analiseClonadaParaEquipe;

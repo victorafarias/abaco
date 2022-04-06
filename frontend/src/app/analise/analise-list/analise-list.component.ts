@@ -46,19 +46,19 @@ export class AnaliseListComponent implements OnInit {
         { value: 'organizacao.nome', label: 'Organização' },
         { value: 'identificadorAnalise', label: 'Identificador Analise' },
         { value: 'numeroOs', label: 'Número Os.' },
-        { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência'},
         { value: 'equipeResponsavel.nome', label: 'Equipe' },
         { value: 'sistema.nome', label: 'Sistema' },
         { value: 'metodoContagem', label: 'Método Contagem' },
         { value: 'status.nome', label: 'Status' },
-        { value: 'pfTotal', label: 'PF total' },
-        { value: 'adjustPFTotal', label: 'PF Ajustado' },
+        { value: 'pfTotalValor', label: 'PF Total' },
+        { value: 'pfTotalAjustadoValor', label: 'PF Ajustado' },
         { value: 'dataCriacaoOrdemServico', label: 'Data de criação' },
-        { value: 'dataHomologacao', label: 'Data de conclusão/bloqueio' },
-        { value: 'dtEncerramento', label: 'Data de encerramento' },
+        { value: 'dataHomologacao', label: 'Data de Conclusão' },
+        { value: 'dtEncerramento', label: 'Data de Encerramento' },
         { value: 'bloqueiaAnalise', label: 'Bloqueado' },
         { value: 'clonadaParaEquipe', label: 'Clonada para outra equipe' },
         { value: 'analiseClonadaParaEquipe', label: "Análise Relacionada" },
+        { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência'},
         { value: 'users', label: 'Usuários' },
     ];
 
@@ -67,13 +67,15 @@ export class AnaliseListComponent implements OnInit {
         'identificadorAnalise',
         'sistema.nome',
         'numeroOs',
-        'analiseDivergence.identificadorAnalise',
         'equipeResponsavel.nome',
         'metodoContagem',
         'status.nome',
-        'pfTotal',
-        'adjustPFTotal',
-        'PF Ajustado'];
+        'pfTotalValor',
+        'pfTotalAjustadoValor',
+		'dataCriacaoOrdemServico',
+		'dataHomologacao',
+		'dtEncerramento',
+		'bloqueiaAnalise'];
     private lastColumn: any[] = [];
 
 
@@ -464,6 +466,14 @@ export class AnaliseListComponent implements OnInit {
             return new SearchGroup();
         }
     }
+
+	loadingColumnsVisible(): string[]{
+		const sessionColumnsVisible: string[] = JSON.parse(sessionStorage.getItem('columnsVisible'));
+		if(sessionColumnsVisible?.length){
+			return sessionColumnsVisible;
+		}
+		return this.columnsVisible;
+	}
 
     clonarEquipe() {
         if (this.analiseSelecionada.clonadaParaEquipe == true) {
@@ -968,6 +978,7 @@ export class AnaliseListComponent implements OnInit {
 
             this.searchGroup = this.loadingGroupSearch();
             this.searchGroup.usuario = null;
+			this.columnsVisible = this.loadingColumnsVisible();
             this.recarregarDataTable();
             this.datatable.filter();
             this.isLoadFilter = false;
@@ -981,6 +992,7 @@ export class AnaliseListComponent implements OnInit {
         if (this.columnsVisible.length) {
             this.lastColumn = event.value;
             this.updateVisibleColumns(this.columnsVisible);
+			sessionStorage.setItem('columnsVisible', JSON.stringify(event.value));
         } else {
             this.lastColumn.map((item) => this.columnsVisible.push(item));
             this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');

@@ -49,5 +49,6 @@
     <include file="classpath:config/liquibase/changelog/20220330182847_reajustar_pe_analitico_add_equipe.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220402014350_add_dt_encerramento.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220402023231_add_table_historico.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20220406005305_add_pf_total_as_double.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 

@@ -46,6 +46,8 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
     @EntityGraph(attributePaths = {"compartilhadas", "esforcoFases", "users", "fatorAjuste", "contrato"})
     Analise findById(Long id);
 
+    @EntityGraph(attributePaths = {"compartilhadas", "esforcoFases", "users", "fatorAjuste", "contrato"})
+    List<Analise> findAll();
 
     @EntityGraph(attributePaths = {"compartilhadas", "esforcoFases", "users", "fatorAjuste", "contrato", "analisesComparadas"})
     Analise findOneById(Long id);
@@ -62,7 +64,6 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
             "WHERE a.id = :id ORDER BY m.nome, f.nome, fd.name, ft.name")
     Analise reportContagem(@Param("id") Long id);
 
-    List<Analise> findAll();
 
     @Query(value = "SELECT a FROM Analise a WHERE a.isDivergence = :divergencia")
     Page<Analise> pesquisarPorDivergencia(@Param("divergencia") Boolean divergencia, Pageable pageable);
