@@ -19,4 +19,6 @@ public class OrganizacaoAnaliseDTO implements Serializable {
 
     private String nome;
 
+    private String sigla;
+
 }

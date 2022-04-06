@@ -98,7 +98,7 @@ public class OrganizacaoResource {
 
     private final UserService userService;
 
-    
+
     @Autowired
     private UserRepository userRepository;
 
