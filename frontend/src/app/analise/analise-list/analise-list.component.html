@@ -710,23 +710,24 @@
 
 
 
-<p-dialog header="Histórico da análise" [(visible)]="showDialogHistorico" [style]="{width: '50vw'}"
+<p-dialog [header]="headerDialogHistorico" [(visible)]="showDialogHistorico" [style]="{width: '50vw'}"
 	[contentStyle]="{'height': ['windowHeightDialog']}" [modal]="true" #dialogHistorico>
 	<!-- Datatable Permissao -->
 	<basis-datatable type="memory" [value]="listHistoricos" [disableView]="true" [disableEdit]="true"
-		[disableDelete]="true" [selectionMode]="'multiple'" [filterOnColumn]="true" [enableScroll]="true"
-		[appendTo]="dialogHistorico"
-		[scrollHeight]="'500px'" [enableButtonsScroll]="true" [rowsPerPageOptions]="rowsPerPageOptions" [rows]="20"
+		[disableDelete]="true"
+		[appendTo]="dialogHistorico" id="datatableHistorico" [showPaginationFooter]="true"
+		[scrollHeight]="'500px'" [enableButtonsScroll]="true" [rows]="100"
 		#datatableHistorico>
-		<p-column header="Analise" field="analise.numeroOs" [sortable]="true">
+		<p-column header="Data" field="dtAcao" [sortable]="true">
 			<ng-template let-row="rowData" pTemplate="body">
-				{{ row.analise.numeroOs == undefined || row.analise.numeroOs == null ? row.analise.identificadorAnalise : row.analise.numeroOs }}
+				{{ row.dtAcao | date: 'dd/MM/yyyy' : 'UTC+offset'}}
 			</ng-template>
 		</p-column>
 
-		<p-column header="Data e Hora" field="dtAcao" [sortable]="true">
+
+		<p-column header="Hora" field="hrAcao" [sortable]="true">
 			<ng-template let-row="rowData" pTemplate="body">
-				{{ row.dtAcao | date: 'dd/MM/yyyy HH:mm:ss' : 'UTC+offset'}}
+				{{ row.dtAcao | date: 'HH:mm:ss' : 'UTC+offset'}}
 			</ng-template>
 		</p-column>
 
@@ -742,4 +743,9 @@
 			</ng-template>
 		</p-column>
 	</basis-datatable>
+
+	<div class="ui-g-12 ui-md-2">
+		<app-export-button [appendTo]="dialogHistorico" [dataTable]="datatableHistorico" resourceName="historico" funcionalidadeName="analise" [filter]="analiseSelecionada">
+		</app-export-button>
+	</div>
 </p-dialog>

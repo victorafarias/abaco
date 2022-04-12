@@ -1,5 +1,6 @@
 package br.com.basis.abaco.domain;
 
+import br.com.basis.dynamicexports.pojo.ReportObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 /**
  * Entidade para representar o Histórico.
@@ -25,7 +27,7 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Historico implements Serializable {
+public class Historico implements Serializable, ReportObject {
 
     private static final long serialVersionUID = 1L;
 
@@ -59,6 +61,17 @@ public class Historico implements Serializable {
 
     public Timestamp getDtAcao() {
         return this.dtAcao != null ? new Timestamp(this.dtAcao.getTime()) : null;
+    }
+
+    public String getSomenteData(){
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        return format.format(dtAcao);
+    }
+
+
+    public String getSomenteHora(){
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        return format.format(dtAcao);
     }
 }
 

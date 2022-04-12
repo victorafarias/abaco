@@ -16,4 +16,9 @@ export class HistoricoService {
     return this.http.get<HistoricoDTO[]>(`${this.resourceUrl}/${idAnalise}`);
   }
 
+
+  	inserirHistoricoAnalise(historico: HistoricoDTO) {
+    	return this.http.post<any>(`${this.resourceUrl}`, historico);
+	}
+
 }

@@ -9,12 +9,23 @@ import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.HistoricoDTO;
 import br.com.basis.abaco.service.dto.UserDTO;
+import br.com.basis.abaco.service.exception.RelatorioException;
+import br.com.basis.abaco.service.relatorio.RelatorioHistoricoColunas;
+import br.com.basis.abaco.service.relatorio.RelatorioPerfilColunas;
+import br.com.basis.abaco.utils.AbacoUtil;
+import br.com.basis.dynamicexports.service.DynamicExportsService;
+import net.sf.dynamicreports.report.exception.DRException;
+import net.sf.jasperreports.engine.JRException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class HistoricoService {
@@ -22,11 +33,13 @@ public class HistoricoService {
     private final HistoricoRepository historicoRepository;
     private final UserRepository userRepository;
     private final AnaliseService analiseService;
+    private final DynamicExportsService dynamicExportsService;
 
-    public HistoricoService(HistoricoRepository historicoRepository, UserRepository userRepository, AnaliseService analiseService) {
+    public HistoricoService(HistoricoRepository historicoRepository, UserRepository userRepository, AnaliseService analiseService, DynamicExportsService dynamicExportsService) {
         this.historicoRepository = historicoRepository;
         this.userRepository = userRepository;
         this.analiseService = analiseService;
+        this.dynamicExportsService = dynamicExportsService;
     }
 
     public List<HistoricoDTO> findAllByAnalise(Long idAnalise){
@@ -62,5 +75,18 @@ public class HistoricoService {
         historico.setAcao(acao);
         historicoRepository.save(historico);
     }
+
+    
+    public ByteArrayOutputStream gerarRelatorio(AnaliseDTO analise, String tipoRelatorio) throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream;
+        try {
+            Page<Historico> result = new PageImpl<>(historicoRepository.findAllByAnaliseIdOrderById(analise.getId()));
+            byteArrayOutputStream = dynamicExportsService.export(new RelatorioHistoricoColunas(), result, tipoRelatorio, Optional.empty(), Optional.ofNullable(AbacoUtil.REPORT_LOGO_PATH), Optional.ofNullable(AbacoUtil.getReportFooter()));
+        } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
+            throw new RelatorioException(e);
+        }
+        return byteArrayOutputStream;
+    }
+
 
 }
