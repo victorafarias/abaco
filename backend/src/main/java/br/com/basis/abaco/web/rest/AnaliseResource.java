@@ -199,7 +199,6 @@ public class AnaliseResource {
         analise.setAnaliseClonadaParaEquipe(null);
         analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
 
-        this.historicoService.inserirHistoricoAnalise(analise, null, "Editou");
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
             .body(analiseEditDTO);
     }

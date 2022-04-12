@@ -35,6 +35,7 @@ import { GrupoService } from '../grupo/grupo.service';
 @Component({
     selector: 'app-analise',
     templateUrl: './analise-list.component.html',
+	styleUrls: ['./analise.css'],
     providers: [GrupoService, ConfirmationService],
 })
 export class AnaliseListComponent implements OnInit {
@@ -212,6 +213,7 @@ export class AnaliseListComponent implements OnInit {
 
 	showDialogHistorico: boolean = false;
 	listHistoricos: HistoricoDTO[] = [];
+	headerDialogHistorico: string = "";
 
     constructor(
         private router: Router,
@@ -519,6 +521,7 @@ export class AnaliseListComponent implements OnInit {
                     this.pageNotificationService.addErrorMessage('Você não pode editar uma análise bloqueada!');
                     return;
                 }
+				this.inserirHistoricoEditar(event.selection);
                 this.router.navigate(['/analise', event.selection.id, 'edit']);
                 break;
             case 'view':
@@ -529,6 +532,7 @@ export class AnaliseListComponent implements OnInit {
                 break;
         }
     }
+
 
 
     compartilharAnalise() {
@@ -607,6 +611,7 @@ export class AnaliseListComponent implements OnInit {
         if (!this.canEditar) {
             return false;
         }
+		this.inserirHistoricoEditar(this.analiseSelecionada);
         this.router.navigate(['/analise', this.analiseSelecionada.id, 'edit']);
     }
 
@@ -1396,18 +1401,30 @@ export class AnaliseListComponent implements OnInit {
 		if(analiseSelecionada.id){
 			this.historicoService.findAllByAnaliseId(analiseSelecionada.id).subscribe(historicos => {
 				this.listHistoricos = historicos;
-				this.showDialogHistorico = true;
+				if(this.listHistoricos.length === 0){
+					this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
+				}else{
+					let analiseString = analiseSelecionada.numeroOs == null ? analiseSelecionada.identificadorAnalise : analiseSelecionada.numeroOs;
+					this.headerDialogHistorico = "Histórico da Análise " +analiseString;
+					this.showDialogHistorico = true;
+				}
 			}, error => {
 				if(error.status == 404){
 					this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
 				}
-
 			})
 		}
 	}
 
 	fecharDialogHistorico(){
 		this.showDialogHistorico = false;
+		this.headerDialogHistorico = "";
+	}
 
+	inserirHistoricoEditar(analiseSelecionada: Analise) {
+		let historico: HistoricoDTO = new HistoricoDTO();
+		historico.acao = "Editou"
+		historico.analise = analiseSelecionada;
+		this.historicoService.inserirHistoricoAnalise(historico).subscribe(response => {});
 	}
 }

@@ -24,6 +24,8 @@ export class ExportButtonComponent implements OnInit {
 
     @Input() isDisabled: boolean;
 
+	@Input() appendTo;
+
     tiposExportacao = [
         {
             label: 'PDF', icon: '', command: () => {
