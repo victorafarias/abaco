@@ -76,6 +76,7 @@ public class HistoricoService {
         historicoRepository.save(historico);
     }
 
+    
     public ByteArrayOutputStream gerarRelatorio(AnaliseDTO analise, String tipoRelatorio) throws RelatorioException {
         ByteArrayOutputStream byteArrayOutputStream;
         try {
