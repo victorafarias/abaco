@@ -1,7 +1,6 @@
 package br.com.basis.abaco.repository;
 
 import br.com.basis.abaco.domain.FuncaoDados;
-import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.service.dto.DropdownDTO;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -28,7 +27,7 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.analise.id = ?1 ")
     List<FuncaoDados> findByAnalise(Long id);
 
-    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste", "files"})
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.id = ?1")
     FuncaoDados findById(Long id);
 

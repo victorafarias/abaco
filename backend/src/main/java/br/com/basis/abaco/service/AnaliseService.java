@@ -698,6 +698,9 @@ public class AnaliseService extends BaseService {
         sumFase = sumFase.divide(percent).setScale(decimalPlace);
         analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).toString());
         analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+
+        analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
+        analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
     }
 
     public void updatePFDivergente(Analise analise) {
@@ -723,6 +726,9 @@ public class AnaliseService extends BaseService {
             }
         }
         analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
+
+        analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
+        analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
     }
 
 

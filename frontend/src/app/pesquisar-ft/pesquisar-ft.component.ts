@@ -32,6 +32,8 @@ import 'jspdf-autotable';
 import { DerService } from '../der/der.service';
 import { AlrService } from '../alr/alr.service';
 import { RlrService } from '../rlr/rlr.service';
+import { FuncaoImportarDTO } from './funcao-importar.dto';
+import { TipoMensagem } from '../shared/mensagens.dto';
 
 @Component({
     selector: 'app-pesquisar-ft',
@@ -420,162 +422,74 @@ export class PesquisarFtComponent implements OnInit {
         } else if (!(this.selections) || this.selections.length <= 0) {
             this.pageNotificationService.addErrorMessage('É obrigatório selecionar uma Função.');
         } else {
+			let funcoesFTImportar: FuncaoImportarDTO = new FuncaoImportarDTO();
+
+			funcoesFTImportar.idAnalise = this.analise.id;
+			funcoesFTImportar.funcoesParaImportar = this.selections;
+			funcoesFTImportar.fundamentacao = this.fundamentacao
+			funcoesFTImportar.idDeflator = this.novoDeflator.id;
+			funcoesFTImportar.quantidadeINM = this.quantidadeINM;
+
+			this.erroUnitario = false;
+			this.deflaPesquisa = true;
             if (!(this.isFuncaoDados)) {
-                const getFuncaoTransacoes: Observable<FuncaoTransacao>[] = [];
-                const saveFuncaoTransacoes: Observable<FuncaoTransacao>[] = [];
-                let lstToInclude: Observable<Boolean>[] = [];
-                this.erroUnitario = false;
-                this.deflaPesquisa = true;
+				this.funcaoTransacaoService.importarFuncoesAnalise(funcoesFTImportar).subscribe(response => {
+					response?.abacoMensagens?.mensagens?.forEach(mensagem => {
+						if(mensagem.tipo === TipoMensagem.SUCESSO){
+							this.pageNotificationService.addSuccessMessage(mensagem.mensagem);
+						}
+						if(mensagem.tipo === TipoMensagem.AVISO){
+							this.pageNotificationService.addInfoMessage(mensagem.mensagem);
+						}
+						if(mensagem.tipo === TipoMensagem.ERRO){
+							this.pageNotificationService.addErrorMessage(mensagem.mensagem);
+						}
+					})
 
-                this.selections.forEach(select => {
-                    this.blockUiService.show();
-                    lstToInclude.push(
-                        this.funcaoTransacaoService.existsWithName(
-                            select.name,
-                            this.analise.id,
-                            select.idFuncionalidade,
-                            select.idModulo,
-                        ));
-                });
-                forkJoin(lstToInclude).subscribe(respLStInclude => {
-                    respLStInclude.forEach((include, index) => {
-                        this.selections[index].isInclude = !include;
-                    });
-                    this.selections.forEach(ft => {
-                        if (ft.isInclude) {
-                            this.blockUiService.show();
-                            getFuncaoTransacoes.push(this.funcaoTransacaoService.getById(ft.idfuncaodados));
-                        } else {
-                            this.pageNotificationService.addErrorMessage(
-                                'Já existe uma função com o nome "' + ft.name +
-                                '" na funcionalidade "' + ft.nomeFuncionalidade + '".');
-                        }
-                    });
-                    
-                    this.selections = [];
-                    forkJoin(getFuncaoTransacoes).subscribe(result => {
-                        result.forEach(funcaoTransacaoResp => {
-                            funcaoTransacaoResp.ordem = this.tamanhoLista++;
-                            funcaoTransacaoResp['id'] = undefined;
-                            if (this.analise.metodoContagem === 'ESTIMADA' || this.analise.metodoContagem === 'INDICATIVA') {
-                                funcaoTransacaoResp.ders = [];
-                                funcaoTransacaoResp.alrs = [];
-                            } else {
-                                funcaoTransacaoResp.ders.forEach(vd => {
-                                    vd.id = undefined;
-                                });
-                                funcaoTransacaoResp.alrs.forEach(vd => {
-                                    vd.id = undefined;
-                                });
-                            }
-                            if (this.novoDeflator != null) {
-                                funcaoTransacaoResp.sustantation = "";
-                                if(this.fundamentacao != null){
-                                    funcaoTransacaoResp.sustantation = this.fundamentacao;
-                                }
-                                funcaoTransacaoResp.fatorAjuste = this.novoDeflator;
-                                if (this.novoDeflator.tipoAjuste === 'UNITARIO') {
-                                    funcaoTransacaoResp.quantidade = this.quantidadeINM;
-                                }
-                                funcaoTransacaoResp = new FuncaoTransacao().copyFromJSON(funcaoTransacaoResp);
-                                funcaoTransacaoResp = CalculadoraTransacao.calcular(
+					this.selections = [];
+					let funcoesCalculadas: FuncaoTransacao[] = [];
+
+					response?.funcaoTransacao?.forEach(funcao => {
+						let funcaoCalcular = new FuncaoTransacao().copyFromJSON(funcao);
+                        funcaoCalcular = CalculadoraTransacao.calcular(
                                     this.analise.metodoContagem,
-                                    funcaoTransacaoResp,
+                                    funcaoCalcular,
                                     this.analise.manual);
-                            }
-                            this.validaCamposObrigatorios();
-                            if (this.verificarCamposObrigatorios()) {
-                                this.blockUiService.show();
-                                saveFuncaoTransacoes.push(this.funcaoTransacaoService.create(funcaoTransacaoResp, this.analise.id));
-                            }
-                        });
-                        forkJoin(saveFuncaoTransacoes).subscribe(
-                            response => {
-                                response.forEach((ftCreated) => {
-                                    this.pageNotificationService.addCreateMsg(ftCreated.name);
-                                });
-                                this.analiseService.updateSomaPf(this.analise.id).subscribe();
-                                this.blockUiService.hide();
-                            });
-                    });
-                });
+						funcoesCalculadas.push(funcaoCalcular);
+					})
+
+					this.funcaoTransacaoService.updatePF(funcoesCalculadas).subscribe(() => {
+						this.analiseService.updateSomaPf(this.analise.id).subscribe();
+					});
+				});
             } else {
-                const getFuncaoDados: Observable<FuncaoDados>[] = [];
-                const saveFuncaoDados: Observable<FuncaoDados>[] = [];
-                let lstToInclude: Observable<Boolean>[] = [];
-                this.erroUnitario = false;
-                this.deflaPesquisa = true;
-                this.selections.forEach(select => {
-                    this.blockUiService.show();
-                    lstToInclude.push(
-                        this.funcaoDadosService.existsWithName(
-                            select.name,
-                            this.analise.id,
-                            select.idFuncionalidade,
-                            select.idModulo,
-                        ));
-                });
-                forkJoin(lstToInclude).subscribe(respLStInclude => {
-                    respLStInclude.forEach((include, index) => {
-                        this.selections[index].isInclude = !include;
-                    });
-                    this.selections.forEach(ft => {
-                        if (ft.isInclude) {
-                            this.blockUiService.show();
-                            getFuncaoDados.push(this.funcaoDadosService.getById(ft.idfuncaodados));
-                        } else {
-                            this.pageNotificationService.addErrorMessage(
-                                'Já existe uma função com o nome "' + ft.name +
-                                '" na funcionalidade "' + ft.nomeFuncionalidade + '".');
-                        }
-                    });
-                    this.selections = [];
-                    forkJoin(getFuncaoDados).subscribe(result => {
-                        result.forEach(funcaoDadosResp => {
-                            funcaoDadosResp['id'] = undefined;
-                            if (this.analise.metodoContagem === 'ESTIMADA' || this.analise.metodoContagem === 'INDICATIVA') {
-                                funcaoDadosResp.ders = [];
-                                funcaoDadosResp.rlrs = [];
-                            } else {
-                                funcaoDadosResp.ders.forEach(der => {
-                                    der.id = undefined;
-                                });
-                                funcaoDadosResp.rlrs.forEach(rlr => {
-                                    rlr.id = undefined;
-                                });
-                            }
-                            if (this.novoDeflator != null) {
-                                funcaoDadosResp.sustantation = "";
-                                if(this.fundamentacao != null){
-                                    funcaoDadosResp.sustantation = this.fundamentacao;   
-                                }
-
-                                funcaoDadosResp.fatorAjuste = this.novoDeflator;
-                                if (this.novoDeflator.tipoAjuste === 'UNITARIO') {
-                                    funcaoDadosResp.quantidade = this.quantidadeINM;
-                                }
-                                funcaoDadosResp = new FuncaoDados().copyFromJSON(funcaoDadosResp);
-                                funcaoDadosResp = Calculadora.calcular(
+				this.funcaoDadosService.importarFuncoesAnalise(funcoesFTImportar).subscribe(response => {
+					response?.abacoMensagens?.mensagens?.forEach(mensagem => {
+						if(mensagem.tipo === TipoMensagem.SUCESSO){
+							this.pageNotificationService.addSuccessMessage(mensagem.mensagem);
+						}
+						if(mensagem.tipo === TipoMensagem.AVISO){
+							this.pageNotificationService.addInfoMessage(mensagem.mensagem);
+						}
+						if(mensagem.tipo === TipoMensagem.ERRO){
+							this.pageNotificationService.addErrorMessage(mensagem.mensagem);
+						}
+					})
+					this.selections = [];
+					let funcoesCalculadas: FuncaoDados[] = [];
+					response?.funcaoDados?.forEach(funcao => {
+						let funcaoCalcular = new FuncaoDados().copyFromJSON(funcao);
+                        funcaoCalcular = Calculadora.calcular(
                                     this.analise.metodoContagem,
-                                    funcaoDadosResp,
+                                    funcaoCalcular,
                                     this.analise.manual);
-                            }
-                            this.validaCamposObrigatorios();
-                            if (this.verificarCamposObrigatorios()) {
-                                this.blockUiService.show();
-                                saveFuncaoDados.push(this.funcaoDadosService.create(funcaoDadosResp, this.analise.id));
-                            }
-                        });
-                        forkJoin(saveFuncaoDados).subscribe(
-                            response => {
-                                response.forEach((fdCreated) => {
-                                    this.pageNotificationService.addCreateMsg(fdCreated.name);
-                                });
-                                this.analiseService.updateSomaPf(this.analise.id).subscribe();
-                                this.blockUiService.hide();
-                            });
-                    });
-                });
+						funcoesCalculadas.push(funcaoCalcular);
+					})
+
+					this.funcaoDadosService.updatePF(funcoesCalculadas).subscribe(() => {
+						this.analiseService.updateSomaPf(this.analise.id).subscribe();
+					});
+				});
             }
         }
     }
@@ -597,10 +511,6 @@ export class PesquisarFtComponent implements OnInit {
                         this.rlrService.getRlrsByFuncaoDadosId(funcao.idfuncaodados).subscribe(response =>{
                             funcao.qtdRlrs = response.length;
                         })
-                        // this.funcaoDadosService.findByID(funcao.idfuncaodados).subscribe(funcaoDados =>{
-                        //     funcao.qtdDers = funcaoDados.totalDers
-                        //     funcao.qtdRlrs = funcaoDados.totalRlrs;
-                        // })
                     })
                 });
             } else {
@@ -623,10 +533,6 @@ export class PesquisarFtComponent implements OnInit {
                         this.alrService.getAlrsByFuncaoTransacaoId(funcao.idfuncaodados).subscribe(response =>{
                             funcao.qtdRlrs = response.length;
                         })
-                        // this.funcaoTransacaoService.findByID(funcao.idfuncaodados).subscribe(funcaoTransacao => {
-                        //     funcao.qtdDers = funcaoTransacao.totalDers;
-                        //     funcao.qtdRlrs = funcaoTransacao.totalAlrs;
-                        // })
                     })
                 });
             } else {
@@ -637,7 +543,7 @@ export class PesquisarFtComponent implements OnInit {
             }
         }
     }
-    
+
 
     public limparPesquisa() {
         if (this.moduloSelecionado && this.moduloSelecionado.id) {

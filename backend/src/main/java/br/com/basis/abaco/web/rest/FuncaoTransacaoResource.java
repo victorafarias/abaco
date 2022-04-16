@@ -5,10 +5,6 @@ import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.Der;
 import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.UploadedFile;
-import br.com.basis.abaco.domain.VwAlr;
-import br.com.basis.abaco.domain.VwAlrAll;
-import br.com.basis.abaco.domain.VwDer;
-import br.com.basis.abaco.domain.VwDerAll;
 import br.com.basis.abaco.domain.enumeration.Complexidade;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
@@ -16,18 +12,20 @@ import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.DerRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
 import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
-import br.com.basis.abaco.repository.search.VwAlrAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwAlrSearchRepository;
-import br.com.basis.abaco.repository.search.VwDerAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.FuncaoDadosService;
+import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
 import br.com.basis.abaco.service.dto.DerFtDTO;
+import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
+import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
+import br.com.basis.abaco.service.dto.ImportarFTDTO;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -37,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,13 +47,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -83,11 +82,10 @@ public class FuncaoTransacaoResource {
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
-    private VwDerAllSearchRepository vwDerAllSearchRepository;
-    @Autowired
-    private VwAlrAllSearchRepository vwAlrAllSearchRepository;
-    @Autowired
     private AnaliseService analiseService;
+
+    @Autowired
+    private FuncaoTransacaoService funcaoTransacaoService;
 
     public FuncaoTransacaoResource(FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwAlrSearchRepository vwAlrSearchRepository, FuncaoDadosService funcaoDadosService) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
@@ -132,7 +130,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
 
         return ResponseEntity.created(new URI("/api/funcao-transacaos/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
@@ -177,7 +175,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
 
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoTransacao.getId().toString())).body(result);
     }
@@ -363,6 +361,25 @@ public class FuncaoTransacaoResource {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PostMapping(path = "/funcao-transacaos/importar-funcoes-analise", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<ImportarFTDTO> importarFuncaoAnalise(@RequestBody FuncaoImportarDTO funcaoImportarDTO)  {
+        return new ResponseEntity<>(funcaoTransacaoService.importarFuncaoAnalise(funcaoImportarDTO), HttpStatus.OK);
+    }
+
+    @PatchMapping("/funcao-transacaos/update-pf")
+    public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
+        if(funcaoPFDTO != null && funcaoPFDTO.size() > 0){
+            for (FuncaoPFDTO funcao : funcaoPFDTO) {
+                FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(funcao.getId());
+                funcaoTransacao.setPf(funcao.getPf());
+                funcaoTransacao.setGrossPF(funcao.getGrossPF());
+                funcaoTransacao.setComplexidade(funcao.getComplexidade());
+                funcaoTransacaoRepository.save(funcaoTransacao);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     private FuncaoTransacaoAnaliseDTO convertToDto(FuncaoTransacao funcaoTransacao) {
         FuncaoTransacaoAnaliseDTO funcaoTransacaoAnaliseDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoAnaliseDTO.class);
@@ -436,79 +453,6 @@ public class FuncaoTransacaoResource {
         return map;
     }
 
-    private void saveVwDersAndVwAlrs(Set<Der> ders, Set<Alr> alrs, Long idSistema, Long idFuncao) {
-        List<VwDer> vwDerList = vwDerSearchRepository.findAllByIdSistemaFT(idSistema);
-        List<VwAlr> vwAlrList = vwAlrSearchRepository.findAllByIdSistema(idSistema);
 
-        List<VwDerAll> vwDerAllList = vwDerAllSearchRepository.findByFuncaoId(idFuncao);
-        List<VwAlrAll> vwAlrAllList = vwAlrAllSearchRepository.findByFuncaoId(idFuncao);
-
-        saveVwDers(ders, vwDerList, idSistema, idFuncao, vwDerAllList);
-        saveVwAlrs(alrs, vwAlrList, idSistema, idFuncao, vwAlrAllList);
-    }
-
-    private void saveVwAlrs(Set<Alr> alrs, List<VwAlr> vwAlrList, Long idSistema, Long idFuncao, List<VwAlrAll> vwAlrAllList) {
-        List<VwAlr> vwAlrs = new ArrayList<>();
-        List<VwAlrAll> vwAlrAlls = new ArrayList<>();
-        if(!alrs.isEmpty()){
-            alrs.forEach(item -> {
-                VwAlr vwAlr = new VwAlr();
-                VwAlrAll vwAlrAll = new VwAlrAll();
-                if(item.getId() != null){
-                    vwAlr.setId(item.getId());
-                    vwAlrAll.setId(item.getId());
-                }
-                vwAlr.setNome(item.getNome());
-                vwAlr.setIdSistema(idSistema);
-                if(!vwAlrList.contains(vwAlr)){
-                    vwAlrs.add(vwAlr);
-                }
-
-                vwAlrAll.setNome(item.getNome());
-                vwAlrAll.setFuncaoId(idFuncao);
-                if(!vwAlrAllList.contains(vwAlrAll)){
-                    vwAlrAlls.add(vwAlrAll);
-                }
-            });
-            if(!vwAlrs.isEmpty()){
-                vwAlrSearchRepository.save(vwAlrs);
-            }
-            if(!vwAlrAlls.isEmpty()){
-                vwAlrAllSearchRepository.save(vwAlrAlls);
-            }
-        }
-    }
-
-    private void saveVwDers(Set<Der> ders, List<VwDer> vwDerList, Long idSistema, Long idFuncao, List<VwDerAll> vwDerAllList) {
-        List<VwDer> vwDers = new ArrayList<>();
-        List<VwDerAll> vwDerAlls = new ArrayList<>();
-        if(!ders.isEmpty()){
-            ders.forEach(item -> {
-                VwDer vwDer = new VwDer();
-                VwDerAll vwDerAll = new VwDerAll();
-                if(item.getId() != null){
-                    vwDer.setId(item.getId());
-                    vwDerAll.setId(item.getId());
-                }
-                vwDer.setNome(item.getNome());
-                vwDer.setIdSistemaFT(idSistema);
-                if(!vwDerList.contains(vwDer)){
-                    vwDers.add(vwDer);
-                }
-
-                vwDerAll.setFuncaoId(idFuncao);
-                vwDerAll.setNome(item.getNome());
-                if(!vwDerAllList.contains(vwDerAll)){
-                    vwDerAlls.add(vwDerAll);
-                }
-            });
-            if(!vwDers.isEmpty()){
-                vwDerSearchRepository.save(vwDers);
-            }
-            if(!vwDerAlls.isEmpty()){
-                vwDerAllSearchRepository.save(vwDerAlls);
-            }
-        }
-    }
 
 }

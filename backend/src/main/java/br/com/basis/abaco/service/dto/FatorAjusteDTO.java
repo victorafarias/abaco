@@ -3,6 +3,7 @@ package br.com.basis.abaco.service.dto;
 import br.com.basis.abaco.domain.enumeration.ImpactoFatorAjuste;
 import br.com.basis.abaco.domain.enumeration.TipoFatorAjuste;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
  */
 
 
-public class FatorAjusteDTO {
+public class FatorAjusteDTO implements Serializable {
 
     private Long id;
 

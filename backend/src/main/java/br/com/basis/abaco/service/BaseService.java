@@ -4,7 +4,7 @@ import br.com.basis.abaco.utils.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
 
 public class BaseService {
 

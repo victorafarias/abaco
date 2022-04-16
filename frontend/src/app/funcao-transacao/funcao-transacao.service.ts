@@ -1,12 +1,14 @@
 import { FuncaoTransacao } from './funcao-transacao.model';
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Analise } from '../analise/analise.model';
 import { CommentFuncaoTransacao } from './comment.model';
+import { FuncaoImportarDTO, ImportarFTDTO } from '../pesquisar-ft/funcao-importar.dto';
+import { AbacoMensagens } from '../shared/mensagens.dto';
 
 
 @Injectable()
@@ -135,14 +137,14 @@ export class FuncaoTransacaoService {
     deleteComment(id: number){
         return this.http.delete<void>(`${this.resourceUrlComment}/${id}`);
     }
-    
+
     existsWithName(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: Number = 0): Observable<Boolean> {
         const url = `${this.funcaoTransacaoResourceUrl}/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}`;
         return this.http.get<Boolean>(url);
     }
 
     existsWithNameAndEquipe(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: number = 0, idEquipe: number): Observable<Boolean> {
-        const url = `${this.funcaoTransacaoResourceUrl}/divergencia/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}&idEquipe=${idEquipe}`; 
+        const url = `${this.funcaoTransacaoResourceUrl}/divergencia/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}&idEquipe=${idEquipe}`;
         return this.http.get<Boolean>(url);
     }
 
@@ -171,6 +173,14 @@ export class FuncaoTransacaoService {
 
     findByID(id: number): Observable<any>{
         return this.http.get<any>(this.vwFuncaoTransacaoResourceUrl+"/id/"+id);
+    }
+
+	importarFuncoesAnalise(funcoesFTImportar: FuncaoImportarDTO): Observable<ImportarFTDTO> {
+		const headers = new HttpHeaders({'content-type': 'application/json'})
+		return this.http.post<ImportarFTDTO>(`${this.funcaoTransacaoResourceUrl}/importar-funcoes-analise`, funcoesFTImportar, {headers: headers});
+	}
+	updatePF(funcaoTransacao: FuncaoTransacao[]) :Observable<void>{
+        return this.http.patch<void>(this.funcaoTransacaoResourceUrl+"/update-pf", funcaoTransacao);
     }
 }
 
