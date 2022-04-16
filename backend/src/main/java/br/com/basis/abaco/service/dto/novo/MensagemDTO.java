@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Mensagem {
+public class MensagemDTO {
 
     private String mensagem;
     private TipoMensagem tipo;

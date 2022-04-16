@@ -47,8 +47,7 @@ public class FuncaoDadosService {
 
     private final FuncaoDadosRepository funcaoDadosRepository;
 
-    @Autowired
-    private AnaliseService analiseService;
+    private final AnaliseService analiseService;
 
     @Autowired
     private FatorAjusteRepository fatorAjusteRepository;
@@ -64,8 +63,9 @@ public class FuncaoDadosService {
     @Autowired
     private VwRlrSearchRepository vwRlrSearchRepository;
 
-    public FuncaoDadosService(FuncaoDadosRepository funcaoDadosRepository) {
+    public FuncaoDadosService(FuncaoDadosRepository funcaoDadosRepository, AnaliseService analiseService) {
         this.funcaoDadosRepository = funcaoDadosRepository;
+        this.analiseService = analiseService;
     }
 
     @Transactional(readOnly = true)

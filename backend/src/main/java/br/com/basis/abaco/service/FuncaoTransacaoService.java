@@ -35,8 +35,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class FuncaoTransacaoService {
 
-    @Autowired
-    private FuncaoTransacaoRepository funcaoTransacaoRepository;
+    private final FuncaoTransacaoRepository funcaoTransacaoRepository;
 
     @Autowired
     private AnaliseService analiseService;
@@ -56,7 +55,8 @@ public class FuncaoTransacaoService {
     @Autowired
     private VwAlrSearchRepository vwAlrSearchRepository;
 
-    public FuncaoTransacaoService() {
+    public FuncaoTransacaoService(FuncaoTransacaoRepository funcaoTransacaoRepository) {
+        this.funcaoTransacaoRepository = funcaoTransacaoRepository;
     }
 
     public ImportarFTDTO importarFuncaoAnalise(FuncaoImportarDTO funcaoImportarDTO) {
