@@ -1,6 +1,5 @@
 package br.com.basis.abaco.repository;
 
-import br.com.basis.abaco.domain.FuncaoDados;
 import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -25,7 +24,7 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
     FuncaoTransacao findWithDerAndAlr(@Param("id") Long id);
 
     @Override
-    @EntityGraph(attributePaths = {"funcionalidade", "alrs", "ders", "fatorAjuste"})
+    @EntityGraph(attributePaths = {"funcionalidade", "alrs", "ders", "fatorAjuste", "files"})
     FuncaoTransacao findOne(@Param("id") Long id);
 
     @Query(value = "SELECT f FROM FuncaoTransacao f WHERE f.funcionalidade.id = :id")

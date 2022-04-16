@@ -4,7 +4,7 @@ import {Injectable} from '@angular/core';
 import {FuncaoDados} from '.';
 import { environment } from 'src/environments/environment';
 import { Subject, Observable, asyncScheduler, asapScheduler, queueScheduler } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { catchError, observeOn } from 'rxjs/operators';
 import { Funcionalidade } from 'src/app/funcionalidade';
@@ -12,10 +12,11 @@ import { ResponseWrapper } from 'src/app/shared';
 import { Manual } from 'src/app/manual';
 import { Analise } from '../analise';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
+import { FuncaoImportarDTO, ImportarFDDTO } from '../pesquisar-ft/funcao-importar.dto';
 
 @Injectable()
 export class FuncaoDadosService {
-    
+
     resourceUrl = environment.apiUrl + '/funcao-dados';
     resourceUrlComment = environment.apiUrl + '/comment/funcao-dados';
     vwresourceUrl = environment.apiUrl + '/vw-funcao-dados';
@@ -262,6 +263,14 @@ export class FuncaoDadosService {
     findByID(id: number): Observable<any>{
         return this.http.get<any>(this.vwresourceUrl+"/id/"+id);
     }
+
+	updatePF(funcoesCalculadas: FuncaoDados[]): Observable<void>{
+        return this.http.patch<void>(this.resourceUrl+"/update-pf", funcoesCalculadas);
+	}
+	importarFuncoesAnalise(funcoesFDImportar: FuncaoImportarDTO): Observable<ImportarFDDTO> {
+		const headers = new HttpHeaders({'content-type': 'application/json'})
+		return this.http.post<ImportarFDDTO>(`${this.resourceUrl}/importar-funcoes-analise`, funcoesFDImportar, {headers: headers});
+	}
 
 }
 enum StatusFunction {

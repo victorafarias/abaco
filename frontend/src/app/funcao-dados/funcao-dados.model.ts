@@ -11,6 +11,7 @@ import { DerTextParser, ParseResult } from '../analise-shared/der-text/der-text-
 import { DerChipConverter } from '../analise-shared/der-chips/der-chip-converter';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
 import { TipoEquipe } from '../tipo-equipe';
+import { Analise } from '../analise';
 
 export enum TipoFuncaoDados {
     'ALI' = 'ALI',
@@ -240,4 +241,3 @@ class FuncaoDadosCopyFromJSON {
     }
 
 }
-
