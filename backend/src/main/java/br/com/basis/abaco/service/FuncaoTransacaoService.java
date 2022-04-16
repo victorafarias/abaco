@@ -58,6 +58,7 @@ public class FuncaoTransacaoService {
     public FuncaoTransacaoService(FuncaoTransacaoRepository funcaoTransacaoRepository) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
     }
+    
 
     public ImportarFTDTO importarFuncaoAnalise(FuncaoImportarDTO funcaoImportarDTO) {
         Analise analise = analiseService.recuperarAnalise(funcaoImportarDTO.getIdAnalise());
