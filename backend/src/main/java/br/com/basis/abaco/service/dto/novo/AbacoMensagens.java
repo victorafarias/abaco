@@ -18,10 +18,10 @@ import java.util.List;
 @AllArgsConstructor
 public class AbacoMensagens {
 
-    private List<Mensagem> mensagens = new ArrayList<>();
+    private List<MensagemDTO> mensagens = new ArrayList<>();
 
     public Boolean contemAviso(){
-        for(Mensagem m : mensagens){
+        for(MensagemDTO m : mensagens){
             if(m.isAviso()){
                 return true;
             }
@@ -30,7 +30,7 @@ public class AbacoMensagens {
     }
 
     public Boolean contemErro(){
-        for(Mensagem m : mensagens){
+        for(MensagemDTO m : mensagens){
             if(m.isErro()){
                 return true;
             }
@@ -39,7 +39,7 @@ public class AbacoMensagens {
     }
 
     public Boolean contemSucesso(){
-        for(Mensagem m : mensagens){
+        for(MensagemDTO m : mensagens){
             if(m.isSucesso()){
                 return true;
             }
@@ -56,26 +56,26 @@ public class AbacoMensagens {
     }
 
     public AbacoMensagens adicionarNovoErro(String mensagem){
-        Mensagem mensagemNova = new Mensagem();
-        mensagemNova.setMensagem(mensagem);
-        mensagemNova.setTipo(TipoMensagem.ERRO);
-        mensagens.add(mensagemNova);
+        MensagemDTO mensagemDTONova = new MensagemDTO();
+        mensagemDTONova.setMensagem(mensagem);
+        mensagemDTONova.setTipo(TipoMensagem.ERRO);
+        mensagens.add(mensagemDTONova);
         return this;
     }
 
     public AbacoMensagens adicionarNovoAviso(String mensagem){
-        Mensagem mensagemNova = new Mensagem();
-        mensagemNova.setMensagem(mensagem);
-        mensagemNova.setTipo(TipoMensagem.AVISO);
-        mensagens.add(mensagemNova);
+        MensagemDTO mensagemDTONova = new MensagemDTO();
+        mensagemDTONova.setMensagem(mensagem);
+        mensagemDTONova.setTipo(TipoMensagem.AVISO);
+        mensagens.add(mensagemDTONova);
         return this;
     }
 
     public AbacoMensagens adicionarNovoSucesso(String mensagem){
-        Mensagem mensagemNova = new Mensagem();
-        mensagemNova.setMensagem(mensagem);
-        mensagemNova.setTipo(TipoMensagem.SUCESSO);
-        mensagens.add(mensagemNova);
+        MensagemDTO mensagemDTONova = new MensagemDTO();
+        mensagemDTONova.setMensagem(mensagem);
+        mensagemDTONova.setTipo(TipoMensagem.SUCESSO);
+        mensagens.add(mensagemDTONova);
         return this;
     }
 
