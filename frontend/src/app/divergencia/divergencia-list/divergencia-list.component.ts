@@ -98,6 +98,7 @@ export class DivergenciaListComponent implements OnInit {
     showDialogDivergenceBlock = false;
     showDialogDivergenceStatus = false;
 
+
     canPesquisar: boolean = false;
     canEditar: boolean = false;
     canDeletar: boolean = false;
