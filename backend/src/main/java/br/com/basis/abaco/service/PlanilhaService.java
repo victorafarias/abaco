@@ -1,13 +1,20 @@
 package br.com.basis.abaco.service;
 
-import br.com.basis.abaco.domain.*;
+import br.com.basis.abaco.domain.Alr;
+import br.com.basis.abaco.domain.Analise;
+import br.com.basis.abaco.domain.Der;
+import br.com.basis.abaco.domain.EsforcoFase;
+import br.com.basis.abaco.domain.FatorAjuste;
+import br.com.basis.abaco.domain.FuncaoDados;
+import br.com.basis.abaco.domain.FuncaoTransacao;
+import br.com.basis.abaco.domain.Rlr;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.domain.enumeration.TipoFatorAjuste;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -23,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 
 /**
  * Service Implementation for managing {@link Analise}.
@@ -646,7 +654,7 @@ public class PlanilhaService {
         this.setarEsforcoFaseExcelPadraoBasis(excelSheet, analise, excelFile, evaluator);
     }
 
-    
+
     private void setarEsforcoFaseExcelPadraoBasis(XSSFSheet excelSheet, Analise analise, XSSFWorkbook excelFile, FormulaEvaluator evaluator) {
         int celulaEsforco = 17;
         for (int i = 0; i < 6; i++){
