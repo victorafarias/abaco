@@ -104,7 +104,7 @@ public class Analise implements Serializable, ReportObject {
     @Field(index = FieldIndex.not_analyzed, type = FieldType.Double)
     private Double pfTotalAjustadoValor;
 
-    
+
     @Size(max = 4000)
     @Column(name = "escopo", length = 4000)
     @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
@@ -362,6 +362,14 @@ public class Analise implements Serializable, ReportObject {
 
     public String getCreatedOn() {
         return this.dataCriacaoOrdemServico == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dataCriacaoOrdemServico);
+    }
+
+    public String getDataConclusao() {
+        return this.dataHomologacao == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dataHomologacao);
+    }
+
+    public String getDataEncerramento() {
+        return this.dtEncerramento == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dtEncerramento);
     }
 
     public String getBloqueiaString() {
