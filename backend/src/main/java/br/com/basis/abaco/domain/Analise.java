@@ -72,6 +72,8 @@ public class Analise implements Serializable, ReportObject {
 
     private static final String ANALISE = "analise";
 
+    private static final String FORMATO_DATA = "MM/dd/yyyy HH:mm:ss";
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
@@ -361,15 +363,15 @@ public class Analise implements Serializable, ReportObject {
     }
 
     public String getCreatedOn() {
-        return this.dataCriacaoOrdemServico == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dataCriacaoOrdemServico);
+        return this.dataCriacaoOrdemServico == null ? "" : new SimpleDateFormat(FORMATO_DATA).format(this.dataCriacaoOrdemServico);
     }
 
     public String getDataConclusao() {
-        return this.dataHomologacao == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dataHomologacao);
+        return this.dataHomologacao == null ? "" : new SimpleDateFormat(FORMATO_DATA).format(this.dataHomologacao);
     }
 
     public String getDataEncerramento() {
-        return this.dtEncerramento == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dtEncerramento);
+        return this.dtEncerramento == null ? "" : new SimpleDateFormat(FORMATO_DATA).format(this.dtEncerramento);
     }
 
     public String getBloqueiaString() {

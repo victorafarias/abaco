@@ -41,7 +41,7 @@ public class RelatorioAnaliseColunas extends PropriedadesRelatorio {
 
     private static final String DATA_ENCERRAMENTO_COLUNA = "dataEncerramento";
 
-    
+
     private static final String[][] colunasAdicionar = {
         {ORGANIZACAO_NOME, "Organização",ORGANIZACAO_NOME},
         {IDENTIFICADOR_ANALISE,"Identificador",IDENTIFICADOR_ANALISE},
