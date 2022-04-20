@@ -1,19 +1,13 @@
 package br.com.basis.abaco.service;
 
-import br.com.basis.abaco.domain.Alr;
-import br.com.basis.abaco.domain.Analise;
-import br.com.basis.abaco.domain.Der;
-import br.com.basis.abaco.domain.FatorAjuste;
-import br.com.basis.abaco.domain.FuncaoDados;
-import br.com.basis.abaco.domain.FuncaoTransacao;
-import br.com.basis.abaco.domain.Rlr;
+import br.com.basis.abaco.domain.*;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.domain.enumeration.TipoFatorAjuste;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -351,6 +345,7 @@ public class PlanilhaService {
 
     private void setarResumoExcelPadraoEB1(XSSFWorkbook excelFile, Analise analise) {
         XSSFSheet excelSheet = excelFile.getSheet(RESUMO);
+        FormulaEvaluator evaluator = excelFile.getCreationHelper().createFormulaEvaluator();
         if(analise.getNumeroOs() != null){
             excelSheet.getRow(3).getCell(1).setCellValue(analise.getNumeroOs());
         }else{
@@ -374,6 +369,8 @@ public class PlanilhaService {
         excelSheet.getRow(5).getCell(5).setCellValue(analise.getDataCriacaoOrdemServico());
         excelSheet.getRow(5).getCell(1).setCellValue(analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
             analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto());
+
+        this.setarEsforcoFaseExcelPadraoBasis(excelSheet, analise, excelFile, evaluator);
     }
 
     //ANAC
@@ -646,6 +643,23 @@ public class PlanilhaService {
         for(int i = 15; i < 23; i++){
             evaluator.evaluate(excelSheet.getRow(i).getCell(2));
         }
+        this.setarEsforcoFaseExcelPadraoBasis(excelSheet, analise, excelFile, evaluator);
+    }
+
+    private void setarEsforcoFaseExcelPadraoBasis(XSSFSheet excelSheet, Analise analise, XSSFWorkbook excelFile, FormulaEvaluator evaluator) {
+        int celulaEsforco = 17;
+        for (int i = 0; i < 6; i++){
+            excelSheet.getRow(celulaEsforco).getCell(4).setCellValue("");
+            excelSheet.getRow(celulaEsforco++).getCell(6).setCellValue("");
+        }
+        celulaEsforco = 17;
+        for (int i = 0; i < analise.getEsforcoFases().size(); i++){
+            EsforcoFase fase = analise.getEsforcoFases().stream().collect(Collectors.toList()).get(i);
+            excelSheet.getRow(celulaEsforco).getCell(4).setCellValue(fase.getFase().getNome());
+            excelSheet.getRow(celulaEsforco).getCell(6).getCellStyle().setDataFormat(excelFile.createDataFormat().getFormat("00%"));
+            excelSheet.getRow(celulaEsforco++).getCell(6).setCellValue(fase.getEsforco().doubleValue()/100);
+        }
+        evaluator.evaluateFormulaCell(excelSheet.getRow(23).getCell(6));
     }
 
     private void setarFuncoesDetalhadaExcelPadraoBasis(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, Analise analise, String nomeElaborador, boolean isDivergence) {
@@ -1316,4 +1330,5 @@ public class PlanilhaService {
         }
         return total;
     }
+
 }
