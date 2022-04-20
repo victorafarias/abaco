@@ -218,7 +218,15 @@ public class AnaliseResource {
             analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
 
-            this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
+            if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
+                analise.getAnalisesComparadas().forEach(analisePai -> {
+                    this.historicoService.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ?
+                        String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) :
+                        String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise()));
+                });
+            }else{
+                this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
+            }
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString())).body(analiseService.convertToAnaliseEditDTO(analise));
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
@@ -667,7 +675,15 @@ public class AnaliseResource {
         if (analise.getId() != null && status.getId() != null && analiseService.changeStatusAnalise(analise, status, user)) {
             analiseRepository.save(analise);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
-            this.historicoService.inserirHistoricoAnalise(analise, null, "Alterou o status para "+status.getNome());
+            if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null) {
+                analise.getAnalisesComparadas().forEach(analisePai -> {
+                    this.historicoService.inserirHistoricoAnalise(analisePai, user,
+                        String.format("A validação %s alterou o status para %s", analise.getIdentificadorAnalise(), status.getNome()));
+                });
+            }
+            else{
+                this.historicoService.inserirHistoricoAnalise(analise, user, "Alterou o status para "+status.getNome());
+            }
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analise));
         } else {

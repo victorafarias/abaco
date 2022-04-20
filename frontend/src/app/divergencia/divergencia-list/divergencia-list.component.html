@@ -58,22 +58,23 @@
                     </div>
                 </div>
                 <div>
-                    
+
                     <div class="ui-g-12 ui-md-11" >
-                        <p-table [columns]="allColumnsTable"
+                        <p-table
+								dataKey="id"
+									[columns]="allColumnsTable"
                                     [value]="lstDivergence"
                                     [lazy]="true"
                                     [paginator]="true"
-                                    selectionMode="multiple" 
+                                    selectionMode="multiple"
                                     [rows]="20"
                                     [scrollable]="true"
                                     [scrollHeight]="'500px'"
-                                    [rowsPerPageOptions]="rowsPerPageOptions" 
-                                    [metaKeySelection]="true" 
+                                    [rowsPerPageOptions]="rowsPerPageOptions"
+                                    [metaKeySelection]="true"
                                     (click) = "selectAnalise()"
                                     (dblclick)="onRowDblclick($event)"
                                     [(selection)]="selectedDivergence"
-                                    datakey="id"
                                     #data >
                             <ng-template pTemplate="header" let-columns>
                                 <tr>
@@ -152,7 +153,7 @@
                     <div class="ui-g-12 ui-md-1" >
                         <basis-datatable-button
                             *ngIf="canPesquisar && !selectModeButtonsMultiple"
-                            [bTooltip]="'Visualizar'" 
+                            [bTooltip]="'Visualizar'"
                             name="visualizarDivergencia"
                             icon="remove-red-eye"
                             [disabled]="!selectedDivergence"
@@ -180,7 +181,7 @@
                             [bTooltip]="selectedDivergence != null ? 'Desbloquear' : 'Escolha um registro para desbloquear.'"
                             icon="block"
                             [disabled]="!selectedDivergence"
-                            (click)="confirmBlockDivegence(selectedDivergence)"
+                            (click)="confirmBlockDivegence(selectedDivergence[0])"
                             class="ui-button-success">
                         </basis-datatable-button>
                         <basis-datatable-button
@@ -189,7 +190,7 @@
                             [bTooltip]="selectedDivergence != null ? 'Bloquear' : 'Escolha um registro para bloquear.'"
                             icon="block"
                             [disabled]="!selectedDivergence"
-                            (click)="confirmBlockDivegence(selectedDivergence)"
+                            (click)="confirmBlockDivegence(selectedDivergence[0])"
                             class="ui-button-danger">
                         </basis-datatable-button>
                         <basis-datatable-button
@@ -198,7 +199,7 @@
                             [bTooltip]="selectedDivergence != null ? 'Alterar' : 'Escolha um registro para alterar status.'"
                             icon="swap-vert"
                             [disabled]="!selectedDivergence"
-                            (click)="changeStatus(selectedDivergence)"
+                            (click)="changeStatus(selectedDivergence[0])"
                             class="ui-button-info">
                         </basis-datatable-button>
                     </div>

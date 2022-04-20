@@ -976,6 +976,7 @@ public class AnaliseService extends BaseService {
         analise.getAnalisesComparadas().forEach(analiseComparada -> {
             analiseComparada.setAnaliseDivergence(null);
             save(analiseComparada);
+            this.historicoService.inserirHistoricoAnalise(analiseComparada, null, String.format("A validação %s foi excluída", analise.getIdentificadorAnalise()));
         });
         analiseRepository.delete(id);
         analiseSearchRepository.delete(id);
