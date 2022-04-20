@@ -44,7 +44,7 @@ export class AnaliseListComponent implements OnInit {
     @ViewChild(DatatableComponent) datatable: DatatableComponent;
 
     allColumnsTable = [
-        { value: 'organizacao.nome', label: 'Organização' },
+        { value: 'organizacao.sigla', label: 'Organização' },
         { value: 'identificadorAnalise', label: 'Identificador Analise' },
         { value: 'numeroOs', label: 'Número Os.' },
         { value: 'equipeResponsavel.nome', label: 'Equipe' },
@@ -64,7 +64,7 @@ export class AnaliseListComponent implements OnInit {
     ];
 
     columnsVisible = [
-        'organizacao.nome',
+        'organizacao.sigla',
         'identificadorAnalise',
         'sistema.nome',
         'numeroOs',

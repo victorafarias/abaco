@@ -111,7 +111,7 @@
 						[disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
 						(click)="selectAnalise()" [enableScroll]="true" [scrollHeight]="'500px'"
 						[showPaginationFooter]="true" [selectionMode]="'multiple'" #datatable>
-						<p-column header="Organização" field="organizacao.nome" [sortable]="true" filterType="select"
+						<p-column header="Organização" field="organizacao.sigla" [sortable]="true" filterType="select"
 							[filter]="true">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
 								{{ analise.organizacao.sigla}}
