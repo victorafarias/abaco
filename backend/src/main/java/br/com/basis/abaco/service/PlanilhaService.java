@@ -646,6 +646,7 @@ public class PlanilhaService {
         this.setarEsforcoFaseExcelPadraoBasis(excelSheet, analise, excelFile, evaluator);
     }
 
+    
     private void setarEsforcoFaseExcelPadraoBasis(XSSFSheet excelSheet, Analise analise, XSSFWorkbook excelFile, FormulaEvaluator evaluator) {
         int celulaEsforco = 17;
         for (int i = 0; i < 6; i++){
