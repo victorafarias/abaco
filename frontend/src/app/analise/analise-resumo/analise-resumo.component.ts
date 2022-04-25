@@ -231,39 +231,33 @@ export class AnaliseResumoComponent implements OnInit {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "ANALISE_BLOQUEAR_DESBLOQUEAR") == false) {
             return false;
         }
-        if (!this.analise.dataHomologacao) {
-            this.pageNotificationService.addInfoMessage(this.getLabel('Informe a data de homolagação para continuar'));
-        }
 
-        if (this.analise.dataHomologacao) {
-            this.confirmationService.confirm({
-                message: this.getLabel('Tem certeza que deseja bloquear o registro ?')
-                    .concat(this.analise.identificadorAnalise)
-                    .concat('?'),
-                accept: () => {
-                    const copy = this.analise.toJSONState();
-                    this.analiseService.block(copy).subscribe(() => {
-                        this.pageNotificationService.addSuccessMessage(this.analise.identificadorAnalise);
-                        this.router.navigate(['analise/']);
-                    }, (error: Response) => {
-                        switch (error.status) {
-                            case 400: {
-                                if (error) {
-                                    this.pageNotificationService.addErrorMessage(
-                                        this.getLabel('Somente administradores podem bloquear/desbloquear análises!')
-                                    );
-                                } else {
-                                    this.pageNotificationService
-                                        .addErrorMessage(
-                                            this.getLabel('Somente membros da equipe responsável podem bloquear esta análise!'));
-                                }
+        this.confirmationService.confirm({
+            message: this.getLabel('Tem certeza que deseja bloquear o registro ?')
+            .concat(this.analise.identificadorAnalise)
+			.concat('?'),
+            accept: () => {
+                const copy = this.analise.toJSONState();
+                this.analiseService.block(copy).subscribe(() => {
+                    this.pageNotificationService.addSuccessMessage(this.analise.identificadorAnalise);
+                    this.router.navigate(['analise/']);
+                }, (error: Response) => {
+                    switch (error.status) {
+                        case 400: {
+                            if (error) {
+                                this.pageNotificationService.addErrorMessage(
+                                    this.getLabel('Somente administradores podem bloquear/desbloquear análises!')
+                                );
+                            } else {
+                                this.pageNotificationService
+                                    .addErrorMessage(
+                                        this.getLabel('Somente membros da equipe responsável podem bloquear esta análise!'));
                             }
                         }
-                    });
-                }
-            });
-        }
-
+                    }
+                });
+            }
+        });
     }
 
     editarAnalise(){
