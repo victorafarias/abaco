@@ -40,7 +40,6 @@ import { GrupoService } from '../grupo/grupo.service';
 })
 export class AnaliseListComponent implements OnInit {
 
-
     @ViewChild(DatatableComponent) datatable: DatatableComponent;
 
     allColumnsTable = [
