@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1650900575017-1">
+       <insert tableName="novidades_versao">
+           <column name="id" value="3"></column>
+           <column name="versao" value="3.0"></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="14"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-262002"></column>
+           <column name="novidades" value="Efetuado e refeito o módulo de organização. Mensagens de erros e sucesso corrigidas e defeitos/bugs apontados foram consertados."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="15"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-262013"></column>
+           <column name="novidades" value="Feito uma melhoria na performance geral do sistema, impactando diretamente nas exportações das análises em todos os formatos e modelos. Também feito melhoria no 'Importar funções de dados/transação' permitindo maior velocidade e qualidade nas requisições."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="16"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263191"></column>
+           <column name="novidades" value="Desenvolvido o bloqueio e desbloqueio em lote no módulo de Validação, podendo ser usado com SHIFT/CTRL para selecionar e em seguida efetuar a ação desejada."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="17"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263194"></column>
+           <column name="novidades" value="Nas funcionalidades de aproveitar funções de dados e transação foi feito a melhoria para que se recupere somente funções onde a equipe da análise desta função corresponda a equipe da análise selecionada."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="18"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263739"></column>
+           <column name="novidades" value="Retirado a regra da nomenclatura nas gerações de planilhas e relatórios."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="19"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263750"></column>
+           <column name="novidades" value="1. Modificado a regras das datas da análise.
+           2. Alterar a nomenclatura do campo 'Data da Criação da OS' para 'Data da Criação' e 'Data de Homologação' para 'Data de Conclusão/Bloqueio'.
+           3. Campo 'Data da Criação' será desabilitado e preenchido automáticamente com a data atual.
+           4. Campo 'Data de Conclusão/Bloqueio' será desabilitado e preenchido quando o usuário bloquear pela primeira vez a análise.
+           5. Regras acimas aplicadas ao clonar e clonar para outra equipe.
+           6. Criar a data de encerramento e apresentar desabilitado"></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="20"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263751"></column>
+           <column name="novidades" value="Incluído na funcionalidade de alterar status da análise um checkbox de 'Encerrada análise' e
+           após habilitar o checkbox aparecer o campo 'Data de encerramento' possibilitando o usuário preencher."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="21"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263933"></column>
+           <column name="novidades" value="1. Incluído os campos de datas e organização dos campos na Grid da listagem de análise.
+           2. Ajustado a ordenação da grid para que funcione corretamente, feito uma mudança nos campos de PF Total e PF Ajustado, permitindo a ordenação da forma correta.
+           3. Criado um filtro para selecionar os periodos das datas da Análise."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="22"></column>
+           <column name="novidades_versao_id" value="3"></column>
+           <column name="ocorrencia" value="BASIS-263935"></column>
+           <column name="novidades" value="Criado o histórico para análises, sendo que cada funcionalidade impactante na Análise, será entendido como uma ação.
+           Foi disponibilizado uma funcionalidade para listar todos os históricos, contendo as informações da Ação, Data e Usuário que efetuou."></column>
+       </insert>
+
+       <update tableName="jhi_user">
+           <column name="mostrar_novidades" value="true"></column>
+       </update>
+   </changeSet>
+</databaseChangeLog>

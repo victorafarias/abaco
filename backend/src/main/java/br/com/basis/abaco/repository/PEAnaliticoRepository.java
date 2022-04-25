@@ -9,17 +9,17 @@ import java.util.Set;
 @Repository
 public interface PEAnaliticoRepository extends JpaRepository<PEAnalitico, Long> {
 
-    Set<PEAnalitico> findAllByidsistemaAndTipoOrderByName(Long idsistema, String tipo);
+    Set<PEAnalitico> findAllByidsistemaAndTipoAndEquipeResponsavelIdOrderByName(Long idsistema, String tipo, Long equipeResponsavelId);
 
-    Set<PEAnalitico> findByIdFuncionalidadeAndTipoAndNameContainingIgnoreCaseOrderByName(Long idFuncionalidade, String tipo, String name);
+    Set<PEAnalitico> findByIdFuncionalidadeAndTipoAndNameContainingIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idFuncionalidade, String tipo, String name, Long equipeResponsavelId);
 
-    Set<PEAnalitico> findAllByIdModuloAndTipoOrderByName(Long idModulo, String tipo);
+    Set<PEAnalitico> findAllByIdModuloAndTipoAndEquipeResponsavelIdOrderByName(Long idModulo, String tipo, Long equipeResponsavelId);
 
-    Set<PEAnalitico> findAllByIdFuncionalidadeAndTipoOrderByName(Long idFuncionalidade, String tipo);
+    Set<PEAnalitico> findAllByIdFuncionalidadeAndTipoAndEquipeResponsavelIdOrderByName(Long idFuncionalidade, String tipo, Long equipeResponsavelId);
 
-    Set<PEAnalitico> findAllByIdModuloAndTipoAndNameContainsIgnoreCaseOrderByName(Long idmodulo, String tipo, String name);
+    Set<PEAnalitico> findAllByIdModuloAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idmodulo, String tipo, String name, Long equipeResponsavelId);
 
-    Set<PEAnalitico> findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseOrderByName(Long idFuncionalidade, String tipo, String name);
+    Set<PEAnalitico> findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idFuncionalidade, String tipo, String name, Long equipeResponsavelId);
 
-    Set<PEAnalitico> findAllByidsistemaAndTipoAndNameContainsIgnoreCaseOrderByName(Long idsistema, String tipo, String name);
+    Set<PEAnalitico> findAllByidsistemaAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idsistema, String tipo, String name, Long equipeResponsavelId);
 }

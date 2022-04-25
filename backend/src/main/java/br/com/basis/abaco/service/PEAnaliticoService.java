@@ -41,51 +41,50 @@ public class PEAnaliticoService {
     }
 
     @Transactional
-    public Set<PEAnaliticoDTO> getPeAnaliticoDTOS( Long idModulo, Long idFuncionalidade, String name, Long idSistema, String tipo) {
+    public Set<PEAnaliticoDTO> getPeAnaliticoDTOS(Long idModulo, Long idFuncionalidade, String name, Long idSistema, String tipo, Long idEquipeResponsavel) {
         Set<PEAnalitico> lstPeAnaliticos;
         if (idFuncionalidade != null && idFuncionalidade > 0) {
             if(StringUtils.isEmptyString(name)){
-                lstPeAnaliticos = peAnaliticoRepository.findAllByIdFuncionalidadeAndTipoOrderByName(idFuncionalidade, tipo);
+                lstPeAnaliticos = peAnaliticoRepository.findAllByIdFuncionalidadeAndTipoAndEquipeResponsavelIdOrderByName(idFuncionalidade, tipo, idEquipeResponsavel);
             } else {
-                lstPeAnaliticos = peAnaliticoRepository.findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseOrderByName(idFuncionalidade, tipo, name);
+                lstPeAnaliticos = peAnaliticoRepository.findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(idFuncionalidade, tipo, name, idEquipeResponsavel);
             }
         } else if(idModulo != null && idModulo > 0){
             if(StringUtils.isEmptyString(name)){
-                lstPeAnaliticos = peAnaliticoRepository.findAllByIdModuloAndTipoOrderByName(idModulo, tipo);
+                lstPeAnaliticos = peAnaliticoRepository.findAllByIdModuloAndTipoAndEquipeResponsavelIdOrderByName(idModulo, tipo, idEquipeResponsavel);
             } else {
-                lstPeAnaliticos = peAnaliticoRepository.findAllByIdModuloAndTipoAndNameContainsIgnoreCaseOrderByName(idModulo, tipo, name);
+                lstPeAnaliticos = peAnaliticoRepository.findAllByIdModuloAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(idModulo, tipo, name, idEquipeResponsavel);
             }
         } else {
             if(StringUtils.isEmptyString(name)){
-                lstPeAnaliticos = peAnaliticoRepository.findAllByidsistemaAndTipoOrderByName(idSistema, tipo);
+                lstPeAnaliticos = peAnaliticoRepository.findAllByidsistemaAndTipoAndEquipeResponsavelIdOrderByName(idSistema, tipo, idEquipeResponsavel);
             } else {
-                lstPeAnaliticos = peAnaliticoRepository.findAllByidsistemaAndTipoAndNameContainsIgnoreCaseOrderByName(idSistema, tipo, name);
+                lstPeAnaliticos = peAnaliticoRepository.findAllByidsistemaAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(idSistema, tipo, name, idEquipeResponsavel);
             }
         }
         return lstPeAnaliticos.stream().map(this::convertToPEAnaliticoDTO).collect(Collectors.toSet());
     }
 
-
     @Transactional
-    public Set<PEAnaliticoDTO> getPeAnaliticoEstimadaDTOS( Long idModulo, Long idFuncionalidade, String name, Long idSistema, String tipo) {
+    public Set<PEAnaliticoDTO> getPeAnaliticoEstimadaDTOS(Long idModulo, Long idFuncionalidade, String name, Long idSistema, String tipo, Long idEquipeResponsavel) {
         Set<PEAnaliticoEstimada> lstPeAnaliticos;
         if (idFuncionalidade != null && idFuncionalidade > 0) {
             if(StringUtils.isEmptyString(name)){
-                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdFuncionalidadeAndTipoOrderByName(idFuncionalidade, tipo);
+                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdFuncionalidadeAndTipoAndEquipeResponsavelIdOrderByName(idFuncionalidade, tipo, idEquipeResponsavel);
             } else {
-                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseOrderByName(idFuncionalidade, tipo, name);
+                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(idFuncionalidade, tipo, name, idEquipeResponsavel);
             }
         } else if(idModulo != null && idModulo > 0){
             if(StringUtils.isEmptyString(name)){
-                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdModuloAndTipoOrderByName(idModulo, tipo);
+                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdModuloAndTipoAndEquipeResponsavelIdOrderByName(idModulo, tipo, idEquipeResponsavel);
             } else {
-                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdModuloAndTipoAndNameContainsIgnoreCaseOrderByName(idModulo, tipo, name);
+                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByIdModuloAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(idModulo, tipo, name, idEquipeResponsavel);
             }
         } else {
             if(StringUtils.isEmptyString(name)){
-                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByidsistemaAndTipoOrderByName(idSistema, tipo);
+                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByidsistemaAndTipoAndEquipeResponsavelIdOrderByName(idSistema, tipo, idEquipeResponsavel);
             } else {
-                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByidsistemaAndTipoAndNameContainsIgnoreCaseOrderByName(idSistema, tipo, name);
+                lstPeAnaliticos = peAnaliticoEstimadaRepository.findAllByidsistemaAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(idSistema, tipo, name, idEquipeResponsavel);
             }
         }
         return lstPeAnaliticos.stream().map(this::convertToPEAnaliticoDTO).collect(Collectors.toSet());

@@ -29,6 +29,7 @@ import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -97,11 +98,13 @@ public class OrganizacaoResource {
 
     private final UserService userService;
 
-    private final UserRepository userRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public OrganizacaoResource(OrganizacaoRepository organizacaoRepository,
                                OrganizacaoSearchRepository organizacaoSearchRepository, UploadedFilesRepository filesRepository, DynamicExportsService dynamicExportsService,
-                               OrganizacaoService organizacaoService, PerfilService perfilService, UserService userService, UserRepository userRepository) {
+                               OrganizacaoService organizacaoService, PerfilService perfilService, UserService userService) {
         this.organizacaoRepository = organizacaoRepository;
         this.organizacaoSearchRepository = organizacaoSearchRepository;
         this.filesRepository = filesRepository;
@@ -109,7 +112,6 @@ public class OrganizacaoResource {
         this.organizacaoService = organizacaoService;
         this.perfilService = perfilService;
         this.userService = userService;
-        this.userRepository = userRepository;
     }
 
     /**

@@ -31,6 +31,12 @@ public class AnaliseMapper implements EntityMapper<AnaliseDTO, Analise> {
         if(entity.getAnaliseDivergence() != null){
             analiseDto.setAnaliseDivergence(this.convertToAnaliseDivergenceDTO(entity.getAnaliseDivergence()));
         }
+        if(entity.getPfTotal() != null){
+            analiseDto.setPfTotalValor(Double.parseDouble(entity.getPfTotal()));
+        }
+        if(entity.getAdjustPFTotal() != null){
+            analiseDto.setPfTotalAjustadoValor(Double.parseDouble(entity.getAdjustPFTotal()));
+        }
         return analiseDto;
     }
 

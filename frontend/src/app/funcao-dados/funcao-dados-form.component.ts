@@ -410,7 +410,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
     searchBaseline(event: { query: string; }): void {
         if (this.seletedFuncaoDados && this.seletedFuncaoDados.funcionalidade && this.seletedFuncaoDados.funcionalidade.id) {
             this.funcaoDadosService.autoCompletePEAnalitico(
-                event.query, this.seletedFuncaoDados.funcionalidade.id).subscribe(
+                event.query, this.seletedFuncaoDados.funcionalidade.id, this.analise.equipeResponsavel.id).subscribe(
                     value => {
                         this.baselineResults = value;
                     }

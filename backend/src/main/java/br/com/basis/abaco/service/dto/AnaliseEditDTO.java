@@ -39,4 +39,16 @@ public class AnaliseEditDTO extends AnaliseBaseDTO implements ReportObject {
     private Status status;
 
     private AnaliseDTO analiseDivergence;
+
+    private Timestamp dtEncerramento;
+    private boolean isEncerrada;
+
+
+    public void setDtEncerramento(Timestamp dtEncerramento) {
+        this.dtEncerramento = dtEncerramento == null ? null : new Timestamp(dtEncerramento.getTime());
+    }
+
+    public Timestamp getDtEncerramento() {
+        return dtEncerramento == null ? null : new Timestamp(this.dtEncerramento.getTime());
+    }
 }

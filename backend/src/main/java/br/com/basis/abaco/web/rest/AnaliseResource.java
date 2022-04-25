@@ -12,6 +12,7 @@ import br.com.basis.abaco.domain.VwAnaliseFD;
 import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
+import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.domain.enumeration.TipoRelatorio;
 import br.com.basis.abaco.reports.rest.RelatorioAnaliseRest;
 import br.com.basis.abaco.reports.util.RelatorioUtil;
@@ -26,11 +27,13 @@ import br.com.basis.abaco.repository.UserRepository;
 import br.com.basis.abaco.repository.search.AnaliseSearchRepository;
 import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.AnaliseService;
+import br.com.basis.abaco.service.HistoricoService;
 import br.com.basis.abaco.service.PerfilService;
 import br.com.basis.abaco.service.PlanilhaService;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseEncerramentoDTO;
 import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
@@ -47,7 +50,6 @@ import io.github.jhipster.web.util.ResponseUtil;
 import io.swagger.annotations.ApiParam;
 import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRException;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -69,6 +71,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -81,20 +84,20 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.ws.rs.Path;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
-
 
 @RestController
 @RequestMapping("/api")
@@ -128,6 +131,9 @@ public class AnaliseResource {
     @Autowired
     private PlanilhaService planilhaService;
 
+    @Autowired
+    private HistoricoService historicoService;
+
     public AnaliseResource(AnaliseRepository analiseRepository,
                            AnaliseSearchRepository analiseSearchRepository,
                            DynamicExportsService dynamicExportsService,
@@ -159,12 +165,16 @@ public class AnaliseResource {
             return ResponseEntity.badRequest().headers(
                 HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new analise cannot already have an ID")).body(null);
         }
-        analise.setCreatedBy(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get());
+        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
+        analise.setCreatedBy(user);
         analise.getUsers().add(analise.getCreatedBy());
         analiseService.salvaNovaData(analise);
         analiseRepository.save(analise);
         AnaliseEditDTO analiseEditDTO = analiseService.convertToAnaliseEditDTO(analise);
         analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+
+        this.historicoService.inserirHistoricoAnalise(analise, user, "Criada");
+
         return ResponseEntity.created(new URI(API_ANALISES + analise.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, analise.getId().toString())).body(analiseEditDTO);
     }
@@ -188,6 +198,7 @@ public class AnaliseResource {
         AnaliseEditDTO analiseEditDTO = analiseService.convertToAnaliseEditDTO(analise);
         analise.setAnaliseClonadaParaEquipe(null);
         analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
             .body(analiseEditDTO);
     }
@@ -198,21 +209,29 @@ public class AnaliseResource {
     public ResponseEntity<AnaliseEditDTO> blockUnblockAnalise(@PathVariable Long id, @Valid @RequestBody Analise analiseUpdate) throws URISyntaxException {
         log.debug("REST request to block Analise : {}", id);
         Analise analise = analiseService.recuperarAnalise(id);
-        if (analise != null && (!(analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() == null) || analise.getIsDivergence())) {
-            if (analise.getDataHomologacao() == null && analiseUpdate.getDataHomologacao() != null) {
-                analise.setDataHomologacao(analiseUpdate.getDataHomologacao());
+        if (analise != null) {
+            if (analise.getDataHomologacao() == null) {
+                analise.setDataHomologacao(Timestamp.from(Instant.now()));
             }
-            analiseService.linkFuncoesToAnalise(analise);
             analise.setBloqueiaAnalise(!analise.isBloqueiaAnalise());
             analiseRepository.save(analise);
             analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+
+            if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
+                analise.getAnalisesComparadas().forEach(analisePai -> {
+                    this.historicoService.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ?
+                        String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) :
+                        String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise()));
+                });
+            }else{
+                this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
+            }
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString())).body(analiseService.convertToAnaliseEditDTO(analise));
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
         }
     }
-
 
     @GetMapping("/analises/clonar/{id}")
     @Timed
@@ -226,6 +245,9 @@ public class AnaliseResource {
             analiseService.bindCloneAnalise(analiseClone, analise, user);
             analiseRepository.save(analiseClone);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analiseClone)));
+
+            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Clonou para a análise %s",  analiseClone.getNumeroOs() == null ? analiseClone.getIdentificadorAnalise() : analiseClone.getNumeroOs()));
+            this.historicoService.inserirHistoricoAnalise(analiseClone, null, String.format("Clonada da análise %s", analise.getNumeroOs() == null ? analise.getIdentificadorAnalise() : analise.getNumeroOs()));
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analiseClone.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analiseClone));
         } else {
@@ -256,6 +278,10 @@ public class AnaliseResource {
             analiseRepository.save(analise);
             analiseClone.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+
+            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Clonou para equipe %s a análise %s", tipoEquipe.getNome(), analiseClone.getNumeroOs() == null ? analiseClone.getIdentificadorAnalise() : analiseClone.getNumeroOs()));
+            this.historicoService.inserirHistoricoAnalise(analiseClone, null, String.format("Clonada para equipe %s da análise %s", tipoEquipe.getNome(), analise.getNumeroOs() == null ? analise.getIdentificadorAnalise() : analise.getNumeroOs()));
+
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analiseClone.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analiseClone));
         } else {
@@ -277,7 +303,7 @@ public class AnaliseResource {
                 if(analise.getAnaliseDivergence() != null){
                     analiseEditDTO.setAnaliseDivergence(analiseService.convertToDto(analise.getAnaliseDivergence()));
                 }
-                return ResponseUtil.wrapOrNotFound(Optional.ofNullable(analiseEditDTO));
+                 return ResponseUtil.wrapOrNotFound(Optional.ofNullable(analiseEditDTO));
             }
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
@@ -353,12 +379,15 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_ANALISE_COMPARTILHAR")
     public ResponseEntity<Void> deleteCompartilharAnalise(@PathVariable Long id) {
         Compartilhada compartilhada = compartilhadaRepository.getOne(id);
+        TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
         Analise analise = analiseRepository.getOne(compartilhada.getAnaliseId());
         analise.getCompartilhadas().remove(compartilhada);
         analiseRepository.save(analise);
         analise.setAnaliseClonadaParaEquipe(null);
         analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
         compartilhadaRepository.delete(id);
+
+        this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Descompartilhou para a equipe %s", tipoEquipe.getNome()));
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
@@ -569,13 +598,22 @@ public class AnaliseResource {
                                                                   @RequestParam(value = "organizacao", required = false) Set<Long> organizacao,
                                                                   @RequestParam(value = "equipe", required = false) Long equipe,
                                                                   @RequestParam(value = "status", required = false) Set<Long> status,
-                                                                  @RequestParam(value = "usuario", required = false) Set<Long> usuario)
+                                                                  @RequestParam(value = "usuario", required = false) Set<Long> usuario,
+                                                                  @RequestParam(value = "data", required = false) TipoDeDataAnalise data,
+                                                                  @RequestParam(value = "dataInicio", required = false) Date dataInicio,
+                                                                  @RequestParam(value = "dataFim", required = false) Date dataFim)
         throws URISyntaxException {
         log.debug("DEBUG Consulta Analises - Inicio metodo");
+       SortOrder sortOrderQb;
+        if(order.equals("asc")){
+            sortOrderQb = SortOrder.ASC;
+        }else{
+            sortOrderQb = SortOrder.DESC;
+        }
         Sort.Direction sortOrder = PageUtils.getSortDirection(order);
         Pageable pageable = new PageRequest(pageNumber, size, sortOrder, sort);
-        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(SortOrder.ASC);
-        BoolQueryBuilder qb = analiseService.getBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, status);
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(sortOrderQb);
+        BoolQueryBuilder qb = analiseService.getBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, status, data, dataInicio, dataFim);
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(dynamicExportsService.obterPageableMaximoExportacao()).withSort(sortBuilder).build();
         Page<Analise> page = elasticsearchTemplate.queryForPage(searchQuery, Analise.class);
         log.debug("DEBUG Consulta Analises -  Consulta realizada");
@@ -585,6 +623,7 @@ public class AnaliseResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(newDTOPage, API_ANALISES);
         return new ResponseEntity<>(newDTOPage.getContent(), headers, HttpStatus.OK);
     }
+
 
     @GetMapping("/analises/update-pf/{id}")
     @Timed
@@ -635,8 +674,16 @@ public class AnaliseResource {
         User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
         if (analise.getId() != null && status.getId() != null && analiseService.changeStatusAnalise(analise, status, user)) {
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+            if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null) {
+                analise.getAnalisesComparadas().forEach(analisePai -> {
+                    this.historicoService.inserirHistoricoAnalise(analisePai, user,
+                        String.format("A validação %s alterou o status para %s", analise.getIdentificadorAnalise(), status.getNome()));
+                });
+            }
+            else{
+                this.historicoService.inserirHistoricoAnalise(analise, user, "Alterou o status para "+status.getNome());
+            }
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analise));
         } else {
@@ -678,6 +725,11 @@ public class AnaliseResource {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Comparada");
         }
         Analise analiseDivergencia = analiseService.generateDivergence(analisePadrao, analiseComparada, status, isUnionFunction);
+
+
+        this.historicoService.inserirHistoricoAnalise(analisePadrao, null, "Gerou a validação "+analiseDivergencia.getId());
+        this.historicoService.inserirHistoricoAnalise(analiseComparada, null, "Gerou a validação "+analiseDivergencia.getId());
+
         return ResponseEntity.ok(analiseService.convertToAnaliseEditDTO(analiseDivergencia));
     }
 
@@ -830,6 +882,35 @@ public class AnaliseResource {
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.xlsx", RelatorioUtil.pegarNomeRelatorio(analise)));
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
+    }
+
+
+    @PatchMapping("/analises/atualizar-encerramento")
+    @Timed
+    @Secured("ROLE_ABACO_ANALISE_EDITAR")
+    public ResponseEntity<Void> atualizarEncerramentoAnalise(@RequestBody AnaliseEncerramentoDTO analiseDTO) throws URISyntaxException {
+        Analise analise = analiseRepository.findOne(analiseDTO.getId());
+        boolean gerarHistorico = false;
+        if(analise.getIsEncerrada() == null){
+            analise.setIsEncerrada(false);
+        }
+        if(analiseDTO.isEncerrada() != analise.getIsEncerrada() || analise.getDtEncerramento() == null && analiseDTO.getDtEncerramento() != null || analise.getDtEncerramento() != null && !analise.getDtEncerramento().equals(analiseDTO.getDtEncerramento())){
+            gerarHistorico = true;
+        }
+
+        if(analiseDTO.isEncerrada() == false) {
+            analise.setDtEncerramento(null);
+        }else{
+            analise.setDtEncerramento(analiseDTO.getDtEncerramento());
+        }
+        analise.setIsEncerrada(analiseDTO.isEncerrada());
+        analiseRepository.save(analise);
+        analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
+        if(gerarHistorico){
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            this.historicoService.inserirHistoricoAnalise(analise, null, analise.getIsEncerrada() == true ? "Encerrou para "+sdf.format(analise.getDtEncerramento()) : "Abriu (Desabilitou o encerramento)");
+        }
+        return ResponseEntity.ok().build();
     }
 
 }

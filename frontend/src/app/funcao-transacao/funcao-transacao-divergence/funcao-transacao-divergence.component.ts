@@ -578,7 +578,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     searchBaseline(event: { query: string; }): void {
         if (this.currentFuncaoTransacao && this.currentFuncaoTransacao.funcionalidade && this.currentFuncaoTransacao.funcionalidade.id) {
             this.funcaoTransacaoService.autoCompletePEAnalitico(
-                event.query, this.currentFuncaoTransacao.funcionalidade.id).subscribe(
+                event.query, this.currentFuncaoTransacao.funcionalidade.id, this.analise.equipeResponsavel.id).subscribe(
                     value => {
                         this.baselineResultados = value;
                     }

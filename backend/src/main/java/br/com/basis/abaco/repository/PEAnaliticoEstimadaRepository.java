@@ -9,17 +9,17 @@ import java.util.Set;
 @Repository
 public interface PEAnaliticoEstimadaRepository extends JpaRepository<PEAnaliticoEstimada, Long> {
 
-    Set<PEAnaliticoEstimada> findAllByidsistemaAndTipoOrderByName(Long idsistema, String tipo);
+    Set<PEAnaliticoEstimada> findAllByidsistemaAndTipoAndEquipeResponsavelIdOrderByName(Long idsistema, String tipo, Long equipeResponsavelId);
 
     Set<PEAnaliticoEstimada> findByIdFuncionalidadeAndTipoAndNameContainingIgnoreCaseOrderByName(Long idFuncionalidade, String tipo, String name);
 
-    Set<PEAnaliticoEstimada> findAllByIdModuloAndTipoOrderByName(Long idModulo, String tipo);
+    Set<PEAnaliticoEstimada> findAllByIdModuloAndTipoAndEquipeResponsavelIdOrderByName(Long idModulo, String tipo, Long equipeResponsavelId);
 
-    Set<PEAnaliticoEstimada> findAllByIdFuncionalidadeAndTipoOrderByName(Long idFuncionalidade, String tipo);
+    Set<PEAnaliticoEstimada> findAllByIdFuncionalidadeAndTipoAndEquipeResponsavelIdOrderByName(Long idFuncionalidade, String tipo, Long equipeResponsavelId);
 
-    Set<PEAnaliticoEstimada> findAllByIdModuloAndTipoAndNameContainsIgnoreCaseOrderByName(Long idmodulo, String tipo, String name);
+    Set<PEAnaliticoEstimada> findAllByIdModuloAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idmodulo, String tipo, String name, Long equipeResponsavelId);
 
-    Set<PEAnaliticoEstimada> findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseOrderByName(Long idFuncionalidade, String tipo, String name);
+    Set<PEAnaliticoEstimada> findAllByIdFuncionalidadeAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idFuncionalidade, String tipo, String name, Long equipeResponsavelId);
 
-    Set<PEAnaliticoEstimada> findAllByidsistemaAndTipoAndNameContainsIgnoreCaseOrderByName(Long idsistema, String tipo, String name);
+    Set<PEAnaliticoEstimada> findAllByidsistemaAndTipoAndNameContainsIgnoreCaseAndEquipeResponsavelIdOrderByName(Long idsistema, String tipo, String name, Long equipeResponsavelId);
 }

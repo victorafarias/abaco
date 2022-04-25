@@ -23,6 +23,7 @@ import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.domain.VwAnaliseSomaPf;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
+import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.CompartilhadaRepository;
 import br.com.basis.abaco.repository.ContratoRepository;
@@ -69,7 +70,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -79,6 +83,7 @@ import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
+
 
 @Service
 public class AnaliseService extends BaseService {
@@ -134,6 +139,9 @@ public class AnaliseService extends BaseService {
     @Autowired
     private VwAnaliseFTRepository vwAnaliseFTRepository;
 
+    @Autowired
+    private HistoricoService historicoService;
+
 
     public AnaliseService(AnaliseRepository analiseRepository,
                           FuncaoDadosVersionavelRepository funcaoDadosVersionavelRepository,
@@ -161,7 +169,7 @@ public class AnaliseService extends BaseService {
         this.dynamicExportsService = dynamicExportsService;
     }
 
-    public void bindFilterSearch(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> usuario, Long equipesIds, Set<Long> equipesUsersId, Set<Long> organizacoes, Set<Long> status, BoolQueryBuilder qb) {
+    public void bindFilterSearch(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> usuario, Long equipesIds, Set<Long> equipesUsersId, Set<Long> organizacoes, Set<Long> status, BoolQueryBuilder qb, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
         if (!StringUtils.isEmptyString((identificador))) {
             BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery()
                 .must(
@@ -209,6 +217,45 @@ public class AnaliseService extends BaseService {
                 );
             qb.must(queryBuilderUsers);
         }
+
+
+        bindFilterDataAnalise(qb, data, dataInicio, dataFim);
+    }
+
+    private void bindFilterDataAnalise(BoolQueryBuilder qb, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
+        if(data != null && (dataInicio != null || dataFim != null)){
+
+            Timestamp start = Timestamp.from(Instant.ofEpochMilli(1L));
+            Timestamp end = Timestamp.from(Instant.now());;
+
+            if (dataInicio != null) {
+                start = new Timestamp(dataInicio.getTime());
+            }
+            if (dataFim != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(dataFim.getTime());
+                cal.set(Calendar.HOUR_OF_DAY, 23);
+                cal.set(Calendar.MINUTE, 59);
+                cal.set(Calendar.SECOND, 59);
+                end = new Timestamp(cal.getTimeInMillis());
+            }
+
+            BoolQueryBuilder boolQueryBuilderData = QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(getNomeData(data)).gte(start).lte(end));
+            qb.must(boolQueryBuilderData);
+        }
+    }
+
+    private String getNomeData(TipoDeDataAnalise data) {
+        switch(data){
+            case CRIACAO:
+                return "dataCriacaoOrdemServico";
+            case BLOQUEIO:
+                return "dataHomologacao";
+            case ENCERRAMENTO:
+                return "dtEncerramento";
+        }
+        return "";
     }
 
     public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, Set<Long> organizacoes, BoolQueryBuilder qb) {
@@ -499,7 +546,10 @@ public class AnaliseService extends BaseService {
         analiseClone.setAnaliseClonadaParaEquipe(analise);
         analiseClone.setAnaliseClonou(false);
         salvaNovaData(analiseClone);
-        analiseClone.setDataCriacaoOrdemServico(analise.getDataHomologacao());
+        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+        analiseClone.setDataHomologacao(null);
+        analiseClone.setDtEncerramento(null);
+        analiseClone.setIsEncerrada(false);
     }
 
     private void bindFuncaoDados(Analise analiseClone, FuncaoDados fd, Set<Rlr> rlrs, Set<Der> ders, FuncaoDados funcaoDado) {
@@ -582,12 +632,12 @@ public class AnaliseService extends BaseService {
         analise.setMotivo(analiseUpdate.getMotivo());
     }
 
-    public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus) {
+    public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
         User user = userSearchRepository.findByLogin(SecurityUtils.getCurrentUserLogin());
         Set<Long> equipesIds = getIdEquipes(user);
         Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
-        bindFilterSearch(identificador, sistema, metodo, usuario, equipe, equipesIds, organicoesIds, idsStatus, qb);
+        bindFilterSearch(identificador, sistema, metodo, usuario, equipe, equipesIds, organicoesIds, idsStatus, qb, data, dataInicio, dataFim);
         return qb;
     }
 
@@ -605,14 +655,19 @@ public class AnaliseService extends BaseService {
             Analise analise = analiseRepository.findOne(idAnalise);
             analise.setCompartilhadas(lstCompartilhadas);
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(convertToEntity(convertToDto(analise)));
+            List<String> nomeDasEquipes = new ArrayList<>();
             lstCompartilhadas.forEach(compartilhada -> {
                 TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
+                nomeDasEquipes.add(tipoEquipe.getNome());
                 if (!(StringUtils.isEmptyString(tipoEquipe.getEmailPreposto()) && StringUtils.isEmptyString(tipoEquipe.getPreposto()))) {
                     this.mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
                 }
             });
+
+            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+
+
         }
     }
 
@@ -643,6 +698,9 @@ public class AnaliseService extends BaseService {
         sumFase = sumFase.divide(percent).setScale(decimalPlace);
         analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).toString());
         analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+
+        analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
+        analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
     }
 
     public void updatePFDivergente(Analise analise) {
@@ -668,6 +726,9 @@ public class AnaliseService extends BaseService {
             }
         }
         analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
+
+        analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
+        analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
     }
 
 
@@ -680,7 +741,10 @@ public class AnaliseService extends BaseService {
         analiseClone.setFronteiras(EMPTY_STRING);
         analiseClone.setPropositoContagem(EMPTY_STRING);
         analiseClone.setEscopo(EMPTY_STRING);
-        analiseClone.setDataCriacaoOrdemServico(analise.getDataHomologacao());
+        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+        analiseClone.setDataHomologacao(null);
+        analiseClone.setDtEncerramento(null);
+        analiseClone.setIsEncerrada(false);
         analiseClone.setFuncaoDados(bindCloneFuncaoDados(analise, analiseClone));
         analiseClone.setFuncaoTransacaos(bindCloneFuncaoTransacaos(analise, analiseClone));
         analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
@@ -738,6 +802,8 @@ public class AnaliseService extends BaseService {
             analiseDivergencia.setIsDivergence(true);
             analiseDivergencia = save(analiseDivergencia);
             updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
+
+            this.historicoService.inserirHistoricoAnalise(analise, user, "Gerou a validação "+analiseDivergencia.getId());
             return analiseDivergencia;
         }
         return new Analise();
@@ -910,6 +976,7 @@ public class AnaliseService extends BaseService {
         analise.getAnalisesComparadas().forEach(analiseComparada -> {
             analiseComparada.setAnaliseDivergence(null);
             save(analiseComparada);
+            this.historicoService.inserirHistoricoAnalise(analiseComparada, null, String.format("A validação %s foi excluída", analise.getIdentificadorAnalise()));
         });
         analiseRepository.delete(id);
         analiseSearchRepository.delete(id);
@@ -926,7 +993,7 @@ public class AnaliseService extends BaseService {
         preencheFiltro(sistema,metodo,organizacao,usuario,status, filter);
 
         pageable = dynamicExportsService.obterPageableMaximoExportacao();
-        BoolQueryBuilder qb =  getBoolQueryBuilder(filter.getIdentificadorAnalise(), sistema, metodo, organizacao, filter.getEquipe() == null ? null : filter.getEquipe().getId(), usuario, status);
+        BoolQueryBuilder qb =  getBoolQueryBuilder(filter.getIdentificadorAnalise(), sistema, metodo, organizacao, filter.getEquipe() == null ? null : filter.getEquipe().getId(), usuario, status, filter.getData(), filter.getDataInicio(), filter.getDataFim());
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
         return searchQuery;
     }

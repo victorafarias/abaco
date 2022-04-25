@@ -4,7 +4,7 @@ import {Injectable} from '@angular/core';
 import {FuncaoDados} from '.';
 import { environment } from 'src/environments/environment';
 import { Subject, Observable, asyncScheduler, asapScheduler, queueScheduler } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { catchError, observeOn } from 'rxjs/operators';
 import { Funcionalidade } from 'src/app/funcionalidade';
@@ -12,10 +12,11 @@ import { ResponseWrapper } from 'src/app/shared';
 import { Manual } from 'src/app/manual';
 import { Analise } from '../analise';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
+import { FuncaoImportarDTO, ImportarFDDTO } from '../pesquisar-ft/funcao-importar.dto';
 
 @Injectable()
 export class FuncaoDadosService {
-    
+
     resourceUrl = environment.apiUrl + '/funcao-dados';
     resourceUrlComment = environment.apiUrl + '/comment/funcao-dados';
     vwresourceUrl = environment.apiUrl + '/vw-funcao-dados';
@@ -45,12 +46,12 @@ export class FuncaoDadosService {
         return this.http.get(this.resourceUrl + '/drop-down');
     }
 
-    dropDownPEAnalitico(idSistema): Observable<any> {
-        return this.http.get(this.resourceUrlPEAnalitico + 'drop-down/' + idSistema);
+    dropDownPEAnalitico(idSistema, idEquipeResponsavel): Observable<any> {
+        return this.http.get(this.resourceUrlPEAnalitico + 'drop-down/' + idSistema + "/" +idEquipeResponsavel);
     }
 
-    autoCompletePEAnalitico(name: String, idFuncionalidade: number): Observable<any> {
-        const url = `${this.resourceUrlPEAnalitico}/fd?name=${name}&idFuncionalidade=${idFuncionalidade}`;
+    autoCompletePEAnalitico(name: String, idFuncionalidade: number, idEquipeResponsavel: number): Observable<any> {
+        const url = `${this.resourceUrlPEAnalitico}/fd?name=${name}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get(url);
     }
 
@@ -245,13 +246,13 @@ export class FuncaoDadosService {
         const url = `${this.vwresourceUrl}/${id}`;
         return this.http.get<[]>(url);
     }
-    public getFuncaoDadosByModuloOrFuncionalidade(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number): Observable<any[]> {
-        const url = `${this.resourceUrlPEAnalitico}funcaoDados/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}`;
+    public getFuncaoDadosByModuloOrFuncionalidade(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number, idEquipeResponsavel?: number): Observable<any[]> {
+        const url = `${this.resourceUrlPEAnalitico}funcaoDados/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get<[]>(url);
     }
 
-    public getFuncaoDadosByModuloOrFuncionalidadeEstimada(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number): Observable<any[]> {
-        const url = `${this.resourceUrlPEAnalitico}funcaoDados/estimada/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}`;
+    public getFuncaoDadosByModuloOrFuncionalidadeEstimada(idSistema: Number, nome?: String, idModulo?: Number, idFuncionalidade?: Number, idEquipeResponsavel?: number): Observable<any[]> {
+        const url = `${this.resourceUrlPEAnalitico}funcaoDados/estimada/${idSistema}?name=${nome}&idModulo=${idModulo}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get<[]>(url);
     }
 
@@ -262,6 +263,14 @@ export class FuncaoDadosService {
     findByID(id: number): Observable<any>{
         return this.http.get<any>(this.vwresourceUrl+"/id/"+id);
     }
+
+	updatePF(funcoesCalculadas: FuncaoDados[]): Observable<void>{
+        return this.http.patch<void>(this.resourceUrl+"/update-pf", funcoesCalculadas);
+	}
+	importarFuncoesAnalise(funcoesFDImportar: FuncaoImportarDTO): Observable<ImportarFDDTO> {
+		const headers = new HttpHeaders({'content-type': 'application/json'})
+		return this.http.post<ImportarFDDTO>(`${this.resourceUrl}/importar-funcoes-analise`, funcoesFDImportar, {headers: headers});
+	}
 
 }
 enum StatusFunction {

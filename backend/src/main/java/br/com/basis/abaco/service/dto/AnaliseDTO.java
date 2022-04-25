@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,9 +44,29 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private String pfTotalOriginal;
     private String pfTotalAprovado;
 
+    private Double pfTotalValor;
+    private Double pfTotalAjustadoValor;
+
     @JsonIgnoreProperties("analiseClonadaParaEquipe")
     private AnaliseDTO analiseClonadaParaEquipe;
     private Boolean analiseClonou;
+
+    private Timestamp dataHomologacao;
+    private Timestamp dtEncerramento;
+    private boolean isEncerrada;
+
+    public void setDataHomologacao(Timestamp dataHomologacao) {
+        if (dataHomologacao != null) {
+            this.dataHomologacao = new Timestamp(dataHomologacao.getTime());
+        } else {
+            this.dataHomologacao = null;
+        }
+    }
+
+    public Timestamp getDataHomologacao() {
+        return this.dataHomologacao != null ? new Timestamp(this.dataHomologacao.getTime()) : null;
+    }
+
 
     public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
         this.dataCriacaoOrdemServico = dataCriacaoOrdemServico == null ? null : new Timestamp(dataCriacaoOrdemServico.getTime());
@@ -53,6 +74,14 @@ public class AnaliseDTO implements ReportObject, Serializable {
 
     public Timestamp getDataCriacaoOrdemServico() {
         return dataCriacaoOrdemServico == null ? null : new Timestamp(this.dataCriacaoOrdemServico.getTime());
+    }
+
+    public void setDtEncerramento(Timestamp dtEncerramento) {
+        this.dtEncerramento = dtEncerramento == null ? null : new Timestamp(dtEncerramento.getTime());
+    }
+
+    public Timestamp getDtEncerramento() {
+        return dtEncerramento == null ? null : new Timestamp(this.dtEncerramento.getTime());
     }
 
 }

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1648866790464-5">
+      <createTable tableName="historico">
+         <column name="id" type="BIGINT">
+            <constraints nullable="false"/>
+         </column>
+         <column name="acao" type="VARCHAR(255)"/>
+         <column name="dt_acao" type="TIMESTAMP WITHOUT TIME ZONE"/>
+         <column name="analise_id" type="BIGINT"/>
+         <column name="usuario_id" type="BIGINT"/>
+      </createTable>
+   </changeSet>
+
+   <changeSet author="basis (generated)" id="1648866790464-30">
+      <addPrimaryKey columnNames="id" constraintName="historicoPK" tableName="historico"/>
+   </changeSet>
+   <changeSet author="basis (generated)" id="1648866790464-53">
+      <addForeignKeyConstraint baseColumnNames="analise_id"
+                               baseTableName="historico"
+                               constraintName="FK7bhkletc7xif4yy11pn2dq53m"
+                               deferrable="false"
+                               initiallyDeferred="false"
+                               referencedColumnNames="id"
+                               referencedTableName="analise"/>
+   </changeSet>
+   <changeSet author="basis (generated)" id="1648866790464-54">
+      <addForeignKeyConstraint baseColumnNames="usuario_id"
+                               baseTableName="historico"
+                               constraintName="FKsw54q8ocgoo19qkk5jnl9vb1k"
+                               deferrable="false"
+                               initiallyDeferred="false"
+                               referencedColumnNames="id"
+                               referencedTableName="jhi_user"/>
+   </changeSet>
+</databaseChangeLog>

@@ -50,8 +50,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @ApiModel(description = "<Enter note text here>")
@@ -67,7 +69,10 @@ import java.util.Set;
 @NoArgsConstructor
 public class Analise implements Serializable, ReportObject {
 
+
     private static final String ANALISE = "analise";
+
+    private static final String FORMATO_DATA = "MM/dd/yyyy HH:mm:ss";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
@@ -92,6 +97,15 @@ public class Analise implements Serializable, ReportObject {
     @Column(name = "pf_total_adjust")
     @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
     private String adjustPFTotal;
+
+    @Column(name = "pf_total_valor")
+    @Field(index = FieldIndex.not_analyzed, type = FieldType.Double)
+    private Double pfTotalValor;
+
+    @Column(name = "pf_total_ajustado_valor")
+    @Field(index = FieldIndex.not_analyzed, type = FieldType.Double)
+    private Double pfTotalAjustadoValor;
+
 
     @Size(max = 4000)
     @Column(name = "escopo", length = 4000)
@@ -250,6 +264,20 @@ public class Analise implements Serializable, ReportObject {
     @Column(name = "pf_total_aprovado")
     private String pfTotalAprovado;
 
+    //Campo histórico
+
+    @OneToMany(mappedBy = "analise", cascade = CascadeType.ALL)
+    private List<Historico> historicos = new ArrayList<>();
+
+    //Campos novos de data para análise
+    @Column(name = "is_encerrada")
+    private Boolean isEncerrada;
+
+    @JsonInclude
+    @Column(name = "dt_encerramento")
+    @Field(type = FieldType.Date)
+    private Timestamp dtEncerramento;
+
     public Analise(Analise analise, User user) {
         this.id = null;
         this.identificadorAnalise = analise.identificadorAnalise;
@@ -301,6 +329,17 @@ public class Analise implements Serializable, ReportObject {
     public Timestamp getDataCriacaoOrdemServico() {
         return this.dataCriacaoOrdemServico != null ? new Timestamp(this.dataCriacaoOrdemServico.getTime()) : null;
     }
+    public void setDtEncerramento(Timestamp dtEncerramento) {
+        if (dtEncerramento != null) {
+            this.dtEncerramento = new Timestamp(dtEncerramento.getTime());
+        } else {
+            this.dtEncerramento = null;
+        }
+    }
+
+    public Timestamp getDtEncerramento() {
+        return this.dtEncerramento != null ? new Timestamp(this.dtEncerramento.getTime()) : null;
+    }
 
     public String getMetodoContagemString() {
         if (metodoContagem == null) {
@@ -324,7 +363,15 @@ public class Analise implements Serializable, ReportObject {
     }
 
     public String getCreatedOn() {
-        return this.dataCriacaoOrdemServico == null ? "" : new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.dataCriacaoOrdemServico);
+        return this.dataCriacaoOrdemServico == null ? "" : new SimpleDateFormat(FORMATO_DATA).format(this.dataCriacaoOrdemServico);
+    }
+
+    public String getDataConclusao() {
+        return this.dataHomologacao == null ? "" : new SimpleDateFormat(FORMATO_DATA).format(this.dataHomologacao);
+    }
+
+    public String getDataEncerramento() {
+        return this.dtEncerramento == null ? "" : new SimpleDateFormat(FORMATO_DATA).format(this.dtEncerramento);
     }
 
     public String getBloqueiaString() {
