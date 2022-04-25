@@ -16,6 +16,10 @@ public class RelatorioAnaliseColunas extends PropriedadesRelatorio {
     private static final String CREATED_ON = "createdOn";
     private static final String ADJUST_PF_TOTAL = "adjustPFTotal";
     private static final String PF_TOTAL = "pfTotal";
+
+    private static final String PF_TOTAL_COLUNA = "pfTotalValor";
+    private static final String PF_TOTAL_AJUSTADO_COLUNA = "pfTotalAjustadoValor";
+
     private static final String METODO_CONTAGEM_STRING = "metodoContagemString";
     private static final String SISTEMA_NOME = "sistema.nome";
     private static final String EQUIPE_RESPONSAVEL_NOME = "equipeResponsavel.nome";
@@ -49,8 +53,8 @@ public class RelatorioAnaliseColunas extends PropriedadesRelatorio {
         {EQUIPE_RESPONSAVEL_NOME,"Equipe",EQUIPE_RESPONSAVEL_NOME},
         {SISTEMA_NOME,"Sistema",SISTEMA_NOME},
         {METODO_CONTAGEM_STRING,"Método De Contagem",METODO_CONTAGEM_COLUNA},
-        {PF_TOTAL,"PF Total",PF_TOTAL},
-        {ADJUST_PF_TOTAL,"PF Ajustado",ADJUST_PF_TOTAL},
+        {PF_TOTAL,"PF Total",PF_TOTAL_COLUNA},
+        {ADJUST_PF_TOTAL,"PF Ajustado",PF_TOTAL_AJUSTADO_COLUNA},
         {BLOQUEIA_STRING,"Bloqueada?",BLOQUEIA_ANALISE_COLUNA},
         {NUMERO_OS , "Número OS", NUMERO_OS},
         {STATUS_NOME , "Status", STATUS_NOME},
