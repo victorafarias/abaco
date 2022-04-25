@@ -128,7 +128,6 @@ public class FuncaoTransacaoService {
         return existInAnalise;
     }
 
-
     public void saveVwDersAndVwAlrs(Set<Der> ders, Set<Alr> alrs, Long idSistema, Long idFuncao) {
         List<VwDer> vwDerList = vwDerSearchRepository.findAllByIdSistemaFT(idSistema);
         List<VwAlr> vwAlrList = vwAlrSearchRepository.findAllByIdSistema(idSistema);
