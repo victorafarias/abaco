@@ -58,7 +58,7 @@ public class FuncaoTransacaoService {
     public FuncaoTransacaoService(FuncaoTransacaoRepository funcaoTransacaoRepository) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
     }
-    
+
 
     public ImportarFTDTO importarFuncaoAnalise(FuncaoImportarDTO funcaoImportarDTO) {
         Analise analise = analiseService.recuperarAnalise(funcaoImportarDTO.getIdAnalise());
@@ -124,15 +124,9 @@ public class FuncaoTransacaoService {
     }
 
     private Boolean verificarSeExisteFuncao(PEAnaliticoDTO funcao, FuncaoImportarDTO funcaoImportarDTO) {
-        Boolean existInAnalise;
-        if(funcao.getIdfuncaodados() != null && funcao.getIdfuncaodados() > 0){
-            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(funcao.getName(), funcaoImportarDTO.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo(), funcao.getIdfuncaodados());
-        } else {
-            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(funcao.getName(), funcaoImportarDTO.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo());
-        }
+        Boolean existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(funcao.getName(), funcaoImportarDTO.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo());
         return existInAnalise;
     }
-
 
     public void saveVwDersAndVwAlrs(Set<Der> ders, Set<Alr> alrs, Long idSistema, Long idFuncao) {
         List<VwDer> vwDerList = vwDerSearchRepository.findAllByIdSistemaFT(idSistema);
