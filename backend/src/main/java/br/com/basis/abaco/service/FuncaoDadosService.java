@@ -179,12 +179,7 @@ public class FuncaoDadosService {
     }
 
     private boolean verificarSeExisteFuncao(PEAnaliticoDTO funcao, FuncaoImportarDTO funcaoDadosImportar) {
-        Boolean existeNaAnalise;
-        if(funcao.getIdfuncaodados() != null && funcao.getIdfuncaodados() > 0){
-            existeNaAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(funcao.getName(), funcaoDadosImportar.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo(), funcao.getIdfuncaodados());
-        } else {
-            existeNaAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(funcao.getName(), funcaoDadosImportar.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo());
-        }
+        Boolean existeNaAnalise = funcaoDadosRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(funcao.getName(), funcaoDadosImportar.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo());
         return existeNaAnalise;
     }
 
