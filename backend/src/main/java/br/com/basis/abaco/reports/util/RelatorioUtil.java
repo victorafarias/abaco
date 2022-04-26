@@ -210,6 +210,7 @@ public class RelatorioUtil {
         }else{
             nomeRelatorio = "Analise";
         }
+        nomeRelatorio = nomeRelatorio.concat("_Contagem");
         return nomeRelatorio;
     }
 
