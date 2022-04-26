@@ -267,6 +267,7 @@ public class RelatorioAnaliseRest {
             parametro.put("PFCRITICIDADE", pfCriticidade);
         }
     }
+    
 
     /**
      * Método responsável por acessar o caminho da imagem da logo do relatório e popular o parâmetro.
