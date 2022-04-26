@@ -238,7 +238,7 @@ public class RelatorioAnaliseRest {
         }
         parametro.put("LISTAPFFUNC", pfFuncionalidadeDTOS);
     }
-    
+
     /**
      *
      */
@@ -267,6 +267,7 @@ public class RelatorioAnaliseRest {
             parametro.put("PFCRITICIDADE", pfCriticidade);
         }
     }
+    
 
     /**
      * Método responsável por acessar o caminho da imagem da logo do relatório e popular o parâmetro.
@@ -718,12 +719,14 @@ public class RelatorioAnaliseRest {
      */
     private void popularCountsFd() {
         FuncoesDTO fd = relatorioFuncoes.recuperarCountsFd(analise);
-        this.popularComplexidadeAli(fd);
-        this.popularComplexidadeAie(fd);
-        this.popularComplexidadeInmFd(fd);
-        this.popularImpactoAli(fd);
-        this.popularImpactoAie(fd);
-        this.popularImpactoInmFd(fd);
+        if(fd != null){
+            this.popularComplexidadeAli(fd);
+            this.popularComplexidadeAie(fd);
+            this.popularComplexidadeInmFd(fd);
+            this.popularImpactoAli(fd);
+            this.popularImpactoAie(fd);
+            this.popularImpactoInmFd(fd);
+        }
     }
 
     /**
@@ -731,14 +734,16 @@ public class RelatorioAnaliseRest {
      */
     private void popularCountsFt() {
         FuncoesDTO ft = relatorioFuncoes.recuperarCountsFt(analise);
-        this.popularComplexidadeEe(ft);
-        this.popularComplexidadeSe(ft);
-        this.popularComplexidadeCe(ft);
-        this.popularComplexidadeInmFt(ft);
-        this.popularImpactoEe(ft);
-        this.popularImpactoSe(ft);
-        this.popularImpactoCe(ft);
-        this.popularImpactoInmFt(ft);
+        if(ft != null){
+            this.popularComplexidadeEe(ft);
+            this.popularComplexidadeSe(ft);
+            this.popularComplexidadeCe(ft);
+            this.popularComplexidadeInmFt(ft);
+            this.popularImpactoEe(ft);
+            this.popularImpactoSe(ft);
+            this.popularImpactoCe(ft);
+            this.popularImpactoInmFt(ft);
+        }
     }
 
     /**
