@@ -17,6 +17,7 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao, Long> {
 
+    
     @Query(value = "SELECT f.funcionalidade.id FROM FuncaoTransacao f where f.id = ?1")
     Long getIdFuncionalidade(Long id);
 
