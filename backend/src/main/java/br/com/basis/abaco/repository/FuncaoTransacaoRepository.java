@@ -17,6 +17,7 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao, Long> {
 
+    
     @Query(value = "SELECT f.funcionalidade.id FROM FuncaoTransacao f where f.id = ?1")
     Long getIdFuncionalidade(Long id);
 
@@ -49,7 +50,7 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
 
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoOrderByOrdem(Long id, StatusFuncao statusFuncao);
 
-    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
+    @EntityGraph(attributePaths = {"funcionalidade", "alrs", "ders", "fatorAjuste"})
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(Long id, StatusFuncao statusFuncao);
 
     Set<FuncaoTransacao> findByAnaliseIdAndStatusFuncaoOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long id, StatusFuncao statusFuncao);
