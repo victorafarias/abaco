@@ -6,10 +6,7 @@ import br.com.basis.abaco.domain.User;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
 
 public class AnaliseValidador {
-
-    public AnaliseValidador() {
-    }
-
+    
     public static AbacoMensagens validarAlterarStatus(Long id, Long idStatus, Analise analise, Status status, User user) {
         AbacoMensagens mensagens = new AbacoMensagens();
         if(id == null){
