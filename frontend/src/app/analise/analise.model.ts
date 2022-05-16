@@ -17,6 +17,7 @@ import { FuncaoDados } from '../funcao-dados';
 import { FuncaoTransacao } from '../funcao-transacao';
 import { Status } from '../status/status.model';
 import { MotivoAnalise } from '../divergencia';
+import { AbacoMensagens } from '../shared/mensagens.dto';
 
 export enum MetodoContagem {
     'DETALHADA' = 'DETALHADA',
@@ -489,4 +490,9 @@ class AnaliseCopyFromJSON {
             this._analiseConverted.status = new Status();
         }
     }
+}
+
+export class AnaliseFormulario{
+	analise?: Analise;
+	mensagens?: AbacoMensagens;
 }

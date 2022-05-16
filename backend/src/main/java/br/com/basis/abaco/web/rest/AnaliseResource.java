@@ -36,9 +36,12 @@ import br.com.basis.abaco.service.dto.AnaliseEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseEncerramentoDTO;
 import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
+import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
+import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
 import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.service.relatorio.RelatorioAnaliseColunas;
 import br.com.basis.abaco.service.relatorio.RelatorioDivergenciaColunas;
+import br.com.basis.abaco.service.validadores.AnaliseValidador;
 import br.com.basis.abaco.utils.AbacoUtil;
 import br.com.basis.abaco.utils.PageUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
@@ -668,11 +671,23 @@ public class AnaliseResource {
     @GetMapping("/analises/change-status/{id}/{idStatus}")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_ALTERAR_STATUS")
-    public ResponseEntity<AnaliseEditDTO> alterStatusAnalise(@PathVariable Long id, @PathVariable Long idStatus) {
+    public ResponseEntity<AnaliseFormulario> alterStatusAnalise(@PathVariable Long id, @PathVariable Long idStatus) {
+
+        AbacoMensagens mensagens;
+        AnaliseFormulario formulario = new AnaliseFormulario();
+
         Analise analise = analiseService.recuperarAnalise(id);
         Status status = statusRepository.findById(idStatus);
         User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).get();
-        if (analise.getId() != null && status.getId() != null && analiseService.changeStatusAnalise(analise, status, user)) {
+
+        mensagens = AnaliseValidador.validarAlterarStatus(id, idStatus, analise, status, user);
+
+        if(mensagens.contemAvisoOuErro()){
+            formulario.setMensagens(mensagens);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(formulario);
+        }
+
+        if (analiseService.changeStatusAnalise(analise, status, user)) {
             analiseRepository.save(analise);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
             if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null) {
@@ -684,10 +699,14 @@ public class AnaliseResource {
             else{
                 this.historicoService.inserirHistoricoAnalise(analise, user, "Alterou o status para "+status.getNome());
             }
-            return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
-                .body(analiseService.convertToAnaliseEditDTO(analise));
+            mensagens.adicionarNovoSucesso("O status da análise "+analise.getIdentificadorAnalise()+" foi alterado para "+status.getNome());
+            formulario.setMensagens(mensagens);
+            formulario.setAnalise(analiseService.convertToAnaliseEditDTO(analise));
+            return ResponseEntity.status(HttpStatus.OK).body(formulario);
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
+            mensagens.adicionarNovoErro("Usuário não tem permissão para alterar o status");
+            formulario.setMensagens(mensagens);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(formulario);
         }
     }
 

@@ -960,10 +960,7 @@ export class AnaliseListComponent implements OnInit {
 					this.statusToChange = undefined;
 					this.idAnaliseChangeStatus = undefined;
 					this.showDialogAnaliseChangeStatus = false;
-
-					this.pageNotificationService.addSuccessMessage('O status da analise ' + data.identificadorAnalise + ' foi alterado.');
-				},
-					err => this.pageNotificationService.addErrorMessage('Não foi possivel alterar o status da Analise.'));
+				});
 			}
         } else {
             this.pageNotificationService.addErrorMessage('Selecione uma Analise e um Status para continuar.');
