@@ -363,7 +363,8 @@ export class DivergenciaListComponent implements OnInit {
                     }
                     this.analiseSelecionada = this.datatable.value
                     this.blocked = this.datatable?.value[ind]?.bloqueiaAnalise;
-					if(this.selectedDivergence[0]){
+
+					if(this.selectedDivergence && this.selectedDivergence[0]){
 						this.verificarBotoes(this.selectedDivergence[0]);
 					}
                 }
@@ -389,26 +390,18 @@ export class DivergenciaListComponent implements OnInit {
 
         public alterValidacaoStatusBlock(divergencia:Analise) {
             if (divergencia && this.statusToChange) {
-                this.divergenciaService.changeStatusDivergence(divergencia.id, this.statusToChange).subscribe(data => {
-                    this.analiseTemp = new Analise().copyFromJSON(data);
-                    this.statusService = undefined;
+                this.divergenciaService.changeStatusDivergence(divergencia.id, this.statusToChange).subscribe(formulario => {
                     this.idDivergenceStatus = undefined;
-                    this.pageNotificationService.addSuccessMessage('O status da validação ' + data.identificadorAnalise + ' foi alterado.');
-                    if (this.analiseTemp) {
-                        const copy = this.analiseTemp.toJSONState();
-                        this.divergenciaService.block(copy).subscribe(() => {
-                            const nome = this.analiseTemp.identificadorAnalise;
-                            const bloqueado = this.analiseTemp.bloqueiaAnalise;
-                            this.mensagemAnaliseBloqueada(bloqueado, nome);
-                            this.datatable._filter();
-                            this.datatable.selection = null;
-                            this.showDialogDivergenceBlock = false;
-                        });
-                    } else {
-                        this.pageNotificationService.addErrorMessage('Não é possível bloquear/desbloquear essa validação');
+					this.statusToChange = undefined;
+                    const copy = formulario.analise;
+                    this.divergenciaService.block(copy).subscribe(() => {
+                        const nome = copy.identificadorAnalise;
+                        const bloqueado = copy.bloqueiaAnalise;
+                        this.mensagemAnaliseBloqueada(bloqueado, nome);
                         this.datatable._filter();
+                        this.datatable.selection = null;
                         this.showDialogDivergenceBlock = false;
-                    }
+                    });
                 },
                 err => this.pageNotificationService.addErrorMessage('Não foi possível alterar o status da Validação.'));
             }
@@ -418,17 +411,13 @@ export class DivergenciaListComponent implements OnInit {
         }
 
         public alterStatusValidacao() {
-			console.log(this.idDivergenceStatus);
-
             if (this.idDivergenceStatus && this.statusToChange) {
-                this.divergenciaService.changeStatusDivergence(this.idDivergenceStatus, this.statusToChange).subscribe(data => {
-                    this.statusService = undefined;
+                this.divergenciaService.changeStatusDivergence(this.idDivergenceStatus, this.statusToChange).subscribe(() => {
                     this.idDivergenceStatus = undefined;
+					this.statusToChange = undefined;
                     this.showDialogDivergenceStatus = false;
-                    this.pageNotificationService.addSuccessMessage('O status da validação ' + data.identificadorAnalise + ' foi alterado.');
                     this.datatable._filter();
-                },
-                err => this.pageNotificationService.addErrorMessage('Não foi possível alterar o status da Validação.'));
+                });
             }
             else {
                 this.pageNotificationService.addErrorMessage('Selecione um Status para continuar.');

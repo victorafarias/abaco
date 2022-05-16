@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Divergencia } from '.';
 import { environment } from '../../environments/environment';
-import { Analise } from '../analise';
+import { Analise, AnaliseFormulario } from '../analise';
 import { Resumo } from '../analise/analise-resumo/resumo.model';
 import { createRequestOption, ResponseWrapper } from '../shared';
 import { Status } from '../status/status.model';
@@ -369,7 +369,7 @@ export class DivergenciaService {
 
     public changeStatusDivergence(id: number, status: Status){
         const url = `${this.analiseResourceUrl}/change-status/${id}/${status.id}`
-        return this.http.get<Analise>(url);
+        return this.http.get<AnaliseFormulario>(url);
     }
 
 
