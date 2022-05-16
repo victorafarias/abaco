@@ -61,6 +61,5 @@ export class APIInterceptor implements HttpInterceptor{
 				this.pageNotification.addInfoMessage(mensagem.mensagem);
 			}
 		})
-
 	}
 }
