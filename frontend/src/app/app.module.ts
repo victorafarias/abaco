@@ -1,5 +1,5 @@
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -42,6 +42,7 @@ import { StatusModule } from './status/status.module';
 import { TipoEquipeModule } from './tipo-equipe/tipo-equipe.module';
 import { UploadService } from './upload/upload.service';
 import { UserModule } from './user/user.module';
+import { APIInterceptor } from './util/api.interceptor';
 import { AuthGuardService } from './util/auth.guard.service';
 import { AuthService } from './util/auth.service';
 
@@ -96,7 +97,9 @@ import { AuthService } from './util/auth.service';
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
-        UploadService, AuthService, AuthGuardService, NovidadesVersaoService
+        UploadService, AuthService, AuthGuardService, NovidadesVersaoService,
+		{ provide: HTTP_INTERCEPTORS, useClass: APIInterceptor, multi: true},
+		APIInterceptor
     ],
     bootstrap: [AppComponent],
     exports: [ RouterModule]
