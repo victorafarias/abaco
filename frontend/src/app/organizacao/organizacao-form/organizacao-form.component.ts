@@ -366,12 +366,6 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // if (!this.organizacao.cnpj) {
-        //     this.cnpjValido = true;
-        //     form.controls.cnpjOrganizacao.markAsTouched();
-        //     this.pageNotificationService.addErrorMessage('O campo CNPJ é obrigatório!');
-        //     return;
-        // }
         if (this.organizacao.cnpj) {
             if (!ValidacaoUtil.validarCNPJ(this.organizacao.cnpj)) {
                 this.cnpjValido = true;
@@ -443,9 +437,6 @@ export class OrganizacaoFormComponent implements OnInit, OnDestroy {
         if (!this.organizacao.sigla || this.organizacao.sigla === undefined) {
             this.invalidFields.push('Sigla');
         }
-        // if (!this.organizacao.cnpj || this.organizacao.cnpj === undefined) {
-        //     this.invalidFields.push('Cadastros.Organizacao.CNPJ');
-        // }
 
         isFieldsValid = (this.invalidFields.length === 0);
         return isFieldsValid;

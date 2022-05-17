@@ -1418,9 +1418,10 @@ export class AnaliseListComponent implements OnInit {
 	}
 
 	inserirHistoricoEditar(analiseSelecionada: Analise) {
+		this.blockUiService.show();
 		let historico: HistoricoDTO = new HistoricoDTO();
 		historico.acao = "Editou"
 		historico.analise = analiseSelecionada;
-		this.historicoService.inserirHistoricoAnalise(historico).subscribe(response => {});
+		this.historicoService.inserirHistoricoAnalise(historico).subscribe(response => {this.blockUiService.hide()});
 	}
 }

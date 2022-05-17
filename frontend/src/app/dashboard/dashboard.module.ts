@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
+import { AppTopbarComponent } from '../components/topbar/app.topbar.component';
 import { SharedModule } from '../shared/shared.module';
 import { DashboardComponent } from './dashboard.component';
 import { dashboardRoute } from './dashboard.route';
