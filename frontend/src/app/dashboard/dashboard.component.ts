@@ -8,6 +8,7 @@ import { Observable, Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { NovidadeVersaoDTO } from '../components/novidades-versao/novidades-versao-dto';
 import { NovidadesVersaoService } from '../components/novidades-versao/novidades-versao-service';
+import { AppTopbarComponent } from '../components/topbar/app.topbar.component';
 import { User, UserService } from '../user';
 import { AuthService } from '../util/auth.service';
 
@@ -17,46 +18,45 @@ import { AuthService } from '../util/auth.service';
 	styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-	
+
 	username: string;
 	password: string;
-	
+
 	novidadesDaVersao: NovidadeVersaoDTO[] = [];
 	novidadeVersao: NovidadeVersaoDTO = new NovidadeVersaoDTO();
 	versaoAtual: string = "";
 	mostrarNovidades: boolean = false;
 	items: MenuItem[] = [];
 	mostrarDialogNovidadesVersao: boolean = false;
-	
+
 	authenticated = false;
-	
+
 	private routeSub: Subscription;
 	@ViewChild(MenuComponent, { static: true }) menu: MenuComponent;
-	
-	
+
+
 	constructor(
 		private authService: AuthenticationService<User>,
 		private http: HttpClient,
 		private novidadesVersaoService: NovidadesVersaoService,
-		private pageNotificationService: PageNotificationService,
 		private userService: UserService,
 		private menuService: MenusService,
 		private authAbacoService: AuthService,
 		private router: Router
 		) { }
-		
+
 		ngAfterViewInit(): void {
 			this.carregarMenu();
 		}
-		
+
 		getLabel(label) {
 			return label;
 		}
-		
+
 		ngOnInit() {
 			this.visualizarNovidadesDaVersao();
 		}
-		
+
 		carregarMenu() {
 			this.authAbacoService.getRoles().subscribe(res => {
 				this.authenticated = this.authService.isAuthenticated();
@@ -111,14 +111,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 				}
 			});
 		}
-		
+
 		ngOnDestroy() {
 		}
-		
+
 		protected getUserDetails(): Observable<any> {
 			return this.http.get<any>(`${environment.auth.detailsUrl}`);
 		}
-		
+
 		authenticatedUserFullName(): string {
 			const storageUser = this.authService.getUser();
 			if (!storageUser) {
@@ -126,8 +126,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 			}
 			return storageUser.firstName + ' ' + storageUser.lastName;
 		}
-		
-		
+
+
 		visualizarNovidadesDaVersao() {
 			this.userService.findCurrentUser().subscribe(u => {
 				if(u.mostrarNovidades === true){
@@ -135,10 +135,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 					this.novidadesVersaoService.getAll().subscribe(response => {
 						if(response.length > 0){
 							this.mostrarDialogNovidadesVersao = true;
-							this.novidadesDaVersao = response;          
+							this.novidadesDaVersao = response;
 							this.novidadeVersao = this.novidadesDaVersao[this.novidadesDaVersao.length-1];
 							this.versaoAtual = this.novidadeVersao.versao;
-							
+
 							let menuItens: MenuItem[] = [];
 							this.novidadesDaVersao.forEach(nv => {
 								menuItens.push(
@@ -154,12 +154,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 							});
 						}
 					})
-					
+
 				}
 				alterarConteudo(nv: NovidadeVersaoDTO) {
 					this.novidadeVersao = nv;
 				}
-				
+
 				verificarOpcaoMostrarNovidades(){
 					if(this.mostrarNovidades === true){
 						this.novidadesVersaoService.desabilitarNovidadesUsuario().subscribe(r=>{});
@@ -167,6 +167,5 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 						this.novidadesVersaoService.habilitarNovidadesUsuario().subscribe(r=>{});
 					}
 				}
-				
+
 			}
-			
