@@ -173,6 +173,7 @@ export class AnaliseListComponent implements OnInit {
         { label: "Modelo padrão ANAC", value: 3 },
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
+		{ label: "Modelo padrão MCTI", value: 6}
     ];
     modeloSelecionado: any;
 
