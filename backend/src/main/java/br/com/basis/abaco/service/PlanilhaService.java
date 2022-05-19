@@ -97,7 +97,6 @@ public class PlanilhaService {
 
     private void setarFuncoesTransacaoExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList) {
         HSSFSheet excelSheet = excelFile.getSheet("Funções Transação");
-
         int rowNum = 8;
         for (FuncaoTransacao funcaoTransacao : funcaoTransacaoList) {
             HSSFRow row = excelSheet.getRow(rowNum++);
