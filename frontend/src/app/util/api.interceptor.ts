@@ -10,7 +10,6 @@ import { AbacoMensagens, Mensagem, TipoMensagem } from "../shared/mensagens.dto"
 export class APIInterceptor implements HttpInterceptor{
 
 	constructor(private pageNotification: PageNotificationService){
-
 	}
 
 	intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
