@@ -30,11 +30,7 @@ import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.HistoricoService;
 import br.com.basis.abaco.service.PerfilService;
 import br.com.basis.abaco.service.PlanilhaService;
-import br.com.basis.abaco.service.dto.AnaliseDTO;
-import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
-import br.com.basis.abaco.service.dto.AnaliseEditDTO;
-import br.com.basis.abaco.service.dto.AnaliseEncerramentoDTO;
-import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
+import br.com.basis.abaco.service.dto.*;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
@@ -44,6 +40,7 @@ import br.com.basis.abaco.service.relatorio.RelatorioDivergenciaColunas;
 import br.com.basis.abaco.service.validadores.AnaliseValidador;
 import br.com.basis.abaco.utils.AbacoUtil;
 import br.com.basis.abaco.utils.PageUtils;
+import br.com.basis.abaco.utils.StringUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import br.com.basis.abaco.web.rest.util.PaginationUtil;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
@@ -94,11 +91,8 @@ import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 
@@ -189,14 +183,14 @@ public class AnaliseResource {
         if (analiseUpdate.getId() == null) {
             return createAnalise(analiseUpdate);
         }
-        Analise analise = analiseRepository.findOne(analiseUpdate.getId());
+        Analise analise = analiseRepository.findOneByIdClean(analiseUpdate.getId());
         analiseService.bindAnalise(analiseUpdate, analise);
         analiseService.updatePf(analise);
         if (analise.isBloqueiaAnalise()) {
             return ResponseEntity.badRequest().headers(
                 HeaderUtil.createFailureAlert(ENTITY_NAME, "analiseblocked", "You cannot edit an blocked analise")).body(null);
         }
-        analise.setEditedBy(analiseRepository.findOne(analise.getId()).getCreatedBy());
+        analise.setEditedBy(analiseRepository.findOneByIdClean(analise.getId()).getCreatedBy());
         analiseRepository.save(analise);
         AnaliseEditDTO analiseEditDTO = analiseService.convertToAnaliseEditDTO(analise);
         analise.setAnaliseClonadaParaEquipe(null);
@@ -217,8 +211,12 @@ public class AnaliseResource {
                 analise.setDataHomologacao(Timestamp.from(Instant.now()));
             }
             analise.setBloqueiaAnalise(!analise.isBloqueiaAnalise());
+            if(!analise.getIsDivergence()){
+                analiseService.updatePf(analise);
+            }else{
+                analiseService.updatePFDivergente(analise);
+            }
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
 
             if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
@@ -279,7 +277,6 @@ public class AnaliseResource {
             analise.setAnaliseClonou(true);
             analise.setAnaliseClonadaParaEquipe(analiseClone);
             analiseRepository.save(analise);
-            analiseClone.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
 
             this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Clonou para equipe %s a análise %s", tipoEquipe.getNome(), analiseClone.getNumeroOs() == null ? analiseClone.getIdentificadorAnalise() : analiseClone.getNumeroOs()));
@@ -368,13 +365,24 @@ public class AnaliseResource {
     @PostMapping("/analises/compartilhar")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_COMPARTILHAR")
-    public ResponseEntity<Set<Compartilhada>> popularCompartilhar(@Valid @RequestBody Set<Compartilhada> compartilhadaList) throws URISyntaxException {
-        compartilhadaList.forEach(compartilhada -> {
-            compartilhadaRepository.save(compartilhada);
-        });
-        analiseService.saveAnaliseCompartilhada(compartilhadaList);
-        return ResponseEntity.created(new URI("/api/analises/compartilhar"))
-            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, "created")).body(compartilhadaList);
+    public ResponseEntity<AbacoMensagens> popularCompartilhar(@Valid @RequestBody Set<CompartilhadaDTO> compartilhadaList, @RequestParam(value = "ehMultiplo", required = false) Boolean ehMultiplo) throws URISyntaxException {
+        AbacoMensagens abacoMensagens = new AbacoMensagens();
+        if(ehMultiplo){
+           abacoMensagens = this.analiseService.salvarCompartilhadasMultiplas(compartilhadaList);
+        }else{
+            Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
+            compartilhadaList.forEach(compartilhadaDto -> {
+                Compartilhada compartilhada = new Compartilhada();
+                compartilhada.setAnaliseId(compartilhadaDto.getAnalisesId().get(0));
+                compartilhada.setEquipeId(compartilhadaDto.getEquipeId());
+                compartilhada.setNomeEquipe(compartilhadaDto.getNomeEquipe());
+                compartilhada.setViewOnly(compartilhadaDto.isViewOnly());
+                compartilhadaRepository.save(compartilhada);
+                compartilhadas.add(compartilhada);
+            });
+            analiseService.saveAnaliseCompartilhada(compartilhadas);
+        }
+        return new ResponseEntity<>(abacoMensagens, HttpStatus.OK);
     }
 
     @DeleteMapping("/analises/compartilhar/delete/{id}")
@@ -385,8 +393,9 @@ public class AnaliseResource {
         TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
         Analise analise = analiseRepository.getOne(compartilhada.getAnaliseId());
         analise.getCompartilhadas().remove(compartilhada);
+
+        analiseService.updatePf(analise);
         analiseRepository.save(analise);
-        analise.setAnaliseClonadaParaEquipe(null);
         analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
         compartilhadaRepository.delete(id);
 
@@ -409,7 +418,9 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR")
     public ResponseEntity<byte[]> downloadPdfArquivo(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
+        analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         return relatorioAnaliseRest.downloadPdfArquivo(analise, TipoRelatorio.ANALISE);
     }
@@ -418,7 +429,9 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_VALIDACAO_EXPORTAR")
     public ResponseEntity<byte[]> downloadDivergenciaPdfArquivo(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
+        analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         return relatorioAnaliseRest.downloadPdfArquivo(analise, TipoRelatorio.ANALISE);
     }
@@ -428,7 +441,9 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR")
     public @ResponseBody
     ResponseEntity<byte[]> downloadPdfBrowser(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
+        analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
+        analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
         return relatorioAnaliseRest.downloadPdfBrowser(analise, TipoRelatorio.ANALISE);
     }
@@ -438,7 +453,7 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_DETALHADO")
     public @ResponseBody
     ResponseEntity<byte[]> downloadPdfDetalhadoBrowser(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
         analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
         analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
@@ -450,7 +465,7 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_VALIDACAO_EXPORTAR")
     public @ResponseBody
     ResponseEntity<byte[]> downloadPdfDivergenciaDetalhadoBrowser(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
         analise.setFuncaoDados(funcaoDadosRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
         analise.setFuncaoTransacaos(funcaoTransacaoRepository.findByAnaliseIdAndStatusFuncaoNotOrderByOrdem(id, StatusFuncao.EXCLUIDO));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
@@ -462,7 +477,7 @@ public class AnaliseResource {
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_EXCEL")
     public @ResponseBody
     ResponseEntity<byte[]> downloadRelatorioExcel(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
         analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
         analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
@@ -636,7 +651,6 @@ public class AnaliseResource {
         if (analise.getId() != null) {
             analiseService.updatePf(analise);
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analise));
@@ -656,7 +670,6 @@ public class AnaliseResource {
         if (analise.getId() != null) {
             analiseService.updatePFDivergente(analise);
             analiseRepository.save(analise);
-            analise.setAnaliseClonadaParaEquipe(null);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString()))
                 .body(analiseService.convertToAnaliseEditDTO(analise));
@@ -688,9 +701,14 @@ public class AnaliseResource {
         }
 
         if (analiseService.changeStatusAnalise(analise, status, user)) {
+            if(!analise.getIsDivergence()){
+              analiseService.updatePf(analise);
+            }else{
+                analiseService.updatePFDivergente(analise);
+            }
             analiseRepository.save(analise);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
-            if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null) {
+            if(analise.getIsDivergence() && analise.getAnalisesComparadas() != null) {
                 analise.getAnalisesComparadas().forEach(analisePai -> {
                     this.historicoService.inserirHistoricoAnalise(analisePai, user,
                         String.format("A validação %s alterou o status para %s", analise.getIdentificadorAnalise(), status.getNome()));
@@ -714,7 +732,7 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_GERAR_VALIDACAO")
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnaliseComparada) {
-        Analise analise = analiseRepository.findOne(idAnaliseComparada);
+        Analise analise = analiseRepository.findOneById(idAnaliseComparada);
         Status status = statusRepository.findByNomeContainsIgnoreCase("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error status");
@@ -731,8 +749,8 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_GERAR_VALIDACAO")
     public ResponseEntity<AnaliseEditDTO> gerarDivergencia(@PathVariable Long idAnalisePadao, @PathVariable Long idAnaliseComparada, @RequestParam(value = "isUnion", defaultValue = "false") boolean isUnionFunction) {
-        Analise analisePadrao = analiseRepository.findOne(idAnalisePadao);
-        Analise analiseComparada = analiseRepository.findOne(idAnaliseComparada);
+        Analise analisePadrao = analiseRepository.findOneById(idAnalisePadao);
+        Analise analiseComparada = analiseRepository.findOneById(idAnaliseComparada);
         Status status = statusRepository.findByNomeContainsIgnoreCase("Em Análise").orElse(statusRepository.findFirstByDivergenciaTrue());
         if (status == null || status.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Status");
@@ -756,7 +774,7 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_VALIDACAO_EDITAR")
     public ResponseEntity<AnaliseEditDTO> updateAnaliseDivergene(@PathVariable Long id) {
-        Analise analise = analiseRepository.findOne(id);
+        Analise analise = analiseRepository.findOneById(id);
         if (analise == null || analise.getId() == null) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Padrão");
         }
@@ -827,7 +845,7 @@ public class AnaliseResource {
     @GetMapping(value = "/analises/importar-excel/{id}/{modelo}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_EXCEL")
     public ResponseEntity<byte[]> exportarExcel(@PathVariable Long id,@PathVariable Long modelo) throws IOException{
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
         analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
         analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         ByteArrayOutputStream outputStream = planilhaService.selecionarModelo(analise, modelo);
@@ -893,7 +911,7 @@ public class AnaliseResource {
     @GetMapping(value = "/divergencia/importar-excel/{id}/{modelo}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_EXCEL")
     public ResponseEntity<byte[]> importarExcelDivergencia(@PathVariable Long id,@PathVariable Long modelo) throws IOException{
-        Analise analise = analiseService.recuperarAnalise(id);
+        Analise analise = analiseRepository.findOneByIdClean(id);
         analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
         analise.setFuncaoTransacaos(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
         ByteArrayOutputStream outputStream = planilhaService.selecionarModeloDivergencia(analise, modelo);
@@ -908,7 +926,7 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EDITAR")
     public ResponseEntity<Void> atualizarEncerramentoAnalise(@RequestBody AnaliseEncerramentoDTO analiseDTO) throws URISyntaxException {
-        Analise analise = analiseRepository.findOne(analiseDTO.getId());
+        Analise analise = analiseRepository.findOneByIdClean(analiseDTO.getId());
         boolean gerarHistorico = false;
         if(analise.getIsEncerrada() == null){
             analise.setIsEncerrada(false);
@@ -923,6 +941,7 @@ public class AnaliseResource {
             analise.setDtEncerramento(analiseDTO.getDtEncerramento());
         }
         analise.setIsEncerrada(analiseDTO.isEncerrada());
+        analiseService.updatePf(analise);
         analiseRepository.save(analise);
         analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
         if(gerarHistorico){

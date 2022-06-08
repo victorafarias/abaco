@@ -10,7 +10,6 @@ import { AbacoMensagens, Mensagem, TipoMensagem } from "../shared/mensagens.dto"
 export class APIInterceptor implements HttpInterceptor{
 
 	constructor(private pageNotification: PageNotificationService){
-
 	}
 
 	intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -23,9 +22,13 @@ export class APIInterceptor implements HttpInterceptor{
 	handleResponse(data: any){
 		if(!data || !data.body) return
 		const abacoMensagens  = data?.body?.mensagens;
+		console.log(data);
+
 		if(abacoMensagens){
-			if(abacoMensagens.mensagens.length > 0){
-				this.ajustarMensagens(abacoMensagens.mensagens);
+			if(abacoMensagens?.mensagens?.length > 0){
+				this.ajustarMensagens(abacoMensagens?.mensagens);
+			}else{
+				this.ajustarMensagens(abacoMensagens);
 			}
 		}
 	}

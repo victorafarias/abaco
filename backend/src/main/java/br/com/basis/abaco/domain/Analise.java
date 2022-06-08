@@ -205,7 +205,7 @@ public class Analise implements Serializable, ReportObject {
     @JoinColumn
     private User editedBy;
 
-    @OneToMany(mappedBy = "analises")
+    @OneToMany(mappedBy = "analises", cascade = CascadeType.ALL)
     private Set<Compartilhada> compartilhadas = new HashSet<>();
 
 

@@ -6,7 +6,7 @@ export class AnaliseShareEquipe implements BaseEntity {
   constructor(
     public id?: number,
     public equipeId?: number,
-    public analiseId?: number,
+    public analisesId?: number[],
     public viewOnly?: boolean,
     public nomeEquipe?: string,
   ) {}

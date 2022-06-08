@@ -110,7 +110,7 @@ public class FuncaoTransacaoResource {
         FuncaoTransacao funcaoTransacao = convertToEntity(funcaoTransacaoSaveDTO);
 
         log.debug("REST request to save FuncaoTransacao : {}", funcaoTransacao);
-        Analise analise = analiseRepository.findOne(idAnalise);
+        Analise analise = analiseRepository.findOneByIdClean(idAnalise);
         funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao);});
         funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao);}));
         funcaoTransacao.setAnalise(analise);
@@ -153,7 +153,7 @@ public class FuncaoTransacaoResource {
 
         log.debug("REST request to update FuncaoTransacao : {}", funcaoTransacao);
         FuncaoTransacao funcaoTransacaoOld = funcaoTransacaoRepository.findOne(id);
-        Analise analise = analiseRepository.findOne(funcaoTransacaoOld.getAnalise().getId());
+        Analise analise = analiseRepository.findOneByIdClean(funcaoTransacaoOld.getAnalise().getId());
         funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao);});
         funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao);}));
         funcaoTransacao.setAnalise(analise);
@@ -344,7 +344,6 @@ public class FuncaoTransacaoResource {
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
         funcaoTransacao.setStatusFuncao(statusFuncao);
         funcaoTransacaoRepository.save(funcaoTransacao);
-        analiseService.updatePFDivergente(funcaoTransacao.getAnalise());
         analiseService.save(funcaoTransacao.getAnalise());
         FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
