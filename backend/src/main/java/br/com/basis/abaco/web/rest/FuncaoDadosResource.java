@@ -112,7 +112,7 @@ public class FuncaoDadosResource {
     @Timed
     public ResponseEntity<FuncaoDadosEditDTO> createFuncaoDados(@PathVariable Long idAnalise, @RequestPart("funcaoDados") FuncaoDadosSaveDTO funcaoDadosSaveDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException {
         log.debug("REST request to save FuncaoDados : {}", funcaoDadosSaveDTO);
-        Analise analise = analiseRepository.findOne(idAnalise);
+        Analise analise = analiseRepository.findOneByIdClean(idAnalise);
 
         FuncaoDados funcaoDados = convertToEntity(funcaoDadosSaveDTO);
 
@@ -163,7 +163,7 @@ public class FuncaoDadosResource {
             return createFuncaoDados(funcaoDados.getAnalise().getId(), funcaoDadosSaveDTO, files);
         }
 
-        Analise analise = analiseRepository.findOne(funcaoDadosOld.getAnalise().getId());
+        Analise analise = analiseRepository.findOneByIdClean(funcaoDadosOld.getAnalise().getId());
         funcaoDados.setAnalise(analise);
 
         if (funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
@@ -326,7 +326,6 @@ public class FuncaoDadosResource {
         FuncaoDados funcaoDados = funcaoDadosRepository.findOne(id);
         funcaoDados.setStatusFuncao(statusFuncao);
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
-        analiseService.updatePFDivergente(funcaoDados.getAnalise());
         analiseService.save(funcaoDados.getAnalise());
         FuncaoDadoApiDTO funcaoDadosDTO = getFuncaoDadoApiDTO(result);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
@@ -342,7 +341,7 @@ public class FuncaoDadosResource {
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    
+
 
     @PostMapping(path = "/funcao-dados/importar-funcoes-analise", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

@@ -108,8 +108,8 @@
 					<basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
 						[responsive]="true" (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()"
 						[rows]="20" id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
-						[disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
-						(click)="selectAnalise()" [enableScroll]="true" [scrollHeight]="'500px'"
+						[disableDelete]="!canDeletar" [disableEdit]="!canEditar || selectButtonMultiple" [disableView]="!canConsultar || selectButtonMultiple"
+						(click)="selectAnalise($event)" [enableScroll]="true" [scrollHeight]="'500px'"
 						[showPaginationFooter]="true" [selectionMode]="'multiple'" #datatable>
 						<p-column header="Organização" field="organizacao.sigla" [sortable]="true" filterType="select"
 							[filter]="true">
@@ -222,7 +222,7 @@
 							icon="block" (click)="bloqueiaAnalise(blocked)" [disabled]="datatable.selectedRow == null"
 							class="ui-button-danger">
 						</basis-datatable-button>
-						<basis-datatable-button name="bloquear"
+						<basis-datatable-button *ngIf="!selectButtonMultiple" name="listarHistorico"
 							[bTooltip]="datatable.selectedRow != null ? 'Listar Histórico' : 'Escolha um registro para listar histórico.'"
 							icon="history" (click)="listarHistorico(analiseSelecionada)"
 							[disabled]="datatable.selectedRow == null" class="ui-button-warning">
@@ -233,26 +233,26 @@
 						</basis-datatable-button>
 						<basis-datatable-button name="clone" *ngIf="canClonar" [bTooltip]="clonarTooltip()"
 							(click)="clonar(analiseSelecionada.id)" icon="content-copy"
-							[disabled]="datatable.selectedRow == null">
+							[disabled]="datatable.selectedRow == null || selectButtonMultiple">
 						</basis-datatable-button>
 						<basis-datatable-button name="relatorioBrowserDetalhado" *ngIf="canRelatorioDetalhado"
 							[bTooltip]="relatorioTooltip()" icon="description"
 							(click)="geraRelatorioPdfDetalhadoBrowser(analiseSelecionada)"
-							[disabled]="datatable.selectedRow == null">
+							[disabled]="datatable.selectedRow == null || selectButtonMultiple">
 						</basis-datatable-button>
 						<basis-datatable-button name="relatorioExcelDetalhado" *ngIf="canRelatorioExcel"
 							[bTooltip]="relatorioExcelTooltip()" icon="description"
-							(click)="gerarRelatorioExcel(analiseSelecionada)" [disabled]="datatable.selectedRow == null"
+							(click)="gerarRelatorioExcel(analiseSelecionada)" [disabled]="datatable.selectedRow == null || selectButtonMultiple"
 							class="ui-button-success">
 						</basis-datatable-button>
 						<basis-datatable-button name="relatorioAnaliseContagem" *ngIf="canRelatorioFundamentacao"
 							[bTooltip]="relatorioContagemTooltip()" icon="description"
 							(click)="gerarRelatorioContagem(analiseSelecionada)"
-							[disabled]="datatable.selectedRow == null" class="ui-button-danger">
+							[disabled]="datatable.selectedRow == nul || selectButtonMultiple" class="ui-button-danger">
 						</basis-datatable-button>
 						<basis-datatable-button name="cloneParaEquipe" *ngIf="canClonarEquipe"
 							[bTooltip]="clonarParaEquipeTooltip()" icon="content-copy" (click)="clonarEquipe()"
-							[disabled]="datatable.selectedRow == null" class="ui-button-success">
+							[disabled]="datatable.selectedRow == null || selectButtonMultiple" class="ui-button-success">
 						</basis-datatable-button>
 						<basis-datatable-button name="changeStatus" *ngIf="canAlterarStatus"
 							[bTooltip]="changeStatusTooltip()" icon="swap-vert"
@@ -265,10 +265,10 @@
 						</basis-datatable-button>
 						<basis-datatable-button *ngIf="canExportarPlanilha" name="exportExcel"
 							[bTooltip]="'Exportar planilha excel'" (click)="openModalExportarExcel(analiseSelecionada)"
-							icon="file-upload" class="ui-button-success" [disabled]="datatable.selectedRow == null">
+							icon="file-upload" class="ui-button-success" [disabled]="datatable.selectedRow == null || selectButtonMultiple">
 						</basis-datatable-button>
 						<basis-datatable-button name="exportJson" [bTooltip]="'Exportar análise'" icon="call-received"
-							(click)="exportarAnalise(analiseSelecionada);" [disabled]="datatable.selectedRow == null"
+							(click)="exportarAnalise(analiseSelecionada);" [disabled]="datatable.selectedRow == null || selectButtonMultiple"
 							class="ui-button-info">
 						</basis-datatable-button>
 						<basis-datatable-button name="importJson" [bTooltip]="'Importar análise'" icon="call-made"
@@ -332,34 +332,35 @@
 	</app-green-button>
 	<br />
 	<br />
-
-	<hr />
-	<h3>Compartilhada com:</h3>
-	<p-table [(value)]="analiseTemp.compartilhadas" selectionMode="single" [(selection)]="selectedToDelete"
-		dataKey="equipeId" emptyMessage="Nenhuma outra equipe tem acesso a essa análise">
-		<ng-template pTemplate="header">
-			<tr>
-				<th style="text-align:left; width: 50px;"></th>
-				<th>Equipe</th>
-				<th>Somente visualizar ?</th>
-			</tr>
-		</ng-template>
-		<ng-template pTemplate="body" let-equipe>
-			<tr class="ui-selectable-row">
-				<td>
-					<p-radioButton [(ngModel)]="selectedToDelete" [value]="equipe"></p-radioButton>
-				</td>
-				<td>
-					{{equipe.nomeEquipe}}
-				</td>
-				<td>
-					{{equipe.viewOnly? 'Sim' : 'Não'}}
-				</td>
-			</tr>
-		</ng-template>
-	</p-table>
-	<app-red-button buttonLabel="Remover" (click)="deletarCompartilhar()" style="float:right; margin-top: 5px">
-	</app-red-button>
+	<div *ngIf="analisesSelecionadasEmLote && analisesSelecionadasEmLote.length == 1">
+		<hr />
+		<h3>Compartilhada com:</h3>
+		<p-table [(value)]="analiseTemp.compartilhadas" selectionMode="single" [(selection)]="selectedToDelete"
+			dataKey="equipeId" emptyMessage="Nenhuma outra equipe tem acesso a essa análise">
+			<ng-template pTemplate="header">
+				<tr>
+					<th style="text-align:left; width: 50px;"></th>
+					<th>Equipe</th>
+					<th>Somente visualizar ?</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-equipe>
+				<tr class="ui-selectable-row">
+					<td>
+						<p-radioButton [(ngModel)]="selectedToDelete" [value]="equipe"></p-radioButton>
+					</td>
+					<td>
+						{{equipe.nomeEquipe}}
+					</td>
+					<td>
+						{{equipe.viewOnly? 'Sim' : 'Não'}}
+					</td>
+				</tr>
+			</ng-template>
+		</p-table>
+		<app-red-button buttonLabel="Remover" (click)="deletarCompartilhar()" style="float:right; margin-top: 5px">
+		</app-red-button>
+	</div>
 </p-dialog>
 <p-dialog header="Clonar para equipe" [(visible)]="showDialogAnaliseCloneTipoEquipe" [style]="{width: '50vw'}"
 	[minHeight]="300" [modal]="true">
@@ -407,12 +408,12 @@
 				</p-dropdown>
 			</div>
 			<div class="ui-g-12 ui-md-12 ui-sm-12"></div>
-			<div class="ui-g-4 ui-md-4 ui-sm-12">
+			<div class="ui-g-4 ui-md-4 ui-sm-12" *ngIf="analisesSelecionadasEmLote?.length == 1">
 				<p-checkbox name="encerrada" id="idIsEncerrada" binary="true" label="Encerrada análise"
 					(onChange)="mudarEncerramento($event)" [(ngModel)]="analiseSelecionada.encerrada">
 				</p-checkbox>
 			</div>
-			<div class="ui-g-4 ui-md-4 ui-sm-12" *ngIf="analiseSelecionada.encerrada">
+			<div class="ui-g-4 ui-md-4 ui-sm-12" *ngIf="analiseSelecionada?.encerrada && analisesSelecionadasEmLote?.length == 1">
 				<span class="md-inputfield">
 					<p-calendar required name="dtEncerramento" [(ngModel)]="analiseSelecionada.dtEncerramento"
 						[appendTo]="dialogAlterarStatus" id="dtEncerramento" dateFormat="dd/mm/yy" showIcon="true">

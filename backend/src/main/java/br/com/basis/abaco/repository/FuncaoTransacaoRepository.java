@@ -17,7 +17,7 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao, Long> {
 
-    
+
     @Query(value = "SELECT f.funcionalidade.id FROM FuncaoTransacao f where f.id = ?1")
     Long getIdFuncionalidade(Long id);
 
@@ -25,7 +25,7 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
     FuncaoTransacao findWithDerAndAlr(@Param("id") Long id);
 
     @Override
-    @EntityGraph(attributePaths = {"funcionalidade", "alrs", "ders", "fatorAjuste", "files"})
+    @EntityGraph(attributePaths = {"funcionalidade", "alrs", "ders", "fatorAjuste"})
     FuncaoTransacao findOne(@Param("id") Long id);
 
     @Query(value = "SELECT f FROM FuncaoTransacao f WHERE f.funcionalidade.id = :id")

@@ -27,12 +27,16 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.analise.id = ?1 ")
     List<FuncaoDados> findByAnalise(Long id);
 
-    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste", "files"})
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.id = ?1")
     FuncaoDados findById(Long id);
 
     @Query(value = "SELECT f.funcionalidade.id FROM FuncaoDados f where f.id = ?1")
     Long getIdFuncionalidade(Long id);
+
+    @Override
+    @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
+    FuncaoDados findOne(@Param("id") Long id);
 
     @Query(value = "SELECT f FROM FuncaoDados f WHERE f.analise.id = :analiseId AND f.funcionalidade.id = :funcionalidadeId ORDER BY f.name asc, f.id asc")
     Set<FuncaoDados> findByAnaliseFuncionalidade(@Param("analiseId") Long analiseId, @Param("funcionalidadeId") Long funcionalidadeId);
