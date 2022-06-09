@@ -8,6 +8,7 @@ import br.com.basis.abaco.domain.VwDerAll;
 import br.com.basis.abaco.domain.VwRlr;
 import br.com.basis.abaco.domain.VwRlrAll;
 import br.com.basis.abaco.repository.ConfiguracaoRepository;
+import br.com.basis.abaco.service.dto.ConfiguracaoDTO;
 import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import com.codahale.metrics.annotation.Timed;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,9 @@ public class ConfiguracaoResource {
 
     @PatchMapping("/configuracao")
     @Secured("ROLE_ABACO_CONFIGURACAO_EDITAR")
-    public void salvarConfiguracao(@RequestBody Configuracao configuracao){
+    public void salvarConfiguracao(@RequestBody ConfiguracaoDTO configuracaoDTO){
+        Configuracao configuracao = new Configuracao(configuracaoDTO);
+        
         configuracao = configuracaoRepository.save(configuracao);
         ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
         configuracaoUtils.setHabilitarCamposFuncao(configuracao.getHabilitarCamposFuncao());

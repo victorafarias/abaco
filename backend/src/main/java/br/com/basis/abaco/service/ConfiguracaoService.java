@@ -17,8 +17,9 @@ public class ConfiguracaoService {
 
     public Boolean buscarConfiguracaoHabilitarCamposFuncao(){
         ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
-        if(configuracaoUtils.getHabilitarCamposFuncao() == null)
+        if(configuracaoUtils.getHabilitarCamposFuncao() == null){
             configuracaoUtils.setHabilitarCamposFuncao(configuracaoRepository.findAll().stream().findFirst().orElse(new Configuracao()).getHabilitarCamposFuncao());
+        }
 
         return configuracaoUtils.getHabilitarCamposFuncao();
     }
