@@ -248,7 +248,7 @@
 						<basis-datatable-button name="relatorioAnaliseContagem" *ngIf="canRelatorioFundamentacao"
 							[bTooltip]="relatorioContagemTooltip()" icon="description"
 							(click)="gerarRelatorioContagem(analiseSelecionada)"
-							[disabled]="datatable.selectedRow == nul || selectButtonMultiple" class="ui-button-danger">
+							[disabled]="datatable.selectedRow == null || selectButtonMultiple" class="ui-button-danger">
 						</basis-datatable-button>
 						<basis-datatable-button name="cloneParaEquipe" *ngIf="canClonarEquipe"
 							[bTooltip]="clonarParaEquipeTooltip()" icon="content-copy" (click)="clonarEquipe()"
