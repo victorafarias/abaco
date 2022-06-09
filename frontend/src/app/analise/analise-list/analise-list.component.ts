@@ -707,6 +707,7 @@ export class AnaliseListComponent implements OnInit {
                 }
             }
         }
+
         this.datatable.pDatatableComponent.metaKeySelection = true;
         if (this.datatable && this.datatable.selectedRow) {
             this.inicial = true;
