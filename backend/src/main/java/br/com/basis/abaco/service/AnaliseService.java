@@ -45,7 +45,12 @@ import br.com.basis.abaco.repository.search.FuncaoDadosSearchRepository;
 import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
 import br.com.basis.abaco.repository.search.UserSearchRepository;
 import br.com.basis.abaco.security.SecurityUtils;
-import br.com.basis.abaco.service.dto.*;
+import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
+import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
+import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
 import br.com.basis.abaco.utils.StringUtils;
@@ -646,28 +651,7 @@ public class AnaliseService extends BaseService {
         return qb;
     }
 
-    public AbacoMensagens saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas) {
-        AbacoMensagens abacoMensagens = new AbacoMensagens();
-        if (lstCompartilhadas != null && lstCompartilhadas.size() > 0) {
-            long idAnalise = lstCompartilhadas.stream().findFirst().get().getAnaliseId();
-            Analise analise = analiseRepository.findOneByIdClean(idAnalise);
-            analise.setCompartilhadas(lstCompartilhadas);
-            this.updatePf(analise);
-            analiseRepository.save(analise);
-            analiseSearchRepository.save(convertToEntity(convertToDto(analise)));
-            List<String> nomeDasEquipes = new ArrayList<>();
-            lstCompartilhadas.forEach(compartilhada -> {
-                TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
-                nomeDasEquipes.add(tipoEquipe.getNome());
-                if (!(StringUtils.isEmptyString(tipoEquipe.getEmailPreposto()) && StringUtils.isEmptyString(tipoEquipe.getPreposto()))) {
-                    this.mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
-                }
-            });
-            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
-            abacoMensagens.adicionarNovoSucesso(String.format("Análise "+analise.getIdentificadorAnalise()+" compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
-        }
-        return abacoMensagens;
-    }
+
 
     public boolean permissionToEdit(User user, Analise analise) {
         boolean canEdit = false;
@@ -1193,7 +1177,6 @@ public class AnaliseService extends BaseService {
                     analise.getOrganizacao().getId(),
                     analise.getEquipeResponsavel().getId(),
                     analise.getId()).stream().map(tipoEquipe -> tipoEquipe.getId()).collect(Collectors.toList());
-
             List<Long> jaCompartilhadas = analise.getCompartilhadas().stream().map(compartilhada -> compartilhada.getEquipeId()).collect(Collectors.toList());
 
             compartilhadaList.forEach(compartilhadaDto -> {
@@ -1213,24 +1196,58 @@ public class AnaliseService extends BaseService {
                     }
                 }
             });
-            if(compartilhadas.size() > 0){
-                analise.setCompartilhadas(compartilhadas);
-                this.updatePf(analise);
-                analiseRepository.save(analise);
-                analiseSearchRepository.save(convertToEntity(convertToDto(analise)));
-                List<String> nomeDasEquipes = new ArrayList<>();
-                compartilhadas.forEach(compartilhada -> {
-                    TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
-                    nomeDasEquipes.add(tipoEquipe.getNome());
-                    if (!(StringUtils.isEmptyString(tipoEquipe.getEmailPreposto()) && StringUtils.isEmptyString(tipoEquipe.getPreposto()))) {
-                        this.mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
-                    }
-                });
-                this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
-                abacoMensagens.adicionarNovoSucesso(String.format("Análise "+analise.getIdentificadorAnalise()+" compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+            this.compartilharAnalise(analise, compartilhadas, abacoMensagens);
 
-            }
         }
         return abacoMensagens;
+    }
+
+    public AbacoMensagens saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas) {
+        AbacoMensagens abacoMensagens = new AbacoMensagens();
+        if (lstCompartilhadas != null && lstCompartilhadas.size() > 0) {
+            long idAnalise = lstCompartilhadas.stream().findFirst().get().getAnaliseId();
+            Analise analise = analiseRepository.findOneByIdClean(idAnalise);
+            this.compartilharAnalise(analise, lstCompartilhadas, abacoMensagens);
+        }
+        return abacoMensagens;
+    }
+
+    private void compartilharAnalise(Analise analise, Set<Compartilhada> compartilhadas, AbacoMensagens abacoMensagens) {
+        if(compartilhadas.size() > 0){
+            analise.setCompartilhadas(compartilhadas);
+            this.updatePf(analise);
+            analiseRepository.save(analise);
+            analiseSearchRepository.save(convertToEntity(convertToDto(analise)));
+            List<String> nomeDasEquipes = new ArrayList<>();
+            compartilhadas.forEach(compartilhada -> {
+                TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
+                nomeDasEquipes.add(tipoEquipe.getNome());
+                if (!(StringUtils.isEmptyString(tipoEquipe.getEmailPreposto()) && StringUtils.isEmptyString(tipoEquipe.getPreposto()))) {
+                    this.mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
+                }
+            });
+            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+            abacoMensagens.adicionarNovoSucesso(String.format("Análise "+analise.getIdentificadorAnalise()+" compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+        }
+    }
+
+    public void atualizarPf(Analise analise) {
+        if(!analise.getIsDivergence()){
+            this.updatePf(analise);
+        }else{
+            this.updatePFDivergente(analise);
+        }
+    }
+
+    public void inserirHistoricoBloquearDesbloquear(Analise analise) {
+        if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
+            analise.getAnalisesComparadas().forEach(analisePai -> {
+                this.historicoService.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ?
+                    String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) :
+                    String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise()));
+            });
+        }else{
+            this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
+        }
     }
 }

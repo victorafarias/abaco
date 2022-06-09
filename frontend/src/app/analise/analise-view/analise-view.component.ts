@@ -193,7 +193,7 @@ export class AnaliseViewComponent implements OnInit {
 
     setEquipeOrganizacao(org: Organizacao) {
         this.equipeService.findAllByOrganizacaoId(org.id).subscribe((res: TipoEquipe[]) => {
-            this.equipeResponsavel = res;            
+            this.equipeResponsavel = res;
             if (this.equipeResponsavel !== null) {
                 this.hideShowSelectEquipe = false;
             }
@@ -400,7 +400,7 @@ export class AnaliseViewComponent implements OnInit {
 
     public salvarCompartilhar() {
         if (this.selectedEquipes && this.selectedEquipes.length !== 0) {
-            this.analiseService.salvarCompartilhar(this.selectedEquipes).subscribe((res) => {
+            this.analiseService.salvarCompartilhar(this.selectedEquipes, false).subscribe((res) => {
                 this.mostrarDialog = false;
                 this.pageNotificationService.addSuccessMessage(this.getLabel('Análise compartilhada com sucesso!'));
                 this.limparSelecaoCompartilhar();

@@ -537,10 +537,11 @@ export class AnaliseListComponent implements OnInit {
 			this.tipoEquipeService.getEquipesActiveLoggedUser().subscribe((equipes) => {
 				this.equipeShare = [];
 				if (equipes) {
+					let contador = 0;
 					equipes.forEach((equipe) => {
 						const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(),
 							{
-								id: undefined,
+								id: contador++,
 								equipeId: equipe.id,
 								analisesId: this.analisesSelecionadasEmLote.map(analise => analise.id),
 								viewOnly: true, nomeEquipe: equipe.nome
@@ -569,10 +570,11 @@ export class AnaliseListComponent implements OnInit {
 						this.analiseTemp.equipeResponsavel.id)
 						.subscribe((equipes) => {
 							if (equipes) {
+								let contador = 0;
 								equipes.forEach((equipe) => {
 									const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(),
 										{
-											id: undefined,
+											id: contador++,
 											equipeId: equipe.id,
 											analisesId: [this.analiseSelecionada.id],
 											viewOnly: true, nomeEquipe: equipe.nome
@@ -945,7 +947,7 @@ export class AnaliseListComponent implements OnInit {
 
     public limparSelecaoCompartilhar() {
         this.recarregarDataTable();
-        this.selectedEquipes = undefined;
+        this.selectedEquipes = [];
         this.selectedToDelete = undefined;
         this.datatable.filter();
     }
