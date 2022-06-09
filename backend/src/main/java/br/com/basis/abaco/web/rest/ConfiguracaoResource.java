@@ -31,7 +31,6 @@ public class ConfiguracaoResource {
     @Autowired
     private ElasticsearchTemplate elasticsearchTemplate;
 
-
     @GetMapping("/configuracao")
     @Timed
     @Secured("ROLE_ABACO_CONFIGURACAO_EDITAR")
