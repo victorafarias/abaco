@@ -1,5 +1,6 @@
 package br.com.basis.abaco.domain;
 
+import br.com.basis.abaco.service.dto.ConfiguracaoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,5 +32,10 @@ public class Configuracao implements Serializable {
 
     @Column(name = "habilitar_campos_funcao")
     private Boolean habilitarCamposFuncao;
+
+    public Configuracao(ConfiguracaoDTO configuracaoDTO){
+        this.id = configuracaoDTO.getId();
+        this.habilitarCamposFuncao = configuracaoDTO.getHabilitarCamposFuncao();
+    }
 
 }

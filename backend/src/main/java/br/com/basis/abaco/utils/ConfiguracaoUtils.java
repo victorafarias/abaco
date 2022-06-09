@@ -1,8 +1,5 @@
 package br.com.basis.abaco.utils;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public final class ConfiguracaoUtils {
     private static ConfiguracaoUtils instance;
     private Boolean habilitarCamposFuncao;
