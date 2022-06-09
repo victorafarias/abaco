@@ -1,0 +1,11 @@
+<p-fieldset legend="Configurações">
+	<form name="form" #form="ngForm">
+		<div class="ui-g-6 ui-md-8 ui-sm-12">
+			<label style="padding-right: 25px">Habilitar funcionalidades dos campos das funções (DERS, ALRS, RLRS):</label>
+			<p-radioButton (onClick)="alterarHabilitarCamposFuncao(true)" style="padding-right: 25px" name="habilitarCamposFuncao" id="idSimHabilitarCamposFuncao" [value]="true" [label]="'Sim'"
+				[(ngModel)]="configuracao.habilitarCamposFuncao"></p-radioButton>
+			<p-radioButton (onClick)="alterarHabilitarCamposFuncao(false)"  name="habilitarCamposFuncao" id="idNaoHabilitarCamposFuncao" [value]="false" [label]="'Não'"
+				[(ngModel)]="configuracao.habilitarCamposFuncao"></p-radioButton>
+		</div>
+	</form>
+</p-fieldset>
