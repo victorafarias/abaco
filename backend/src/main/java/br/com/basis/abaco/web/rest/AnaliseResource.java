@@ -379,6 +379,7 @@ public class AnaliseResource {
         }
         return new ResponseEntity<>(abacoMensagens, HttpStatus.OK);
     }
+    
 
     @DeleteMapping("/analises/compartilhar/delete/{id}")
     @Timed
