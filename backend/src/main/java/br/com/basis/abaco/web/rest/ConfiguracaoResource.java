@@ -34,7 +34,6 @@ public class ConfiguracaoResource {
 
     @GetMapping("/configuracao")
     @Timed
-    @Secured("ROLE_ABACO_CONFIGURACAO_EDITAR")
     public ResponseEntity<Configuracao> buscarConfiguracao() {
         Configuracao configuracao = configuracaoRepository.findAll().stream().findFirst().orElse(new Configuracao());
         ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
@@ -46,7 +45,7 @@ public class ConfiguracaoResource {
     @Secured("ROLE_ABACO_CONFIGURACAO_EDITAR")
     public void salvarConfiguracao(@RequestBody ConfiguracaoDTO configuracaoDTO){
         Configuracao configuracao = new Configuracao(configuracaoDTO);
-        
+
         configuracao = configuracaoRepository.save(configuracao);
         ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
         configuracaoUtils.setHabilitarCamposFuncao(configuracao.getHabilitarCamposFuncao());
