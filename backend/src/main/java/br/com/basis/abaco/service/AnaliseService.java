@@ -1166,8 +1166,7 @@ public class AnaliseService extends BaseService {
         return analises;
     }
 
-    public AbacoMensagens salvarCompartilhadasMultiplas(Set<CompartilhadaDTO> compartilhadaList) {
-        AbacoMensagens abacoMensagens = new AbacoMensagens();
+    public AbacoMensagens salvarCompartilhadasMultiplas(Set<CompartilhadaDTO> compartilhadaList, AbacoMensagens abacoMensagens) {
         List<Long> idsAnalise = compartilhadaList.stream().findFirst().get().getAnalisesId();
         for (Long idAnalise : idsAnalise) {
             Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
@@ -1202,8 +1201,7 @@ public class AnaliseService extends BaseService {
         return abacoMensagens;
     }
 
-    public AbacoMensagens saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas) {
-        AbacoMensagens abacoMensagens = new AbacoMensagens();
+    public AbacoMensagens saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas, AbacoMensagens abacoMensagens) {
         if (lstCompartilhadas != null && lstCompartilhadas.size() > 0) {
             long idAnalise = lstCompartilhadas.stream().findFirst().get().getAnaliseId();
             Analise analise = analiseRepository.findOneByIdClean(idAnalise);

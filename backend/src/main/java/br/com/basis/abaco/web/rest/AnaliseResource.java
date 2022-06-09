@@ -363,7 +363,7 @@ public class AnaliseResource {
     public ResponseEntity<AbacoMensagens> popularCompartilhar(@Valid @RequestBody Set<CompartilhadaDTO> compartilhadaList, @RequestParam(value = "ehMultiplo", required = false) Boolean ehMultiplo) throws URISyntaxException {
         AbacoMensagens abacoMensagens = new AbacoMensagens();
         if(ehMultiplo){
-           abacoMensagens = this.analiseService.salvarCompartilhadasMultiplas(compartilhadaList);
+           this.analiseService.salvarCompartilhadasMultiplas(compartilhadaList, abacoMensagens);
         }else{
             Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
             compartilhadaList.forEach(compartilhadaDto -> {
@@ -375,10 +375,11 @@ public class AnaliseResource {
                 compartilhadaRepository.save(compartilhada);
                 compartilhadas.add(compartilhada);
             });
-            abacoMensagens = analiseService.saveAnaliseCompartilhada(compartilhadas);
+            analiseService.saveAnaliseCompartilhada(compartilhadas, abacoMensagens);
         }
         return new ResponseEntity<>(abacoMensagens, HttpStatus.OK);
     }
+    
 
     @DeleteMapping("/analises/compartilhar/delete/{id}")
     @Timed
