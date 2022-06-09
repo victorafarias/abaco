@@ -1230,7 +1230,7 @@ public class AnaliseService extends BaseService {
     }
 
     public void atualizarPf(Analise analise) {
-        if(!analise.getIsDivergence()){
+        if(analise.getIsDivergence() == null || !analise.getIsDivergence()){
             this.updatePf(analise);
         }else{
             this.updatePFDivergente(analise);
@@ -1238,7 +1238,7 @@ public class AnaliseService extends BaseService {
     }
 
     public void inserirHistoricoBloquearDesbloquear(Analise analise) {
-        if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
+        if(analise.getIsDivergence() != null && analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
             analise.getAnalisesComparadas().forEach(analisePai -> {
                 this.historicoService.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ?
                     String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) :

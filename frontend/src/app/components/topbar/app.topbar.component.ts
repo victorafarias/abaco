@@ -135,5 +135,5 @@ export class AppTopbarComponent implements OnInit{
 					let menu = element.children[0];
 					menu.setAttribute("style","opacity:1!important");
 				}
-			}
+		}
 
