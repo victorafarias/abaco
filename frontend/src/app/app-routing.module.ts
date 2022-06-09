@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginSuccessComponent } from '@nuvem/angular-base';
 import { DiarioErrosComponent } from './components/diario-erros/diario-erros.component';
+import { ConfiguracaoComponent } from './configuracao';
 import { ConfiguracaoBaselineComponent } from './configuracao-baseline';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { IndexadorComponent } from './indexador/indexador.component';
@@ -17,6 +18,10 @@ const routes: Routes = [
   { path: 'login-success', component: LoginSuccessComponent, data: { breadcrumb: 'Login Sucesso'}},
   { path: 'indexador', component: IndexadorComponent , canActivate: [AuthGuardService] , data: { breadcrumb: 'Reindexar'} },
   { path: 'configuracao-baseline', component: ConfiguracaoBaselineComponent , canActivate: [AuthGuardService] , data: { breadcrumb: 'Configuração Baseline'} },
+  { path: 'configuracao', component: ConfiguracaoComponent , canActivate: [AuthGuardService] , data: {
+		roleParaVerificar: ['ROLE_ABACO_CONFIGURACAO_EDITAR'],
+		breadcrumb: 'Configuração'
+	} },
   { path: 'login', component: LoginComponent, data: { breadcrumb: 'Login'}},
 ];
 

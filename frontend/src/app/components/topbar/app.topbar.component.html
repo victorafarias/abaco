@@ -17,6 +17,12 @@
                     <span class="topbar-item-name">Settings</span>
                 </a>
                 <ul class="ultima-menu animated fadeInDown">
+					<li role="menuitem">
+                        <a routerLink="/configuracao" *ngIf="canEditarConfiguracao">
+                            <i class="material-icons">build</i>
+                            <span>Configurações</span>
+                        </a>
+                    </li>
                     <li role="menuitem">
                         <a routerLink="/indexador">
                             <i class="material-icons">refresh</i>
@@ -35,14 +41,14 @@
                             <span>Configuração Baseline</span>
                         </a>
                     </li>
-                    
+
                     <li role="menuitem">
                         <a (click)="mostrarNovidade()">
                             <i class="material-icons">new_releases</i>
                             <span>Mostrar novidades</span>
                         </a>
                     </li>
-                    
+
                     <li role="menuitem">
                         <a logout >
                             <i class="material-icons">power_settings_new</i>
@@ -60,7 +66,7 @@
                     <li role="menuitem">
                         <a>
                             <strong> Usuário: </strong> {{authenticatedUserFirstName()}}
-                            
+
                             <!-- <span user><strong>Usuário: </strong> </span> -->
                         </a>
                     </li>
@@ -68,7 +74,7 @@
                         <a routerLink="/senha">
                             <i class="material-icons">security</i>
                             <span>Alterar Senha</span>
-                            
+
                         </a>
                     </li>
                 </ul>
@@ -78,7 +84,7 @@
 </div>
 
 <p-dialog [draggable]="false" (onHide)="verificarOpcaoMostrarNovidades()" [modal]="true" [style]="{width: '50vw'}" [closable]="true" header="Novidades da versão"
-styleClass="test2" 
+styleClass="test2"
 (onShow)="reinit($event)"
 [(visible)]="mostrarDialogNovidadesVersao" [contentStyle]="{'height': ['windowHeightDialog']}"
 #dialogNovidadesVersao>
@@ -86,10 +92,10 @@ styleClass="test2"
         <div class="ui-g-3">
             <p-menu id="menu-dialog" #menuNV name="menuNV" styleClass="test"  [model]="items"></p-menu>
         </div>
-        
+
         <div class="ui-g-9">
             <p-panel [header]="'Versão selecionada: '+novidadeVersao.versao" styleClass="test" >
-                <p-header  style="float: right; position: relative; 
+                <p-header  style="float: right; position: relative;
                 color: rgb(0, 0, 0);">
                 Versão mais atual: {{versaoAtual}}
             </p-header>

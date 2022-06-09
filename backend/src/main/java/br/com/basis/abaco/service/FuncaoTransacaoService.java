@@ -55,6 +55,8 @@ public class FuncaoTransacaoService {
     @Autowired
     private VwAlrSearchRepository vwAlrSearchRepository;
 
+    @Autowired
+    private ConfiguracaoService configuracaoService;
     public FuncaoTransacaoService(FuncaoTransacaoRepository funcaoTransacaoRepository) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
     }
@@ -91,7 +93,7 @@ public class FuncaoTransacaoService {
 ;
             FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoParaSalvar);
 
-            if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
                 saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
             }
             funcoesAdicionadas.add(result);

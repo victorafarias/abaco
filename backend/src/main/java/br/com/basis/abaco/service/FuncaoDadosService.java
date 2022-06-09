@@ -63,6 +63,9 @@ public class FuncaoDadosService {
     @Autowired
     private VwRlrSearchRepository vwRlrSearchRepository;
 
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+
     public FuncaoDadosService(FuncaoDadosRepository funcaoDadosRepository, AnaliseService analiseService) {
         this.funcaoDadosRepository = funcaoDadosRepository;
         this.analiseService = analiseService;
@@ -146,7 +149,7 @@ public class FuncaoDadosService {
 
             FuncaoDados result = funcaoDadosRepository.save(funcaoParaSalvar);
 
-            if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
                 this.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
             }
             funcoesAdicionadas.add(result);

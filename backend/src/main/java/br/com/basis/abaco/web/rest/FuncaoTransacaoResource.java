@@ -15,6 +15,7 @@ import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
 import br.com.basis.abaco.repository.search.VwAlrSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.service.AnaliseService;
+import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
@@ -26,6 +27,7 @@ import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
+import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -87,6 +89,10 @@ public class FuncaoTransacaoResource {
     @Autowired
     private FuncaoTransacaoService funcaoTransacaoService;
 
+
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+
     public FuncaoTransacaoResource(FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwAlrSearchRepository vwAlrSearchRepository, FuncaoDadosService funcaoDadosService) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
         this.funcaoTransacaoSearchRepository = funcaoTransacaoSearchRepository;
@@ -130,7 +136,9 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        }
 
         return ResponseEntity.created(new URI("/api/funcao-transacaos/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
@@ -175,7 +183,9 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        }
 
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoTransacao.getId().toString())).body(result);
     }
@@ -275,8 +285,11 @@ public class FuncaoTransacaoResource {
     public ResponseEntity<Void> deleteFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        funcaoTransacao.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
-        funcaoTransacao.getAlrs().forEach(item -> vwAlrSearchRepository.delete(item.getId()));
+        ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
+        if(configuracaoUtils.getHabilitarCamposFuncao() == true){
+            funcaoTransacao.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
+            funcaoTransacao.getAlrs().forEach(item -> vwAlrSearchRepository.delete(item.getId()));
+        }
         funcaoTransacaoRepository.delete(id);
         funcaoTransacaoSearchRepository.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();

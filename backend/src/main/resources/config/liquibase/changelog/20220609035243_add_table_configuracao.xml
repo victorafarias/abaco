@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1654746792889-4">
+      <createTable tableName="configuracao">
+         <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints primaryKey="true" primaryKeyName="configuracaoPK"/>
+         </column>
+         <column name="habilitar_campos_funcao" type="BOOLEAN"/>
+      </createTable>
+   </changeSet>
+
+    <changeSet author="pedro-santos" id="1654746792889-5">
+        <loadData encoding="UTF-8"
+                  file="config/liquibase/funcionalidades20220609.csv"
+                  separator=";"
+                  tableName="funcionalidade_abaco"/>
+        <loadData encoding="UTF-8"
+                  file="config/liquibase/permissoes20220609.csv"
+                  separator=";"
+                  tableName="permissao"/>
+    </changeSet>
+</databaseChangeLog>

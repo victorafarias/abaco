@@ -15,6 +15,7 @@ import br.com.basis.abaco.repository.search.FuncaoDadosSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrSearchRepository;
 import br.com.basis.abaco.service.AnaliseService;
+import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.dto.DerFdDTO;
 import br.com.basis.abaco.service.dto.DropdownDTO;
@@ -27,6 +28,7 @@ import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.ImportarFDDTO;
 import br.com.basis.abaco.service.dto.RlrFdDTO;
+import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -91,6 +93,10 @@ public class FuncaoDadosResource {
     private AnaliseService analiseService;
 
 
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+
+
     public FuncaoDadosResource(FuncaoDadosRepository funcaoDadosRepository,
                                FuncaoDadosSearchRepository funcaoDadosSearchRepository, FuncaoDadosService funcaoDadosService, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwRlrSearchRepository vwRlrSearchRepository) {
         this.funcaoDadosRepository = funcaoDadosRepository;
@@ -137,7 +143,9 @@ public class FuncaoDadosResource {
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
         FuncaoDadosEditDTO  funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
-        funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        }
 
         return ResponseEntity.created(new URI("/api/funcao-dados/" + funcaoDadosEditDTO.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, funcaoDadosEditDTO.getId().toString()))
@@ -179,7 +187,9 @@ public class FuncaoDadosResource {
         FuncaoDados result = funcaoDadosRepository.save(funcaoDadosUpdate);
         FuncaoDadosEditDTO funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
-        funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        }
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoDados.getId().toString())).body(funcaoDadosEditDTO);
     }
 
@@ -261,8 +271,11 @@ public class FuncaoDadosResource {
     public ResponseEntity<Void> deleteFuncaoDados(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoDados : {}", id);
         FuncaoDados funcaoDados = funcaoDadosRepository.findById(id);
-        funcaoDados.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
-        funcaoDados.getRlrs().forEach(item -> vwRlrSearchRepository.delete(item.getId()));
+        ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
+        if(configuracaoUtils.getHabilitarCamposFuncao() == true){
+            funcaoDados.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
+            funcaoDados.getRlrs().forEach(item -> vwRlrSearchRepository.delete(item.getId()));
+        }
         funcaoDadosRepository.delete(id);
         funcaoDadosSearchRepository.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
