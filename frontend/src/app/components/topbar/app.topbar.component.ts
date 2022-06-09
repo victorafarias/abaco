@@ -51,11 +51,10 @@ export class AppTopbarComponent implements OnInit{
 			if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "CONFIGURACAO_EDITAR") == true) {
 				this.canEditarConfiguracao = true;
 			}
-
 		}
 
 		public setarLogoOrganizacao(){
-			if(this.isAuthenticated() == true){
+			if(this.isAuthenticated() == true && this._authentication.getUser != null){
 				this.orgService.searchActiveOrganizations().subscribe(r => {
 					if(r.length === 1){
 						let logo;
