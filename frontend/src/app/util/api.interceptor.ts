@@ -22,8 +22,6 @@ export class APIInterceptor implements HttpInterceptor{
 	handleResponse(data: any){
 		if(!data || !data.body) return
 		const abacoMensagens  = data?.body?.mensagens;
-		console.log(data);
-
 		if(abacoMensagens){
 			if(abacoMensagens?.mensagens?.length > 0){
 				this.ajustarMensagens(abacoMensagens?.mensagens);

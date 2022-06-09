@@ -332,7 +332,7 @@ export class AnaliseResumoComponent implements OnInit {
 
     public salvarCompartilhar() {
         if (this.selectedEquipes && this.selectedEquipes.length !== 0) {
-            this.analiseService.salvarCompartilhar(this.selectedEquipes).subscribe((res) => {
+            this.analiseService.salvarCompartilhar(this.selectedEquipes, false).subscribe((res) => {
                 this.mostrarDialog = false;
                 this.analise.compartilhadas = this.analise.compartilhadas.concat(this.selectedEquipes);
                 this.selectedEquipes.forEach(item => {

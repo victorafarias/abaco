@@ -296,7 +296,7 @@
 <p-dialog *ngIf="equipeShare" header="Compartilhar Análise" [(visible)]="mostrarDialog" [modal]="true"
 	(onHide)="limparSelecaoCompartilhar()" [style]="{width: '50vw'}">
 	<p-table [(value)]="equipeShare" [headerCheckboxToggleAllPages]="true" [(selection)]="selectedEquipes"
-		dataKey="equipeId" emptyMessage="Nenhuma outra equipe na sua organização pode ter acesso à essa análise">
+		dataKey="id" emptyMessage="Nenhuma outra equipe na sua organização pode ter acesso à essa análise">
 
 		<ng-template pTemplate="header">
 			<tr>

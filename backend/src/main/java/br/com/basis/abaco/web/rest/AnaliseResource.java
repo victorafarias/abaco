@@ -30,7 +30,12 @@ import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.HistoricoService;
 import br.com.basis.abaco.service.PerfilService;
 import br.com.basis.abaco.service.PlanilhaService;
-import br.com.basis.abaco.service.dto.*;
+import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseEncerramentoDTO;
+import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
+import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
@@ -40,7 +45,6 @@ import br.com.basis.abaco.service.relatorio.RelatorioDivergenciaColunas;
 import br.com.basis.abaco.service.validadores.AnaliseValidador;
 import br.com.basis.abaco.utils.AbacoUtil;
 import br.com.basis.abaco.utils.PageUtils;
-import br.com.basis.abaco.utils.StringUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import br.com.basis.abaco.web.rest.util.PaginationUtil;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
@@ -91,8 +95,12 @@ import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 
@@ -211,23 +219,10 @@ public class AnaliseResource {
                 analise.setDataHomologacao(Timestamp.from(Instant.now()));
             }
             analise.setBloqueiaAnalise(!analise.isBloqueiaAnalise());
-            if(!analise.getIsDivergence()){
-                analiseService.updatePf(analise);
-            }else{
-                analiseService.updatePFDivergente(analise);
-            }
+            analiseService.atualizarPf(analise);
             analiseRepository.save(analise);
             analiseSearchRepository.save(analiseService.convertToEntity(analiseService.convertToDto(analise)));
-
-            if(analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
-                analise.getAnalisesComparadas().forEach(analisePai -> {
-                    this.historicoService.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ?
-                        String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) :
-                        String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise()));
-                });
-            }else{
-                this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
-            }
+            analiseService.inserirHistoricoBloquearDesbloquear(analise);
             return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, analise.getId().toString())).body(analiseService.convertToAnaliseEditDTO(analise));
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AnaliseEditDTO());
@@ -380,7 +375,7 @@ public class AnaliseResource {
                 compartilhadaRepository.save(compartilhada);
                 compartilhadas.add(compartilhada);
             });
-            analiseService.saveAnaliseCompartilhada(compartilhadas);
+            abacoMensagens = analiseService.saveAnaliseCompartilhada(compartilhadas);
         }
         return new ResponseEntity<>(abacoMensagens, HttpStatus.OK);
     }
