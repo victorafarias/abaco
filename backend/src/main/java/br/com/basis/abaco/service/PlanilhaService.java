@@ -141,9 +141,9 @@ public class PlanilhaService {
         excelSheet.getRow(4).getCell(3).setCellValue(analise.getNumeroOs() != null ? analise.getNumeroOs() : analise.getIdentificadorAnalise());
 
         if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-            excelSheet.getRow(6).getCell(0).setCellValue("X");
-        }else{
             excelSheet.getRow(7).getCell(0).setCellValue("X");
+        }else{
+            excelSheet.getRow(6).getCell(0).setCellValue("X");
         }
 
         excelSheet.getRow(6).getCell(2).setCellValue("X");
