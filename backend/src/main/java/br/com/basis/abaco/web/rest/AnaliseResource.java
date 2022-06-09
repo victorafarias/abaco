@@ -162,6 +162,7 @@ public class AnaliseResource {
         this.perfilService = perfilService;
     }
 
+    
     @PostMapping("/analises")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_CADASTRAR")
