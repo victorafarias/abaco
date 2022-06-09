@@ -379,7 +379,7 @@ public class AnaliseResource {
         }
         return new ResponseEntity<>(abacoMensagens, HttpStatus.OK);
     }
-    
+
 
     @DeleteMapping("/analises/compartilhar/delete/{id}")
     @Timed
@@ -847,7 +847,8 @@ public class AnaliseResource {
         ByteArrayOutputStream outputStream = planilhaService.selecionarModelo(analise, modelo);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.xlsx", RelatorioUtil.pegarNomeRelatorio(analise)));
+        String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analise), extensaoModelo));
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
     }
 
@@ -913,7 +914,8 @@ public class AnaliseResource {
         ByteArrayOutputStream outputStream = planilhaService.selecionarModeloDivergencia(analise, modelo);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.xlsx", RelatorioUtil.pegarNomeRelatorio(analise)));
+        String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analise), extensaoModelo));
         return new ResponseEntity<byte[]>(outputStream.toByteArray(),headers, HttpStatus.OK);
     }
 
