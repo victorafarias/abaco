@@ -87,11 +87,10 @@ public class PlanilhaService {
         InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo6-mcti.xls");
         HSSFWorkbook excelFile = new HSSFWorkbook(stream);
         HSSFFormulaEvaluator hssfFormulaEvaluator = excelFile.getCreationHelper().createFormulaEvaluator();
-
         hssfFormulaEvaluator.clearAllCachedResultValues();
+        this.setarResumoExcelPadraoMCTI(excelFile, analise, hssfFormulaEvaluator);
         this.setarFuncoesDadosExcelPadraoMCTI(excelFile, funcaoDadosList, hssfFormulaEvaluator);
         this.setarFuncoesTransacaoExcelPadraoMCTI(excelFile, funcaoTransacaoList, hssfFormulaEvaluator);
-        this.setarResumoExcelPadraoMCTI(excelFile, analise, hssfFormulaEvaluator);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         excelFile.write(outputStream);
         return outputStream;
@@ -99,6 +98,11 @@ public class PlanilhaService {
 
     private void setarFuncoesTransacaoExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, HSSFFormulaEvaluator hssfFormulaEvaluator) {
         HSSFSheet excelSheet = excelFile.getSheet("Funções Transação");
+
+        hssfFormulaEvaluator.evaluate(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(3).getCell(1));
+
         int rowNum = 8;
         for (FuncaoTransacao funcaoTransacao : funcaoTransacaoList) {
             HSSFRow row = excelSheet.getRow(rowNum++);
@@ -125,6 +129,9 @@ public class PlanilhaService {
 
     private void setarFuncoesDadosExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, HSSFFormulaEvaluator hssfFormulaEvaluator) {
         HSSFSheet excelSheet = excelFile.getSheet("Funções Dados");
+        hssfFormulaEvaluator.evaluate(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(3).getCell(1));
 
         int rowNum = 8;
         for (FuncaoDados funcaoDados : funcaoDadosList) {
