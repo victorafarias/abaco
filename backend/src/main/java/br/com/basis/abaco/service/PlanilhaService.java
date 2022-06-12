@@ -95,6 +95,7 @@ public class PlanilhaService {
         excelFile.write(outputStream);
         return outputStream;
     }
+    
 
     private void setarFuncoesTransacaoExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, HSSFFormulaEvaluator hssfFormulaEvaluator) {
         HSSFSheet excelSheet = excelFile.getSheet("Funções Transação");
