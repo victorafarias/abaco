@@ -530,29 +530,53 @@ export class AnaliseListComponent implements OnInit {
         }
     }
 
+	verificarOrganizacoesDiferentes(analises: Analise[]){
+		let organizacoes = analises.map(analise => analise?.organizacao);
+		let ultimaOrg = null;
+		let contador = 0;
+		for(let org of organizacoes){
+			if(ultimaOrg != null){
+				if(org.id !== ultimaOrg.id){
+					contador++;
+				}
+			}
+			ultimaOrg = org;
+		}
+		if(contador > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	popularEquipesParaCompartilhar(equipes: TipoEquipe[], emLote?: boolean){
+		let contador = 0;
+		this.equipeShare = [];
+		if (equipes) {
+			equipes.forEach((equipe) => {
+				const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(), {
+						id: contador++,
+						equipeId: equipe.id,
+						analisesId: emLote == true ? this.analisesSelecionadasEmLote.map(analise => analise.id) : [this.analiseSelecionada.id],
+						viewOnly: true, nomeEquipe: equipe.nome
+					});
+				this.equipeShare.push(entity);
+			});
+		}
+	}
 
 
     compartilharAnalise() {
         let canShared = false;
 		if(this.analisesSelecionadasEmLote && this.analisesSelecionadasEmLote.length > 1){
-			this.tipoEquipeService.getEquipesActiveLoggedUser().subscribe((equipes) => {
-				this.equipeShare = [];
-				if (equipes) {
-					let contador = 0;
-					equipes.forEach((equipe) => {
-						const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(),
-							{
-								id: contador++,
-								equipeId: equipe.id,
-								analisesId: this.analisesSelecionadasEmLote.map(analise => analise.id),
-								viewOnly: true, nomeEquipe: equipe.nome
-							});
-						this.equipeShare.push(entity);
-					});
-				}
-				this.mostrarDialog = true;
-
-			})
+			if(this.verificarOrganizacoesDiferentes(this.analisesSelecionadasEmLote) == false){
+				this.tipoEquipeService.findAllByOrganizacaoId(this.analisesSelecionadasEmLote[0]?.organizacao?.id).subscribe((equipes) => {
+					this.popularEquipesParaCompartilhar(equipes, true);
+					this.mostrarDialog = true;
+				})
+			}else{
+				return this.pageNotificationService.addErrorMessage("Não é permitido compartilhar em lote análises com organizações diferentes.");
+			}
 		}else{
 			return this.analiseService.find(this.analiseSelecionada.id).subscribe((res) => {
 				this.analiseTemp = new Analise().copyFromJSON(res);
@@ -570,19 +594,7 @@ export class AnaliseListComponent implements OnInit {
 						this.analiseSelecionada.id,
 						this.analiseTemp.equipeResponsavel.id)
 						.subscribe((equipes) => {
-							if (equipes) {
-								let contador = 0;
-								equipes.forEach((equipe) => {
-									const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(),
-										{
-											id: contador++,
-											equipeId: equipe.id,
-											analisesId: [this.analiseSelecionada.id],
-											viewOnly: true, nomeEquipe: equipe.nome
-										});
-									this.equipeShare.push(entity);
-								});
-							}
+							this.popularEquipesParaCompartilhar(equipes, false);
 							this.mostrarDialog = true;
 						});
 				} else {
