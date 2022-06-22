@@ -313,7 +313,7 @@ export class AnaliseResumoComponent implements OnInit {
                                 {
                                     id: undefined,
                                     equipeId: equipe.id,
-                                    analiseId: this.analise.id,
+                                    analisesId: [this.analise.id],
                                     viewOnly: false,
                                     nomeEquipe: equipe.nome
                                 });
@@ -341,13 +341,11 @@ export class AnaliseResumoComponent implements OnInit {
                             return compartilha.id !== item.id ? true : false;
                         });
                 });
-                this.pageNotificationService.addSuccessMessage(this.getLabel('Análise compartilhada com sucesso!'));
                 this.limparSelecaoCompartilhar();
             });
         } else {
             this.pageNotificationService.addInfoMessage(this.getLabel('Selecione pelo menos um registro para poder adicionar ou clique no X para sair!'));
         }
-
     }
 
     public deletarCompartilhar() {
