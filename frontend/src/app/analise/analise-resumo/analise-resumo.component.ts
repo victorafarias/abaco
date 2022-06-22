@@ -346,7 +346,6 @@ export class AnaliseResumoComponent implements OnInit {
         } else {
             this.pageNotificationService.addInfoMessage(this.getLabel('Selecione pelo menos um registro para poder adicionar ou clique no X para sair!'));
         }
-
     }
 
     public deletarCompartilhar() {
