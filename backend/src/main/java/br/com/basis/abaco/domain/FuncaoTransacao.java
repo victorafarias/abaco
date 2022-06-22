@@ -61,7 +61,6 @@ public class FuncaoTransacao extends FuncaoAnalise implements Serializable {
     @Column
     private Integer quantidade;
 
-
     @OneToMany(mappedBy = FUNCAOTRANSACAO, cascade = CascadeType.ALL, orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @OrderBy("id")
@@ -102,7 +101,7 @@ public class FuncaoTransacao extends FuncaoAnalise implements Serializable {
         this.setOrdem(ordem);
         bindFuncaoAnalise(null, complexidade, pf, grossPF, analise, funcionalidade, detStr, fatorAjuste, name, sustantation, derValues, null, equipe);
     }
-    
+
     public void addFiles(UploadedFile file){
         this.files.add(file);
         file.setFuncaoTransacao(this);
