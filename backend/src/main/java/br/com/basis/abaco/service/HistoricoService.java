@@ -33,7 +33,6 @@ public class HistoricoService {
 
     private final HistoricoRepository historicoRepository;
     private final UserRepository userRepository;
-
     @Lazy
     @Autowired
     private AnaliseService analiseService;
