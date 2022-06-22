@@ -708,6 +708,7 @@ public class AnaliseService extends BaseService {
                     }
                 }
             }
+            
             analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
 
             analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
