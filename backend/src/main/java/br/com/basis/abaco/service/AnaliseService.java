@@ -691,26 +691,29 @@ public class AnaliseService extends BaseService {
         for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
             sumFase = sumFase.add(esforcoFase.getEsforco().setScale(decimalPlace));
         }
-        sumFase = sumFase.divide(percent).setScale(decimalPlace);
-        analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).toString());
-        analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+        if(vwAnaliseDivergenteSomaPf != null){
+            sumFase = sumFase.divide(percent).setScale(decimalPlace);
+            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).toString());
+            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
 
-        analise.setPfTotalAprovado(analise.getAdjustPFTotal());
+            analise.setPfTotalAprovado(analise.getAdjustPFTotal());
 
-        Timestamp hoje = Timestamp.from(Instant.now());
-        Analise analiseOriginalBasis = new Analise();
-        for (Analise analiseComparada : analise.getAnalisesComparadas()) {
-            if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS)){
-                if(analiseComparada.getDataCriacaoOrdemServico().before(hoje)){
-                    hoje = analiseComparada.getDataCriacaoOrdemServico();
-                    analiseOriginalBasis = analiseComparada;
+            Timestamp hoje = Timestamp.from(Instant.now());
+            Analise analiseOriginalBasis = new Analise();
+            for (Analise analiseComparada : analise.getAnalisesComparadas()) {
+                if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS)){
+                    if(analiseComparada.getDataCriacaoOrdemServico().before(hoje)){
+                        hoje = analiseComparada.getDataCriacaoOrdemServico();
+                        analiseOriginalBasis = analiseComparada;
+                    }
                 }
             }
-        }
-        analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
+            
+            analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
 
-        analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
-        analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
+            analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
+            analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
+        }
     }
 
 
