@@ -271,8 +271,7 @@ public class FuncaoDadosResource {
     public ResponseEntity<Void> deleteFuncaoDados(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoDados : {}", id);
         FuncaoDados funcaoDados = funcaoDadosRepository.findById(id);
-        ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
-        if(configuracaoUtils.getHabilitarCamposFuncao() == true){
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true){
             funcaoDados.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
             funcaoDados.getRlrs().forEach(item -> vwRlrSearchRepository.delete(item.getId()));
         }
