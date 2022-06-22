@@ -584,7 +584,6 @@ export class AnaliseListComponent implements OnInit {
 		}
 	}
 
-
     compartilharAnalise() {
         let canShared = false;
 		if(this.analisesSelecionadasEmLote && this.analisesSelecionadasEmLote.length > 1){
