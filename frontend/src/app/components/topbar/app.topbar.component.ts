@@ -54,7 +54,7 @@ export class AppTopbarComponent implements OnInit{
 		}
 
 		public setarLogoOrganizacao(){
-			if(this.isAuthenticated() == true && this._authentication.getUser != null){
+			if(this.isAuthenticated() == true && this._authentication.getUser() != null){
 				this.orgService.searchActiveOrganizations().subscribe(r => {
 					if(r.length === 1){
 						let logo;
