@@ -16,7 +16,6 @@ public class TipoEquipeDTO {
     private Long id;
 
     private String nome;
-
     private Set<OrganizacaoDTO> organizacoes = new HashSet<>();
 
     private UserTipoEquipeDTO cfpsResponsavel;

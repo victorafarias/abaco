@@ -5,6 +5,7 @@ import { MenuItem, MenuItemContent } from 'primeng';
 import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
 import { UploadService } from 'src/app/upload/upload.service';
 import { UserService } from 'src/app/user';
+import { AuthService } from 'src/app/util/auth.service';
 import { AppComponent } from '../../app.component';
 import { User } from '../../user/user.model';
 import { NovidadeVersaoDTO } from '../novidades-versao/novidades-versao-dto';
@@ -32,22 +33,28 @@ export class AppTopbarComponent implements OnInit{
 	menuItens: MenuItem[] = [];
 	mostrarDialogNovidadesVersao: boolean = false;
 
+	canEditarConfiguracao: boolean = false;
+
 	@ViewChild("menuNV") menu: any;
 
 	constructor(public app: AppComponent,
 		private orgService: OrganizacaoService,
 		private novidadesVersaoService: NovidadesVersaoService,
 		private userService: UserService,
+		private authService: AuthService,
 		private uploadService: UploadService,
 		private readonly _authentication:AuthenticationService<User>) {
 		}
 
 		ngOnInit(): void {
 			this.setarLogoOrganizacao();
+			if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "CONFIGURACAO_EDITAR") == true) {
+				this.canEditarConfiguracao = true;
+			}
 		}
 
 		public setarLogoOrganizacao(){
-			if(this.isAuthenticated() == true){
+			if(this.isAuthenticated() == true && this._authentication.getUser() != null){
 				this.orgService.searchActiveOrganizations().subscribe(r => {
 					if(r.length === 1){
 						let logo;
@@ -128,5 +135,5 @@ export class AppTopbarComponent implements OnInit{
 					let menu = element.children[0];
 					menu.setAttribute("style","opacity:1!important");
 				}
-			}
+		}
 

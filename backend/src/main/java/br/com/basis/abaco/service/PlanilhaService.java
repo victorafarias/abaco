@@ -14,6 +14,10 @@ import br.com.basis.abaco.domain.enumeration.TipoFatorAjuste;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import com.itextpdf.styledxmlparser.jsoup.Jsoup;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -71,9 +75,119 @@ public class PlanilhaService {
             case 5:
                 // DCT
                 return this.modeloPadraoEB2(analise, funcaoDadosList, funcaoTransacaoList);
+            case 6:
+
+                return this.modeloPadraoMCTI(analise, funcaoDadosList, funcaoTransacaoList);
             default:
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
         }
+    }
+
+    private ByteArrayOutputStream modeloPadraoMCTI(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo6-mcti.xls");
+        HSSFWorkbook excelFile = new HSSFWorkbook(stream);
+        HSSFFormulaEvaluator hssfFormulaEvaluator = excelFile.getCreationHelper().createFormulaEvaluator();
+        hssfFormulaEvaluator.clearAllCachedResultValues();
+        this.setarResumoExcelPadraoMCTI(excelFile, analise, hssfFormulaEvaluator);
+        this.setarFuncoesDadosExcelPadraoMCTI(excelFile, funcaoDadosList, hssfFormulaEvaluator);
+        this.setarFuncoesTransacaoExcelPadraoMCTI(excelFile, funcaoTransacaoList, hssfFormulaEvaluator);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        excelFile.write(outputStream);
+        return outputStream;
+    }
+    
+
+    private void setarFuncoesTransacaoExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, HSSFFormulaEvaluator hssfFormulaEvaluator) {
+        HSSFSheet excelSheet = excelFile.getSheet("Funções Transação");
+
+        hssfFormulaEvaluator.evaluate(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(3).getCell(1));
+
+        int rowNum = 8;
+        for (FuncaoTransacao funcaoTransacao : funcaoTransacaoList) {
+            HSSFRow row = excelSheet.getRow(rowNum++);
+            row.getCell(0).setCellValue(String.format("%s - %s", funcaoTransacao.getFuncionalidade().getModulo().getNome(), funcaoTransacao.getFuncionalidade().getNome()));
+            row.getCell(1).setCellValue(funcaoTransacao.getName());
+            row.getCell(2).setCellValue(funcaoTransacao.getFatorAjuste().getSigla());
+            row.getCell(3).setCellValue(funcaoTransacao.getTipo().name());
+            row.getCell(4).setCellValue(this.getTotalAlr(funcaoTransacao.getAlrs()));
+            row.getCell(6).setCellValue(this.getTotalDer(funcaoTransacao.getDers()));
+            String alrs = funcaoTransacao.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+            row.getCell(5).setCellValue(alrs.equals("null") ?  "" : alrs);
+            String ders = funcaoTransacao.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+            row.getCell(7).setCellValue(ders.equals("null") ? "" : ders);
+            row.getCell(10).setCellValue(Jsoup.parse(funcaoTransacao.getSustantation() != null ? funcaoTransacao.getSustantation() : "").text());
+            for(int i = 0; i < 10; i++){
+                if(row.getCell(i).isPartOfArrayFormulaGroup()){
+                    hssfFormulaEvaluator.evaluate(row.getCell(i));
+                    hssfFormulaEvaluator.evaluateInCell(row.getCell(i));
+                    hssfFormulaEvaluator.evaluateFormulaCell(row.getCell(i));
+                }
+            }
+        }
+    }
+
+    private void setarFuncoesDadosExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, HSSFFormulaEvaluator hssfFormulaEvaluator) {
+        HSSFSheet excelSheet = excelFile.getSheet("Funções Dados");
+        hssfFormulaEvaluator.evaluate(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(3).getCell(1));
+        hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(3).getCell(1));
+
+        int rowNum = 8;
+        for (FuncaoDados funcaoDados : funcaoDadosList) {
+            HSSFRow row = excelSheet.getRow(rowNum++);
+            row.getCell(0).setCellValue(String.format("%s - %s", funcaoDados.getFuncionalidade().getModulo().getNome(), funcaoDados.getFuncionalidade().getNome()));
+            row.getCell(1).setCellValue(funcaoDados.getName());
+            row.getCell(2).setCellValue(funcaoDados.getFatorAjuste().getSigla());
+            row.getCell(3).setCellValue(funcaoDados.getTipo().equals(TipoFuncaoDados.INM) ? "Codedata" : funcaoDados.getTipo().name());
+            row.getCell(4).setCellValue(this.getTotalRlr(funcaoDados.getRlrs()));
+            row.getCell(6).setCellValue(this.getTotalDer(funcaoDados.getDers()));
+            String rlrs = funcaoDados.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+            row.getCell(5).setCellValue(rlrs);
+            String ders = funcaoDados.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+            row.getCell(7).setCellValue(ders);
+            row.getCell(10).setCellValue(Jsoup.parse(funcaoDados.getSustantation() != null ? funcaoDados.getSustantation() : "").text());
+            for(int i = 0; i < 10; i++){
+                if(row.getCell(i).isPartOfArrayFormulaGroup()){
+                    hssfFormulaEvaluator.evaluate(row.getCell(i));
+                    hssfFormulaEvaluator.evaluateInCell(row.getCell(i));
+                    hssfFormulaEvaluator.evaluateFormulaCell(row.getCell(i));
+                }
+            }
+        }
+    }
+
+    private void setarResumoExcelPadraoMCTI(HSSFWorkbook excelFile, Analise analise, HSSFFormulaEvaluator hssfFormulaEvaluator) {
+        HSSFSheet excelSheet = excelFile.getSheet("Capa");
+
+        excelSheet.getRow(4).getCell(0).setCellValue(analise.getSistema().getSigla());
+        excelSheet.getRow(4).getCell(3).setCellValue(analise.getNumeroOs() != null ? analise.getNumeroOs() : analise.getIdentificadorAnalise());
+
+        if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            excelSheet.getRow(7).getCell(0).setCellValue("X");
+            hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(7).getCell(0));
+            hssfFormulaEvaluator.evaluate(excelSheet.getRow(7).getCell(0));
+            hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(7).getCell(0));
+        }else{
+            excelSheet.getRow(6).getCell(0).setCellValue("X");
+            hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(6).getCell(0));
+            hssfFormulaEvaluator.evaluate(excelSheet.getRow(6).getCell(0));
+            hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(6).getCell(0));
+        }
+
+        excelSheet.getRow(6).getCell(2).setCellValue("X");
+        excelSheet.getRow(9).getCell(0).setCellValue("X");
+        hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(6).getCell(2));
+        hssfFormulaEvaluator.evaluate(excelSheet.getRow(6).getCell(2));
+        hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(6).getCell(2));
+        hssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(9).getCell(0));
+        hssfFormulaEvaluator.evaluate(excelSheet.getRow(9).getCell(0));
+        hssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(9).getCell(0));
+
+
+        excelSheet.getRow(46).getCell(0).setCellValue(String.format("%s %s %s", analise.getEscopo(), analise.getPropositoContagem(), analise.getObservacoes() != null ? analise.getObservacoes() : ""));
+
     }
 
     //EB 2

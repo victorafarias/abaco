@@ -19,6 +19,7 @@ import { AppInlineProfileComponent } from './components/profile/app.profile.comp
 import { AppRightpanelComponent } from './components/rightpanel/app.rightpanel.component';
 import { AppTopbarComponent } from './components/topbar/app.topbar.component';
 import { ConfiguracaoBaselineModule } from './configuracao-baseline/configuracao-baseline.module';
+import { ConfiguracaoModule } from './configuracao/configuracao.module';
 import { ContratoModule } from './contrato/contrato.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DivergenciaModule } from './divergencia/divergencia.module';
@@ -93,6 +94,7 @@ import { AuthService } from './util/auth.service';
         NomenclaturaModule,
         DivergenciaModule,
         ConfiguracaoBaselineModule,
+		ConfiguracaoModule,
         PerfilModule
     ],
     providers: [

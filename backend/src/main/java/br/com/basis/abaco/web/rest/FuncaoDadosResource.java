@@ -15,6 +15,7 @@ import br.com.basis.abaco.repository.search.FuncaoDadosSearchRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrSearchRepository;
 import br.com.basis.abaco.service.AnaliseService;
+import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.dto.DerFdDTO;
 import br.com.basis.abaco.service.dto.DropdownDTO;
@@ -27,6 +28,7 @@ import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.ImportarFDDTO;
 import br.com.basis.abaco.service.dto.RlrFdDTO;
+import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -91,6 +93,10 @@ public class FuncaoDadosResource {
     private AnaliseService analiseService;
 
 
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+
+
     public FuncaoDadosResource(FuncaoDadosRepository funcaoDadosRepository,
                                FuncaoDadosSearchRepository funcaoDadosSearchRepository, FuncaoDadosService funcaoDadosService, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwRlrSearchRepository vwRlrSearchRepository) {
         this.funcaoDadosRepository = funcaoDadosRepository;
@@ -112,7 +118,7 @@ public class FuncaoDadosResource {
     @Timed
     public ResponseEntity<FuncaoDadosEditDTO> createFuncaoDados(@PathVariable Long idAnalise, @RequestPart("funcaoDados") FuncaoDadosSaveDTO funcaoDadosSaveDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException {
         log.debug("REST request to save FuncaoDados : {}", funcaoDadosSaveDTO);
-        Analise analise = analiseRepository.findOne(idAnalise);
+        Analise analise = analiseRepository.findOneByIdClean(idAnalise);
 
         FuncaoDados funcaoDados = convertToEntity(funcaoDadosSaveDTO);
 
@@ -137,7 +143,9 @@ public class FuncaoDadosResource {
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
         FuncaoDadosEditDTO  funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
-        funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        }
 
         return ResponseEntity.created(new URI("/api/funcao-dados/" + funcaoDadosEditDTO.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, funcaoDadosEditDTO.getId().toString()))
@@ -163,7 +171,7 @@ public class FuncaoDadosResource {
             return createFuncaoDados(funcaoDados.getAnalise().getId(), funcaoDadosSaveDTO, files);
         }
 
-        Analise analise = analiseRepository.findOne(funcaoDadosOld.getAnalise().getId());
+        Analise analise = analiseRepository.findOneByIdClean(funcaoDadosOld.getAnalise().getId());
         funcaoDados.setAnalise(analise);
 
         if (funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
@@ -179,7 +187,9 @@ public class FuncaoDadosResource {
         FuncaoDados result = funcaoDadosRepository.save(funcaoDadosUpdate);
         FuncaoDadosEditDTO funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
-        funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        }
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoDados.getId().toString())).body(funcaoDadosEditDTO);
     }
 
@@ -261,8 +271,10 @@ public class FuncaoDadosResource {
     public ResponseEntity<Void> deleteFuncaoDados(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoDados : {}", id);
         FuncaoDados funcaoDados = funcaoDadosRepository.findById(id);
-        funcaoDados.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
-        funcaoDados.getRlrs().forEach(item -> vwRlrSearchRepository.delete(item.getId()));
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true){
+            funcaoDados.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
+            funcaoDados.getRlrs().forEach(item -> vwRlrSearchRepository.delete(item.getId()));
+        }
         funcaoDadosRepository.delete(id);
         funcaoDadosSearchRepository.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
@@ -326,7 +338,6 @@ public class FuncaoDadosResource {
         FuncaoDados funcaoDados = funcaoDadosRepository.findOne(id);
         funcaoDados.setStatusFuncao(statusFuncao);
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
-        analiseService.updatePFDivergente(funcaoDados.getAnalise());
         analiseService.save(funcaoDados.getAnalise());
         FuncaoDadoApiDTO funcaoDadosDTO = getFuncaoDadoApiDTO(result);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
@@ -342,7 +353,7 @@ public class FuncaoDadosResource {
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    
+
 
     @PostMapping(path = "/funcao-dados/importar-funcoes-analise", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

@@ -42,6 +42,8 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
 
     @EntityGraph(attributePaths = {"compartilhadas", "funcaoDados", "funcaoTransacaos", "esforcoFases", "users", "fatorAjuste", "contrato"})
     Analise findOne(Long id);
+    @Query(value = "SELECT a FROM Analise a WHERE a.id = :id")
+    Analise findOneByIdClean(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"compartilhadas", "esforcoFases", "users", "fatorAjuste", "contrato"})
     Analise findById(Long id);

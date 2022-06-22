@@ -69,6 +69,7 @@ export class AnaliseResumoComponent implements OnInit {
         { label: "Modelo padrão ANAC", value: 3 },
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
+		{ label: "Modelo padrão MCTI", value: 6 }
     ];
     modeloSelecionado: any;
 
@@ -331,7 +332,7 @@ export class AnaliseResumoComponent implements OnInit {
 
     public salvarCompartilhar() {
         if (this.selectedEquipes && this.selectedEquipes.length !== 0) {
-            this.analiseService.salvarCompartilhar(this.selectedEquipes).subscribe((res) => {
+            this.analiseService.salvarCompartilhar(this.selectedEquipes, false).subscribe((res) => {
                 this.mostrarDialog = false;
                 this.analise.compartilhadas = this.analise.compartilhadas.concat(this.selectedEquipes);
                 this.selectedEquipes.forEach(item => {

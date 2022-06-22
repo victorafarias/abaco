@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IndexadorService } from './indexador.service';
 import { BlockUiService } from '@nuvem/angular-base';
+import { ConfiguracaoService } from '../configuracao';
 
 
 @Component({
@@ -9,7 +10,7 @@ import { BlockUiService } from '@nuvem/angular-base';
     templateUrl: './indexador.component.html',
     providers: [IndexadorService]
 })
-export class IndexadorComponent {
+export class IndexadorComponent implements OnInit{
 
     public indexToReindexar: string[];
     indexList = [
@@ -47,10 +48,20 @@ export class IndexadorComponent {
     ];
 
     constructor(
+		private configuracaoService: ConfiguracaoService,
         private indexadorSearchService: IndexadorService,
         private router: Router,
         private blockUiService: BlockUiService,
     ) { }
+
+	ngOnInit(): void {
+		this.configuracaoService.buscarConfiguracao().subscribe(config => {
+			if(config.habilitarCamposFuncao == false){
+				let camposDesabilitados = ["Campos ALL", "Alr", "Der", "Rlr"];
+				this.indexList = this.indexList.filter(index => camposDesabilitados.indexOf(index.label) == -1);
+			}
+		})
+	}
 
 
     submitIndexador() {

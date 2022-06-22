@@ -237,7 +237,7 @@ export class AnaliseFormComponent implements OnInit {
                 this.analise.esforcoFases = [];
                 this.analise.enviarBaseline = true;
                 this.analise.fatorCriticidade = false;
-                this.canEditMetodo = true;                
+                this.canEditMetodo = true;
             }
         });
     }
@@ -632,7 +632,7 @@ export class AnaliseFormComponent implements OnInit {
 
     public salvarCompartilhar() {
         if (this.selectedEquipes && this.selectedEquipes.length !== 0) {
-            this.analiseService.salvarCompartilhar(this.selectedEquipes).subscribe((res) => {
+            this.analiseService.salvarCompartilhar(this.selectedEquipes, false).subscribe((res) => {
                 this.mostrarDialog = false;
                 this.pageNotificationService.addSuccessMessage(this.getLabel('Análise compartilhada com sucesso!'));
                 this.limparSelecaoCompartilhar();
@@ -717,7 +717,7 @@ export class AnaliseFormComponent implements OnInit {
     private loadDataAnalise(analise: Analise) {
         this.inicializaValoresAposCarregamento(analise);
         this.dataAnalise = this.analise;
-        
+
         this.aguardarGarantia = this.analise.baselineImediatamente;
         this.enviarParaBaseLine = this.analise.enviarBaseline;
         this.analise.fatorCriticidade = analise.fatorCriticidade;

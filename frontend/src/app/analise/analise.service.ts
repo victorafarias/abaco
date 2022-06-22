@@ -380,8 +380,8 @@ export class AnaliseService {
         return this.http.get<Response>(url);
     }
 
-    salvarCompartilhar(listaCompartilhada: Array<AnaliseShareEquipe>) {
-        return this.http.post(`${this.resourceUrl}/compartilhar`, listaCompartilhada);
+    salvarCompartilhar(listaCompartilhada: Array<AnaliseShareEquipe>, ehMultiplo: boolean) {
+        return this.http.post(`${this.resourceUrl}/compartilhar?ehMultiplo=${ehMultiplo}`, listaCompartilhada);
     }
 
     deletarCompartilhar(id: number): Observable<Response> {

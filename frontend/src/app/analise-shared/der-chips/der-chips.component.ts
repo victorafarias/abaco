@@ -3,6 +3,7 @@ import { AutoCompleteMultipleComponent } from '@nuvem/primeng-components';
 import { AutoCompleteCustomComponent } from '@nuvem/primeng-components/lib/crud/components/auto-complete/auto-complete-custom.component';
 import { AutoComplete } from 'primeng';
 import { AlrService } from 'src/app/alr/alr.service';
+import { ConfiguracaoService } from 'src/app/configuracao';
 import { DerService } from 'src/app/der/der.service';
 import { FuncaoDados } from 'src/app/funcao-dados';
 import { FuncaoDadosService } from 'src/app/funcao-dados/funcao-dados.service';
@@ -73,15 +74,21 @@ export class DerChipsComponent implements OnChanges, OnInit {
 
     @ViewChild(AutoComplete) component: AutoComplete;
 
+	canPesquisar: boolean = false;
+
 
     constructor(
         private derService: DerService,
         private rlrService: RlrService,
-        private alrService: AlrService
+        private alrService: AlrService,
+		private configuracaoService: ConfiguracaoService
     ) { }
 
     ngOnInit() {
         this.contagem = 0;
+		this.configuracaoService.buscarConfiguracao().subscribe(r => {
+			this.canPesquisar = r.habilitarCamposFuncao;
+		})
     }
 
     getLabel(label) {
@@ -126,46 +133,48 @@ export class DerChipsComponent implements OnChanges, OnInit {
     }
 
     search(event) {
-        this.canEnter = true;
-        switch (this.tipoChip) {
-            case 'DER':
-                switch (this.tipoFuncao) {
-                    case 'FD':
-                        this.derService.getDersFuncaoDadosByNomeSistema(event.query, this.idSistema).subscribe(response => {
-                            this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-                            this.options = this.listOptions.filter(item => {
-                                return this.values.find(value => value.text === item.text) === undefined;
-                            });
-                        });
+		this.canEnter = true;
+		if(this.canPesquisar){
+			switch (this.tipoChip) {
+				case 'DER':
+					switch (this.tipoFuncao) {
+						case 'FD':
+							this.derService.getDersFuncaoDadosByNomeSistema(event.query, this.idSistema).subscribe(response => {
+								this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+								this.options = this.listOptions.filter(item => {
+									return this.values.find(value => value.text === item.text) === undefined;
+								});
+							});
 
-                        break;
-                    case 'FT':
-                        this.derService.getDersFuncaoTransacaoByNomeSistema(event.query, this.idSistema).subscribe(response => {
-                            this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-                            this.options = this.listOptions.filter(item => {
-                                return this.values.find(value => value.text === item.text) === undefined;
-                            });
-                        })
-                        break;
-                }
-                break;
-            case 'RLR':
-                this.rlrService.getRlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
-                    this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-                    this.options = this.listOptions.filter(item => {
-                        return this.values.find(value => value.text === item.text) === undefined;
-                    });
-                })
-                break;
-            case 'ALR':
-                this.alrService.getAlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
-                    this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-                    this.options = this.listOptions.filter(item => {
-                        return this.values.find(value => value.text === item.text) === undefined;
-                    });
-                })
-                break;
-        }
+							break;
+						case 'FT':
+							this.derService.getDersFuncaoTransacaoByNomeSistema(event.query, this.idSistema).subscribe(response => {
+								this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+								this.options = this.listOptions.filter(item => {
+									return this.values.find(value => value.text === item.text) === undefined;
+								});
+							})
+							break;
+					}
+					break;
+				case 'RLR':
+					this.rlrService.getRlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
+						this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+						this.options = this.listOptions.filter(item => {
+							return this.values.find(value => value.text === item.text) === undefined;
+						});
+					})
+					break;
+				case 'ALR':
+					this.alrService.getAlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
+						this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+						this.options = this.listOptions.filter(item => {
+							return this.values.find(value => value.text === item.text) === undefined;
+						});
+					})
+					break;
+			}
+		}
     }
 
     limparCampo(event) {

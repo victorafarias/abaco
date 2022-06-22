@@ -25,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,6 +52,8 @@ public class FuncaoTransacaoService {
     @Autowired
     private VwAlrSearchRepository vwAlrSearchRepository;
 
+    @Autowired
+    private ConfiguracaoService configuracaoService;
     public FuncaoTransacaoService(FuncaoTransacaoRepository funcaoTransacaoRepository) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
     }
@@ -91,7 +90,7 @@ public class FuncaoTransacaoService {
 ;
             FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoParaSalvar);
 
-            if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
                 saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
             }
             funcoesAdicionadas.add(result);
@@ -104,8 +103,8 @@ public class FuncaoTransacaoService {
 
     private FuncaoTransacao setarFuncaoTransacao(Analise analise, FuncaoTransacao funcaoParaSalvar) {
         if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-            List<Der> ders = new ArrayList<>();
-            List<Alr> alrs = new ArrayList<>();
+            Set<Der> ders = new LinkedHashSet<>();
+            Set<Alr> alrs = new LinkedHashSet<>();
             for (Der der : funcaoParaSalvar.getDers()) {
                 Der derNovo = new Der(null, der.getNome(), der.getValor(), null, null, funcaoParaSalvar);
                 ders.add(derNovo);
@@ -114,8 +113,8 @@ public class FuncaoTransacaoService {
                 Alr alrNovo = new Alr(null, alr.getNome(), alr.getValor(), funcaoParaSalvar, null);
                 alrs.add(alrNovo);
             }
-            funcaoParaSalvar.setDers(ders.stream().collect(Collectors.toSet()));
-            funcaoParaSalvar.setAlrs(alrs.stream().collect(Collectors.toSet()));
+            funcaoParaSalvar.setDers(ders);
+            funcaoParaSalvar.setAlrs(alrs);
         }else{
             funcaoParaSalvar.setDers(new HashSet<>());
             funcaoParaSalvar.setAlrs(new HashSet<>());

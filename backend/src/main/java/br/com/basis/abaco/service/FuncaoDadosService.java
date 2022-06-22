@@ -34,11 +34,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,6 +58,9 @@ public class FuncaoDadosService {
     private VwDerSearchRepository vwDerSearchRepository;
     @Autowired
     private VwRlrSearchRepository vwRlrSearchRepository;
+
+    @Autowired
+    private ConfiguracaoService configuracaoService;
 
     public FuncaoDadosService(FuncaoDadosRepository funcaoDadosRepository, AnaliseService analiseService) {
         this.funcaoDadosRepository = funcaoDadosRepository;
@@ -146,7 +145,7 @@ public class FuncaoDadosService {
 
             FuncaoDados result = funcaoDadosRepository.save(funcaoParaSalvar);
 
-            if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+            if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
                 this.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
             }
             funcoesAdicionadas.add(result);
@@ -159,8 +158,8 @@ public class FuncaoDadosService {
 
     private FuncaoDados setarFuncaoDados(Analise analise, FuncaoDados funcaoParaSalvar) {
         if(analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-            List<Der> ders = new ArrayList<>();
-            List<Rlr> rlrs = new ArrayList<>();
+            Set<Der> ders = new LinkedHashSet<>();
+            Set<Rlr> rlrs = new LinkedHashSet<>();
             for (Der der : funcaoParaSalvar.getDers()) {
                 Der derNovo = new Der(null, der.getNome(), der.getValor(), null, funcaoParaSalvar, null);
                 ders.add(derNovo);
@@ -169,8 +168,8 @@ public class FuncaoDadosService {
                 Rlr alrNovo = new Rlr(null, alr.getNome(), alr.getValor(), null, funcaoParaSalvar);
                 rlrs.add(alrNovo);
             }
-            funcaoParaSalvar.setDers(ders.stream().collect(Collectors.toSet()));
-            funcaoParaSalvar.setRlrs(rlrs.stream().collect(Collectors.toSet()));
+            funcaoParaSalvar.setDers(ders);
+            funcaoParaSalvar.setRlrs(rlrs);
         }else{
             funcaoParaSalvar.setDers(new HashSet<>());
             funcaoParaSalvar.setRlrs(new HashSet<>());

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+   <changeSet author="basis (generated)" id="1655910938350-1">
+       <insert tableName="novidades_versao">
+           <column name="id" value="4"></column>
+           <column name="versao" value="3.0.2"></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="23"></column>
+           <column name="novidades_versao_id" value="4"></column>
+           <column name="ocorrencia" value="BASIS-267411"></column>
+           <column name="novidades" value="Criado um novo modelo de planilha para exportação em excel para análises. Para o modelo do contrato MCTI."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="24"></column>
+           <column name="novidades_versao_id" value="4"></column>
+           <column name="ocorrencia" value="BASIS-269791"></column>
+           <column name="novidades" value="Criado uma nova estrutura de mensagens para identificar melhor os problemas, foi implementado no método de alterar status das análises."></column>
+       </insert>
+
+       <insert tableName="novidades">
+           <column name="id" value="25"></column>
+           <column name="novidades_versao_id" value="4"></column>
+           <column name="ocorrencia" value="BASIS-270805"></column>
+           <column name="novidades" value="1. Adicionado funções para executar em lote nas análises, tais como: Alterar Status, Bloquear/Desbloquear, Excluir, Compartilhamento.
+           2. Corrigido erros que davam ao ser bloquear. 3. Consertado ordenação nos campos 'DERS', 'ALRS, 'RLRS' ao importar funções de dados ou transação. "></column>
+       </insert>
+
+       <update tableName="jhi_user">
+           <column name="mostrar_novidades" value="true"></column>
+       </update>
+   </changeSet>
+</databaseChangeLog>
