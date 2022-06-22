@@ -11,11 +11,12 @@ import br.com.basis.abaco.service.dto.HistoricoDTO;
 import br.com.basis.abaco.service.dto.UserDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.service.relatorio.RelatorioHistoricoColunas;
-import br.com.basis.abaco.service.relatorio.RelatorioPerfilColunas;
 import br.com.basis.abaco.utils.AbacoUtil;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
 import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
@@ -32,13 +33,14 @@ public class HistoricoService {
 
     private final HistoricoRepository historicoRepository;
     private final UserRepository userRepository;
-    private final AnaliseService analiseService;
+    @Lazy
+    @Autowired
+    private AnaliseService analiseService;
     private final DynamicExportsService dynamicExportsService;
 
-    public HistoricoService(HistoricoRepository historicoRepository, UserRepository userRepository, AnaliseService analiseService, DynamicExportsService dynamicExportsService) {
+    public HistoricoService(HistoricoRepository historicoRepository, UserRepository userRepository, DynamicExportsService dynamicExportsService) {
         this.historicoRepository = historicoRepository;
         this.userRepository = userRepository;
-        this.analiseService = analiseService;
         this.dynamicExportsService = dynamicExportsService;
     }
 
@@ -76,7 +78,7 @@ public class HistoricoService {
         historicoRepository.save(historico);
     }
 
-    
+
     public ByteArrayOutputStream gerarRelatorio(AnaliseDTO analise, String tipoRelatorio) throws RelatorioException {
         ByteArrayOutputStream byteArrayOutputStream;
         try {
