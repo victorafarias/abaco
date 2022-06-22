@@ -313,7 +313,7 @@ export class AnaliseResumoComponent implements OnInit {
                                 {
                                     id: undefined,
                                     equipeId: equipe.id,
-                                    analiseId: this.analise.id,
+                                    analisesId: [this.analise.id],
                                     viewOnly: false,
                                     nomeEquipe: equipe.nome
                                 });
@@ -341,7 +341,6 @@ export class AnaliseResumoComponent implements OnInit {
                             return compartilha.id !== item.id ? true : false;
                         });
                 });
-                this.pageNotificationService.addSuccessMessage(this.getLabel('Análise compartilhada com sucesso!'));
                 this.limparSelecaoCompartilhar();
             });
         } else {
