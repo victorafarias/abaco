@@ -613,8 +613,8 @@ export class AnaliseFormComponent implements OnInit {
                             {
                                 id: undefined,
                                 equipeId: equipe.id,
-                                analiseId: this.analise.id,
-                                viewOnly: false,
+                                analisesId: [this.analise.id],
+                                viewOnly: true,
                                 nomeEquipe: equipe.nome
                             });
                         this.equipeShare.push(entity);
@@ -634,7 +634,6 @@ export class AnaliseFormComponent implements OnInit {
         if (this.selectedEquipes && this.selectedEquipes.length !== 0) {
             this.analiseService.salvarCompartilhar(this.selectedEquipes, false).subscribe((res) => {
                 this.mostrarDialog = false;
-                this.pageNotificationService.addSuccessMessage(this.getLabel('Análise compartilhada com sucesso!'));
                 this.limparSelecaoCompartilhar();
             });
         } else {
