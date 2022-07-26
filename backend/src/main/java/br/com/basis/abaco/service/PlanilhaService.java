@@ -243,19 +243,18 @@ public class PlanilhaService {
     }
 
     private String getImpactoFromFatorAjusteBNB(FatorAjuste fatorAjuste){
-        if(fatorAjuste.getNome().contains("Novo")){
-            return "I";
+        switch(fatorAjuste.getFator().intValue()){
+            case 100:
+                return "I";
+            case 50:
+                return "A";
+            case 30:
+                return "E";
+            case 15:
+                return "T";
+            default:
+                return "";
         }
-        if(fatorAjuste.getNome().contains("Alteração")){
-            return "A";
-        }
-        if(fatorAjuste.getNome().contains("Exclusão")){
-            return "E";
-        }
-        if(fatorAjuste.getNome().contains("Documentação")){
-            return "D";
-        }
-        return "";
     }
 
     private ByteArrayOutputStream modeloPadraoMCTI(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
