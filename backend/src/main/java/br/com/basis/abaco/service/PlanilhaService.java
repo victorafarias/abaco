@@ -19,6 +19,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -59,6 +60,8 @@ public class PlanilhaService {
 
     private final static String BASIS_MINUSCULO = "basis";
 
+    private final static Integer QUANTIDADE_SISTEMAS_BNB = 121;
+
     public ByteArrayOutputStream selecionarModelo(Analise analise, Long modelo) throws IOException {
         List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
         List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacaos().stream().collect(Collectors.toList());
@@ -76,11 +79,184 @@ public class PlanilhaService {
                 // DCT
                 return this.modeloPadraoEB2(analise, funcaoDadosList, funcaoTransacaoList);
             case 6:
-
                 return this.modeloPadraoMCTI(analise, funcaoDadosList, funcaoTransacaoList);
+            case 7:
+                return this.modeloPadraoBNB(analise, funcaoDadosList, funcaoTransacaoList);
             default:
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
         }
+    }
+
+    private ByteArrayOutputStream modeloPadraoBNB(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo7-bnb.xlsx");
+        XSSFWorkbook excelFile = new XSSFWorkbook(stream);
+        XSSFFormulaEvaluator xssfFormulaEvaluator = excelFile.getCreationHelper().createFormulaEvaluator();
+        xssfFormulaEvaluator.clearAllCachedResultValues();
+
+        this.setarResumoExcelPadraoBNB(excelFile, analise, xssfFormulaEvaluator);
+        this.setarFuncoesExcelPadraoBNB(excelFile, funcaoDadosList, funcaoTransacaoList, xssfFormulaEvaluator);
+        this.setarFuncoesINMExcelPadraoBNB(excelFile, funcaoTransacaoList, xssfFormulaEvaluator);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        excelFile.write(outputStream);
+        return outputStream;
+    }
+
+    private void setarFuncoesINMExcelPadraoBNB(XSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, XSSFFormulaEvaluator xssfFormulaEvaluator) {
+        XSSFSheet excelSheet = excelFile.getSheet("Itens Não Mensuráveis");
+        xssfFormulaEvaluator.evaluate(excelSheet.getRow(5).getCell(0));
+        xssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(5).getCell(0));
+        xssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(5).getCell(0));
+        int rowNum = 7;
+        for(int i = 0; i < funcaoTransacaoList.size(); i++){
+            FuncaoTransacao funcaoTransacao = funcaoTransacaoList.get(i);
+            if(funcaoTransacao.getTipo().equals(TipoFuncaoTransacao.INM)){
+                XSSFRow row = excelSheet.getRow(rowNum++);
+                String nome = funcaoTransacao.getFuncionalidade().getNome() + " - " + funcaoTransacao.getName();
+                row.getCell(0).setCellValue(nome);
+                row.getCell(6).setCellValue(funcaoTransacao.getTipo().name());
+                row.getCell(8).setCellValue(this.getTotalDer(funcaoTransacao.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoTransacao.getDers())) : "");
+                row.getCell(9).setCellValue(this.getTotalAlr(funcaoTransacao.getAlrs()) != 0 ? String.valueOf(this.getTotalAlr(funcaoTransacao.getAlrs())) : "");
+                row.getCell(12).setCellValue(funcaoTransacao.getComplexidade().name());
+                Map<String, Double> dadoINM = pegarValorINMBNB(excelFile, funcaoTransacao.getFatorAjuste().getCodigo());
+                row.getCell(16).setCellValue(dadoINM.keySet().stream().collect(Collectors.toList()).get(0));
+                row.getCell(17).setCellValue(dadoINM.values().stream().collect(Collectors.toList()).get(0));
+                row.getCell(18).setCellValue(funcaoTransacao.getQuantidade());
+            }
+        }
+
+    }
+
+    private Map<String, Double> pegarValorINMBNB(XSSFWorkbook excelFile, String cod) {
+        Map<String, Double> dadoINM = new HashMap<>();
+        XSSFSheet excelSheet = excelFile.getSheet("INM - Regras");
+
+        for(int i = 23; i < 36; i++){
+            XSSFRow row = excelSheet.getRow(i);
+            if(row.getCell(2).getStringCellValue().equals(cod)){
+                dadoINM.put(row.getCell(3).getStringCellValue(), row.getCell(4).getNumericCellValue());
+            }
+        }
+
+        return dadoINM;
+    }
+
+    private void setarFuncoesExcelPadraoBNB(XSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList, XSSFFormulaEvaluator xssfFormulaEvaluator) {
+        XSSFSheet excelSheet = excelFile.getSheet("Funções");
+        if(excelSheet.getRow(5).getCell(13).isPartOfArrayFormulaGroup()){
+            xssfFormulaEvaluator.evaluate(excelSheet.getRow(5).getCell(13));
+            xssfFormulaEvaluator.evaluateInCell(excelSheet.getRow(5).getCell(13));
+            xssfFormulaEvaluator.evaluateFormulaCell(excelSheet.getRow(5).getCell(13));
+        }
+
+        int rowNum = 7;
+        this.setarFuncoesDadosExcelPadraoBNB(funcaoDadosList, excelSheet, xssfFormulaEvaluator, rowNum);
+        rowNum += funcaoDadosList.size()+1;
+        this.setarFuncoesTransacaoExcelPadraoBNB(funcaoTransacaoList, excelSheet, xssfFormulaEvaluator, rowNum);
+
+    }
+
+    private void setarFuncoesTransacaoExcelPadraoBNB(List<FuncaoTransacao> funcaoTransacaoList, XSSFSheet excelSheet, XSSFFormulaEvaluator xssfFormulaEvaluator, int rowNum) {
+        for(int i = 0; i < funcaoTransacaoList.size(); i++){
+            FuncaoTransacao funcaoTransacao = funcaoTransacaoList.get(i);
+            if(!funcaoTransacao.getTipo().equals(TipoFuncaoTransacao.INM)){
+                XSSFRow row = excelSheet.getRow(rowNum++);
+                String nome = funcaoTransacao.getFuncionalidade().getNome() + " - " + funcaoTransacao.getName();
+                row.getCell(0).setCellValue(nome);
+                row.getCell(6).setCellValue(funcaoTransacao.getTipo().name());
+                row.getCell(7).setCellValue(getImpactoFromFatorAjusteBNB(funcaoTransacao.getFatorAjuste()));
+                row.getCell(8).setCellValue(this.getTotalDer(funcaoTransacao.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoTransacao.getDers())) : "");
+                row.getCell(9).setCellValue(this.getTotalAlr(funcaoTransacao.getAlrs()) != 0 ? String.valueOf(this.getTotalAlr(funcaoTransacao.getAlrs())) : "");
+                row.getCell(12).setCellValue(funcaoTransacao.getComplexidade().name());
+                row.getCell(13).setCellValue(funcaoTransacao.getGrossPF().intValue());
+                row.getCell(14).setCellValue(funcaoTransacao.getPf().intValue());
+                row.getCell(17).setCellValue(Jsoup.parse(funcaoTransacao.getSustantation() != null ? funcaoTransacao.getSustantation() : "").text());
+                this.atualizarFormulas(row, 15, xssfFormulaEvaluator);
+            }
+        }
+    }
+
+    private void setarFuncoesDadosExcelPadraoBNB(List<FuncaoDados> funcaoDadosList, XSSFSheet excelSheet, XSSFFormulaEvaluator xssfFormulaEvaluator, int rowNum) {
+        for(int i = 0; i < funcaoDadosList.size(); i++){
+            XSSFRow row = excelSheet.getRow(rowNum++);
+            FuncaoDados funcaoDados = funcaoDadosList.get(i);
+            String nome = funcaoDados.getFuncionalidade().getNome() + " - " + funcaoDados.getName();
+            row.getCell(0).setCellValue(nome);
+            row.getCell(6).setCellValue(funcaoDados.getTipo().name());
+            row.getCell(7).setCellValue(getImpactoFromFatorAjusteBNB(funcaoDados.getFatorAjuste()));
+            row.getCell(8).setCellValue(this.getTotalDer(funcaoDados.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoDados.getDers())) : "");
+            row.getCell(9).setCellValue(this.getTotalRlr(funcaoDados.getRlrs()) != 0 ? String.valueOf(this.getTotalRlr(funcaoDados.getRlrs())) : "");
+            row.getCell(12).setCellValue(funcaoDados.getComplexidade().name());
+            row.getCell(13).setCellValue(funcaoDados.getGrossPF().intValue());
+            row.getCell(14).setCellValue(funcaoDados.getPf().intValue());
+            row.getCell(17).setCellValue(Jsoup.parse(funcaoDados.getSustantation() != null ? funcaoDados.getSustantation() : "").text());
+            this.atualizarFormulas(row, 15, xssfFormulaEvaluator);
+        }
+    }
+
+    private void atualizarFormulas(XSSFRow row, int i, XSSFFormulaEvaluator xssfFormulaEvaluator){
+        for(int j = 0; j < i; j++){
+            if(row.getCell(i).isPartOfArrayFormulaGroup()){
+                xssfFormulaEvaluator.evaluate(row.getCell(i));
+                xssfFormulaEvaluator.evaluateInCell(row.getCell(i));
+                xssfFormulaEvaluator.evaluateFormulaCell(row.getCell(i));
+            }
+        }
+    }
+
+    private void setarResumoExcelPadraoBNB(XSSFWorkbook excelFile, Analise analise, XSSFFormulaEvaluator hssfFormulaEvaluator) {
+        XSSFSheet excelSheet = excelFile.getSheet("Contagem");
+        String nomeElaborador = analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
+            analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
+        excelSheet.getRow(4).getCell(5).setCellValue(this.pegarNomeSistemaBNB(excelFile, analise.getSistema().getSigla()));
+        excelSheet.getRow(6).getCell(5).setCellValue(nomeElaborador);
+        excelSheet.getRow(6).getCell(25).setCellValue(analise.getDataCriacaoOrdemServico());
+        if(analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)){
+            excelSheet.getRow(9).getCell(11).setCellValue("X");
+        }
+
+        switch (analise.getTipoAnalise()){
+            case DESENVOLVIMENTO:
+                excelSheet.getRow(10).getCell(11).setCellValue("X");
+                break;
+            case MELHORIA:
+                excelSheet.getRow(11).getCell(11).setCellValue("X");
+                break;
+            case APLICACAO:
+                excelSheet.getRow(12).getCell(11).setCellValue("X");
+                break;
+        }
+
+        excelSheet.getRow(16).getCell(0).setCellValue(analise.getPropositoContagem());
+        excelSheet.getRow(40).getCell(0).setCellValue(analise.getEscopo());
+    }
+
+    private String pegarNomeSistemaBNB(XSSFWorkbook excelFile, String nome) {
+        XSSFSheet excelSheet = excelFile.getSheet("Sistemas");
+        for(int i = 0; i < QUANTIDADE_SISTEMAS_BNB; i++){
+            String nomeSistema = excelSheet.getRow(i).getCell(0).getStringCellValue();
+            String nomeDividido = nomeSistema.substring(0,4);
+            if(nomeDividido.equals(nome)){
+                return nomeSistema;
+            }
+        }
+        return "";
+    }
+
+    private String getImpactoFromFatorAjusteBNB(FatorAjuste fatorAjuste){
+        if(fatorAjuste.getNome().contains("Novo")){
+            return "I";
+        }
+        if(fatorAjuste.getNome().contains("Alteração")){
+            return "A";
+        }
+        if(fatorAjuste.getNome().contains("Exclusão")){
+            return "E";
+        }
+        if(fatorAjuste.getNome().contains("Documentação")){
+            return "D";
+        }
+        return "";
     }
 
     private ByteArrayOutputStream modeloPadraoMCTI(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
@@ -95,7 +271,7 @@ public class PlanilhaService {
         excelFile.write(outputStream);
         return outputStream;
     }
-    
+
 
     private void setarFuncoesTransacaoExcelPadraoMCTI(HSSFWorkbook excelFile, List<FuncaoTransacao> funcaoTransacaoList, HSSFFormulaEvaluator hssfFormulaEvaluator) {
         HSSFSheet excelSheet = excelFile.getSheet("Funções Transação");
