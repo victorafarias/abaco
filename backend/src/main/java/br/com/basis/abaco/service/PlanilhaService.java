@@ -175,6 +175,7 @@ public class PlanilhaService {
             }
         }
     }
+    
     private void setarFuncoesDadosExcelPadraoBNB(List<FuncaoDados> funcaoDadosList, XSSFSheet excelSheet, XSSFFormulaEvaluator xssfFormulaEvaluator, int rowNum) {
         for(int i = 0; i < funcaoDadosList.size(); i++){
             XSSFRow row = excelSheet.getRow(rowNum++);
