@@ -168,8 +168,8 @@ public class PlanilhaService {
                 row.getCell(8).setCellValue(this.getTotalDer(funcaoTransacao.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoTransacao.getDers())) : "");
                 row.getCell(9).setCellValue(this.getTotalAlr(funcaoTransacao.getAlrs()) != 0 ? String.valueOf(this.getTotalAlr(funcaoTransacao.getAlrs())) : "");
                 row.getCell(12).setCellValue(funcaoTransacao.getComplexidade().name());
-                row.getCell(13).setCellValue(funcaoTransacao.getGrossPF().intValue());
-                row.getCell(14).setCellValue(funcaoTransacao.getPf().intValue());
+                row.getCell(13).setCellValue(funcaoTransacao.getGrossPF().doubleValue());
+                row.getCell(14).setCellValue(funcaoTransacao.getPf().doubleValue());
                 row.getCell(17).setCellValue(Jsoup.parse(funcaoTransacao.getSustantation() != null ? funcaoTransacao.getSustantation() : "").text());
                 this.atualizarFormulas(row, 15, xssfFormulaEvaluator);
             }
@@ -186,8 +186,8 @@ public class PlanilhaService {
             row.getCell(8).setCellValue(this.getTotalDer(funcaoDados.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoDados.getDers())) : "");
             row.getCell(9).setCellValue(this.getTotalRlr(funcaoDados.getRlrs()) != 0 ? String.valueOf(this.getTotalRlr(funcaoDados.getRlrs())) : "");
             row.getCell(12).setCellValue(funcaoDados.getComplexidade().name());
-            row.getCell(13).setCellValue(funcaoDados.getGrossPF().intValue());
-            row.getCell(14).setCellValue(funcaoDados.getPf().intValue());
+            row.getCell(13).setCellValue(funcaoDados.getGrossPF().doubleValue());
+            row.getCell(14).setCellValue(funcaoDados.getPf().doubleValue());
             row.getCell(17).setCellValue(Jsoup.parse(funcaoDados.getSustantation() != null ? funcaoDados.getSustantation() : "").text());
             this.atualizarFormulas(row, 15, xssfFormulaEvaluator);
         }
