@@ -43,6 +43,7 @@ public class HistoricoService {
         this.userRepository = userRepository;
         this.dynamicExportsService = dynamicExportsService;
     }
+    
 
     public List<HistoricoDTO> findAllByAnalise(Long idAnalise){
         if(idAnalise != null){
