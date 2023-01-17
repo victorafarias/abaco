@@ -3,9 +3,8 @@
                    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
-	<changeSet author="basis (generated)" id="17815308294231-67" context="prod">
+	<changeSet author="basis (generated)" id="17815308294231-67" context="dev">
 	      <update
-	      schemaName="public"
 	      tableName="funcionalidade_abaco">
 	      <column name="nome" value="Validação"/>
 	      <column name="sigla" value="VALIDACAO"/>

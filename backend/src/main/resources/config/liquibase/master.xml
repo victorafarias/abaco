@@ -53,5 +53,6 @@
     <include file="classpath:config/liquibase/changelog/20220425152855_add_novidades_versao_3.0.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220609035243_add_table_configuracao.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20220622151510_add_novidades_versao_3.0.2.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20230116165600_alter_funcionalidade_divergencia_validacao_dev.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 

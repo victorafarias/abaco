@@ -1,11 +1,14 @@
-version: '2'
 services:
     abaco-postgresql:
-        image: postgres:9.6.2
-        # volumes:
-        #     - ~/volumes/jhipster/abaco/postgresql/:/var/lib/postgresql/
+        image: bitnami/postgresql:11.7.0-debian-10-r9
+        volumes:
+            #     - ~/volumes/jhipster/abaco/postgresql/:/var/lib/postgresql/
+            - ./postgresql/:/docker-entrypoint-initdb.d/
         environment:
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=1
+            - POSTGRESQL_DATABASE=abaco
+            - POSTGRES_USER=abaco
+            - POSTGRES_PASSWORD=abacosenha
+            - POSTGRESQL_POSTGRES_PASSWORD=abacosenha
+            - BITNAMI_DEBUG=true
         ports:
             - 5432:5432
