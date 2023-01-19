@@ -1267,9 +1267,9 @@ public class PlanilhaService {
             row.getCell(12).setCellValue(TIPO_INM);
             row.getCell(19).setCellValue(this.getFundamentacao(funcaoPrimaria));
             row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
-            evaluator.evaluateFormulaCell(row.getCell(16));
+            row.getCell(37).setCellValue(String.join(", ", funcaoPrimaria.getLstDivergenceComments()));
             evaluator.evaluateFormulaCell(row.getCell(18));
-        }else{
+        }else {
             if(funcaoSecundaria != null){
                 if(funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
                     row.getCell(1).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
