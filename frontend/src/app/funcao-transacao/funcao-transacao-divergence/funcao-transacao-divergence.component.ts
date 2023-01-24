@@ -432,7 +432,6 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                     nome,
                     this.analise.id,
                     this.currentFuncaoTransacao.funcionalidade.id,
-                    this.currentFuncaoTransacao.funcionalidade.modulo.id,
                     0, this.currentFuncaoTransacao.equipe.id)
             );
             const funcaoTransacaoMultp: FuncaoTransacao = funcaoTransacaoCalculada.clone();
@@ -605,7 +604,6 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                     this.currentFuncaoTransacao.name,
                     this.analise.id,
                     this.currentFuncaoTransacao.funcionalidade.id,
-                    this.currentFuncaoTransacao.funcionalidade.modulo.id,
                     0, this.currentFuncaoTransacao.equipe.id)
                     .subscribe(existFuncaoTransaco => {
                         if (!existFuncaoTransaco) {
@@ -711,8 +709,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 this.currentFuncaoTransacao.name,
                 this.analise.id,
                 this.currentFuncaoTransacao.funcionalidade.id,
-                this.currentFuncaoTransacao.funcionalidade.modulo.id,
-                this.currentFuncaoTransacao.id, 
+                this.currentFuncaoTransacao.id,
                 this.currentFuncaoTransacao.equipe.id)
                 .subscribe(existFuncaoTransaco => {
                     if (!existFuncaoTransaco) {
@@ -845,7 +842,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.blockUiService.hide();
         });
     }
-    
+
 
     private carregarValoresNaPaginaParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
         this.updateIndex();
@@ -1340,17 +1337,12 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         if (this.moduloSelecionadoEmLote) {
             moduloSelecionado = this.moduloSelecionadoEmLote;
         }
-        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
+	        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
             let funcaoTransacao = this.funcaoTransacaoEmLote[i];
-            if(this.verificarFuncoesEmLote(funcaoTransacao) == true){
-                this.pageNotificationService.addErrorMessage("Função "+funcaoTransacao.name+" já cadastrada.");
-                continue;
-            }
             this.funcaoTransacaoService.existsWithNameAndEquipe(
                 funcaoTransacao.name,
                 this.analise.id,
                 funcaoTransacao.funcionalidade.id,
-                funcaoTransacao.funcionalidade.modulo.id,
                 funcaoTransacao.id,
                 funcaoTransacao.equipe.id)
                 .subscribe(existFuncaoTransacao => {
@@ -1376,21 +1368,6 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                     });
             }
             this.fecharDialogEditarEmLote();
-    }
-
-    verificarFuncoesEmLote(funcaoTransacao: FuncaoTransacao) {
-        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
-            const funcao = this.funcaoTransacaoEmLote[i];
-            if(funcaoTransacao.name === funcao.name &&
-                funcaoTransacao.funcionalidade.id === funcao.funcionalidade.id &&
-                funcaoTransacao.funcionalidade.modulo.id === funcao.funcionalidade.modulo.id &&
-                funcaoTransacao.equipe.id === funcao.equipe.id &&
-                funcaoTransacao.id !== funcao.id){
-                    return true;
-            }
-        }
-
-        return false;
     }
 
     selecionarDeflatorEmLote(deflator: FatorAjuste) {
@@ -1549,7 +1526,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.resetarEstadoPosSalvar();
         this.habilitaEditarOrdem = false;
     }
-    
+
     // Funcionalidade Selecionada
     funcionalidadeSelected(funcionalidade: Funcionalidade) {
         for (let i = 0; i < this.funcionalidades.length; i++) {
@@ -1589,7 +1566,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             }
         }
     }
-    
+
     isModuloSelected() {
         return this.currentFuncaoTransacao.modulo != null;
     }
@@ -1695,7 +1672,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                         this.currentFuncaoTransacao.lstDivergenceComments.splice(this.currentFuncaoTransacao.lstDivergenceComments.indexOf(divergenceComment), 1);
                         this.pageNotificationService.addSuccessMessage("Comentário excluído com sucesso!");
                     })
-                    
+
                 }
             }
         });
@@ -1706,7 +1683,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             this.pageNotificationService.addErrorMessage('É obrigatório preencher o campo comentário.');
             return;
         }
-        
+
         this.funcaoTransacaoService.updateComment(divergenceComment.id, divergenceComment.comment).subscribe(r => {
             this.currentFuncaoTransacao.lstDivergenceComments.forEach(lstDComment => {
                 if(lstDComment.id === divergenceComment.id){
@@ -1718,11 +1695,11 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         })
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoTransacao){ 
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao){
         if(this.habilitaEditarOrdem == false && this.isOrderning){
             this.habilitaEditarOrdem = true;
         }
-        
+
     }
 
     trocarOrdem(numero, funcao: FuncaoTransacao){

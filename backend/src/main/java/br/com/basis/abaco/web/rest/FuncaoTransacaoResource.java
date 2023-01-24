@@ -27,7 +27,6 @@ import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
-import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -310,35 +309,35 @@ public class FuncaoTransacaoResource {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/funcao-transacaos/{idAnalise}/{idfuncionalidade}/{idModulo}")
+    @GetMapping("/funcao-transacaos/{idAnalise}/{idfuncionalidade}")
     @Timed
-    public ResponseEntity<Boolean> existFuncaoDados(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @PathVariable Long idModulo, @RequestParam String name, @RequestParam(required = false) Long id) {
+    public ResponseEntity<Boolean> existFuncaoDados(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @RequestParam String name, @RequestParam(required = false) Long id) {
         log.debug("REST request to exist FuncaoDados");
         Boolean existInAnalise;
         if (id != null && id > 0) {
 
-            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
+            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNot(name, idAnalise, idfuncionalidade, id);
         } else {
-            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeId(name, idAnalise, idfuncionalidade);
         }
         return ResponseEntity.ok(existInAnalise);
     }
-    @GetMapping("/funcao-transacaos/divergencia/{idAnalise}/{idfuncionalidade}/{idModulo}")
+    @GetMapping("/funcao-transacaos/divergencia/{idAnalise}/{idfuncionalidade}")
     @Timed
-    public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @PathVariable Long idModulo, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
+    public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
         log.debug("REST request to exist FuncaoDados");
         Boolean existInAnalise = false;
         if(idEquipe != null && idEquipe > 0){
             if (id != null && id > 0) {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, id, idEquipe);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNotAndEquipeId(name, idAnalise, idfuncionalidade, id, idEquipe);
             } else {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, idEquipe);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndEquipeId(name, idAnalise, idfuncionalidade, idEquipe);
             }
         }else{
             if (id != null && id > 0) {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNot(name, idAnalise, idfuncionalidade, id);
             } else {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeId(name, idAnalise, idfuncionalidade);
             }
         }
         return ResponseEntity.ok(existInAnalise);
