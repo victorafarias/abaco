@@ -187,7 +187,7 @@ public class FuncaoDadosResource {
         FuncaoDados result = funcaoDadosRepository.save(funcaoDadosUpdate);
         FuncaoDadosEditDTO funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && MetodoContagem.DETALHADA.equals(analise.getMetodoContagem())) {
             funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
         }
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoDados.getId().toString())).body(funcaoDadosEditDTO);

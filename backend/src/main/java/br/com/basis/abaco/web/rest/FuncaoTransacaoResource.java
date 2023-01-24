@@ -183,7 +183,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && MetodoContagem.DETALHADA.equals(analise.getMetodoContagem())) {
             funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
         }
 
