@@ -652,7 +652,6 @@ export class FuncaoTransacaoFormComponent implements OnInit {
                 this.currentFuncaoTransacao.name,
                 this.analise.id,
                 this.currentFuncaoTransacao.funcionalidade.id,
-                this.currentFuncaoTransacao.funcionalidade.modulo.id,
                 this.currentFuncaoTransacao.id).subscribe(existFuncaoTransacao => {
                     if (!existFuncaoTransacao) {
                         this.desconverterChips();
@@ -1350,7 +1349,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             }
         }
     }
-    
+
     isModuloSelected() {
         return this.currentFuncaoTransacao.modulo != null;
     }
@@ -1432,11 +1431,11 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoTransacao){ 
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao){
         if(this.habilitaEditarOrdem == false && this.isOrderning){
             this.habilitaEditarOrdem = true;
         }
-        
+
     }
 
     trocarOrdem(numero, funcao: FuncaoTransacao){
