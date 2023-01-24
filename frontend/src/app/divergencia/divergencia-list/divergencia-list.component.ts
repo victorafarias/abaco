@@ -328,8 +328,20 @@ export class DivergenciaListComponent implements OnInit {
                 this.pageNotificationService.addErrorMessage('Nenhuma Validação foi selecionada.');
                 return;
             }
+			this.verificaStatusAprovado()
             this.changeStatusAndBlock()
         }
+
+		public verificaStatusAprovado(){
+			let aprovada : Analise[] = this.selectedDivergence.filter(divergence => {
+				return divergence.status.nome == "Aprovada"
+			});
+			if(aprovada.length == this.selectedDivergence.length){
+				this.statusToChange = aprovada[0].status;
+			}else {
+				this.statusToChange = null;
+			}
+		}
 
         public changeStatusAndBlock() {
             this.showDialogDivergenceBlock = true;
