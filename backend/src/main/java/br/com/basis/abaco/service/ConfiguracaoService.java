@@ -14,11 +14,16 @@ public class ConfiguracaoService {
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
 
+    public Configuracao criarConfiguracaoPadrao() {
+        Configuracao config = new Configuracao();
+        config.setHabilitarCamposFuncao(false);
+        return config;
+    }
 
     public Boolean buscarConfiguracaoHabilitarCamposFuncao(){
         ConfiguracaoUtils configuracaoUtils = ConfiguracaoUtils.getInstance();
         if(configuracaoUtils.getHabilitarCamposFuncao() == null){
-            configuracaoUtils.setHabilitarCamposFuncao(configuracaoRepository.findAll().stream().findFirst().orElse(new Configuracao()).getHabilitarCamposFuncao());
+            configuracaoUtils.setHabilitarCamposFuncao(configuracaoRepository.findAll().stream().findFirst().orElse(criarConfiguracaoPadrao()).getHabilitarCamposFuncao());
         }
 
         return configuracaoUtils.getHabilitarCamposFuncao();
