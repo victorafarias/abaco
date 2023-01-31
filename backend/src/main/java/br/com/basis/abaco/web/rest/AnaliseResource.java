@@ -8,8 +8,6 @@ import br.com.basis.abaco.domain.Status;
 import br.com.basis.abaco.domain.TipoEquipe;
 import br.com.basis.abaco.domain.UploadedFile;
 import br.com.basis.abaco.domain.User;
-import br.com.basis.abaco.domain.VwAnaliseFD;
-import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
