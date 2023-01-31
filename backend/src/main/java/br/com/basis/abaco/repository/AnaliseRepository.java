@@ -77,36 +77,36 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
     @Query(value = "SELECT a FROM Analise a WHERE a.equipeResponsavel.id = :equipeId AND a.sistema.id = :sistemaId")
     List<Analise> findBySistemaAndEquipe(@Param("equipeId") Long equipeId, @Param("sistemaId") Long sistemaId);
 
-    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(a.id, a.identificadorAnalise, a.numeroOs, a.pfTotal,s.nome, m.nome,f.nome,fd.name, a.organizacao.nome, e.nome) " +
-        "from FuncaoDados as fd " +
-        "join fd.analise a " +
-        "join a.sistema s " +
-        "join a.equipeResponsavel e " +
-        "join fd.funcionalidade f " +
-        "join f.modulo m " +
-        "where fd.name like :nomeFuncao " +
-        "and m.nome like :nomeModulo " +
-        "and f.nome like :nomeFuncionalidade " +
-        "and s.nome like :nomeSistema " +
-        "and e.nome like :nomeEquipe ")
+    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(analise,funcionalidade,funcaoDados.name) " +
+        "from FuncaoDados as funcaoDados " +
+        "join funcaoDados.analise analise " +
+        "join analise.sistema sistema " +
+        "join analise.equipeResponsavel equipe " +
+        "join funcaoDados.funcionalidade funcionalidade " +
+        "join funcionalidade.modulo modulo " +
+        "where funcaoDados.name like :nomeFuncao " +
+        "and modulo.nome like :nomeModulo " +
+        "and funcionalidade.nome like :nomeFuncionalidade " +
+        "and sistema.nome like :nomeSistema " +
+        "and equipe.nome like :nomeEquipe ")
     List<AnaliseDTO> obterPorFuncaoDados(@Param("nomeFuncao") String nomeFuncao,
                                          @Param("nomeModulo") String nomeModulo,
                                          @Param("nomeFuncionalidade") String nomeFuncionalidade,
                                          @Param("nomeSistema") String nomeSistema,
                                          @Param("nomeEquipe") String nomeEquipe);
 
-    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(a.id, a.identificadorAnalise, a.numeroOs, a.pfTotal,s.nome, m.nome,f.nome,ft.name, a.organizacao.nome, e.nome) " +
-        "from FuncaoTransacao as ft " +
-        "join ft.analise a " +
-        "join a.sistema s " +
-        "join a.equipeResponsavel e " +
-        "join ft.funcionalidade f " +
-        "join f.modulo m " +
-        "where ft.name like :nomeFuncao " +
-        "and m.nome like :nomeModulo " +
-        "and f.nome like :nomeFuncionalidade " +
-        "and s.nome like :nomeSistema " +
-        "and e.nome like :nomeEquipe ")
+    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(analise,funcionalidade,funcaoTransacao.name) " +
+        "from FuncaoTransacao as funcaoTransacao " +
+        "join funcaoTransacao.analise analise " +
+        "join analise.sistema sistema " +
+        "join analise.equipeResponsavel equipe " +
+        "join funcaoTransacao.funcionalidade funcionalidade " +
+        "join funcionalidade.modulo modulo " +
+        "where funcaoTransacao.name like :nomeFuncao " +
+        "and modulo.nome like :nomeModulo " +
+        "and funcionalidade.nome like :nomeFuncionalidade " +
+        "and sistema.nome like :nomeSistema " +
+        "and equipe.nome like :nomeEquipe ")
     List<AnaliseDTO> obterPorFuncaoTransacao(@Param("nomeFuncao") String nomeFuncao,
                                              @Param("nomeModulo") String nomeModulo,
                                              @Param("nomeFuncionalidade") String nomeFuncionalidade,

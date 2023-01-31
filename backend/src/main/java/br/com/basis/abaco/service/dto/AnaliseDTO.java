@@ -1,6 +1,8 @@
 package br.com.basis.abaco.service.dto;
 
-import br.com.basis.abaco.domain.*;
+import br.com.basis.abaco.domain.Analise;
+import br.com.basis.abaco.domain.Compartilhada;
+import br.com.basis.abaco.domain.Funcionalidade;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.TipoAnalise;
 import br.com.basis.dynamicexports.pojo.ReportObject;
@@ -10,7 +12,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
@@ -54,30 +55,19 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private String organizacaoNome;
     private String equipeNome;
 
-    public AnaliseDTO(Long id,
-                      String identificadorAnalise,
-                      String numeroOs,
-                      String pfAjustado,
-                      String sistemaNome,
-                      String moduloNome,
-                      String funcionalidadeNome,
-                      String funcaoNome,
-                      String organizacaoNome,
-                      String equipeNome) {
-        this.id = id;
-        this.identificadorAnalise = identificadorAnalise;
-        this.numeroOs = numeroOs;
-        this.pfAjustado = pfAjustado;
-        this.sistemaNome = sistemaNome;
-        this.moduloNome = moduloNome;
-        this.funcionalidadeNome = funcionalidadeNome;
+    public AnaliseDTO(Analise analise,
+                      Funcionalidade funcionalidade,
+                      String funcaoNome) {
+        this.id = analise.getId();
+        this.identificadorAnalise = analise.getIdentificadorAnalise();
+        this.numeroOs = analise.getNumeroOs();
+        this.pfAjustado = analise.getPfTotal();
+        this.sistemaNome = analise.getSistema().getNome();
+        this.moduloNome = funcionalidade.getModulo().getNome();
+        this.funcionalidadeNome = funcionalidade.getNome();
         this.funcaoNome = funcaoNome;
-        this.organizacaoNome = organizacaoNome;
-        this.equipeNome = equipeNome;
-    }
-
-    public AnaliseDTO(FuncaoTransacao funcaoTransacao) {
-        this.adjustPFTotal = adjustPFTotal;
+        this.organizacaoNome = analise.getOrganizacao().getNome();
+        this.equipeNome = analise.getEquipeResponsavel().getNome();
     }
 
     @JsonIgnoreProperties("analiseClonadaParaEquipe")
