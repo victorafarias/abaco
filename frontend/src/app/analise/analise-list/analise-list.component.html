@@ -157,6 +157,14 @@
 								{{ (analise.pfTotalAjustadoValor | number: '1.2-2')?.replace(".", ",")}}
 							</ng-template>
 						</p-column>
+						<p-column [styleClass]="'pf-conciliacao'" header="PF Conciliação" field="pfTotalAprovado"
+								  [sortable]="true" filterType="">
+							<ng-template let-col let-analise="rowData" pTemplate="body">
+								<span *ngIf="analise.analiseDivergence?.status?.nome === 'Aprovada'">
+										{{ analise.analiseDivergence?.pfTotalAprovado }}
+								</span>
+							</ng-template>
+						</p-column>
 						<p-column [styleClass]="'data-criacao'" header="Data de criação" field="dataCriacaoOrdemServico"
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
