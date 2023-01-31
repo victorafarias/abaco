@@ -22,6 +22,7 @@ public class AnaliseDivergenceDTO implements ReportObject, Serializable {
     private MetodoContagem metodoContagem;
     private String pfTotal;
     private String adjustPFTotal;
+    private String pfTotalAprovado;
     private StatusDTO status;
 
 }
