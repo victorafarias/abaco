@@ -1,7 +1,6 @@
 package br.com.basis.abaco.service.dto;
 
-import br.com.basis.abaco.domain.Analise;
-import br.com.basis.abaco.domain.Compartilhada;
+import br.com.basis.abaco.domain.*;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.TipoAnalise;
 import br.com.basis.dynamicexports.pojo.ReportObject;
@@ -46,6 +45,40 @@ public class AnaliseDTO implements ReportObject, Serializable {
 
     private Double pfTotalValor;
     private Double pfTotalAjustadoValor;
+
+    private String pfAjustado;
+    private String sistemaNome;
+    private String moduloNome;
+    private String funcionalidadeNome;
+    private String funcaoNome;
+    private String organizacaoNome;
+    private String equipeNome;
+
+    public AnaliseDTO(Long id,
+                      String identificadorAnalise,
+                      String numeroOs,
+                      String pfAjustado,
+                      String sistemaNome,
+                      String moduloNome,
+                      String funcionalidadeNome,
+                      String funcaoNome,
+                      String organizacaoNome,
+                      String equipeNome) {
+        this.id = id;
+        this.identificadorAnalise = identificadorAnalise;
+        this.numeroOs = numeroOs;
+        this.pfAjustado = pfAjustado;
+        this.sistemaNome = sistemaNome;
+        this.moduloNome = moduloNome;
+        this.funcionalidadeNome = funcionalidadeNome;
+        this.funcaoNome = funcaoNome;
+        this.organizacaoNome = organizacaoNome;
+        this.equipeNome = equipeNome;
+    }
+
+    public AnaliseDTO(FuncaoTransacao funcaoTransacao) {
+        this.adjustPFTotal = adjustPFTotal;
+    }
 
     @JsonIgnoreProperties("analiseClonadaParaEquipe")
     private AnaliseDTO analiseClonadaParaEquipe;

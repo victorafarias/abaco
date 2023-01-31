@@ -886,23 +886,23 @@ public class AnaliseResource {
         return new ResponseEntity(newAnalise, HttpStatus.OK);
     }
 
-    @GetMapping("/analises/FD")
-    public ResponseEntity<List<VwAnaliseFD>> carregarAnalisesFD(@RequestParam(name = "nomeFuncao")String nomeFuncao,
+            @GetMapping("/analises/FD")
+    public ResponseEntity<List<AnaliseDTO>> carregarAnalisesFD(@RequestParam(name = "nomeFuncao")String nomeFuncao,
                                                                 @RequestParam(name = "nomeModulo")String nomeModulo,
                                                                 @RequestParam(name = "nomeFuncionalidade")String nomeFuncionalidade,
                                                                 @RequestParam(name = "nomeSistema") String nomeSistema,
                                                                 @RequestParam(name = "nomeEquipe") String nomeEquipe){
-        List<VwAnaliseFD> analises = analiseService.carregarAnalisesFromFuncaoFD(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
-        return new ResponseEntity<>(analises, HttpStatus.OK);
+        List<AnaliseDTO> analises = analiseService.carregarAnalisesFromFuncaoFD(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
+        return new ResponseEntity<>(analises , HttpStatus.OK);
     }
 
     @GetMapping("/analises/FT")
-    public ResponseEntity<List<VwAnaliseFT>> carregarAnalisesFT(@RequestParam(name = "nomeFuncao")String nomeFuncao,
+    public ResponseEntity<List<AnaliseDTO>> carregarAnalisesFT(@RequestParam(name = "nomeFuncao")String nomeFuncao,
                                                                 @RequestParam(name = "nomeModulo")String nomeModulo,
                                                                 @RequestParam(name = "nomeFuncionalidade")String nomeFuncionalidade,
                                                                 @RequestParam(name = "nomeSistema") String nomeSistema,
                                                                 @RequestParam(name = "nomeEquipe") String nomeEquipe){
-        List<VwAnaliseFT> analises = analiseService.carregarAnalisesFromFuncaoFT(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
+        List<AnaliseDTO> analises = analiseService.carregarAnalisesFromFuncaoFT(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
         return new ResponseEntity<>(analises, HttpStatus.OK);
     }
 
