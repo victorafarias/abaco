@@ -116,5 +116,4 @@ public class FuncaoTransacao extends FuncaoAnalise implements Serializable {
             });
         }
     }
-
 }

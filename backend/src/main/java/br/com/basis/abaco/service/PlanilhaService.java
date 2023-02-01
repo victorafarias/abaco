@@ -1356,16 +1356,25 @@ public class PlanilhaService {
         if(funcaoPrimaria.getName() != null){
             row.getCell(5).setCellValue(funcaoPrimaria.getName());
             row.getCell(6).setCellValue(funcaoPrimaria.getTipo().toString());
-            row.getCell(7).setCellValue(this.getTotalDer(funcaoPrimaria.getDers()));
+            if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
+                row.getCell(7).setCellValue(this.getTotalDer(funcaoSecundaria.getDers()));
+                String ders = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(8).setCellValue(ders);
+                row.getCell(9).setCellValue(this.getTotalAlr(funcaoSecundaria.getAlrs()));
+                String alrs = funcaoPrimaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(10).setCellValue(alrs);
+            }else {
+                row.getCell(7).setCellValue(this.getTotalDer(funcaoPrimaria.getDers()));
+                String ders = funcaoPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(8).setCellValue(ders);
+                row.getCell(9).setCellValue(this.getTotalAlr(funcaoPrimaria.getAlrs()));
+                String alrs = funcaoPrimaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(10).setCellValue(alrs);
+            }
             row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
             evaluator.evaluateFormulaCell(row.getCell(2));
             row.getCell(3).setCellValue(funcaoPrimaria.getFuncionalidade().getModulo().getNome());
             row.getCell(4).setCellValue(funcaoPrimaria.getFuncionalidade().getNome());
-            row.getCell(9).setCellValue(this.getTotalAlr(funcaoPrimaria.getAlrs()));
-            String alrs = funcaoPrimaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(10).setCellValue(alrs);
-            String ders = funcaoPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(8).setCellValue(ders);
             row.getCell(17).setCellValue(Jsoup.parse(funcaoPrimaria.getSustantation() != null ? funcaoPrimaria.getSustantation() : "").text());
             evaluator.evaluateFormulaCell(row.getCell(16));
             row.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
@@ -1443,16 +1452,25 @@ public class PlanilhaService {
         if(funcaoDadosPrimaria.getName() != null){
             row.getCell(5).setCellValue(funcaoDadosPrimaria.getName());
             row.getCell(6).setCellValue(funcaoDadosPrimaria.getTipo().toString());
-            row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosPrimaria.getDers()));
+            if (funcaoDadosPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) && funcaoDadosSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)) {
+                row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosSecundaria.getDers()));
+                String ders = funcaoDadosSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(8).setCellValue(ders);
+                row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosSecundaria.getRlrs()));
+                String rlrs = funcaoDadosSecundaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(10).setCellValue(rlrs);
+            }else {
+                row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosPrimaria.getDers()));
+                String ders = funcaoDadosPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(8).setCellValue(ders);
+                row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosPrimaria.getRlrs()));
+                String rlrs = funcaoDadosPrimaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                row.getCell(10).setCellValue(rlrs);
+            }
             row.getCell(1).setCellValue(funcaoDadosPrimaria.getFatorAjuste().getNome());
             evaluator.evaluateFormulaCell(row.getCell(2));
             row.getCell(3).setCellValue(funcaoDadosPrimaria.getFuncionalidade().getModulo().getNome());
             row.getCell(4).setCellValue(funcaoDadosPrimaria.getFuncionalidade().getNome());
-            row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosPrimaria.getRlrs()));
-            String rlrs = funcaoDadosPrimaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(10).setCellValue(rlrs);
-            String ders = funcaoDadosPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(8).setCellValue(ders);
             row.getCell(17).setCellValue(Jsoup.parse(funcaoDadosPrimaria.getSustantation() != null ? funcaoDadosPrimaria.getSustantation() : "").text());
             evaluator.evaluateFormulaCell(row.getCell(16));
             row.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoDadosPrimaria, funcaoDadosSecundaria));
