@@ -88,6 +88,14 @@ export class AppTopbarComponent implements OnInit{
 			return storageUser.firstName;
 		}
 
+		authenticatedUserFullName(): string {
+			const storageUser = this._authentication.getUser();
+			if (!storageUser) {
+				return;
+			}
+			return storageUser.firstName + ' ' + storageUser.lastName;
+		}
+
 		mostrarNovidade(){
 			this.visualizarNovidadesDaVersao();
 		}
