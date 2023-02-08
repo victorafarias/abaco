@@ -62,6 +62,9 @@
 	  text-transform: uppercase;
   }
 
+  .titulo{
+	  font-size: 37px !important;
+  }
 .topbar-icon{
 	font-size: 25px !important;
 }
