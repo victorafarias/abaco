@@ -27,7 +27,7 @@ public interface TipoEquipeRepository extends JpaRepository<TipoEquipe, Long> {
     @Query("select t from TipoEquipe t join t.organizacoes o where o.id=:idOrganizacao")
     List<TipoEquipe> findAllEquipesByOrganizacaoId(@Param("idOrganizacao") Long idOrganizacao);
 
-    @Query("select t from TipoEquipe t join t.usuarios u join t.organizacoes o where u.login=:login and o.id=:idOrganizacao")
+    @Query("select t from TipoEquipe t join t.usuarios u join t.organizacoes o where u.login=:login and o.id=:idOrganizacao order by t.nome")
     List<TipoEquipe> findAllByOrganizacaoAndUsuario(@Param("login") String login, @Param("idOrganizacao") Long idOrganizacao);
 
     @Query(value = "SELECT t.tipo_equipe_id FROM user_tipo_equipe t where t.user_id = :idUser", nativeQuery = true)
