@@ -30,11 +30,11 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Status findById(Long id);
 
-    List<Status> findByAtivoTrue();
+    List<Status> findByAtivoTrueOrderByNome();
 
     Status findFirstByDivergenciaTrue();
 
-    List<Status> findAllByAtivoTrueAndDivergenciaTrue();
+    List<Status> findAllByAtivoTrueAndDivergenciaTrueOrderByNome();
 
 
 

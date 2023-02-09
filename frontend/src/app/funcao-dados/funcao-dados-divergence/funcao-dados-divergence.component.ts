@@ -1340,7 +1340,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
 
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos;
+            this.modulos = sistemaRecarregado.modulos.sort((m1, m2) => m1.nome.localeCompare(m2.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
         });
@@ -1665,7 +1665,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         }
         this.deselecionaFuncionalidadesSeModuloForDiferente();
         this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.seletedFuncaoDados.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades;
+            this.funcionalidades = funcionalidades.sort((f1,f2) => f1.nome.localeCompare(f2.nome));
             this.selecionaFuncionalidadeFromCurrentAnalise(this.seletedFuncaoDados.modulo);
             this.oldModuloId = modulo.id;
         });
