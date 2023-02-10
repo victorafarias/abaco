@@ -31,14 +31,16 @@
                             [disableDelete]="!canDeletar"
                             [disableEdit]="!canEditar"
                             [disableView]="!canConsultar"
+							[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+							[title]="'Tipos de Fase'"
                             #dataTable >
                             <p-column header="Nome" field="nome" [sortable]="true"></p-column>
                         </basis-datatable>
                     </div>
                 </div>
 
-                <div class="ui-g-12 ui-md-2">
-                    <app-export-button [dataTable]="dataTable" resourceName="fases" [filter]="dataTable.filterParams" funcionalidadeName="fase">
+                <div class="ui-g-11 div-btn-exportar">
+                    <app-export-button [dataTable]="dataTable" resourceName="fases" [filter]="dataTable.filterParams" funcionalidadeName="fase" class="ui-g-12 ui-md-3 btn-exportar">
                     </app-export-button>
                 </div>
 

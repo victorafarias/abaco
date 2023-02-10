@@ -56,6 +56,7 @@
                     (buttonClick)="onClick($event)" [rows]="20" id="idTabelaComponentManual"
                     [disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
                     [rowsPerPageOptions]="rowsPerPageOptions" [showPaginationFooter]="true"
+					[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}" [title]="'Manuais'"
                      #datatable>
 
                     <basis-datatable-button
@@ -120,8 +121,8 @@
 
                 </basis-datatable>
 
-                <div class="ui-g-12 ui-md-2">
-                    <app-export-button [dataTable]="datatable" resourceName="manual" [filter]="manualFiltro" [columnsVisible]="columnsVisible" funcionalidadeName="manual">
+                <div class="ui-g-11 div-btn-exportar">
+                    <app-export-button [dataTable]="datatable" resourceName="manual" [filter]="manualFiltro" [columnsVisible]="columnsVisible" funcionalidadeName="manual" class="ui-g-12 ui-md-3 btn-exportar">
                     </app-export-button>
                 </div>
             </div>

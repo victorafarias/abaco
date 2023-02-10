@@ -48,6 +48,8 @@
           [disableEdit]="!canEditar"
           [disableView]="!canConsultar"
           [rowsPerPageOptions]="rowsPerPageOptions" [showPaginationFooter]="true"
+		  [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+		  [title]="'Status'"
           #datatable>
 
           <p-column header="Nome" field="nome" [sortable]="true"></p-column>
@@ -63,8 +65,8 @@
           </p-column>
 
         </basis-datatable>
-        <div class="ui-g-12 ui-md-2">
-          <app-export-button [dataTable]="datatable" resourceName="status" [filter]="statusFiltro" funcionalidadeName="status">
+        <div class="ui-g-11 div-btn-exportar">
+          <app-export-button [dataTable]="datatable" resourceName="status" [filter]="statusFiltro" funcionalidadeName="status" class="ui-g-12 ui-md-3 btn-exportar">
           </app-export-button>
         </div>
         <div class="ui-g-12 ui-md-2">

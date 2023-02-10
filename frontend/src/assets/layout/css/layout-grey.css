@@ -58,6 +58,15 @@
 	/* For IE6-8 */
 	src: local("Titillium Web SemiBold"), local("TitilliumWeb-SemiBold"), url("../fonts/TitilliumWeb-SemiBold.ttf") format("truetype");
 }
+
+@font-face {
+	font-family: "Titillium Web";
+	font-style: normal;
+	font-weight: 400;
+	src: url("../fonts/TitilliumWeb-Regular.ttf");
+	/* For IE6-8 */
+	src: local("Titillium Web Regular"), local("TitilliumWeb-Regular"), url("../fonts/TitilliumWeb-Regular.ttf") format("truetype");
+}
 /* Utils */
 .clearfix:after {
   content: " ";
@@ -2400,3 +2409,56 @@ body .layout-wrapper.layout-compact .ui-datepicker tbody td a, body .layout-wrap
 	font-size: 16px !important;
 
 }
+
+.div-btn-exportar{
+	display: flex;
+	justify-content: flex-end;
+	padding: 0 !important;
+	margin-top: 15px;
+}
+
+.btn-exportar{
+	max-width: 200px;
+	max-height: 35px;
+
+}
+
+.table-tools{
+	background-color: #EF4436;
+	height: 40px;
+	border-radius: 4px 4px 0 0;
+	margin-bottom: -14px !important;
+	padding-left: 30px;
+}
+
+.table-tools H3{
+	font-family: "Titillium Web", sans-serif;
+	font-weight: 600 !important;
+	font-size: 18px !important;
+	color: #FFFFFF;
+}
+
+.ui-paginator-current{
+	float: right;
+}
+
+.ui-paginator-bottom{
+	font-family: "Titillium Web", sans-serif !important;
+	font-weight: 700;
+	font-size: 12px !important;
+	border-radius: 0 0 4px 4px;
+}
+
+.ui-table-caption{
+	font-family: "Titillium Web", sans-serif  !important;
+	font-weight: 600 !important;
+	font-size: 18px !important;
+	color: #FFFFFF  !important;
+	background-color: #EF4436  !important;
+	height: 40px  !important;
+	border-radius: 4px 4px 0 0  !important;
+	display: flex;
+	padding-left: 30px  !important;
+}
+
+

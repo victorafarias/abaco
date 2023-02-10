@@ -48,7 +48,9 @@
           [disableDelete]="!canDeletar"
           [disableEdit]="!canEditar"
           [disableView]="!canConsultar"
-          [showPaginationFooter]="true" #datatable>
+          [showPaginationFooter]="true"
+		  [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+		  [title]="'Tipos de Equipe'"#datatable>
 
           <p-column header="Nome" field="nome" [sortable]="true" [style]="{'word-wrap':'break-word', 'width': '35%'}">
           </p-column>
@@ -74,12 +76,12 @@
             </ng-template>
           </p-column>
         </basis-datatable>
-        <div class="ui-g-12 ui-md-2">
-          <app-export-button [dataTable]="datatable" resourceName="tipoEquipe" [filter]="tipoEquipeFiltro" funcionalidadeName="tipo_equipe">
+        <div class="ui-g-11 div-btn-exportar">
+          <app-export-button [dataTable]="datatable" resourceName="tipoEquipe" [filter]="tipoEquipeFiltro" funcionalidadeName="tipo_equipe" class="ui-g-12 ui-md-3 btn-exportar">
           </app-export-button>
         </div>
-        <div class="ui-g-12 ui-md-2">
-          <app-botoes-exportacao [query]="elasticQuery.value" resourceName="tipoEquipe" fileName="TipoEquipe" >
+        <div class="ui-g-11 div-btn-exportar">
+          <app-botoes-exportacao [query]="elasticQuery.value" resourceName="tipoEquipe" fileName="TipoEquipe" class="ui-g-12 ui-md-3 btn-exportar">
           </app-botoes-exportacao>
         </div>
       </div>

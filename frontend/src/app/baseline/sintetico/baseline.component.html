@@ -36,7 +36,9 @@
                             <basis-datatable type="memory" [value]="lstBasilineSintetico"
                                 (buttonClick)="datatableClick($event)" [rows]="20" [disableDelete]="true"
                                 [disableEdit]="true" [disableView]="!canConsultar"
-                                [rowsPerPageOptions]="rowsPerPageOptions" #datatable>
+                                [rowsPerPageOptions]="rowsPerPageOptions"
+								[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+								[title]="'Baseline'"#datatable>
 
                                 <basis-datatable-button *ngIf="canExportar" name="geraBaselinePdfBrowser"
                                     [pTooltip]="'Relatório Baseline'" icon="description" disabled="selecionada">
@@ -84,8 +86,8 @@
                                 </div>
                             </div>
                         </p-dialog>
-                        <div class="ui-g-12 ui-md-2" *ngIf="enableTable">
-                            <app-botoes-exportacao resourceName="baseline" fileName="baseline"></app-botoes-exportacao>
+                        <div class="ui-g-11 div-btn-exportar" *ngIf="enableTable">
+                            <app-botoes-exportacao resourceName="baseline" fileName="baseline" class="ui-g-12 ui-md-3 btn-exportar"></app-botoes-exportacao>
                         </div>
                     </div>
                 </div>
