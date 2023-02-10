@@ -35,6 +35,8 @@
             [disableView]="!canConsultar"
             [rowsPerPageOptions]="rowsPerPageOptions"
             [showPaginationFooter]="true"
+			[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+			[title]="'Sistemas'"
             #datatable>
           <p-column header="Sigla" field="sigla" [sortable]="true"></p-column>
           <p-column header="Nome" field="nome" [sortable]="true"></p-column>
@@ -46,13 +48,13 @@
           </p-column>
         </basis-datatable>
 
-        <div class="ui-g-12 ui-md-2">
-            <app-export-button [dataTable]="datatable" resourceName="sistema" [filter]="datatable.filterParams" funcionalidadeName="sistema">
+        <div class="ui-g-11 div-btn-exportar">
+            <app-export-button [dataTable]="datatable" resourceName="sistema" [filter]="datatable.filterParams" funcionalidadeName="sistema" class="ui-g-11 div-btn-exportar">
             </app-export-button>
         </div>
 
-        <div class="ui-g-12 ui-md-2">
-          <app-botoes-exportacao [query]="elasticQuery.value" resourceName="sistema" fileName="sistema" id="idBtnExportacaoComponentSistema">
+        <div class="ui-g-11 div-btn-exportar">
+          <app-botoes-exportacao [query]="elasticQuery.value" resourceName="sistema" fileName="sistema" id="idBtnExportacaoComponentSistema" class="ui-g-11 div-btn-exportar">
           </app-botoes-exportacao>
         </div>
 

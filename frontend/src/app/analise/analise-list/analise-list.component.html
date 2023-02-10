@@ -105,12 +105,22 @@
 							</p-multiSelect>
 						</div>
 					</div>
-					<basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
-						[responsive]="true" (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()"
-						[rows]="20" id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
-						[disableDelete]="!canDeletar" [disableEdit]="!canEditar || selectButtonMultiple" [disableView]="!canConsultar || selectButtonMultiple"
-						(click)="selectAnalise($event)" [enableScroll]="true" [scrollHeight]="'500px'"
-						[showPaginationFooter]="true" [selectionMode]="'multiple'" #datatable>
+					<basis-datatable type="server"
+									 [url]="userAnaliseUrl"
+									 (dblclick)="onRowDblclick($event)"
+									 [responsive]="true"
+									 (buttonClick)="datatableClick($event)"
+									 (finishedLoading)="setParamsLoad()"
+									 [rows]="20" id="idTabelaComponentAnalise"
+									 [rowsPerPageOptions]="rowsPerPageOptions"
+									 [disableDelete]="!canDeletar"
+									 [disableEdit]="!canEditar || selectButtonMultiple"
+									 [disableView]="!canConsultar || selectButtonMultiple"
+									 (click)="selectAnalise($event)"
+									 [showPaginationFooter]="true"
+									 [selectionMode]="'multiple'"
+									 [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}', 'autoLayout': true}"
+									 [title]="'Análises'" #datatable>
 						<p-column header="Organização" field="organizacao.sigla" [sortable]="true" filterType="select"
 							[filter]="true">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
@@ -285,9 +295,9 @@
 
 					</basis-datatable>
 
-					<div class="ui-g-12 ui-md-2">
+					<div class="ui-g-11 div-btn-exportar">
 						<app-export-button [dataTable]="datatable" resourceName="analise"
-							[columnsVisible]="columnsVisible" [filter]="searchGroup" funcionalidadeName="analise">
+							[columnsVisible]="columnsVisible" [filter]="searchGroup" funcionalidadeName="analise" class="ui-g-12 ui-md-3 btn-exportar">
 						</app-export-button>
 					</div>
 				</div>

@@ -68,14 +68,18 @@
                                     [paginator]="true"
                                     selectionMode="multiple"
                                     [rows]="20"
-                                    [scrollable]="true"
-                                    [scrollHeight]="'500px'"
                                     [rowsPerPageOptions]="rowsPerPageOptions"
                                     [metaKeySelection]="true"
                                     (click) = "selectAnalise()"
                                     (dblclick)="onRowDblclick($event)"
                                     [(selection)]="selectedDivergence"
+								    [showCurrentPageReport]="true"
+									[autoLayout]="true"
+								    currentPageReportTemplate='Registros {first} a {last} de {totalRecords}'
                                     #data >
+							<ng-template pTemplate="caption" class="valid">
+								Validação
+							</ng-template>
                             <ng-template pTemplate="header" let-columns>
                                 <tr>
                                     <th></th>
@@ -122,7 +126,7 @@
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="rowexpansion" let-rowData let-columns="columns">
-                                <tr>
+                                <tr style="background: rgba(50, 74, 94, 0.1) !important;">
                                     <td [attr.colspan]="columns.length + 1">
                                         <div class="p-grid -fluid" style="font-size:16px;padding:20px">
                                             <div class="ui-g">
