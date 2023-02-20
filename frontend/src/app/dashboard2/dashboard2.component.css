@@ -1,0 +1,16 @@
+.caixa{
+	margin: 1vh;
+	padding: 2vh;
+	display: flex;
+}
+.flex{
+	display:flex;
+	flex-direction: column;
+}
+.boxDadosTimeLine{
+	padding: 4vh 1vh 7% 25%;
+	border: 1px solid black;
+	word-wrap:normal;
+	width: 20%;
+	height: 50%;
+}

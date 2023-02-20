@@ -28,8 +28,8 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private TipoEquipeAnaliseDTO equipeResponsavel;
     private SistemaAnaliseDTO sistema;
     private MetodoContagem metodoContagem;
-    private String pfTotal;
-    private String adjustPFTotal;
+    private BigDecimal pfTotal;
+    private BigDecimal adjustPFTotal;
     private Timestamp dataCriacaoOrdemServico;
     private TipoAnalise tipoAnalise;
     private Boolean isDivergence;
@@ -41,8 +41,8 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private AnaliseDivergenceDTO analiseDivergence;
     private Set<AnaliseDivergenceDTO> analisesComparadas = new HashSet<>();
 
-    private String pfTotalOriginal;
-    private String pfTotalAprovado;
+    private BigDecimal pfTotalOriginal;
+    private BigDecimal pfTotalAprovado;
 
     private Double pfTotalValor;
     private Double pfTotalAjustadoValor;
