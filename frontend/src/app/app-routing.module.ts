@@ -8,7 +8,6 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { IndexadorComponent } from './indexador/indexador.component';
 import { LoginComponent } from './login';
 import { AuthGuardService } from './util/auth.guard.service';
-import {Dashboard2Component} from "./dashboard2/dashboard2.component";
 
 
 
@@ -24,7 +23,6 @@ const routes: Routes = [
 		breadcrumb: 'Configuração'
 	} },
   { path: 'login', component: LoginComponent, data: { breadcrumb: 'Login'}},
-	{ path: 'dashboard2', component: Dashboard2Component}
 ];
 
 @NgModule({

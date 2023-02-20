@@ -8,7 +8,6 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import java.math.BigDecimal;
 
 @MappedSuperclass
 @Getter
@@ -23,7 +22,7 @@ public class VwResumoBase {
     @Column
     private String pfAjustada;
     @Column
-    private BigDecimal pfTotal;
+    private String pfTotal;
     @Column(name = "quantidade_tipo")
     private Long quantidadeTipo;
     @Column

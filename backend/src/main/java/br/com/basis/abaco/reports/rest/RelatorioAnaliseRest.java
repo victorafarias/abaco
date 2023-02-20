@@ -30,7 +30,6 @@ import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -264,11 +263,11 @@ public class RelatorioAnaliseRest {
             }else{
                 parametro.put(FATOR_CRITICIDADE, " III. Total c/ Criticidade (II + "+analise.getValorCriticidade().intValue()+"%):");
             }
-            String pfCriticidade = String.format("%.2f", (analise.getAdjustPFTotal().doubleValue()) *  (analise.getValorCriticidade() / 100 + 1));
+            String pfCriticidade = String.format("%.2f", Double.parseDouble(analise.getAdjustPFTotal()) *  (analise.getValorCriticidade() / 100 + 1));
             parametro.put("PFCRITICIDADE", pfCriticidade);
         }
     }
-
+    
 
     /**
      * Método responsável por acessar o caminho da imagem da logo do relatório e popular o parâmetro.
@@ -1073,10 +1072,10 @@ public class RelatorioAnaliseRest {
      * @param valor2
      * @return
      */
-    private String calcularPFsAjustado(BigDecimal valor1, BigDecimal valor2) {
+    private String calcularPFsAjustado(String valor1, String valor2) {
         Double valorCalculado = 0.0;
         if (valor1 != null && valor2 != null) {
-            valorCalculado = valor1.subtract(valor2).doubleValue();
+            valorCalculado = Double.parseDouble(valor1) - Double.parseDouble(valor2);
         }
 
         DecimalFormat df = new DecimalFormat("#.##");
@@ -1084,10 +1083,10 @@ public class RelatorioAnaliseRest {
         return df.format(valorCalculado);
     }
 
-    private String calcularScopeCreep(BigDecimal valor1, Double valor2) {
+    private String calcularScopeCreep(String valor1, Double valor2) {
         Double valorCalculado = 0.0;
         if (valor1 != null && valor2 != null) {
-            valorCalculado = valor1.doubleValue() * valor2;
+            valorCalculado = Double.parseDouble(valor1) * valor2;
             if(analise.getFatorCriticidade() != null && analise.getFatorCriticidade() == true){
                 valorCalculado *= analise.getValorCriticidade()/100+1;
             }
