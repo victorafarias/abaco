@@ -2,7 +2,7 @@ package br.com.basis.abaco.repository;
 
 import java.util.List;
 
-import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.service.dto.Dashboard2DTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -43,7 +43,6 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
 
     @EntityGraph(attributePaths = {"compartilhadas", "funcaoDados", "funcaoTransacaos", "esforcoFases", "users", "fatorAjuste", "contrato"})
     Analise findOne(Long id);
-
     @Query(value = "SELECT a FROM Analise a WHERE a.id = :id")
     Analise findOneByIdClean(@Param("id") Long id);
 
@@ -57,15 +56,15 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
     Analise findOneById(Long id);
 
     @Query(value = "SELECT a " +
-        "FROM Analise a " +
-        "JOIN Sistema s              ON s.id = a.sistema.id " +
-        "JOIN Organizacao o          ON o.id = a.organizacao.id " +
-        "JOIN Modulo m               ON s.id = m.sistema.id " +
-        "JOIN Funcionalidade f       ON f.modulo.id = m.id " +
-        "JOIN FuncaoDados fd        ON fd.funcionalidade.id = f.id " +
-        "JOIN FuncaoTransacao ft    ON ft.funcionalidade.id = f.id " +
-        "JOIN FETCH FatorAjuste fa        ON fa.id = fd.fatorAjuste.id OR fa.id = ft.fatorAjuste.id " +
-        "WHERE a.id = :id ORDER BY m.nome, f.nome, fd.name, ft.name")
+            "FROM Analise a " +
+            "JOIN Sistema s              ON s.id = a.sistema.id " +
+            "JOIN Organizacao o          ON o.id = a.organizacao.id " +
+            "JOIN Modulo m               ON s.id = m.sistema.id " +
+            "JOIN Funcionalidade f       ON f.modulo.id = m.id " +
+            "JOIN FuncaoDados fd        ON fd.funcionalidade.id = f.id " +
+            "JOIN FuncaoTransacao ft    ON ft.funcionalidade.id = f.id " +
+            "JOIN FETCH FatorAjuste fa        ON fa.id = fd.fatorAjuste.id OR fa.id = ft.fatorAjuste.id " +
+            "WHERE a.id = :id ORDER BY m.nome, f.nome, fd.name, ft.name")
     Analise reportContagem(@Param("id") Long id);
 
 
@@ -77,40 +76,30 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
     @Query(value = "SELECT a FROM Analise a WHERE a.equipeResponsavel.id = :equipeId AND a.sistema.id = :sistemaId")
     List<Analise> findBySistemaAndEquipe(@Param("equipeId") Long equipeId, @Param("sistemaId") Long sistemaId);
 
-    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(analise,funcionalidade,funcaoDados.name) " +
-        "from FuncaoDados as funcaoDados " +
-        "join funcaoDados.analise analise " +
-        "join analise.sistema sistema " +
-        "join analise.equipeResponsavel equipe " +
-        "join funcaoDados.funcionalidade funcionalidade " +
-        "join funcionalidade.modulo modulo " +
-        "where funcaoDados.name like :nomeFuncao " +
-        "and modulo.nome like :nomeModulo " +
-        "and funcionalidade.nome like :nomeFuncionalidade " +
-        "and sistema.nome like :nomeSistema " +
-        "and equipe.nome like :nomeEquipe ")
-    List<AnaliseDTO> obterPorFuncaoDados(@Param("nomeFuncao") String nomeFuncao,
-                                         @Param("nomeModulo") String nomeModulo,
-                                         @Param("nomeFuncionalidade") String nomeFuncionalidade,
-                                         @Param("nomeSistema") String nomeSistema,
-                                         @Param("nomeEquipe") String nomeEquipe);
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(analise.motivo, COUNT(*)) FROM Analise analise"
+            + " WHERE analise.motivo IS NOT null AND analise.status.id = 1805353 GROUP BY analise.motivo")
+    List<Dashboard2DTO> getMotivosAnalise();
 
-    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(analise,funcionalidade,funcaoTransacao.name) " +
-        "from FuncaoTransacao as funcaoTransacao " +
-        "join funcaoTransacao.analise analise " +
-        "join analise.sistema sistema " +
-        "join analise.equipeResponsavel equipe " +
-        "join funcaoTransacao.funcionalidade funcionalidade " +
-        "join funcionalidade.modulo modulo " +
-        "where funcaoTransacao.name like :nomeFuncao " +
-        "and modulo.nome like :nomeModulo " +
-        "and funcionalidade.nome like :nomeFuncionalidade " +
-        "and sistema.nome like :nomeSistema " +
-        "and equipe.nome like :nomeEquipe ")
-    List<AnaliseDTO> obterPorFuncaoTransacao(@Param("nomeFuncao") String nomeFuncao,
-                                             @Param("nomeModulo") String nomeModulo,
-                                             @Param("nomeFuncionalidade") String nomeFuncionalidade,
-                                             @Param("nomeSistema") String nomeSistema,
-                                             @Param("nomeEquipe") String nomeEquipe);
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(o.sigla, COUNT(*)) FROM Analise analise "
+        + " JOIN Organizacao o on o.id = analise.organizacao.id"
+        + " WHERE analise.status.id = 1805353 GROUP BY o.sigla")
+    List<Dashboard2DTO> getClientesAnalise();
 
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(SUM(a.pfTotalOriginal - a.pfTotalAprovado), to_char(date(a.dataCriacaoOrdemServico), 'dd/MM'))"
+        + " FROM Analise a"
+        + " WHERE a.status.id = 1805353 AND a.pfTotalOriginal IS NOT NULL AND"
+        + " a.pfTotalAprovado IS NOT NULL"
+        + " GROUP BY date(a.dataCriacaoOrdemServico) ORDER BY date(a.dataCriacaoOrdemServico)")
+    List<Dashboard2DTO> getHistoricoDiferenca();
+
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(COUNT(*)) FROM Analise a"
+        + " WHERE a.status.id = 1805353 AND a.pfTotalOriginal IS NOT NULL AND"
+        + " a.pfTotalAprovado IS NOT NULL")
+    List<Dashboard2DTO> getTotalDemandas();
+
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(SUM(a.pfTotalOriginal - a.pfTotalAprovado))"
+        + " FROM Analise a"
+        + " WHERE a.status.id = 1805353 AND a.pfTotalOriginal IS NOT NULL AND"
+        + " a.pfTotalAprovado IS NOT NULL")
+    List<Dashboard2DTO> getHistoricoDiferencaGlobal();
 }

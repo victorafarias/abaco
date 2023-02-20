@@ -1,0 +1,29 @@
+<div class="caixa">
+	<div class="flex" style="width: 50%">
+		<div style="width: 90%; height: 60%; border: 1px solid black; margin-bottom: 2vh; padding: 1vh">
+				<p-chart #motivoChart width="440" height="220" id="motivo" type="pie" [data]="motivoData" [options]="motivoOptions" [responsive]="false"></p-chart>
+		</div>
+		<div style="width: 90%; height: 60%; border: 1px solid black; padding: 1vh">
+			<p-chart #clienteChart width="440" height="220" id="cliente" type="pie" [data]="clienteData" [options]="clienteOptions" [responsive]="false"></p-chart>
+		</div>
+	</div>
+
+	<div class="flex" style="width: 50%">
+		<div style="display: flex; justify-content: space-between; margin: 1vh">
+			<div class="boxDadosTimeLine">
+				<h3 style="font-weight: normal; margin: 0; font-family: Titillium Web, sans-serif; font-size: 15px">Qtde demandas validadas:</h3><br/>
+				<h1 style="margin: 0;font-weight: normal; font-family: Titillium Web, sans-serif"[innerHTML]="totalDemandas"></h1>
+			</div>
+			<div class="boxDadosTimeLine">
+				<h3 style="font-weight: normal; margin: 0; font-family: Titillium Web, sans-serif; font-size: 15px">Dif. de PF contados para PF conciliados:</h3><br/>
+				<h1 style="margin: 0; font-weight: normal; font-family: Titillium Web, sans-serif"[innerHTML]="pfDiferencaGlobal"></h1>
+			</div>
+		</div>
+		<div style="height: 50%;margin-bottom: 4vh">
+			<p-chart #historicoChart id="historicoDiferenca" type="line" [data]="historicoDiferencaData"
+					 [options]="historicoDiferencaOptions" height="250" width="100%"></p-chart>
+		</div>
+	</div>
+
+</div>
+

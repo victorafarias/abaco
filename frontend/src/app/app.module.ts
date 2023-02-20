@@ -46,6 +46,7 @@ import { UserModule } from './user/user.module';
 import { APIInterceptor } from './util/api.interceptor';
 import { AuthGuardService } from './util/auth.guard.service';
 import { AuthService } from './util/auth.service';
+import { Dashboard2Component } from './dashboard2/dashboard2.component';
 
 @NgModule({
     declarations: [
@@ -54,7 +55,8 @@ import { AuthService } from './util/auth.service';
         AppFooterComponent,
         AppRightpanelComponent,
         AppInlineProfileComponent,
-        DiarioErrosComponent
+        DiarioErrosComponent,
+        Dashboard2Component
     ],
     imports: [
         BrowserModule,

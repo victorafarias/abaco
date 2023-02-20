@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Getter
@@ -35,8 +36,8 @@ public class AnaliseDivergenceEditDTO extends AnaliseBaseDTO implements ReportOb
     private Status status;
     private Set<AnaliseEditDTO> analisesComparadas;
     private MotivoAnalise motivo;
-    private String pfTotalOriginal;
-    private String pfTotalAprovado;
+    private BigDecimal pfTotalOriginal;
+    private BigDecimal pfTotalAprovado;
     private boolean bloqueiaAnalise;
 
 }
