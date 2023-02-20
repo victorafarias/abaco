@@ -537,8 +537,8 @@ public class AnaliseService extends BaseService {
     }
 
     public void bindAnaliseCloneForTipoEquipe(Analise analise, TipoEquipe tipoEquipe, Analise analiseClone) {
-        analiseClone.setPfTotal(BigDecimal.ZERO);
-        analiseClone.setAdjustPFTotal(BigDecimal.ZERO);
+        analiseClone.setPfTotal("0");
+        analiseClone.setAdjustPFTotal("0");
         analiseClone.setEquipeResponsavel(tipoEquipe);
         analiseClone.setUsers(new HashSet<>());
         analiseClone.setBloqueiaAnalise(false);
@@ -676,8 +676,8 @@ public class AnaliseService extends BaseService {
             sumFase = sumFase.add(esforcoFase.getEsforco().setScale(decimalPlace));
         }
         sumFase = sumFase.divide(percent).setScale(decimalPlace);
-        analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace));
-        analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN));
+        analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).toString());
+        analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
 
         analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
         analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
@@ -691,8 +691,8 @@ public class AnaliseService extends BaseService {
         }
         if(vwAnaliseDivergenteSomaPf != null){
             sumFase = sumFase.divide(percent).setScale(decimalPlace);
-            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace));
-            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN));
+            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).toString());
+            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
 
             analise.setPfTotalAprovado(analise.getAdjustPFTotal());
 

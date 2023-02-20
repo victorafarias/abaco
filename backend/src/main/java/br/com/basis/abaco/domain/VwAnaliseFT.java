@@ -10,7 +10,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "vw_analise_ft")
@@ -31,10 +30,10 @@ public class VwAnaliseFT {
     private String metodoContagem;
 
     @Column(name = "pf_total")
-    private BigDecimal pfTotal;
+    private String pfTotal;
 
     @Column(name = "pf_ajustado")
-    private BigDecimal pfAjustado;
+    private String pfAjustado;
 
     @Column(name = "identificador_analise")
     private String identificadorAnalise;

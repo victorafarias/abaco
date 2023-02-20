@@ -74,7 +74,6 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit, AfterCont
                     { label: 'Análise', routerLink: 'analise', icon: 'description', visible : false },
                     { label: 'Baseline', routerLink: 'baseline', icon: 'view_list' , visible : false},
                     { label: 'Validação', routerLink: 'divergencia', icon: 'compare_arrows', visible : false },
-					{ label: 'Dashboard', routerLink: 'dashboard2', icon: 'pi-chart-pie', visible : true },
                 ]
             }
         ];
@@ -200,8 +199,7 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit, AfterCont
             const menu = this.menuService.itens[index];
             if (menu.label == 'Análise' && this.authAbacoService.possuiAlgumaRoles([AuthService.PREFIX_ROLE + 'ANALISE_ACESSAR',
             AuthService.PREFIX_ROLE + 'BASELINE_ACESSAR',
-            AuthService.PREFIX_ROLE + 'VALIDACAO_ACESSAR',
-			AuthService.PREFIX_ROLE + 'DASHBOARD_ACESSAR'])) {
+            AuthService.PREFIX_ROLE + 'VALIDACAO_ACESSAR'])) {
                 menu.visible = true;
             } else if (menu.label == 'Cadastros' && this.authAbacoService.possuiAlgumaRoles([AuthService.PREFIX_ROLE + 'FASE_ACESSAR',
             AuthService.PREFIX_ROLE + 'MANUAL_ACESSAR',
@@ -240,9 +238,7 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit, AfterCont
                     submenu.visible = this.authAbacoService.possuiRole(AuthService.PREFIX_ROLE + 'BASELINE_ACESSAR');
                 } else if (submenu.label == 'Validação' && this.authAbacoService.possuiRole(AuthService.PREFIX_ROLE + 'VALIDACAO_ACESSAR')) {
                     submenu.visible = true;
-                } else if (submenu.label == 'Dashboard' && this.authAbacoService.possuiRole(AuthService.PREFIX_ROLE + 'DASHBOARD_ACESSAR')) {
-					submenu.visible = true;
-				}
+                }
             }
         }
     }

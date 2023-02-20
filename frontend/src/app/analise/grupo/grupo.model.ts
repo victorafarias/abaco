@@ -13,7 +13,7 @@ export class Grupo {
         public equipe?: string,
         public sistema?: string,
         public metodoContagem?: string,
-        public pfTotal?: number,
+        public pfTotal?: string,
         public pfAjustado?: string,
         public diasDeGarantia?: number,
         public dataCriacao?: any,

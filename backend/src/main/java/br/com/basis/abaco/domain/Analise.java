@@ -90,13 +90,13 @@ public class Analise implements Serializable, ReportObject {
     @Column(name = "valor_ajuste", precision = 10, scale = 4)
     private BigDecimal valorAjuste;
 
-    @Column(name = "pf_total", precision = 12, scale = 2)
-    @Field(index = FieldIndex.not_analyzed, type = FieldType.Float)
-    private BigDecimal pfTotal;
+    @Column(name = "pf_total")
+    @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
+    private String pfTotal;
 
-    @Column(name = "pf_total_adjust", precision = 12, scale = 2)
-    @Field(index = FieldIndex.not_analyzed, type = FieldType.Float)
-    private BigDecimal adjustPFTotal;
+    @Column(name = "pf_total_adjust")
+    @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
+    private String adjustPFTotal;
 
     @Column(name = "pf_total_valor")
     @Field(index = FieldIndex.not_analyzed, type = FieldType.Double)
@@ -259,10 +259,10 @@ public class Analise implements Serializable, ReportObject {
     private MotivoAnalise motivo;
 
     @Column(name = "pf_total_original")
-    private BigDecimal pfTotalOriginal;
+    private String pfTotalOriginal;
 
     @Column(name = "pf_total_aprovado")
-    private BigDecimal pfTotalAprovado;
+    private String pfTotalAprovado;
 
     //Campo histórico
 

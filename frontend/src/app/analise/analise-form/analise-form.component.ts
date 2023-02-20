@@ -214,7 +214,7 @@ export class AnaliseFormComponent implements OnInit {
                 this.isEdicao = true;
                 this.analiseService.find(params['id']).subscribe(analise => {
                     this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
-                    if(analise.pfTotal <= 0){
+                    if(parseInt(analise.pfTotal) <= 0){
                         this.canEditMetodo = true;
                     }
                     analise = new  Analise().copyFromJSON(analise);

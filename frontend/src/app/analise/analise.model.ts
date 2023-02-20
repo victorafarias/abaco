@@ -51,7 +51,7 @@ export class Analise implements BaseEntity {
         public metodoContagem?: MetodoContagem,
         public fatorAjuste?: FatorAjuste,
         public valorAjuste?: number,
-        public pfTotal?: number,
+        public pfTotal?: string,
         public pfTotalEsforco?: string,
         public adjustPFTotal?: string,
         public escopo?: string,
@@ -87,8 +87,8 @@ export class Analise implements BaseEntity {
         public valorCriticidade?: number,
         public scopeCreep?: number,
         public motivo?: MotivoAnalise,
-        public pfTotalOriginal?: number,
-        public pfTotalAprovado?: number,
+        public pfTotalOriginal?: string,
+        public pfTotalAprovado?: string,
         public analiseDivergence?: Analise,
         public dtEncerramento?: any,
         public encerrada?: boolean
@@ -128,7 +128,7 @@ export class Analise implements BaseEntity {
     }
     private generateResumoTotal() {
         this._resumoTotal = new ResumoTotal(this._resumoFuncaoDados, this._resumoFuncaoTransacao);
-        this.pfTotal = this._resumoTotal.getTotalGrossPf();
+        this.pfTotal = this._resumoTotal.getTotalGrossPf().toString();
         this.adjustPFTotal = this.aplicaTotalEsforco(this.ajustarPfTotal()).toFixed(2).toString();
         this.pfTotalEsforco = this.aplicaTotalEsforco(this._resumoTotal.getTotalGrossPf()).toFixed(2).toString();
     }

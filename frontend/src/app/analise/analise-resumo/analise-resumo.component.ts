@@ -30,7 +30,7 @@ export class AnaliseResumoComponent implements OnInit {
 
     resumoTotal: ResumoTotal;
     public linhaResumo: Resumo[] = [];
-    public pfTotal: number;
+    public pfTotal: string;
     public pfAjustada: string;
     complexidades: string[];
 
