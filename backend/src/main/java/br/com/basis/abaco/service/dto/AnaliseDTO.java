@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,8 +29,8 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private TipoEquipeAnaliseDTO equipeResponsavel;
     private SistemaAnaliseDTO sistema;
     private MetodoContagem metodoContagem;
-    private String pfTotal;
-    private String adjustPFTotal;
+    private BigDecimal pfTotal;
+    private BigDecimal adjustPFTotal;
     private Timestamp dataCriacaoOrdemServico;
     private TipoAnalise tipoAnalise;
     private Boolean isDivergence;
@@ -47,7 +48,7 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private Double pfTotalValor;
     private Double pfTotalAjustadoValor;
 
-    private String pfAjustado;
+    private BigDecimal pfAjustado;
     private String sistemaNome;
     private String moduloNome;
     private String funcionalidadeNome;

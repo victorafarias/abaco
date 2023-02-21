@@ -3,6 +3,7 @@ package br.com.basis.abaco.repository;
 import java.util.List;
 
 import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.service.dto.Dashboard2DTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -113,4 +114,39 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
                                              @Param("nomeSistema") String nomeSistema,
                                              @Param("nomeEquipe") String nomeEquipe);
 
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(analise.motivo, COUNT(*)) " +
+        "FROM Analise analise " +
+        "WHERE analise.motivo IS NOT null " +
+        "AND analise.status.id = 1805353 " +
+        "GROUP BY analise.motivo ")
+    List<Dashboard2DTO> getMotivosAnalise();
+
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(o.sigla, COUNT(*)) " +
+        "FROM Analise analise " +
+        "JOIN Organizacao o on o.id = analise.organizacao.id " +
+        "WHERE analise.status.id = 1805353 GROUP BY o.sigla")
+    List<Dashboard2DTO> getClientesAnalise();
+
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(SUM(a.pfTotalOriginal - a.pfTotalAprovado), to_char(date(a.dataCriacaoOrdemServico), 'dd/MM'))" +
+        " FROM Analise a " +
+        "WHERE a.status.id = 1805353 " +
+        "AND a.pfTotalOriginal IS NOT NULL " +
+        "AND a.pfTotalAprovado IS NOT NULL " +
+        "GROUP BY date(a.dataCriacaoOrdemServico) " +
+        "ORDER BY date(a.dataCriacaoOrdemServico)")
+    List<Dashboard2DTO> getHistoricoDiferenca();
+
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(COUNT(*)) " +
+        "FROM Analise a " +
+        "WHERE a.status.id = 1805353 " +
+        "AND a.pfTotalOriginal IS NOT NULL " +
+        "AND a.pfTotalAprovado IS NOT NULL")
+    List<Dashboard2DTO> getTotalDemandas();
+
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(SUM(a.pfTotalOriginal - a.pfTotalAprovado))" +
+        " FROM Analise a " +
+        "WHERE a.status.id = 1805353 " +
+        "AND a.pfTotalOriginal IS NOT NULL " +
+        "AND a.pfTotalAprovado IS NOT NULL")
+    List<Dashboard2DTO> getHistoricoDiferencaGlobal();
 }

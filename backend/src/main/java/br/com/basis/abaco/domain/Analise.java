@@ -92,11 +92,11 @@ public class Analise implements Serializable, ReportObject {
 
     @Column(name = "pf_total")
     @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
-    private String pfTotal;
+    private BigDecimal pfTotal;
 
     @Column(name = "pf_total_adjust")
     @Field(index = FieldIndex.not_analyzed, type = FieldType.String)
-    private String adjustPFTotal;
+    private BigDecimal adjustPFTotal;
 
     @Column(name = "pf_total_valor")
     @Field(index = FieldIndex.not_analyzed, type = FieldType.Double)
@@ -259,10 +259,10 @@ public class Analise implements Serializable, ReportObject {
     private MotivoAnalise motivo;
 
     @Column(name = "pf_total_original")
-    private String pfTotalOriginal;
+    private BigDecimal pfTotalOriginal;
 
     @Column(name = "pf_total_aprovado")
-    private String pfTotalAprovado;
+    private BigDecimal pfTotalAprovado;
 
     //Campo histórico
 
