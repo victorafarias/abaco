@@ -15,6 +15,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -56,7 +57,7 @@ public class VwAnaliseFD {
     private String equipeNome;
 
     @Column(name = "pf_total")
-    private String pfTotal;
+    private BigDecimal pfTotal;
 
     @Column(name = "identificador_analise")
     private String identificadorAnalise;

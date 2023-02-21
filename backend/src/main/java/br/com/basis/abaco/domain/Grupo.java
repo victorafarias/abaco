@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -44,10 +45,10 @@ public class  Grupo implements Serializable {
     private String metodoContagem;
 
     @Column(name = "pf_total")
-    private String pfTotal;
+    private BigDecimal pfTotal;
 
     @Column(name = "pf_ajustado")
-    private String pfAjustado;
+    private BigDecimal pfAjustado;
 
     @Column(name = "dias_de_garantia")
     private Integer diasDeGarantia;
@@ -142,29 +143,29 @@ public class  Grupo implements Serializable {
         this.metodoContagem = metodoContagem;
     }
 
-    public String getPfTotal() {
+    public BigDecimal getPfTotal() {
         return pfTotal;
     }
 
-    public Grupo pfTotal(String pfTotal) {
+    public Grupo pfTotal(BigDecimal pfTotal) {
         this.pfTotal = pfTotal;
         return this;
     }
 
-    public void setPfTotal(String pfTotal) {
+    public void setPfTotal(BigDecimal pfTotal) {
         this.pfTotal = pfTotal;
     }
 
-    public String getPfAjustado() {
+    public BigDecimal getPfAjustado() {
         return pfAjustado;
     }
 
-    public Grupo pfAjustado(String pfAjustado) {
+    public Grupo pfAjustado(BigDecimal pfAjustado) {
         this.pfAjustado = pfAjustado;
         return this;
     }
 
-    public void setPfAjustado(String pfAjustado) {
+    public void setPfAjustado(BigDecimal pfAjustado) {
         this.pfAjustado = pfAjustado;
     }
 

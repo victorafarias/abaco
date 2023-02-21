@@ -56,7 +56,7 @@ export class Divergencia implements BaseEntity {
         public metodoContagem?: MetodoContagem,
         public fatorAjuste?: FatorAjuste,
         public valorAjuste?: number,
-        public pfTotal?: string,
+        public pfTotal?: number,
         public pfTotalEsforco?: string,
         public adjustPFTotal?: string,
         public escopo?: string,

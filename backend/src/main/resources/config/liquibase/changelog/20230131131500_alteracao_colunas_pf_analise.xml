@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="drop-colunas" author="gustavo.gomes">
+        <dropColumn tableName="analise" columnName="pf_total_adjust_num"/>
+        <dropColumn tableName="analise" columnName="pf_total_num"/>
+        <dropColumn tableName="analise" columnName="pf_total_aprovado_num"/>
+        <dropColumn tableName="analise" columnName="pf_total_original_num"/>
+    </changeSet>
+
+    <changeSet id="altera-tipos-pf" author="gustavo.gomes">
+        <modifyDataType tableName="analise" columnName="pf_total" newDataType="numeric(12,2)"/>
+        <modifyDataType tableName="analise" columnName="pf_total_aprovado" newDataType="numeric(12,2)"/>
+        <modifyDataType tableName="analise" columnName="pf_total_original" newDataType="numeric(12,2)"/>
+    </changeSet>
+
+    <changeSet id="criar_view_grupo" author="gustavo.gomes">
+        <createView viewName="grupo" replaceIfExists="true" schemaName="abaco">
+            select distinct analise.id                        AS id_analise,
+                            organizacao.nome                  AS organizacao,
+                            analise.identificador_analise,
+                            tipo_equipe.nome                  AS equipe,
+                            sistema.nome                      AS sistema,
+                            analise.metodo_contagem,
+                            analise.pf_total,
+                            analise.pf_total_adjust           AS pf_ajustado,
+                            contrato.dias_de_garantia,
+                            analise.data_homologacao_software AS data_homologacao,
+                            analise.created_on                AS data_criacao,
+                            analise.bloqueado
+            FROM analise analise
+                     LEFT JOIN jhi_user ju ON ju.id = analise.created_by_id
+                     LEFT JOIN tipo_equipe tipo_equipe ON tipo_equipe.id = analise.equipe_responsavel_id
+                     LEFT JOIN user_tipo_equipe user_tipo_equipe ON user_tipo_equipe.user_id = tipo_equipe.id
+                     LEFT JOIN organizacao organizacao ON organizacao.id = analise.organizacao_id
+                     LEFT JOIN sistema sistema ON sistema.id = analise.sistema_id
+                     LEFT JOIN contrato contrato ON contrato.id = analise.contrato_id;
+        </createView>
+    </changeSet>
+
+    <changeSet id="criar_view_analise_fd" author="gustavo.gomes">
+        <createView viewName="vw_analise_fd" replaceIfExists="true" schemaName="abaco">
+            SELECT DISTINCT analise.id              AS id_analise,
+                            analise.numero_os,
+                            analise.metodo_contagem,
+                            analise.pf_total,
+                            analise.pf_total_adjust AS pf_ajustado,
+                            analise.identificador_analise,
+                            organizacao.nome        AS organizacao_nome,
+                            tipo_equipe.nome        AS equipe_nome,
+                            sistema.nome            AS sistema_nome,
+                            modulo.nome             AS modulo_nome,
+                            funcionalidade.nome     AS funcionalidade_nome,
+                            funcao_dados.name       AS funcao_nome
+            FROM analise analise
+                     LEFT JOIN organizacao organizacao ON analise.organizacao_id = organizacao.id
+                     LEFT JOIN tipo_equipe tipo_equipe ON analise.equipe_responsavel_id = tipo_equipe.id
+                     LEFT JOIN sistema sistema ON analise.sistema_id = sistema.id
+                     LEFT JOIN modulo modulo ON modulo.sistema_id = sistema.id
+                     LEFT JOIN funcionalidade funcionalidade ON funcionalidade.modulo_id = modulo.id
+                     LEFT JOIN funcao_dados funcao_dados ON funcao_dados.funcionalidade_id = funcionalidade.id
+                AND funcao_dados.analise_id = analise.id
+            WHERE analise.metodo_contagem::text = 'DETALHADA'::text;
+        </createView>
+    </changeSet>
+
+    <changeSet id="criar_view_analise_ft" author="gustavo.gomes">
+        <createView viewName="vw_analise_ft" replaceIfExists="true" schemaName="abaco">
+            SELECT DISTINCT analise.id              AS id_analise,
+                            analise.numero_os,
+                            analise.metodo_contagem,
+                            analise.pf_total,
+                            analise.pf_total_adjust AS pf_ajustado,
+                            analise.identificador_analise,
+                            organizacao.nome        AS organizacao_nome,
+                            tipo_equipe.nome        AS equipe_nome,
+                            sistema.nome            AS sistema_nome,
+                            modulo.nome             AS modulo_nome,
+                            funcionalidade.nome     AS funcionalidade_nome,
+                            funcao_transacao.name   AS funcao_nome
+            FROM analise analise
+                     LEFT JOIN organizacao organizacao ON analise.organizacao_id = organizacao.id
+                     LEFT JOIN tipo_equipe tipo_equipe ON analise.equipe_responsavel_id = tipo_equipe.id
+                     LEFT JOIN sistema sistema ON analise.sistema_id = sistema.id
+                     LEFT JOIN modulo modulo ON modulo.sistema_id = sistema.id
+                     LEFT JOIN funcionalidade funcionalidade ON funcionalidade.modulo_id = modulo.id
+                     LEFT JOIN funcao_transacao funcao_transacao
+                               ON funcao_transacao.funcionalidade_id = funcionalidade.id AND
+                                  funcao_transacao.analise_id = analise.id
+            WHERE analise.metodo_contagem::text = 'DETALHADA'::text;
+        </createView>
+    </changeSet>
+</databaseChangeLog>

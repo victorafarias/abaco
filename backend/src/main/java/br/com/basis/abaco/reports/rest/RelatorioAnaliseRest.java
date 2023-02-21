@@ -263,11 +263,11 @@ public class RelatorioAnaliseRest {
             }else{
                 parametro.put(FATOR_CRITICIDADE, " III. Total c/ Criticidade (II + "+analise.getValorCriticidade().intValue()+"%):");
             }
-            String pfCriticidade = String.format("%.2f", Double.parseDouble(analise.getAdjustPFTotal()) *  (analise.getValorCriticidade() / 100 + 1));
+            String pfCriticidade = String.format("%.2f", analise.getAdjustPFTotal().doubleValue() *  (analise.getValorCriticidade() / 100 + 1));
             parametro.put("PFCRITICIDADE", pfCriticidade);
         }
     }
-    
+
 
     /**
      * Método responsável por acessar o caminho da imagem da logo do relatório e popular o parâmetro.
@@ -366,16 +366,16 @@ public class RelatorioAnaliseRest {
             }
 
             if (analise.getScopeCreep() != null) {
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal(), Double.valueOf(analise.getScopeCreep())/100+1));
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), Double.valueOf(analise.getScopeCreep())/100+1));
                 scopeCreep += analise.getScopeCreep().intValue()+"%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }else{
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal(), analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa));
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa));
                 scopeCreep += "35%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }
         }
-        parametro.put("AJUSTESPF", calcularPFsAjustado(analise.getPfTotal(), analise.getAdjustPFTotal()));
+        parametro.put("AJUSTESPF", calcularPFsAjustado(analise.getPfTotal().toString(), analise.getAdjustPFTotal().toString()));
         parametro.put("PFAJUSTADO", analise.getAdjustPFTotal());
     }
 

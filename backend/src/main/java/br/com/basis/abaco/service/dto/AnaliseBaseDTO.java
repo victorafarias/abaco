@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Getter
@@ -20,8 +21,8 @@ public class AnaliseBaseDTO {
     protected TipoEquipeAnaliseDTO equipeResponsavel;
     protected SistemaAnaliseDTO sistema;
     protected MetodoContagem metodoContagem;
-    protected String pfTotal;
-    protected String adjustPFTotal;
+    protected BigDecimal pfTotal;
+    protected BigDecimal adjustPFTotal;
     protected TipoAnalise tipoAnalise;
     protected Timestamp dataCriacaoOrdemServico;
     protected Boolean fatorCriticidade;
