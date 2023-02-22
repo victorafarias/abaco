@@ -2,19 +2,58 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <changeSet id="drop-colunas" author="gustavo.gomes">
-        <dropColumn tableName="analise" columnName="pf_total_adjust_num"/>
-        <dropColumn tableName="analise" columnName="pf_total_num"/>
-        <dropColumn tableName="analise" columnName="pf_total_aprovado_num"/>
-        <dropColumn tableName="analise" columnName="pf_total_original_num"/>
+    <changeSet id="dropa-views-grupo-funcoes" author="gustavo.gomes">
+        <dropView viewName="grupo" schemaName="abaco"/>
+        <dropView viewName="vw_analise_fd" schemaName="abaco"/>
+        <dropView viewName="vw_analise_ft" schemaName="abaco"/>
     </changeSet>
 
-    <changeSet id="altera-tipos-pf" author="gustavo.gomes">
-        <modifyDataType tableName="analise" columnName="pf_total" newDataType="numeric(12,2)"/>
-        <modifyDataType tableName="analise" columnName="pf_total_aprovado" newDataType="numeric(12,2)"/>
-        <modifyDataType tableName="analise" columnName="pf_total_original" newDataType="numeric(12,2)"/>
+    <changeSet author="joao.ciribelli" id="cria-colunas-numericas-analises-pf">
+        <addColumn tableName="analise">
+            <column name="pf_total_adjust_num" type="numeric(12,2)"/>
+            <column name="pf_total_num" type="numeric(12,2)"/>
+            <column name="pf_total_aprovado_num" type="numeric(12,2)"/>
+            <column name="pf_total_original_num" type="numeric(12,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="joao.ciribelli" id="update-colunas-numericas-analises-pf">
+        <update tableName="analise">
+            <column name="pf_total_adjust_num" valueComputed="pf_total_adjust::numeric"/>
+            <column name="pf_total_num" valueComputed="pf_total::numeric"/>
+            <column name="pf_total_aprovado_num" valueComputed="pf_total_aprovado::numeric"/>
+            <column name="pf_total_original_num" valueComputed="pf_total_original::numeric"/>
+        </update>
+    </changeSet>
+
+    <changeSet author="joao.ciribelli" id="apagar-colunas-varchar-analises-pf">
+        <dropColumn tableName="analise">
+            <column name="pf_total_adjust"/>
+            <column name="pf_total"/>
+            <column name="pf_total_aprovado"/>
+            <column name="pf_total_original"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet author="joao.ciribelli" id="renomear-colunas-numericas-analises-pf">
+        <renameColumn
+            newColumnName="pf_total_adjust"
+            oldColumnName="pf_total_adjust_num"
+            tableName="analise"/>
+        <renameColumn
+            newColumnName="pf_total"
+            oldColumnName="pf_total_num"
+            tableName="analise"/>
+        <renameColumn
+            newColumnName="pf_total_aprovado"
+            oldColumnName="pf_total_aprovado_num"
+            tableName="analise"/>
+        <renameColumn
+            newColumnName="pf_total_original"
+            oldColumnName="pf_total_original_num"
+            tableName="analise"/>
     </changeSet>
 
     <changeSet id="criar_view_grupo" author="gustavo.gomes">
