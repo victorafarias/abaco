@@ -8,9 +8,10 @@
     flex-direction: column;
 }
 .boxDadosTimeLine{
-    padding: 4vh 1vh 7% 25%;
+    padding: 7vh 1vh 6% 25%;
+	margin-bottom: 20%;
     border: 1px solid black;
     word-wrap:normal;
     width: 20%;
-    height: 50%;
+    height: 35%;
 }

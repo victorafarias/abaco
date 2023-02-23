@@ -59,6 +59,7 @@ export class Dashboard2Component implements OnInit, AfterViewInit{
                 display: true,
                 text:'Motivo',
                 fontFamily: 'Titillium Web, sans-serif',
+				fontSize:30
             },
             tooltips: {
                 callbacks: {
@@ -71,7 +72,7 @@ export class Dashboard2Component implements OnInit, AfterViewInit{
                             total += allData[i];
                         }
                         let tooltipPercentage = Math.round((tooltipData / total) * 100);
-                        return tooltipLabel + ': ' + tooltipData + ' (' + tooltipPercentage + '%)';
+                        return tooltipLabel + ': ' + tooltipData + ' PFs' + ' (' + tooltipPercentage + '%)';
                     }
                 }
             },
@@ -79,7 +80,7 @@ export class Dashboard2Component implements OnInit, AfterViewInit{
                 position: 'right',
                 labels: {
                     usePointStyle: true,
-                    fontSize: 10,
+                    fontSize: 20,
                     fontFamily: 'Titillium Web, sans-serif'
                 }
             }
@@ -156,8 +157,8 @@ export class Dashboard2Component implements OnInit, AfterViewInit{
             title:{
                 display: true,
                 text:'Cliente',
+				fontSize:30,
                 fontFamily: 'Titillium Web, sans-serif'
-
             },
             tooltips: {
                 callbacks: {
@@ -170,7 +171,7 @@ export class Dashboard2Component implements OnInit, AfterViewInit{
                             total += allData[i];
                         }
                         let tooltipPercentage = Math.round((tooltipData / total) * 100);
-                        return tooltipLabel + ': ' + tooltipData + ' (' + tooltipPercentage + '%)';
+                        return tooltipLabel + ': ' + tooltipData + ' PFs' + ' (' + tooltipPercentage + '%)';
                     }
                 }
             },
@@ -178,7 +179,7 @@ export class Dashboard2Component implements OnInit, AfterViewInit{
                 position: 'right',
                 labels: {
                     usePointStyle: true,
-                    fontSize:10,
+                    fontSize:20,
                     fontFamily: 'Titillium Web, sans-serif'
                 }
             }
