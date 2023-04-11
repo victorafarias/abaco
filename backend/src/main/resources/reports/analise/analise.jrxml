@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.0.final using JasperReports Library version 6.5.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="analise" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9ac44673-b60e-4209-99b8-14605622790d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="ireport.zoom" value="1.1000000000000019"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="1082"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -93,8 +92,8 @@
 	<parameter name="FUNCAODADOS" class="java.lang.String"/>
 	<parameter name="FUNCAOTRANSACAO" class="java.lang.String"/>
 	<parameter name="OBSERVACOES" class="java.lang.String"/>
-	<parameter name="PFTOTAL" class="java.lang.String"/>
-	<parameter name="PFAJUSTADO" class="java.lang.String"/>
+	<parameter name="PFTOTAL" class="java.math.BigDecimal"/>
+	<parameter name="PFAJUSTADO" class="java.math.BigDecimal"/>
 	<parameter name="AJUSTESPF" class="java.lang.String"/>
 	<parameter name="TIPOANALISE" class="java.lang.String"/>
 	<parameter name="DATACRIADO" class="java.lang.String"/>

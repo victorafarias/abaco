@@ -28,7 +28,6 @@ import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.ImportarFDDTO;
 import br.com.basis.abaco.service.dto.RlrFdDTO;
-import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -338,7 +337,7 @@ public class FuncaoDadosResource {
         FuncaoDados funcaoDados = funcaoDadosRepository.findOne(id);
         funcaoDados.setStatusFuncao(statusFuncao);
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
-        analiseService.save(funcaoDados.getAnalise());
+        analiseService.salvar(funcaoDados.getAnalise());
         FuncaoDadoApiDTO funcaoDadosDTO = getFuncaoDadoApiDTO(result);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }

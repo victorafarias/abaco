@@ -58,7 +58,7 @@ export class DivergenciaListComponent implements OnInit {
 
     customOptions: Object = {};
 
-    userAnaliseUrl: string = this.analiseService.resourceUrl;
+    userAnaliseUrl: string = this.divergenciaService.resourceUrl;
 
     analiseSelecionada: any[] = []
     analiseTableSelecionada: Divergencia = new Divergencia();
@@ -110,7 +110,6 @@ export class DivergenciaListComponent implements OnInit {
     constructor(
         private router: Router,
         private sistemaService: SistemaService,
-        private analiseService: DivergenciaService,
         private tipoEquipeService: TipoEquipeService,
         private organizacaoService: OrganizacaoService,
         private pageNotificationService: PageNotificationService,
@@ -288,7 +287,7 @@ export class DivergenciaListComponent implements OnInit {
         loadDirvenceLazy(event: LazyLoadEvent) {
             this.blockUiService.show();
             this.event = event;
-            this.analiseService.search(event, event.rows, false, this.changeUrl()).subscribe(response => {
+            this.divergenciaService.search(event, event.rows, false, this.changeUrl()).subscribe(response => {
                 this.lstDivergence = response.body;
                 this.datatable.totalRecords = parseInt(response.headers.get('x-total-count'), 10);
                 this.blockUiService.hide();

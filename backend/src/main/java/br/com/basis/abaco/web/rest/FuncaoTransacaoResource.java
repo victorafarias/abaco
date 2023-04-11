@@ -355,7 +355,7 @@ public class FuncaoTransacaoResource {
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
         funcaoTransacao.setStatusFuncao(statusFuncao);
         funcaoTransacaoRepository.save(funcaoTransacao);
-        analiseService.save(funcaoTransacao.getAnalise());
+        analiseService.salvar(funcaoTransacao.getAnalise());
         FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }

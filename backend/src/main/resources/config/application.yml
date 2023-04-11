@@ -147,3 +147,4 @@ relatorioFatorAjuste:
 # ===================================================================
 
 application:
+    cronAtualizacaoValidacaoDivergencia: "0 0 0 * * *"

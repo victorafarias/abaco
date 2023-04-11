@@ -26,7 +26,7 @@ export class DivergenciaService {
 
     relatorioAnaliseUrl = this.resourceUrl + '/relatorioPdfArquivo';
 
-    relatoriosDetalhadoUrl = this.resourceUrl + '/downloadPdfDetalhadoBrowser';
+    relatoriosDetalhadoUrl = environment.apiUrl + '/downloadPdfDetalhadoBrowser';
 
     relatorioExcelUrl = this.resourceUrl + '/downloadRelatorioExcel';
 
