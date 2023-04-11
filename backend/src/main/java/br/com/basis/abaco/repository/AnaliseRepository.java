@@ -78,9 +78,9 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
     @Query(value = "SELECT a FROM Analise a WHERE a.equipeResponsavel.id = :equipeId AND a.sistema.id = :sistemaId")
     List<Analise> findBySistemaAndEquipe(@Param("equipeId") Long equipeId, @Param("sistemaId") Long sistemaId);
 
-    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(analise,funcionalidade,funcaoDados.name) " +
-        "from FuncaoDados as funcaoDados " +
-        "join funcaoDados.analise analise " +
+    @Query("select analise " +
+        "from Analise analise " +
+        "join analise.funcaoDados funcaoDados " +
         "join analise.sistema sistema " +
         "join analise.equipeResponsavel equipe " +
         "join funcaoDados.funcionalidade funcionalidade " +
@@ -90,15 +90,15 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
         "and funcionalidade.nome like :nomeFuncionalidade " +
         "and sistema.nome like :nomeSistema " +
         "and equipe.nome like :nomeEquipe ")
-    List<AnaliseDTO> obterPorFuncaoDados(@Param("nomeFuncao") String nomeFuncao,
+    List<Analise> obterPorFuncaoDados(@Param("nomeFuncao") String nomeFuncao,
                                          @Param("nomeModulo") String nomeModulo,
                                          @Param("nomeFuncionalidade") String nomeFuncionalidade,
                                          @Param("nomeSistema") String nomeSistema,
                                          @Param("nomeEquipe") String nomeEquipe);
 
-    @Query("select distinct new br.com.basis.abaco.service.dto.AnaliseDTO(analise,funcionalidade,funcaoTransacao.name) " +
-        "from FuncaoTransacao as funcaoTransacao " +
-        "join funcaoTransacao.analise analise " +
+    @Query("select analise " +
+        "from Analise analise " +
+        "join analise.funcaoTransacaos funcaoTransacao " +
         "join analise.sistema sistema " +
         "join analise.equipeResponsavel equipe " +
         "join funcaoTransacao.funcionalidade funcionalidade " +
@@ -108,11 +108,21 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
         "and funcionalidade.nome like :nomeFuncionalidade " +
         "and sistema.nome like :nomeSistema " +
         "and equipe.nome like :nomeEquipe ")
-    List<AnaliseDTO> obterPorFuncaoTransacao(@Param("nomeFuncao") String nomeFuncao,
+    List<Analise> obterPorFuncaoTransacao(@Param("nomeFuncao") String nomeFuncao,
                                              @Param("nomeModulo") String nomeModulo,
                                              @Param("nomeFuncionalidade") String nomeFuncionalidade,
                                              @Param("nomeSistema") String nomeSistema,
                                              @Param("nomeEquipe") String nomeEquipe);
+
+
+    @Query(nativeQuery = true, value = "select analise.* from analise analise " +
+        "join organizacao on organizacao.id = analise.organizacao_id " +
+        "join status_analise status on status.id = analise.status_id " +
+        "where status.nome != 'Aprovada' " +
+        "and analise.is_divergence = false " +
+        "and analise.analise_divergence_id is null " +
+        "and analise.data_criacao_ordem_servico < (date(analise.data_criacao_ordem_servico) + organizacao.prazo_aprovacao_divergencia_dias)")
+    List<Analise> obterAnalisesDivergenciaForaDoPrazo();
 
     @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(analise.motivo, COUNT(*)) " +
         "FROM Analise analise " +
@@ -149,4 +159,5 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
         "AND a.pfTotalOriginal IS NOT NULL " +
         "AND a.pfTotalAprovado IS NOT NULL")
     List<Dashboard2DTO> getHistoricoDiferencaGlobal();
+
 }

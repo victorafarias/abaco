@@ -142,15 +142,10 @@ public class AnaliseResourceIT {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        AnaliseResource analiseResource = new AnaliseResource(analiseRepository,
-            analiseSearchRepository,
-            dynamicExportsService,
-            userRepository,
-            funcaoDadosRepository,
+        AnaliseResource analiseResource = new AnaliseResource(
+            analiseRepository,
             compartilhadaRepository,
-            funcaoTransacaoRepository,
-            elasticsearchTemplate,
-            analiseService, statusRepository, perfilService);
+            analiseService);
         this.restAnaliseMockMvc = MockMvcBuilders.standaloneSetup(analiseResource)
             .setCustomArgumentResolvers(pageableArgumentResolver).setControllerAdvice(exceptionTranslator)
             .setMessageConverters(jacksonMessageConverter).build();

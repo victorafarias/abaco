@@ -93,6 +93,10 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
     @Column(name = "logo_id")
     private Long logoId;
 
+    @NotNull
+    @Column(name = "prazo_aprovacao_divergencia_dias")
+    private Integer prazoAprovacaoDivergenciaDias;
+
     public Long getId() {
         return id;
     }
@@ -263,7 +267,7 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
     @Override
     public String toString() {
         return "Organizacao{" + "id=" + id + ", nome='" + nome + "'" + ", cnpj='" + cnpj + "'" + ", ativo='" + ativo
-                + "'" + ", numeroOcorrencia='" + numeroOcorrencia + "'" + '}';
+                + "'" + ", numeroOcorrencia='" + numeroOcorrencia + "'" + "prazoDivergenciaDias='" + prazoAprovacaoDivergenciaDias + "'" + '}';
     }
 
     @Override
@@ -273,4 +277,15 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
         return clone;
     }
 
+    public Set<TipoEquipe> getTipoEquipes() {
+        return tipoEquipes;
+    }
+
+    public Integer getPrazoAprovacaoDivergenciaDias() {
+        return prazoAprovacaoDivergenciaDias;
+    }
+
+    public void setPrazoAprovacaoDivergenciaDias(Integer prazoDivergenciaDias) {
+        this.prazoAprovacaoDivergenciaDias = prazoDivergenciaDias;
+    }
 }

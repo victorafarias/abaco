@@ -228,7 +228,7 @@
                     <input class="column-filter-input" (click)="$event.stopPropagation()" pInputText type="text"
                         (input)="tableFuncao.filter($event.target.value, 'numeroOs', 'contains')" />
                 </th>
-                <th pSortableColumn="pfAjustado">PF Ajustado<p-sortIcon></p-sortIcon>
+                <th pSortableColumn="pfValor">PF Ajustado<p-sortIcon></p-sortIcon>
                 </th>
                 <th style="text-align:left; width: 4em;"></th>
             </tr>
@@ -242,7 +242,7 @@
                     {{analise.numeroOs}}
                 </td>
                 <td>
-                    {{analise.pfAjustado}}
+                    {{analise.pfTotal}}
                 </td>
                 <td>
                     <a target="_blank" [routerLink]="'/analise/'+analise.id+'/view'" style="text-align:left" pButton type="button"

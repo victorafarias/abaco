@@ -14,6 +14,7 @@ export class Organizacao implements BaseEntity {
     public logoId?: number,
     public ativo?: boolean,
     public numeroOcorrencia?: string,
+	public prazoAprovacaoDivergenciaDias?: number,
     public contracts?: Contrato[],
     // FIXME BaseEntity, para evitar dependencias circulares
     // parece que reestruturação de pastas evita isso
@@ -32,11 +33,11 @@ export class Organizacao implements BaseEntity {
     return copy;
   }
 
-  copyFromJSON(json: any) {
+  copyFromJSON(json: Organizacao) {
     const contratos: Contrato[] = json.contracts ? json.contracts.map(c => new Contrato().copyFromJSON(c)) : [];
-    const newOrganizacao = new Organizacao(json.id, json.sigla, json.nome,
-      json.cnpj, json.logoId, json.ativo, json.numeroOcorrencia, contratos /*, json.sistemas*/);
-    return newOrganizacao;
+    const novaOrganizacao = new Organizacao(json.id, json.sigla, json.nome,
+      json.cnpj, json.logoId, json.ativo, json.numeroOcorrencia, json.prazoAprovacaoDivergenciaDias, contratos /*, json.sistemas*/);
+    return novaOrganizacao;
   }
 
   addContrato(contrato: Contrato) {
