@@ -450,12 +450,23 @@ export class AnaliseService {
             }));
     }
 
-    public importarJson(analise: Analise): Observable<Analise> {
-        return this.http.post<Analise>(this.resourceUrl+"/importar-json", analise).pipe(catchError((error: any) => {
-            if (error.status === 403) {
-                this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
-            }
+	public importarModeloExcel(file: File): Observable<Analise>{
+		const formData = new FormData();
+		formData.append('file',file,file.name);
+		return this.http.post<Analise>(this.resourceUrl + "/importar-excel/Xlsx" ,formData);
+
+	}
+
+    public importarExcel(analise: Analise): Observable<Analise> {
+        return this.http.post<Analise>(this.resourceUrl+"/importar-Excel", analise).pipe(catchError((error: any) => {
+			if (error.status === 404) {
+				this.pageNotificationService.addErrorMessage(this.getLabel('Esse sistema não pussui modulos cadastrados'));
+				return Observable.throw(new Error(error.status));
+			}
+			if (error.status === 403) {
+				this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+				return Observable.throw(new Error(error.status));
+			}
         }));
     }
 
@@ -474,7 +485,7 @@ export class AnaliseService {
             }))
     }
 
-    carregarAnaliseJson(analise: Analise) : Observable<Analise> {
+    carregarAnaliseExcel(analise: Analise) : Observable<Analise> {
         return this.http.post<Analise>(this.resourceUrl+"/carregarAnalise", analise);
     }
 
