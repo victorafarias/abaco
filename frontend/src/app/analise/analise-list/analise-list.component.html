@@ -510,8 +510,8 @@
 	[modal]="true" #importarDialog>
 
 	<p-fileUpload *ngIf="!carregadaAnalise" name="jsonAnalise" [showCancelButton]="false" [showUploadButton]="false"
-		[chooseLabel]="'Escolha o arquivo'" (onRemove)="removeJsonFiles()" (onSelect)="selectJsonAnalise($event)"
-		accept="application/json">
+		[chooseLabel]="'Escolha o arquivo'" (onRemove)="removeExcelFiles()" (onSelect)="selectExcelAnalise($event)"
+				  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xls">
 	</p-fileUpload>
 	<div *ngIf="carregadaAnalise" class="ui-g ui-fluid">
 		<div class="ui-g-12">
@@ -721,7 +721,7 @@
 			</div>
 		</div>
 	</div>
-	<app-green-button *ngIf="!carregadaAnalise && analiseFileJson" buttonLabel="Carregar" (click)="carregarAnalise()"
+	<app-green-button *ngIf="!carregadaAnalise && analiseFileExcel" buttonLabel="Carregar" (click)="carregarAnalise()"
 		style="float:right; margin: 5px">
 	</app-green-button>
 	<app-white-button *ngIf="!carregadaAnalise" buttonLabel="Cancelar" (click)="closeModalImportAnalise()"

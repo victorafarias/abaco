@@ -48,6 +48,34 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private Double pfTotalValor;
     private Double pfTotalAjustadoValor;
 
+    private BigDecimal pfAjustado;
+    private String sistemaNome;
+    private String moduloNome;
+    private String funcionalidadeNome;
+    private String funcaoNome;
+    private String organizacaoNome;
+    private String equipeNome;
+
+    private String propositoContagem;
+    private String escopo;
+    private Set<FuncaoDadoApiDTO> funcaoDados = new HashSet<>();
+    private Set<FuncaoTransacaoApiDTO> funcaoTransacaos = new HashSet<>();
+
+    public AnaliseDTO(Analise analise,
+                      Funcionalidade funcionalidade,
+                      String funcaoNome) {
+        this.id = analise.getId();
+        this.identificadorAnalise = analise.getIdentificadorAnalise();
+        this.numeroOs = analise.getNumeroOs();
+        this.pfAjustado = analise.getPfTotal();
+        this.sistemaNome = analise.getSistema().getNome();
+        this.moduloNome = funcionalidade.getModulo().getNome();
+        this.funcionalidadeNome = funcionalidade.getNome();
+        this.funcaoNome = funcaoNome;
+        this.organizacaoNome = analise.getOrganizacao().getNome();
+        this.equipeNome = analise.getEquipeResponsavel().getNome();
+    }
+
     @JsonIgnoreProperties("analiseClonadaParaEquipe")
     private AnaliseDTO analiseClonadaParaEquipe;
     private Boolean analiseClonou;

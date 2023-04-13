@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -364,14 +365,25 @@ public class AnaliseResource {
         return analiseService.converterParaAnaliseJsonDTO(analiseRepository.findById(id));
     }
 
-    @PostMapping("/analises/importar-json")
-    public ResponseEntity<AnaliseEditDTO> importarJson(@Valid @RequestBody Analise analise) throws URISyntaxException {
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, analise.getId().toString())).body(analiseService.importarJson(analise));
+    @PostMapping("/analises/importar-excel/Xlsx")
+    public ResponseEntity<AnaliseDTO> importarExcel(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws Exception {
+        AnaliseDTO analiseDTO = analiseService.uploadExcel(file);
+        return new ResponseEntity(analiseDTO,HttpStatus.OK);
+    }
+
+    @PostMapping("/analises/importar-Excel")
+    public ResponseEntity<AnaliseEditDTO> importarAnaliseExcel(@Valid @RequestBody Analise analise) throws URISyntaxException, Exception {
+        if (analiseService.verificaModulos(analise)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok().body(analiseService.importarAnaliseExcel(analise));
     }
 
     @PostMapping("/analises/carregarAnalise")
-    public ResponseEntity<Analise> carregarAnaliseJson(@Valid @RequestBody AnaliseJsonDTO analiseJsonDTO) throws URISyntaxException {
-        return new ResponseEntity<>(analiseService.carregarAnaliseJson(analiseJsonDTO), HttpStatus.OK);
+    public ResponseEntity<Analise> carregarAnaliseJson(@Valid @RequestBody AnaliseJsonDTO analiseDTO) throws URISyntaxException {
+        AnaliseJsonDTO newAnalise = analiseService.carregarAnaliseJson(analiseDTO);
+        analiseService.carregarDadosJson(analiseService.converterParaEntidade(newAnalise),analiseService.converterParaEntidade(analiseDTO));
+        return new ResponseEntity(newAnalise, HttpStatus.OK);
     }
 
     @GetMapping("/analises/FD")
@@ -478,3 +490,5 @@ public class AnaliseResource {
     }
 
 }
+
+
