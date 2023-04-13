@@ -1,13 +1,9 @@
-package br.com.basis.abaco.service;
+package br.com.basis.abaco.jobs;
 
 import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.Status;
-import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.StatusRepository;
-import br.com.basis.abaco.repository.search.AnaliseSearchRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import br.com.basis.abaco.service.AnaliseService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +12,21 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-public class AgendadorValidacaoDivergencia {
+public class JobValidadorDivergencia {
 
-    private final StatusRepository statusRepository;
     private final AnaliseService analiseService;
+    private final StatusRepository statusRepository;
+
+    public JobValidadorDivergencia(AnaliseService analiseService, StatusRepository statusRepository) {
+        this.analiseService = analiseService;
+        this.statusRepository = statusRepository;
+    }
 
     @Scheduled(cron = "${application.cronAtualizacaoValidacaoDivergencia}")
     public void aprovaDivergenciasForaDoPrazo() {
         List<Analise> analises = analiseService.obterAnalisesDivergenciaForaDoPrazo();
         analises.forEach(analise -> {
-            Status status = statusRepository.findByNome("Aprovada").get();
+            Status status = statusRepository.findByNome("Aprovada");
             analise.setDtEncerramento(new Timestamp(new Date().getTime()));
             analise.setIsEncerrada(true);
             analise.setStatus(status);

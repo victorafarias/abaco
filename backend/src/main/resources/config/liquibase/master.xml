@@ -56,5 +56,6 @@
     <include file="classpath:config/liquibase/changelog/20230116165600_alter_funcionalidade_divergencia_validacao_dev.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20230201163810_add_column_prazo_organizacao.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20230131131500_alteracao_colunas_pf_analise.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20230412111000_add_tables_spring_batch.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 
