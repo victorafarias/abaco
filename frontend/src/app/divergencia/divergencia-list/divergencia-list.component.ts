@@ -88,6 +88,10 @@ export class DivergenciaListComponent implements OnInit {
     ];
     blocked;
     inicial: boolean;
+    bloquear = [
+    	{titulo: 'Sim', valor: true },
+		{titulo: 'Não', valor: false}
+	]
     showDialogAnaliseCloneTipoEquipe = false;
     showDialogAnaliseBlock = false;
     mostrarDialog = false;
@@ -263,6 +267,12 @@ export class DivergenciaListComponent implements OnInit {
             `&sistema=${this.searchDivergence.sistema.id}` : '');
             querySearch = querySearch.concat((this.searchDivergence.organizacao && this.searchDivergence.organizacao.id) ?
             `&organizacao=${this.searchDivergence.organizacao.id}` : '');
+			querySearch = querySearch.concat((this.searchDivergence.status && this.searchDivergence.status.id) ?
+			`&status=${this.searchDivergence.status.id}` : '');
+			// @ts-ignore
+			querySearch = querySearch.concat((this.searchDivergence.bloqueiaAnalise && this.searchDivergence.bloqueiaAnalise.valor) ?
+			// @ts-ignore
+			`&bloqueiaAnalise=${this.searchDivergence.bloqueiaAnalise.valor}` : '');
             return querySearch;
         }
 

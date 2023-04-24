@@ -8,7 +8,7 @@
                         <input
                               type="text"
                               pInputText class="ui-inputtext"
-                              [(ngModel)]="searchDivergence.identificadorAnalise"
+                              [(ngModel)]="searchDivergence.identificadorAnalise" (keyup.enter)="performSearch()"
                               id="idIdentificadorComponentAnalise"
                               maxlength="50">
                         <label>Identificador</label>
@@ -36,6 +36,28 @@
                             [placeholder]="this.getLabel('Organização')">
                     </p-dropdown>
                 </div>
+				<div class="ui-g-4 ui-md-4 ui-sm-12">
+					<p-dropdown
+						id="idStatusComponentAnalise"
+						[filter]="true"
+						[options]="lstStatus"
+						optionLabel="nome"
+						[autoWidth]="false"
+						[(ngModel)]="searchDivergence.status"
+						[placeholder]="this.getLabel('Status')">
+					</p-dropdown>
+				</div>
+				<div class="ui-g-4 ui-md-4 ui-sm-12">
+					<p-dropdown
+						id="idBloqueadoComponentAnalise"
+						[filter]="true"
+						[options]="bloquear"
+						optionLabel="titulo"
+						[autoWidth]="false"
+						[(ngModel)]="searchDivergence.bloqueiaAnalise"
+						[placeholder]="this.getLabel('Bloqueado')">
+					</p-dropdown>
+				</div>
             </div>
             <div class="ui-g">
                 <div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 25px; margin-top: 25px">

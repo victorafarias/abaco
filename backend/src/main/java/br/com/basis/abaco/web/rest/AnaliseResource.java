@@ -459,8 +459,10 @@ public class AnaliseResource {
                                                               @RequestParam(defaultValue = "dataCriacaoOrdemServico") String sort,
                                                               @RequestParam(value = "identificador", required = false) String identificador,
                                                               @RequestParam(value = "sistema", required = false) Set<Long> sistema,
-                                                              @RequestParam(value = "organizacao", required = false) Set<Long> organizacao) throws URISyntaxException {
-        Page<AnaliseDTO> dtoPage = analiseService.obterDivergencias(order, pageNumber, size, sort, identificador, sistema, organizacao);
+                                                              @RequestParam(value = "organizacao", required = false) Set<Long> organizacao,
+                                                              @RequestParam(value = "status", required = false) Set<Long> status,
+                                                              @RequestParam(value = "bloqueiaAnalise",required = false) boolean bloqueado) throws URISyntaxException {
+        Page<AnaliseDTO> dtoPage = analiseService.obterDivergencias(order, pageNumber, size, sort, identificador, sistema, organizacao,status,bloqueado);
         return new ResponseEntity<>(dtoPage.getContent(), PaginationUtil.generatePaginationHttpHeaders(dtoPage, API_ANALISES), HttpStatus.OK);
     }
 

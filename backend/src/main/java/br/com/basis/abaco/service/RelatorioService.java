@@ -7,7 +7,6 @@ import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
-import br.com.basis.abaco.service.facades.AnaliseFacade;
 import br.com.basis.abaco.utils.StringUtils;
 import br.com.basis.dynamicexports.pojo.PropriedadesRelatorio;
 import br.com.basis.dynamicexports.pojo.ReportObject;
@@ -67,34 +66,42 @@ public class RelatorioService {
     public SearchQuery obterQueryExportarRelatorioDivergencia(AnaliseFilterDTO filtro, Pageable pageable) {
         Set<Long> sistema = new HashSet<>();
         Set<Long> organizacao = new HashSet<>();
+        Set<Long> status = new HashSet<>();
         preencheFiltro(sistema, null, organizacao, null, null, filtro);
-        BoolQueryBuilder qb = getBoolQueryBuilderDivergence(filtro.getIdentificadorAnalise(), sistema, organizacao);
+        BoolQueryBuilder qb = getBoolQueryBuilderDivergence(filtro.getIdentificadorAnalise(), sistema, organizacao,status,filtro.isBloqueiaAnalise());
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
         return searchQuery;
     }
 
-    public BoolQueryBuilder getBoolQueryBuilderDivergence(String identificador, Set<Long> sistema, Set<Long> organizacao) {
+    public BoolQueryBuilder getBoolQueryBuilderDivergence(String identificador, Set<Long> sistema, Set<Long> organizacao, Set<Long> status,Boolean bloqueado) {
         User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).get();
         Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
-        bindFilterSearchDivergence(identificador, sistema, organicoesIds, qb);
+        bindFilterSearchDivergence(identificador, sistema, organicoesIds,status,bloqueado, qb);
         return qb;
     }
 
-    public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, Set<Long> organizacoes, BoolQueryBuilder qb) {
+public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, Set<Long> organizacoes,Set<Long> status,Boolean bloqueado, BoolQueryBuilder qb) {
         if (!StringUtils.isEmptyString((identificador))) {
-            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery().must(nestedQuery("analisesComparadas", boolQuery().must(QueryBuilders.matchPhraseQuery("analisesComparadas.identificadorAnalise", identificador))));
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(queryBuilderIdentificador).should(QueryBuilders.matchPhraseQuery("numeroOs", identificador)).should(QueryBuilders.matchPhraseQuery("identificadorAnalise", identificador));
+            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery().must(nestedQuery("analisesComparadas", boolQuery().must(QueryBuilders.wildcardQuery("analisesComparadas.identificadorAnalise", "*" + identificador + "*"))));
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(queryBuilderIdentificador).should(QueryBuilders.wildcardQuery("numeroOs", "*" + identificador + "*")).should(QueryBuilders.wildcardQuery("identificadorAnalise", "*" + identificador + "*"));
             qb.must(boolQueryBuilder);
         }
         bindFilterEquipeAndOrganizacaoDivergence(organizacoes, qb);
         BoolQueryBuilder boolQueryBuilderDivergence;
         boolQueryBuilderDivergence = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("isDivergence", true));
         qb.must(boolQueryBuilderDivergence);
+
         if (sistema != null && sistema.size() > 0) {
             BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("sistema.id", sistema));
             qb.must(boolQueryBuilderSistema);
         }
+        if (status != null && status.size() > 0) {
+            BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("status.id", status));
+            qb.must(boolQueryBuilderStatus);
+        }
+            BoolQueryBuilder boolQueryBuilderBloqueado = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("bloqueiaAnalise", bloqueado));
+            qb.must(boolQueryBuilderBloqueado);
     }
 
     private void bindFilterEquipeAndOrganizacaoDivergence(Set<Long> organizacoes, BoolQueryBuilder qb) {

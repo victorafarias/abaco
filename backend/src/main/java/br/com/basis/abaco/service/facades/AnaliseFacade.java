@@ -150,8 +150,8 @@ public class AnaliseFacade {
         return relatorioService.getBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, idsStatus, data, dataInicio, dataFim);
     }
 
-    public BoolQueryBuilder obterBoolQueryBuilderDivergencia(String identificador, Set<Long> sistema, Set<Long> organizacao) {
-        return relatorioService.getBoolQueryBuilderDivergence(identificador, sistema, organizacao);
+    public BoolQueryBuilder obterBoolQueryBuilderDivergencia(String identificador, Set<Long> sistema, Set<Long> organizacao,Set<Long> status,Boolean bloqueado) {
+        return relatorioService.getBoolQueryBuilderDivergence(identificador, sistema, organizacao,status,bloqueado);
     }
 
     public Set<FuncaoDados> obterFuncaoDadosPorAnaliseId(Long idAnalise) {
