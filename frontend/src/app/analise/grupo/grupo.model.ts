@@ -45,6 +45,7 @@ export class SearchGroup {
 		public data?: string,
 		public dataInicio?: any,
 		public dataFim?: any,
+        public bloqueiaAnalise?: boolean,
         public columnsVisible?: any,
     ) {
     }

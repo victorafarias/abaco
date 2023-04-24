@@ -1235,12 +1235,12 @@ public class AnaliseService extends BaseService {
         }
 
         public Page<AnaliseDTO> obterDivergencias (String order,int pageNumber, int size, String sort, String
-        identificador, Set < Long > sistema, Set < Long > organizacao) throws URISyntaxException {
+        identificador, Set < Long > sistema, Set < Long > organizacao,Set< Long > status,Boolean bloqueado) throws URISyntaxException {
             log.debug("DEBUG Consulta Validação -  Inicio método");
             Sort.Direction sortOrder = PageUtils.getSortDirection(order);
             Pageable pageable = new PageRequest(pageNumber, size, sortOrder, sort);
             FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(SortOrder.DESC);
-            BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilderDivergencia(identificador, sistema, organizacao);
+            BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilderDivergencia(identificador, sistema, organizacao,status,bloqueado);
             SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(analiseFacade.obterPaginacaoMaximaExportacao()).withSort(sortBuilder).build();
             Page<Analise> page = analiseFacade.obterPaginaAnalise(searchQuery);
             log.debug("DEBUG Consulta Validação -  Consulta realizada");
