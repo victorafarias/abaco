@@ -69,12 +69,11 @@ public class RelatorioService {
         Set<Long> status = new HashSet<>();
         preencheFiltro(sistema, null, organizacao, null, null, filtro);
         BoolQueryBuilder qb = getBoolQueryBuilderDivergence(filtro.getIdentificadorAnalise(), sistema, organizacao,status,filtro.isBloqueiaAnalise());
-        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
-        return searchQuery;
+        return new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
     }
 
     public BoolQueryBuilder getBoolQueryBuilderDivergence(String identificador, Set<Long> sistema, Set<Long> organizacao, Set<Long> status,Boolean bloqueado) {
-        User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).get();
+        User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
         Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
         bindFilterSearchDivergence(identificador, sistema, organicoesIds,status,bloqueado, qb);
@@ -112,7 +111,7 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
     }
 
     public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
-        User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).get();
+        User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
         Set<Long> equipesIds = getIdEquipes(user);
         Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();

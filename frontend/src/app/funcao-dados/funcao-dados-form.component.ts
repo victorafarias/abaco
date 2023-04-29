@@ -1,44 +1,40 @@
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild, OnDestroy, OnChanges } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Column, DatatableClickEvent, DatatableComponent, DatatableModule, PageNotificationService } from '@nuvem/primeng-components';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Column, DatatableClickEvent, DatatableComponent, PageNotificationService} from '@nuvem/primeng-components';
 import * as _ from 'lodash';
-import { ConfirmationService, SelectItem, FullCalendar, FileUpload } from 'primeng';
-import { forkJoin, Observable, Subscription } from 'rxjs';
-import { Alr } from '../alr/alr.model';
-import { Analise, AnaliseService } from '../analise';
-import { AnaliseReferenciavel } from '../analise-shared/analise-referenciavel';
-import { AnaliseSharedUtils } from '../analise-shared/analise-shared-utils';
-import { Calculadora } from '../analise-shared/calculadora';
-import { DerChipConverter } from '../analise-shared/der-chips/der-chip-converter';
-import { DerChipItem } from '../analise-shared/der-chips/der-chip-item';
-import { DerTextParser, ParseResult } from '../analise-shared/der-text/der-text-parser';
-import { ResumoFuncoes } from '../analise-shared/resumo-funcoes';
-import { FatorAjuste } from '../fator-ajuste';
-import { Funcionalidade, FuncionalidadeService } from '../funcionalidade/index';
-import { Manual } from '../manual';
-import { Modulo, ModuloService } from '../modulo';
-import { ResponseWrapper } from '../shared';
-import { AnaliseSharedDataService } from '../shared/analise-shared-data.service';
-import { FatorAjusteLabelGenerator } from '../shared/fator-ajuste-label-generator';
-import { MessageUtil } from '../util/message.util';
-import { FuncaoTransacaoService } from '../funcao-transacao/funcao-transacao.service';
-import { CalculadoraTransacao } from './../analise-shared/calculadora-transacao';
-import { MetodoContagem } from './../analise/analise.model';
-import { BaselineAnalitico } from './../baseline/baseline-analitico.model';
-import { BaselineService } from './../baseline/baseline.service';
-import { Der } from './../der/der.model';
-import { FuncaoTransacao, TipoFuncaoTransacao } from './../funcao-transacao/funcao-transacao.model';
-import { FuncaoDados, TipoFuncaoDados } from './funcao-dados.model';
-import { FuncaoDadosService } from './funcao-dados.service';
-import { BlockUiService } from '@nuvem/angular-base';
-import { Sistema, SistemaService } from '../sistema';
-import { UploadService } from '../upload/upload.service';
-import { Upload } from '../upload/upload.model';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { timeStamp } from 'console';
-import { table } from 'node:console';
-import { DerService } from '../der/der.service';
-import { Utilitarios } from '../util/utilitarios.util';
+import {ConfirmationService, FileUpload, SelectItem} from 'primeng';
+import {forkJoin, Observable, Subscription} from 'rxjs';
+import {Alr} from '../alr/alr.model';
+import {Analise, AnaliseService} from '../analise';
+import {AnaliseReferenciavel} from '../analise-shared/analise-referenciavel';
+import {AnaliseSharedUtils} from '../analise-shared/analise-shared-utils';
+import {Calculadora} from '../analise-shared/calculadora';
+import {DerChipConverter} from '../analise-shared/der-chips/der-chip-converter';
+import {DerChipItem} from '../analise-shared/der-chips/der-chip-item';
+import {DerTextParser, ParseResult} from '../analise-shared/der-text/der-text-parser';
+import {ResumoFuncoes} from '../analise-shared/resumo-funcoes';
+import {FatorAjuste} from '../fator-ajuste';
+import {Funcionalidade, FuncionalidadeService} from '../funcionalidade/index';
+import {Manual} from '../manual';
+import {Modulo, ModuloService} from '../modulo';
+import {ResponseWrapper} from '../shared';
+import {AnaliseSharedDataService} from '../shared/analise-shared-data.service';
+import {FatorAjusteLabelGenerator} from '../shared/fator-ajuste-label-generator';
+import {MessageUtil} from '../util/message.util';
+import {FuncaoTransacaoService} from '../funcao-transacao/funcao-transacao.service';
+import {CalculadoraTransacao} from './../analise-shared/calculadora-transacao';
+import {MetodoContagem} from './../analise/analise.model';
+import {BaselineAnalitico} from './../baseline/baseline-analitico.model';
+import {BaselineService} from './../baseline/baseline.service';
+import {Der} from './../der/der.model';
+import {FuncaoTransacao, TipoFuncaoTransacao} from './../funcao-transacao/funcao-transacao.model';
+import {FuncaoDados, TipoFuncaoDados} from './funcao-dados.model';
+import {FuncaoDadosService} from './funcao-dados.service';
+import {BlockUiService} from '@nuvem/angular-base';
+import {Sistema, SistemaService} from '../sistema';
+import {Upload} from '../upload/upload.model';
+import {DomSanitizer} from '@angular/platform-browser';
+import {Utilitarios} from '../util/utilitarios.util';
 
 @Component({
     selector: 'app-analise-funcao-dados',
@@ -1612,11 +1608,11 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoDados){ 
+    habilitarEdicaoOrdem(funcao: FuncaoDados){
         if(this.habilitaEditarOrdem == false && this.isOrderning){
             this.habilitaEditarOrdem = true;
         }
-        
+
     }
 
     trocarOrdem(numero, funcao: FuncaoDados){

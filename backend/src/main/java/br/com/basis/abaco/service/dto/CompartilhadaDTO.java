@@ -15,12 +15,10 @@ public class CompartilhadaDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
-
     private Long equipeId;
-
+    private Long analiseId;
     private List<Long> analisesId;
-
     private boolean viewOnly;
-
     private String nomeEquipe;
+    private AnaliseDTO analises;
 }

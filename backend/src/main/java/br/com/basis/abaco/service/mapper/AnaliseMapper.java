@@ -4,9 +4,8 @@ import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.service.EntityMapper;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
-import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.PropertyMap;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +16,14 @@ public class AnaliseMapper implements EntityMapper<AnaliseDTO, Analise> {
 
     public AnaliseMapper(){
         modelMapper.getConfiguration().setAmbiguityIgnored(true);
+        modelMapper.createTypeMap(Analise.class, AnaliseDTO.class)
+            .addMappings(new PropertyMap<Analise, AnaliseDTO>() {
+                @Override
+                protected void configure() {
+                    skip(destination.getFuncaoDados());
+                    skip(destination.getFuncaoTransacaos());
+                }
+            });
     }
 
 
@@ -29,7 +36,7 @@ public class AnaliseMapper implements EntityMapper<AnaliseDTO, Analise> {
     public AnaliseDTO toDto(Analise entity) {
         AnaliseDTO analiseDto = modelMapper.map(entity, AnaliseDTO.class);
         if(entity.getAnaliseDivergence() != null){
-            analiseDto.setAnaliseDivergence(this.convertToAnaliseDivergenceDTO(entity.getAnaliseDivergence()));
+            analiseDto.setAnaliseDivergence(modelMapper.map(entity.getAnaliseDivergence(), AnaliseDivergenceDTO.class));
         }
         if(entity.getPfTotal() != null){
             analiseDto.setPfTotalValor(entity.getPfTotal().doubleValue());
@@ -54,7 +61,4 @@ public class AnaliseMapper implements EntityMapper<AnaliseDTO, Analise> {
                 .collect(Collectors.toList());
     }
 
-    public AnaliseDivergenceDTO convertToAnaliseDivergenceDTO(Analise analise){
-        return modelMapper.map(analise, AnaliseDivergenceDTO.class);
-    }
 }

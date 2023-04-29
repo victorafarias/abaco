@@ -1277,7 +1277,7 @@ export class AnaliseListComponent implements OnInit {
 
 	selectExcelAnalise(event) {
 		this.analiseFileExcel = <FileList> event.files[0];
-		this.analiseService.importarModeloExcel(this.analiseFileExcel).subscribe(analise => {
+		this.analiseService.carregarArquivoExcel(this.analiseFileExcel).subscribe(analise => {
 			this.analisesImportar.push(analise);
 		});
 		console.log(this.analisesImportar);
@@ -1285,9 +1285,8 @@ export class AnaliseListComponent implements OnInit {
 
     importarAnalise() {
         if (this.analiseFileExcel && this.analiseImportar) {
-            this.analiseImportar.identificadorAnalise = this.analiseImportar.identificadorAnalise + " - Importada";
-            this.analiseService.importarExcel(this.analiseImportar).subscribe(r => {
-                this.pageNotificationService.addCreateMsg("Análise - " + r.identificadorAnalise + " importada com sucesso!");
+            this.analiseService.importarExcel(this.analiseImportar).subscribe(analise => {
+                this.pageNotificationService.addCreateMsg("Análise - " + analise.identificadorAnalise + " importada com sucesso!");
                 this.datatable.filter();
                 this.closeModalImportAnalise();
                 this.analisesImportar = [];

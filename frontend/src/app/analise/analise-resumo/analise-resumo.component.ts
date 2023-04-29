@@ -350,7 +350,7 @@ export class AnaliseResumoComponent implements OnInit {
     }
 
     public deletarCompartilhar() {
-        if (this.selectedToDelete && this.selectedToDelete !== null) {
+        if (this.selectedToDelete) {
             this.analiseService.deletarCompartilhar(this.selectedToDelete.id).subscribe((res) => {
                 this.analise.compartilhadas = this.analise.compartilhadas.filter(
                     compartilha => {

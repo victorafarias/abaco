@@ -240,12 +240,6 @@ public class FuncaoDados extends FuncaoAnalise implements Serializable {
         return Collections.unmodifiableSet(rlrValues);
     }
 
-    public void setRlrValues(Set<String> rlrValues) {
-        this.rlrValues = Optional.ofNullable(rlrValues)
-                .map((lista) -> new HashSet<String>(lista))
-                .orElse(new HashSet<String>());
-    }
-
     public Set<Der> getDers() {
         return Optional.ofNullable(this.ders)
             .map(lista -> new LinkedHashSet<Der>(lista))

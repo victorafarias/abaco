@@ -18,8 +18,6 @@ public class RlrDTO implements Comparable {
 
     private Integer valor;
 
-    private FuncaoDadosSaveDTO funcaoDados;
-
     private Integer numeracao;
 
     @Override

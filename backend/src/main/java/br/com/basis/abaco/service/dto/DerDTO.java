@@ -19,9 +19,7 @@ public class DerDTO implements Comparable {
 
     private Integer valor;
 
-    private Rlr rlr;
-
-    private FuncaoDadosSaveDTO funcaoDados;
+    private RlrDTO rlr;
 
     private Integer numeracao;
 
