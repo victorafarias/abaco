@@ -23,29 +23,17 @@ import java.util.Set;
 public class ManualDTO {
 
     private Long id;
-
     private String nome;
-
     private String observacao;
-
     private BigDecimal valorVariacaoEstimada;
-
     private BigDecimal valorVariacaoIndicativa;
-
     private List<UploadedFile> arquivosManual = new LinkedList<>();
-
     private Set<EsforcoFase> esforcoFases = new LinkedHashSet<>();
-
     private Set<FatorAjuste> fatoresAjuste = new LinkedHashSet<>();
-
     private BigDecimal parametroInclusao;
-
     private BigDecimal parametroAlteracao;
-
     private BigDecimal parametroExclusao;
-
     private BigDecimal parametroConversao;
-
     private Long versaoCPM;
 
     public Manual toEntity() throws InvocationTargetException, IllegalAccessException {

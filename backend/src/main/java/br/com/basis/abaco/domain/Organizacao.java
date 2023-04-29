@@ -249,10 +249,6 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
         this.logoId = logoId;
     }
 
-    public Set<TipoEquipe> gettipoEquipes() {
-        return Collections.unmodifiableSet(tipoEquipes);
-    }
-
     public void setTipoEquipes(Set<TipoEquipe> tipoEquipes) {
         this.tipoEquipes = Optional.ofNullable(tipoEquipes)
                 .map((lista) -> new HashSet<>(lista))
@@ -278,7 +274,7 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
     }
 
     public Set<TipoEquipe> getTipoEquipes() {
-        return tipoEquipes;
+        return new HashSet<>(tipoEquipes);
     }
 
     public Integer getPrazoAprovacaoDivergenciaDias() {

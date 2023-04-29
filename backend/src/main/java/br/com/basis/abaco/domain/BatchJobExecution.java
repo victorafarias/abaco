@@ -3,6 +3,7 @@ package br.com.basis.abaco.domain;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,8 +15,6 @@ import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Entity
-@Getter
-@Setter
 @EqualsAndHashCode
 @Table(name = "batch_job_execution")
 public class BatchJobExecution {
@@ -73,5 +72,93 @@ public class BatchJobExecution {
             ", last_updated=" + last_updated +
             ", job_configuration_location='" + job_configuration_location + '\'' +
             '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
+    public BatchJobInstance getJob_instance_id() {
+        return job_instance_id;
+    }
+
+    public void setJob_instance_id(BatchJobInstance job_instance_id) {
+        this.job_instance_id = job_instance_id;
+    }
+
+    public Timestamp getCreate_time() {
+        return ObjectUtils.clone(create_time);
+    }
+
+    public void setCreate_time(Timestamp create_time) {
+        this.create_time = ObjectUtils.clone(create_time);
+    }
+
+    public Timestamp getStart_time() {
+        return ObjectUtils.clone(start_time);
+    }
+
+    public void setStart_time(Timestamp start_time) {
+        this.start_time = ObjectUtils.clone(start_time);
+    }
+
+    public Timestamp getEnd_time() {
+        return ObjectUtils.clone(end_time);
+    }
+
+    public void setEnd_time(Timestamp end_time) {
+        this.end_time = ObjectUtils.clone(end_time);
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getExit_code() {
+        return exit_code;
+    }
+
+    public void setExit_code(String exit_code) {
+        this.exit_code = exit_code;
+    }
+
+    public String getExit_message() {
+        return exit_message;
+    }
+
+    public void setExit_message(String exit_message) {
+        this.exit_message = exit_message;
+    }
+
+    public Timestamp getLast_updated() {
+        return ObjectUtils.clone(last_updated);
+    }
+
+    public void setLast_updated(Timestamp last_updated) {
+        this.last_updated = ObjectUtils.clone(last_updated);
+    }
+
+    public String getJob_configuration_location() {
+        return job_configuration_location;
+    }
+
+    public void setJob_configuration_location(String job_configuration_location) {
+        this.job_configuration_location = job_configuration_location;
     }
 }

@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -28,6 +30,8 @@ public class AnaliseBaseDTO {
     protected Boolean fatorCriticidade;
     protected Double valorCriticidade;
     protected Double scopeCreep;
+    private Set<FuncaoDadosDTO> funcaoDados = new HashSet<>();
+    private Set<FuncaoTransacaoDTO> funcaoTransacaos = new HashSet<>();
 
     public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
         this.dataCriacaoOrdemServico = dataCriacaoOrdemServico == null ? null : new Timestamp(dataCriacaoOrdemServico.getTime());

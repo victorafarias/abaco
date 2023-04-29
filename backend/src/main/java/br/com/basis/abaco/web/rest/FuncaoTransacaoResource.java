@@ -19,12 +19,12 @@ import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
-import br.com.basis.abaco.service.dto.DerFtDTO;
+import br.com.basis.abaco.service.dto.DerDTO;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
-import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
+import br.com.basis.abaco.service.dto.FuncaoTransacaoDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
@@ -218,14 +218,14 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacao(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
-        Set<DerFtDTO> ders = new LinkedHashSet<>();
+        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
+        Set<DerDTO> ders = new LinkedHashSet<>();
         Set<AlrDTO> alrs = new LinkedHashSet<>();
         funcaoTransacao.getDers().forEach(der -> {
-            DerFtDTO derDto = new DerFtDTO();
+            DerDTO derDto = new DerDTO();
             derDto.setNome(der.getNome());
             derDto.setValor(der.getValor());
             ders.add(derDto);
@@ -238,7 +238,7 @@ public class FuncaoTransacaoResource {
         });
         funcaoDadosDTO.setDers(ders);
         funcaoDadosDTO.setAlrs(alrs);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
+        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoDadosDTO));
     }
 
     @GetMapping("/funcao-transacaos/analise/{id}")
@@ -266,10 +266,10 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/completa/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao Completa : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findWithDerAndAlr(id);
-        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
+        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
@@ -350,13 +350,13 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/update-status/{id}/{statusFuncao}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoApiDTO> updateFuncaoTransacao(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
+    public ResponseEntity<FuncaoTransacaoDTO> updateFuncaoTransacao(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
         log.debug("REST request to get FuncaoTransacao by Status : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
         funcaoTransacao.setStatusFuncao(statusFuncao);
         funcaoTransacaoRepository.save(funcaoTransacao);
         analiseService.salvar(funcaoTransacao.getAnalise());
-        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
+        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 

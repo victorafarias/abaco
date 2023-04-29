@@ -3,6 +3,7 @@ package br.com.basis.abaco.domain;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,8 +14,6 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "batch_job_execution_params")
-@Getter
-@Setter
 @EqualsAndHashCode
 public class BatchJobExecutionParams {
 
@@ -46,4 +45,68 @@ public class BatchJobExecutionParams {
     @NotNull
     @Column(name = "identifying")
     private String identifying;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getType_cd() {
+        return type_cd;
+    }
+
+    public void setType_cd(String type_cd) {
+        this.type_cd = type_cd;
+    }
+
+    public String getKey_name() {
+        return key_name;
+    }
+
+    public void setKey_name(String key_name) {
+        this.key_name = key_name;
+    }
+
+    public String getString_val() {
+        return string_val;
+    }
+
+    public void setString_val(String string_val) {
+        this.string_val = string_val;
+    }
+
+    public Timestamp getDate_val() {
+        return ObjectUtils.clone(date_val);
+    }
+
+    public void setDate_val(Timestamp date_val) {
+        this.date_val = ObjectUtils.clone(date_val);
+    }
+
+    public Long getLong_val() {
+        return long_val;
+    }
+
+    public void setLong_val(Long long_val) {
+        this.long_val = long_val;
+    }
+
+    public Double getDouble_val() {
+        return double_val;
+    }
+
+    public void setDouble_val(Double double_val) {
+        this.double_val = double_val;
+    }
+
+    public String getIdentifying() {
+        return identifying;
+    }
+
+    public void setIdentifying(String identifying) {
+        this.identifying = identifying;
+    }
 }

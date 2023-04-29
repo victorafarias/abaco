@@ -450,7 +450,7 @@ export class AnaliseService {
             }));
     }
 
-	public importarModeloExcel(file: File): Observable<Analise>{
+	public carregarArquivoExcel(file: File): Observable<Analise>{
 		const formData = new FormData();
 		formData.append('file',file,file.name);
 		return this.http.post<Analise>(this.resourceUrl + "/importar-excel/Xlsx" ,formData);

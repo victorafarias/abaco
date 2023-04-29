@@ -65,8 +65,7 @@ export class DivergenciaService {
     }
 
     public block(analise: Analise): Observable<Analise> {
-        const copy = analise;
-        return this.http.put<Analise>(`${this.analiseResourceUrl}/${copy.id}/block`, copy).pipe(catchError((error: any) => {
+        return this.http.put<Analise>(`${this.analiseResourceUrl}/${analise.id}/block`, analise.id).pipe(catchError((error: any) => {
             switch (error.status) {
                 case 400: {
                     if (error.headers.toJSON()['x-abacoapp-error'][0] === 'error.notadmin') {

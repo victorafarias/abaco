@@ -8,6 +8,7 @@ import br.com.basis.abaco.domain.VwAnaliseSomaPf;
 import br.com.basis.abaco.repository.StatusRepository;
 import br.com.basis.abaco.repository.VwAnaliseDivergenteSomaPfRepository;
 import br.com.basis.abaco.repository.VwAnaliseSomaPfRepository;
+import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,12 +65,12 @@ public class ConsultasService {
         return statusRepository.findByNomeContainsIgnoreCase(nomeStatus);
     }
 
-    public Optional<User> obterUsuarioPorLogin(String usuario) {
-        return userService.obterUsuarioPorLogin(usuario);
+    public User obterUsuarioPorLogin() {
+        return userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
     }
 
-    public Optional<User> obterUsuarioComAutorizacao(String usuario) {
-        return userService.obterUsuarioComAutorizacao(usuario);
+    public User obterUsuarioComAutorizacao() {
+        return userService.obterUsuarioComAutorizacao(SecurityUtils.getCurrentUserLogin()).orElse(new User());
     }
 
     public VwAnaliseSomaPf obterAnaliseSomaPfPorId(Long idAnalise) {

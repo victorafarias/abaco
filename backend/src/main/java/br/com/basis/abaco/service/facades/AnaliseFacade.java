@@ -1,6 +1,7 @@
 package br.com.basis.abaco.service.facades;
 
 import br.com.basis.abaco.domain.Analise;
+import br.com.basis.abaco.domain.Compartilhada;
 import br.com.basis.abaco.domain.FuncaoDados;
 import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.Status;
@@ -10,20 +11,24 @@ import br.com.basis.abaco.domain.VwAnaliseSomaPf;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.repository.AnaliseRepository;
-import br.com.basis.abaco.repository.StatusRepository;
 import br.com.basis.abaco.repository.search.AnaliseSearchRepository;
 import br.com.basis.abaco.service.ConsultasService;
 import br.com.basis.abaco.service.FuncoesService;
 import br.com.basis.abaco.service.PlanilhaService;
 import br.com.basis.abaco.service.RelatorioService;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
+import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
+import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.dynamicexports.pojo.PropriedadesRelatorio;
 import br.com.basis.dynamicexports.pojo.ReportObject;
 import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRException;
-import org.apache.bcel.generic.ACONST_NULL;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
@@ -36,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AnaliseFacade {
@@ -46,27 +50,29 @@ public class AnaliseFacade {
     public final ConsultasService consultasService;
     public final RelatorioService relatorioService;
     public final PlanilhaService planilhaService;
+    private final ModelMapper modelMapper;
 
     public AnaliseFacade(AnaliseRepository analiseRepository,
                          AnaliseSearchRepository analiseSearchRepository,
                          FuncoesService funcoesService,
                          ConsultasService consultasService,
                          RelatorioService relatorioService,
-                         PlanilhaService planilhaService) {
+                         PlanilhaService planilhaService, ModelMapper modelMapper) {
         this.analiseRepository = analiseRepository;
         this.analiseSearchRepository = analiseSearchRepository;
         this.funcoesService = funcoesService;
         this.consultasService = consultasService;
         this.relatorioService = relatorioService;
         this.planilhaService = planilhaService;
+        this.modelMapper = modelMapper;
     }
 
-    public Optional<User> obterUsuarioComAutorizacao(String usuario) {
-        return consultasService.obterUsuarioComAutorizacao(usuario);
+    public User obterUsuarioComAutorizacao() {
+        return consultasService.obterUsuarioComAutorizacao();
     }
 
-    public Optional<User> obterUsuarioPorLogin(String usuario) {
-        return consultasService.obterUsuarioPorLogin(usuario);
+    public User obterUsuarioPorLogin() {
+        return consultasService.obterUsuarioPorLogin();
     }
 
     public Analise obterAnalisePorId(Long idAnalise) {
@@ -174,9 +180,9 @@ public class AnaliseFacade {
         return analiseRepository.analiseEquipe(idAnalise, equipes);
     }
 
-    public void salvarAnalise(Analise analise, Analise analiseConvertida) {
+    public void salvarAnalise(Analise analise) {
         analiseRepository.save(analise);
-        analiseSearchRepository.save(analiseConvertida);
+        analiseSearchRepository.save(converterParaEntidade(converterParaDto(analise)));
     }
 
     public void excluirAnalise(Analise analise) {
@@ -194,6 +200,47 @@ public class AnaliseFacade {
 
     public void salvarFuncaoDado(FuncaoDados funcaoDados) {
         funcoesService.salvarFuncaoDado(funcaoDados);
+    }
+
+    public Analise converterParaEntidade(AnaliseDTO analiseDTO) {
+        return modelMapper.map(analiseDTO, Analise.class);
+    }
+
+    public AnaliseDTO converterParaDto(Analise analise) {
+        return modelMapper.map(analise, AnaliseDTO.class);
+    }
+
+    public AnaliseEditDTO converterParaAnaliseEditDTO(Analise analise) {
+        return modelMapper.map(analise, AnaliseEditDTO.class);
+    }
+
+    public Analise converterEditDtoParaEntidade(AnaliseEditDTO analise) {
+        return modelMapper.map(analise, Analise.class);
+    }
+
+    public AnaliseJsonDTO converterParaAnaliseJsonDTO(Analise analise) {
+        return modelMapper.map(analise, AnaliseJsonDTO.class);
+    }
+
+    public AnaliseDivergenceEditDTO converterParaAnaliseDivergenciaEditDTO(Analise analise) {
+        return modelMapper.map(analise, AnaliseDivergenceEditDTO.class);
+
+    }
+
+    public AnaliseDivergenceDTO converterParaAnaliseDivergenciaDTO(Analise analise) {
+        return modelMapper.map(analise, AnaliseDivergenceDTO.class);
+    }
+
+    public Analise converterJsonParaEntidade(AnaliseJsonDTO analiseJsonDTO) {
+        return modelMapper.map(analiseJsonDTO, Analise.class);
+    }
+
+    public Compartilhada converterCompartilhadaParaEntidade(CompartilhadaDTO compartilhadaDTO) {
+        return modelMapper.map(compartilhadaDTO, Compartilhada.class);
+    }
+
+    public CompartilhadaDTO converterCompartilhadaParaDto(Compartilhada compartilhada) {
+        return modelMapper.map(compartilhada, CompartilhadaDTO.class);
     }
 
 }
