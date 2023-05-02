@@ -1,13 +1,11 @@
 package br.com.basis.abaco.service.dto;
 
-import br.com.basis.abaco.domain.Manual;
-import br.com.basis.abaco.domain.ManualContrato;
-import br.com.basis.abaco.domain.Organizacao;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +13,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ContratoDTO {
+public class ContratoDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id

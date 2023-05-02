@@ -1,16 +1,16 @@
 package br.com.basis.abaco.service.dto;
 
-import br.com.basis.abaco.domain.Manual;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ManualContratoDTO {
+public class ManualContratoDTO implements Serializable {
 
     private Long id;
     private ManualDTO manual;

@@ -1,8 +1,7 @@
 package br.com.basis.abaco.repository;
 
-import java.util.List;
-
-import br.com.basis.abaco.service.dto.AnaliseDTO;
+import br.com.basis.abaco.domain.Analise;
+import br.com.basis.abaco.domain.Sistema;
 import br.com.basis.abaco.service.dto.Dashboard2DTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.com.basis.abaco.domain.Analise;
-import br.com.basis.abaco.domain.Sistema;
+import java.util.List;
 
 /**
  * Spring Data JPA repository for the Analise entity.

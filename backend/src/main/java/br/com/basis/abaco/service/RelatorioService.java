@@ -59,8 +59,7 @@ public class RelatorioService {
         preencheFiltro(sistema, metodo, organizacao, usuario, status, filtro);
         Pageable pageable = dynamicExportsService.obterPageableMaximoExportacao();
         BoolQueryBuilder qb = getBoolQueryBuilder(filtro.getIdentificadorAnalise(), sistema, metodo, organizacao, filtro.getEquipe() == null ? null : filtro.getEquipe().getId(), usuario, status, filtro.getData(), filtro.getDataInicio(), filtro.getDataFim());
-        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
-        return searchQuery;
+        return new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
     }
 
     public SearchQuery obterQueryExportarRelatorioDivergencia(AnaliseFilterDTO filtro, Pageable pageable) {
@@ -74,7 +73,7 @@ public class RelatorioService {
 
     public BoolQueryBuilder getBoolQueryBuilderDivergence(String identificador, Set<Long> sistema, Set<Long> organizacao, Set<Long> status,Boolean bloqueado) {
         User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
-        Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
+        Set<Long> organicoesIds = (organizacao != null && !organizacao.isEmpty()) ? organizacao : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
         bindFilterSearchDivergence(identificador, sistema, organicoesIds,status,bloqueado, qb);
         return qb;
@@ -91,11 +90,11 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
         boolQueryBuilderDivergence = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("isDivergence", true));
         qb.must(boolQueryBuilderDivergence);
 
-        if (sistema != null && sistema.size() > 0) {
+        if (sistema != null && !sistema.isEmpty()) {
             BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("sistema.id", sistema));
             qb.must(boolQueryBuilderSistema);
         }
-        if (status != null && status.size() > 0) {
+        if (status != null && !status.isEmpty()) {
             BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("status.id", status));
             qb.must(boolQueryBuilderStatus);
         }
@@ -113,7 +112,7 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
     public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
         User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
         Set<Long> equipesIds = getIdEquipes(user);
-        Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
+        Set<Long> organicoesIds = (organizacao != null && !organizacao.isEmpty()) ? organizacao : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
         bindFilterSearch(identificador, sistema, metodo, usuario, equipe, equipesIds, organicoesIds, idsStatus, qb, data, dataInicio, dataFim);
         return qb;
@@ -129,20 +128,20 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
         BoolQueryBuilder boolQueryBuilderDivergence;
         boolQueryBuilderDivergence = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery("isDivergence", true));
         qb.must(boolQueryBuilderDivergence);
-        if (sistema != null && sistema.size() > 0) {
+        if (sistema != null && !sistema.isEmpty()) {
             BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("sistema.id", sistema));
             qb.must(boolQueryBuilderSistema);
         }
-        if (metodo != null && metodo.size() > 0) {
+        if (metodo != null && !metodo.isEmpty()) {
             BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("metodoContagem", metodo));
             qb.must(boolQueryBuilderSistema);
         }
-        if (status != null && status.size() > 0) {
+        if (status != null && !status.isEmpty()) {
             BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("status.id", status));
             qb.must(boolQueryBuilderStatus);
         }
 
-        if (usuario != null && usuario.size() > 0) {
+        if (usuario != null && !usuario.isEmpty()) {
             BoolQueryBuilder queryBuilderUsers = QueryBuilders.boolQuery().must(nestedQuery("users", boolQuery().must(QueryBuilders.termsQuery("users.id", usuario))));
             qb.must(queryBuilderUsers);
         }
@@ -209,18 +208,14 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
     private Set<Long> getIdEquipes(User user) {
         Set<TipoEquipe> listaEquipes = user.getTipoEquipes();
         Set<Long> equipesIds = new HashSet<>();
-        listaEquipes.forEach(tipoEquipe -> {
-            equipesIds.add(tipoEquipe.getId());
-        });
+        listaEquipes.forEach(tipoEquipe -> equipesIds.add(tipoEquipe.getId()));
         return equipesIds;
     }
 
     private Set<Long> getIdOrganizacoes(User user) {
         Set<Organizacao> organizacaos = user.getOrganizacoes();
         Set<Long> organizacoesIds = new HashSet<>();
-        organizacaos.forEach(organizacao -> {
-            organizacoesIds.add(organizacao.getId());
-        });
+        organizacaos.forEach(organizacao -> organizacoesIds.add(organizacao.getId()));
         return organizacoesIds;
     }
 

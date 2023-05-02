@@ -116,8 +116,8 @@ public class FuncaoTransacaoResource {
 
         log.debug("REST request to save FuncaoTransacao : {}", funcaoTransacao);
         Analise analise = analiseRepository.findOneByIdClean(idAnalise);
-        funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao);});
-        funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao);}));
+        funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
+        funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
         funcaoTransacao.setAnalise(analise);
         if (funcaoTransacao.getId() != null || analise.getId() == null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
@@ -135,7 +135,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao()) && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
         }
 
@@ -155,14 +155,14 @@ public class FuncaoTransacaoResource {
      */
     @PutMapping(path = "/funcao-transacaos/{id}", consumes = {"multipart/form-data"})
     @Timed
-    public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(@PathVariable Long id, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException, InvocationTargetException, IllegalAccessException {
+    public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(@PathVariable Long id, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException{
         FuncaoTransacao funcaoTransacao = convertToEntity(funcaoTransacaoDTO);
 
         log.debug("REST request to update FuncaoTransacao : {}", funcaoTransacao);
         FuncaoTransacao funcaoTransacaoOld = funcaoTransacaoRepository.findOne(id);
         Analise analise = analiseRepository.findOneByIdClean(funcaoTransacaoOld.getAnalise().getId());
-        funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao);});
-        funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao);}));
+        funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
+        funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
         funcaoTransacao.setAnalise(analise);
 
         if (funcaoTransacao.getId() == null) {
@@ -182,7 +182,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao()) && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
         }
 
@@ -221,7 +221,7 @@ public class FuncaoTransacaoResource {
     public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
+        FuncaoTransacaoDTO funcaoTransacaoDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
         Set<DerDTO> ders = new LinkedHashSet<>();
         Set<AlrDTO> alrs = new LinkedHashSet<>();
         funcaoTransacao.getDers().forEach(der -> {
@@ -236,16 +236,15 @@ public class FuncaoTransacaoResource {
             alrDto.setValor(alr.getValor());
             alrs.add(alrDto);
         });
-        funcaoDadosDTO.setDers(ders);
-        funcaoDadosDTO.setAlrs(alrs);
-        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoDadosDTO));
+        funcaoTransacaoDTO.setDers(ders);
+        funcaoTransacaoDTO.setAlrs(alrs);
+        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoTransacaoDTO));
     }
 
     @GetMapping("/funcao-transacaos/analise/{id}")
     @Timed
     public Set<FuncaoTransacao> getFuncaoTransacaoAnalise(@PathVariable Long id) {
-        Set<FuncaoTransacao> lstFuncaoTransacao = funcaoTransacaoRepository.findAllByAnaliseId(id);
-        return lstFuncaoTransacao;
+        return funcaoTransacaoRepository.findAllByAnaliseId(id);
     }
 
     @GetMapping("/funcao-transacaos-dto/analise/{id}")
@@ -284,7 +283,7 @@ public class FuncaoTransacaoResource {
     public ResponseEntity<Void> deleteFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true){
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao())){
             funcaoTransacao.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
             funcaoTransacao.getAlrs().forEach(item -> vwAlrSearchRepository.delete(item.getId()));
         }
@@ -379,7 +378,7 @@ public class FuncaoTransacaoResource {
 
     @PatchMapping("/funcao-transacaos/update-pf")
     public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
-        if(funcaoPFDTO != null && funcaoPFDTO.size() > 0){
+        if(funcaoPFDTO != null && !funcaoPFDTO.isEmpty()){
             for (FuncaoPFDTO funcao : funcaoPFDTO) {
                 FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(funcao.getId());
                 funcaoTransacao.setPf(funcao.getPf());

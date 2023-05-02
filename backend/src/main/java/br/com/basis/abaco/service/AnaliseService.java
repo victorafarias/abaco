@@ -25,12 +25,10 @@ import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import br.com.basis.abaco.repository.CompartilhadaRepository;
-import br.com.basis.abaco.repository.ManualRepository;
 import br.com.basis.abaco.repository.OrganizacaoRepository;
 import br.com.basis.abaco.repository.SistemaRepository;
 import br.com.basis.abaco.repository.TipoEquipeRepository;
 import br.com.basis.abaco.repository.UploadedFilesRepository;
-import br.com.basis.abaco.service.dto.AlrDTO;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
@@ -38,13 +36,6 @@ import br.com.basis.abaco.service.dto.AnaliseEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseEncerramentoDTO;
 import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
 import br.com.basis.abaco.service.dto.CompartilhadaDTO;
-import br.com.basis.abaco.service.dto.DerDTO;
-import br.com.basis.abaco.service.dto.FatorAjusteDTO;
-import br.com.basis.abaco.service.dto.FuncaoDadosDTO;
-import br.com.basis.abaco.service.dto.FuncaoTransacaoDTO;
-import br.com.basis.abaco.service.dto.FuncionalidadeDTO;
-import br.com.basis.abaco.service.dto.ModuloDTO;
-import br.com.basis.abaco.service.dto.RlrDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
@@ -56,7 +47,6 @@ import br.com.basis.abaco.service.validadores.AnaliseValidador;
 import br.com.basis.abaco.utils.AbacoUtil;
 import br.com.basis.abaco.utils.PageUtils;
 import br.com.basis.abaco.utils.StringUtils;
-import br.com.basis.abaco.web.rest.AnaliseResource;
 import lombok.RequiredArgsConstructor;
 import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRException;
@@ -87,7 +77,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URISyntaxException;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
@@ -110,55 +100,57 @@ import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 @RequiredArgsConstructor
 public class AnaliseService extends BaseService {
 
-    private final static String ESTIMATIVA = "AFP - Estimativa";
-    private final static String DETALHADA = "AFP - Detalhada";
-    private final static String RESUMO = "Resumo";
-    private final static String SHEET_INM = "AFP - INM";
-    private final static String INDICATIVA = "AFP - Indicativa";
+    private static final String ESTIMATIVA = "AFP - Estimativa";
+    private static final String DETALHADA = "AFP - Detalhada";
+    private static final String RESUMO = "Resumo";
+    private static final String SHEET_INM = "AFP - INM";
+    private static final String SHEET_INM_INDICATIVA = "AFP - Indicativa";
 
-    //TODO Tipo Metodo de Comtagem
-    private final static String METODO_DETALHADO = "Detalhada";
-    private final static String METODO_ESTIMATIVA = "Estimativa";
-    private final static String METODO_INDICATIVA = "Indicativa";
+    // Tipo Metodo de Contagem
+    private static final String METODO_DETALHADO = "Detalhada";
+    private static final String METODO_ESTIMATIVA = "Estimativa";
+    private static final String METODO_INDICATIVA = "Indicativa";
 
-    //TODO Tipo Função Dados
-    private final static String METODO_ALI = "ALI";
-    private final static String METODO_AIE = "AIE";
-    private final static String METODO_INM = "INM";
+    // Tipo Função Dados
+    private static final String METODO_ALI = "ALI";
+    private static final String METODO_AIE = "AIE";
+    private static final String METODO_INM = "INM";
 
-    //TODO Tipo Função Transação
-    private final static String METODO_EE = "EE";
-    private final static String METODO_SE = "SE";
-    private final static String METODO_CE = "CE";
+    // Tipo Função Transação
+    private static final String METODO_EE = "EE";
+    private static final String METODO_SE = "SE";
+    private static final String METODO_CE = "CE";
 
-    //TODO Complexidade
-    private final static String METODO_SEM = "Sem";
-    private final static String METODO_BAIXO = "Simples";
-    private final static String METODO_MEDIO = "Médio";
-    private final static String METODO_ALTA = "Complexo";
+    // Complexidade
+    private static final String METODO_SEM = "Sem";
+    private static final String METODO_BAIXO = "Simples";
+    private static final String METODO_MEDIO = "Médio";
+    private static final String METODO_ALTA = "Complexo";
 
-    //TODO Função Status
-    private final static String DIVERGENTE = "Divergente";
-    private final static String EXCLUIDO = "Excluido";
-    private final static String VALIDADO = "Validado";
-    private final static String PENDENTE = "Pendente";
+    // Função Status
+    private static final String DIVERGENTE = "Divergente";
+    private static final String EXCLUIDO = "Excluido";
+    private static final String VALIDADO = "Validado";
+    private static final String PENDENTE = "Pendente";
+
+    private static final String GEROU_VALIDACAO = "Gerou a validação ";
 
     private final static String GEROU_VALIDACAO = "Gerou a validação ";
 
     public static final String ORGANIZACAO_ID = "organizacao.id";
     public static final String EQUIPE_RESPONSAVEL_ID = "equipeResponsavel.id";
     public static final String COMPARTILHADAS_EQUIPE_ID = "compartilhadas.equipeId";
-    private final static String EMPTY_STRING = "";
-    private final static String BASIS_MINUSCULO = "basis";
+    private static final String EMPTY_STRING = "";
+    private static final String BASIS_MINUSCULO = "basis";
     private static final String BASIS = "basis";
-    private static final int decimalPlace = 2;
-    private BigDecimal percent = new BigDecimal("100");
+    private static final int DECIMAL_PLACE = 2;
+    private final BigDecimal percent = new BigDecimal("100");
 
     private Set<Der> ders = new HashSet<>();
     private Set<Rlr> rlrs = new HashSet<>();
     private Set<Alr> alrs = new HashSet<>();
 
-    private final Logger log = LoggerFactory.getLogger(AnaliseResource.class);
+    private final Logger log = LoggerFactory.getLogger(AnaliseService.class);
     private final SistemaRepository sistemaRepository;
     private final CompartilhadaRepository compartilhadaRepository;
     private final TipoEquipeRepository tipoEquipeRepository;
@@ -166,7 +158,6 @@ public class AnaliseService extends BaseService {
     private final MailService mailService;
     private final PerfilService perfilService;
     private final AnaliseFacade analiseFacade;
-    private final ManualRepository manualRepository;
     private final OrganizacaoRepository organizacaoRepository;
 
     private Boolean checarPermissao(Long idAnalise) {
@@ -207,10 +198,10 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoDados bindFuncaoDados(Analise analiseClone, FuncaoDados fd) {
-        Set<Rlr> rlrs = new LinkedHashSet<>();
-        Set<Der> ders = new LinkedHashSet<>();
+        Set<Rlr> rlrSet = new LinkedHashSet<>();
+        Set<Der> derSet = new LinkedHashSet<>();
         FuncaoDados funcaoDado = new FuncaoDados();
-        bindFuncaoDados(analiseClone, fd, rlrs, ders, funcaoDado);
+        bindFuncaoDados(analiseClone, fd, rlrSet, derSet, funcaoDado);
         return funcaoDado;
     }
 
@@ -244,18 +235,18 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoTransacao bindFuncaoTransacao(Analise analiseClone, FuncaoTransacao ft) {
-        Set<Alr> alrs = new LinkedHashSet<>();
-        Set<Der> ders = new LinkedHashSet<>();
+        Set<Alr> alrSet = new LinkedHashSet<>();
+        Set<Der> derSet = new LinkedHashSet<>();
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         ft.getAlrs().forEach(alr -> {
             Alr alrClone = new Alr(null, alr.getNome(), alr.getValor(), funcaoTransacao, null);
-            alrs.add(alrClone);
+            alrSet.add(alrClone);
         });
         ft.getDers().forEach(der -> {
             Der derClone = new Der(null, der.getNome(), der.getValor(), der.getRlr(), null, funcaoTransacao);
-            ders.add(derClone);
+            derSet.add(derClone);
         });
-        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrs, null, ft.getFtrValues(), ft.getImpacto(), ders, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
+        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrSet, null, ft.getFtrValues(), ft.getImpacto(), derSet, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
         funcaoTransacao.setFuncionalidade(ft.getFuncionalidade());
         return funcaoTransacao;
     }
@@ -328,52 +319,49 @@ public class AnaliseService extends BaseService {
 
     public void atualizarPF(Analise analise) {
         VwAnaliseSomaPf vwAnaliseSomaPf = analiseFacade.obterAnaliseSomaPfPorId(analise.getId());
-        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(decimalPlace);
-        if (analise.getEsforcoFases() != null) {
-            if (!analise.getEsforcoFases().isEmpty()) {
-                for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
-                    sumFase = sumFase.add(esforcoFase.getEsforco().setScale(decimalPlace));
-                }
+        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(DECIMAL_PLACE);
+        if (analise.getEsforcoFases() != null && (!analise.getEsforcoFases().isEmpty())) {
+            for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
+                sumFase = sumFase.add(esforcoFase.getEsforco().setScale(DECIMAL_PLACE));
             }
-        }
-        sumFase = sumFase.divide(percent).setScale(decimalPlace);
-        analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace));
-        analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN));
 
-        analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
-        analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
+        }
+        sumFase = sumFase.divide(percent).setScale(DECIMAL_PLACE);
+        analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE));
+        analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN));
+
+        analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
+        analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
     }
 
     public void atualizarPFDivergente(Analise analise) {
         VwAnaliseDivergenteSomaPf vwAnaliseDivergenteSomaPf = analiseFacade.obterAnaliseDivergenteSomaPfPorId(analise.getId());
-        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(decimalPlace);
-        if (analise.getEsforcoFases() != null ) {
-            if (!analise.getEsforcoFases().isEmpty()) {
-                for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
-                    sumFase = sumFase.add(esforcoFase.getEsforco().setScale(decimalPlace));
-                }
+        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(DECIMAL_PLACE);
+        if (analise.getEsforcoFases() != null && (!analise.getEsforcoFases().isEmpty())) {
+            for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
+                sumFase = sumFase.add(esforcoFase.getEsforco().setScale(DECIMAL_PLACE));
             }
+
         }
         if (vwAnaliseDivergenteSomaPf != null) {
-            sumFase = sumFase.divide(percent).setScale(decimalPlace);
-            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace));
-            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN));
+            sumFase = sumFase.divide(percent).setScale(DECIMAL_PLACE);
+            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(DECIMAL_PLACE));
+            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN));
             analise.setPfTotalAprovado(analise.getAdjustPFTotal());
             Timestamp hoje = Timestamp.from(Instant.now());
             Analise analiseOriginalBasis = new Analise();
             if (!analise.getCompartilhadas().isEmpty()) {
                 for (Analise analiseComparada : analise.getAnalisesComparadas()) {
-                    if (analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS)) {
-                        if (analiseComparada.getDataCriacaoOrdemServico().before(hoje)) {
-                            hoje = analiseComparada.getDataCriacaoOrdemServico();
-                            analiseOriginalBasis = analiseComparada;
-                        }
+                    if (analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && (analiseComparada.getDataCriacaoOrdemServico().before(hoje))) {
+                        hoje = analiseComparada.getDataCriacaoOrdemServico();
+                        analiseOriginalBasis = analiseComparada;
+
                     }
                 }
             }
             analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
-            analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
-            analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
+            analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
+            analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
         }
     }
 
@@ -557,11 +545,11 @@ public class AnaliseService extends BaseService {
         int ordem = 1;
         for (FuncaoTransacao funcao : lstFuncaoTransacaos) {
             if (funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)) {
-                funcao.setOrdem(Long.valueOf(ordem++));
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoTransacao.add(funcao);
                 for (FuncaoTransacao funcaoSecundaria : lstFuncaoTransacaos) {
-                    if (!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true) {
-                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                    if (!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria)) {
+                        funcaoSecundaria.setOrdem((long) ordem++);
                         lstOrganizadaFuncaoTransacao.add(funcaoSecundaria);
                     }
                 }
@@ -570,7 +558,7 @@ public class AnaliseService extends BaseService {
 
         for (FuncaoTransacao funcao : lstFuncaoTransacaos) {
             if (!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoTransacao.contains(funcao)) {
-                funcao.setOrdem(Long.valueOf(ordem++));
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoTransacao.add(funcao);
             }
         }
@@ -582,37 +570,34 @@ public class AnaliseService extends BaseService {
         int ordem = 1;
         for (FuncaoDados funcao : lstFuncaoDados) {
             if (funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)) {
-                funcao.setOrdem(Long.valueOf(ordem++));
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoDados.add(funcao);
                 for (FuncaoDados funcaoSecundaria : lstFuncaoDados) {
-                    if (!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true) {
-                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                    if (!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria)) {
+                        funcaoSecundaria.setOrdem((long) ordem++);
                         lstOrganizadaFuncaoDados.add(funcaoSecundaria);
                     }
                 }
             }
         }
+    }
 
         for (FuncaoDados funcao : lstFuncaoDados) {
             if (!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)) {
-                funcao.setOrdem(Long.valueOf(ordem++));
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoDados.add(funcao);
             }
         }
     }
 
     private boolean isFuncaoEquiparada(FuncaoAnalise funcaoPrimaria, FuncaoAnalise funcaoSecundaria) {
-        if (funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) && funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) && funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome())) {
-            return true;
-        } else {
-            return false;
-        }
+        return funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) && funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) && funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
     }
 
 
     public Analise salvar(Analise analise) {
         if (analise.getIsDivergence() != null) {
-            if (!analise.getIsDivergence()) {
+            if (Boolean.FALSE.equals(analise.getIsDivergence())) {
                 atualizarPF(analise);
             } else {
                 atualizarPFDivergente(analise);
@@ -629,9 +614,7 @@ public class AnaliseService extends BaseService {
     }
 
     public void excluirDivergencia(Analise analise) {
-        analise.getCompartilhadas().forEach(compartilhada -> {
-            compartilhadaRepository.delete(compartilhada.getId());
-        });
+        analise.getCompartilhadas().forEach(compartilhada -> compartilhadaRepository.delete(compartilhada.getId()));
         analise.getAnalisesComparadas().forEach(analiseComparada -> {
             analiseComparada.setAnaliseDivergence(null);
             salvar(analiseComparada);
@@ -676,6 +659,18 @@ public class AnaliseService extends BaseService {
         return false;
     }
 
+    private void verificarFuncoes(FuncaoAnalise funcao, Analise analise) {
+        if (analise.getManual() != null && (!analise.getManual().getFatoresAjuste().contains(funcao.getFatorAjuste()))) {
+            funcao.setFatorAjuste(new ArrayList<>(analise.getManual().getFatoresAjuste()).get(0));
+            analise.getManual().getFatoresAjuste().forEach(fatorAjuste -> {
+                if (funcao.getFatorAjuste().getNome().equals(fatorAjuste.getNome())) {
+                    funcao.setFatorAjuste(fatorAjuste);
+                }
+            });
+
+        }
+    }
+
 
     public void salvarFuncoesExcel(Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos, Analise analise) {
         salvarFuncaoDadosExcel(funcaoDados, analise);
@@ -684,7 +679,7 @@ public class AnaliseService extends BaseService {
         salvarAnalise(analise);
     }
 
-        public Analise importarAnaliseExcel(AnaliseEditDTO analiseDTO) {
+    public Analise importarAnaliseExcel(AnaliseEditDTO analiseDTO) {
         User usuario = analiseFacade.obterUsuarioPorLogin();
         Analise analise = converterEditDtoParaEntidade(analiseDTO);
         analise.setIdentificadorAnalise(analise.getIdentificadorAnalise() + " Importada");
@@ -707,16 +702,7 @@ public class AnaliseService extends BaseService {
             funcaoTransacao.setId(null);
             funcaoTransacao.setAnalise(analise);
             funcaoTransacao.setEquipe(null);
-            if (analise.getManual() != null) {
-                if (!analise.getManual().getFatoresAjuste().contains(funcaoTransacao.getFatorAjuste())) {
-                    funcaoTransacao.setFatorAjuste(analise.getManual().getFatoresAjuste().stream().collect(Collectors.toList()).get(0));
-                    analise.getManual().getFatoresAjuste().forEach(fatorAjuste -> {
-                        if (funcaoTransacao.getFatorAjuste().getNome().equals(fatorAjuste.getNome())) {
-                            funcaoTransacao.setFatorAjuste(fatorAjuste);
-                        }
-                    });
-                }
-            }
+            verificarFuncoes(funcaoTransacao, analise);
             funcaoTransacao.getDers().forEach(der -> {
                 der.setFuncaoTransacao(funcaoTransacao);
                 der.setId(null);
@@ -725,14 +711,7 @@ public class AnaliseService extends BaseService {
                 alr.setFuncaoTransacao(funcaoTransacao);
                 alr.setId(null);
             }));
-            funcaoTransacao.setFuncionalidade(analise.getSistema().getModulos().stream().collect(Collectors.toList()).get(0).getFuncionalidades().stream().collect(Collectors.toList()).get(0));
-            analise.getSistema().getModulos().forEach(modulo -> {
-                modulo.getFuncionalidades().forEach(funcionalidade -> {
-                    if (funcionalidade.getNome().contains(funcaoTransacao.getFuncionalidade().getNome())) {
-                        funcaoTransacao.setFuncionalidade(funcionalidade);
-                    }
-                });
-            });
+            setarFuncionalidadeFuncao(funcaoTransacao, analise);
             analiseFacade.salvarFuncaoTransacao(funcaoTransacao);
         });
     }
@@ -741,17 +720,7 @@ public class AnaliseService extends BaseService {
         funcaoDados.forEach(funcaoDado -> {
             funcaoDado.setId(null);
             funcaoDado.setAnalise(analise);
-            if (analise.getManual() != null){
-                if (!analise.getManual().getFatoresAjuste().contains(funcaoDado.getFatorAjuste())) {
-                    funcaoDado.setFatorAjuste(analise.getManual().getFatoresAjuste().stream().collect(Collectors.toList()).get(0));
-                    analise.getManual().getFatoresAjuste().forEach(fatorAjuste -> {
-                        if (funcaoDado.getFatorAjuste().getNome().equals(fatorAjuste.getNome())) {
-                            funcaoDado.setFatorAjuste(fatorAjuste);
-                        }
-                    });
-                }
-            }
-
+            verificarFuncoes(funcaoDado, analise);
             funcaoDado.getDers().forEach(der -> {
                 der.setFuncaoDados(funcaoDado);
                 der.setId(null);
@@ -760,16 +729,18 @@ public class AnaliseService extends BaseService {
                 rlr.setFuncaoDados(funcaoDado);
                 rlr.setId(null);
             });
-            funcaoDado.setFuncionalidade(analise.getSistema().getModulos().stream().collect(Collectors.toList()).get(0).getFuncionalidades().stream().collect(Collectors.toList()).get(0));
-            analise.getSistema().getModulos().forEach(modulo -> {
-                modulo.getFuncionalidades().forEach(funcionalidade -> {
-                    if (funcionalidade.getNome().contains(funcaoDado.getFuncionalidade().getNome())) {
-                        funcaoDado.setFuncionalidade(funcionalidade);
-                    }
-                });
-            });
+            setarFuncionalidadeFuncao(funcaoDado, analise);
             analiseFacade.salvarFuncaoDado(funcaoDado);
         });
+    }
+
+    private void setarFuncionalidadeFuncao(FuncaoAnalise funcao, Analise analise) {
+        funcao.setFuncionalidade(new ArrayList<>(new ArrayList<>(analise.getSistema().getModulos()).get(0).getFuncionalidades()).get(0));
+        analise.getSistema().getModulos().forEach(modulo -> modulo.getFuncionalidades().forEach(func -> {
+            if (func.getNome().contains(funcao.getFuncionalidade().getNome())) {
+                funcao.setFuncionalidade(func);
+            }
+        }));
     }
 
     public List<AnaliseDTO> carregarAnalisesFromFuncaoFD(String nomeFuncao, String nomeModulo, String
@@ -784,7 +755,7 @@ public class AnaliseService extends BaseService {
 
     public void salvarCompartilhadasMultiplas(Set<CompartilhadaDTO> compartilhadaList, AbacoMensagens
         abacoMensagens) {
-        List<Long> idsAnalise = compartilhadaList.stream().findFirst().get().getAnalisesId();
+        List<Long> idsAnalise = compartilhadaList.stream().findFirst().orElse(new CompartilhadaDTO()).getAnalisesId();
         for (Long idAnalise : idsAnalise) {
             Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
             Analise analise = analiseFacade.obterAnalisePorIdLimpo(idAnalise);
@@ -813,19 +784,18 @@ public class AnaliseService extends BaseService {
         }
     }
 
-    public AbacoMensagens saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas, AbacoMensagens
+    public void saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas, AbacoMensagens
         abacoMensagens) {
-        if (lstCompartilhadas != null && lstCompartilhadas.size() > 0) {
+        if (lstCompartilhadas != null && !lstCompartilhadas.isEmpty()) {
             long idAnalise = lstCompartilhadas.stream().findFirst().get().getAnaliseId();
             Analise analise = analiseFacade.obterAnalisePorIdLimpo(idAnalise);
             compartilharAnalise(analise, lstCompartilhadas, abacoMensagens);
         }
-        return abacoMensagens;
     }
 
     private void compartilharAnalise(Analise analise, Set<Compartilhada> compartilhadas, AbacoMensagens
         abacoMensagens) {
-        if (compartilhadas.size() > 0) {
+        if (!compartilhadas.isEmpty()) {
             analise.setCompartilhadas(compartilhadas);
             atualizarPF(analise);
             salvarAnalise(analise);
@@ -851,10 +821,8 @@ public class AnaliseService extends BaseService {
     }
 
     public void inserirHistoricoBloquearDesbloquear(Analise analise) {
-        if (analise.getIsDivergence() != null && analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null) {
-            analise.getAnalisesComparadas().forEach(analisePai -> {
-                analiseFacade.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ? String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) : String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise()));
-            });
+        if (analise.getIsDivergence() != null && analise.getIsDivergence() && analise.getAnalisesComparadas() != null) {
+            analise.getAnalisesComparadas().forEach(analisePai -> analiseFacade.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() ? String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) : String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise())));
         } else {
             analiseFacade.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() ? "Bloqueou" : "Desbloqueou");
         }
@@ -868,9 +836,9 @@ public class AnaliseService extends BaseService {
         return analiseFacade.obterAnalisesDivergenciaForaDoPrazo();
     }
 
-    public AnaliseDTO criarAnalise(AnaliseDTO analiseDTO) {
+    public AnaliseDTO criarAnalise(AnaliseEditDTO analiseDTO) {
         User user = analiseFacade.obterUsuarioPorLogin();
-        Analise analise = converterParaEntidade(analiseDTO);
+        Analise analise = converterEditDtoParaEntidade(analiseDTO);
         analise.setSistema(sistemaRepository.findOne(analise.getSistema().getId()));
         analise.setOrganizacao(organizacaoRepository.findOne(analise.getOrganizacao().getId()));
         analise.setCreatedBy(user);
@@ -880,9 +848,9 @@ public class AnaliseService extends BaseService {
         return converterParaDto(analise);
     }
 
-    public AnaliseDTO atualizarAnalise(AnaliseDTO analiseDTO) {
+    public AnaliseDTO atualizarAnalise(AnaliseEditDTO analiseDTO) {
         Analise analise = analiseFacade.obterAnalisePorIdLimpo(analiseDTO.getId());
-        anexarAnalise(converterParaEntidade(analiseDTO), analise);
+        anexarAnalise(converterEditDtoParaEntidade(analiseDTO), analise);
         atualizarPF(analise);
         analise.setEditedBy(analiseFacade.obterAnalisePorIdLimpo(analise.getId()).getCreatedBy());
         analise.setAnaliseClonadaParaEquipe(null);
@@ -967,7 +935,7 @@ public class AnaliseService extends BaseService {
 
     public AbacoMensagens preencherCompartilhar(Set<CompartilhadaDTO> compartilhadaList, Boolean ehMultiplo) {
         AbacoMensagens abacoMensagens = new AbacoMensagens();
-        if (ehMultiplo) {
+        if (Boolean.TRUE.equals(ehMultiplo)) {
             salvarCompartilhadasMultiplas(compartilhadaList, abacoMensagens);
         } else {
             Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
@@ -1022,7 +990,7 @@ public class AnaliseService extends BaseService {
         try {
             new NativeSearchQueryBuilder().withQuery(multiMatchQuery(query)).build();
             Page<Analise> result = analiseFacade.obterTodasAnalises();
-            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(null), result, "pdf", Optional.empty(), Optional.ofNullable(AbacoUtil.REPORT_LOGO_PATH), Optional.ofNullable(AbacoUtil.getReportFooter()));
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(null), result, "pdf", Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
         } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
             throw new RelatorioException(e);
         }
@@ -1034,22 +1002,20 @@ public class AnaliseService extends BaseService {
         ByteArrayOutputStream byteArrayOutputStream;
         try {
             Page<Analise> page = analiseFacade.obterPaginaAnaliseRelatorio(filtro);
-            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(filtro.getColumnsVisible()), page, tipoRelatorio, Optional.empty(), Optional.ofNullable(AbacoUtil.REPORT_LOGO_PATH), Optional.ofNullable(AbacoUtil.getReportFooter()));
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(filtro.getColumnsVisible()), page, tipoRelatorio, Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
         } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
-            log.error(e.getMessage(), e);
             throw new RelatorioException(e);
         }
         return byteArrayOutputStream;
     }
 
-    public ByteArrayOutputStream gerarRelatorioAnaliseImprimir(AnaliseFilterDTO filtro) throws RelatorioException {
-        ByteArrayOutputStream byteArrayOutputStream;
+    public ByteArrayOutputStream gerarRelatorioAnaliseImprimir(AnaliseFilterDTO filtro) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             Page<Analise> page = analiseFacade.obterPaginaAnaliseRelatorio(filtro);
-            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(filtro.getColumnsVisible()), page, "pdf", Optional.empty(), Optional.ofNullable(AbacoUtil.REPORT_LOGO_PATH), Optional.ofNullable(AbacoUtil.getReportFooter()));
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(filtro.getColumnsVisible()), page, "pdf", Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
         } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
-            System.out.println("Erro ao gerar o relátorio: ".concat(e.getMessage()));
-            throw new RelatorioException(e);
+            log.error("Erro ao gerar o relátorio: ".concat(e.getMessage()));
         }
         return byteArrayOutputStream;
     }
@@ -1064,22 +1030,32 @@ public class AnaliseService extends BaseService {
         ByteArrayOutputStream byteArrayOutputStream;
         try {
             Page<Analise> page = analiseFacade.obterPaginaAnaliseDivergenciaRelatorio(filtro);
-            byteArrayOutputStream = analiseFacade.exportar(new RelatorioDivergenciaColunas(), page, tipoRelatorio, Optional.empty(), Optional.ofNullable(AbacoUtil.REPORT_LOGO_PATH), Optional.ofNullable(AbacoUtil.getReportFooter()));
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioDivergenciaColunas(), page, tipoRelatorio, Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
         } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
             throw new RelatorioException(e);
         }
         return byteArrayOutputStream;
     }
 
-    public ByteArrayOutputStream gerarRelatorioDivergenciaExportacao(String tipoRelatorio, AnaliseFilterDTO filter) throws
-        RelatorioException {
+    public ByteArrayOutputStream gerarRelatorioDivergenciaExportacao(String tipoRelatorio,
+                                                                     AnaliseFilterDTO filter) throws RelatorioException {
         return gerarRelatorioDivergencia(tipoRelatorio, filter);
     }
 
-    public Page<AnaliseDTO> obterTodasAnalisesEquipes(String order, int pageNumber, int size, String sort, String
-        identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long
-                                                          equipe, Set<Long> status, Set<Long> usuario, TipoDeDataAnalise data, Date dataInicio, Date dataFim) throws
-        URISyntaxException {
+    public Page<AnaliseDTO> obterTodasAnalisesEquipes(String order,
+                                                      int pageNumber,
+                                                      int size,
+                                                      String sort,
+                                                      String identificador,
+                                                      Set<Long> sistema,
+                                                      Set<MetodoContagem> metodo,
+                                                      Set<Long> organizacao,
+                                                      Long equipe,
+                                                      Set<Long> status,
+                                                      Set<Long> usuario,
+                                                      TipoDeDataAnalise data,
+                                                      Date dataInicio,
+                                                      Date dataFim) {
         log.debug("DEBUG Consulta Analises - Inicio metodo");
         SortOrder sortOrderQb;
         if (order.equals("asc")) {
@@ -1129,35 +1105,34 @@ public class AnaliseService extends BaseService {
         User user = analiseFacade.obterUsuarioPorLogin();
         mensagens = AnaliseValidador.validarAlterarStatus(idAnalise, idStatus, analise, status, user);
 
-        if (mensagens.contemAvisoOuErro()) {
+        if (Boolean.TRUE.equals(mensagens.contemAvisoOuErro())) {
             formulario.setMensagens(mensagens);
             ResponseEntity.status(HttpStatus.BAD_REQUEST);
             return formulario;
         }
+        return abacoMensagens;
+    }
 
         if (changeStatusAnalise(analise, status, user)) {
-            if (!analise.getIsDivergence()) {
+            if (Boolean.FALSE.equals(analise.getIsDivergence())) {
                 atualizarPF(analise);
             } else {
                 atualizarPFDivergente(analise);
             }
             salvarAnalise(analise);
-            if (analise.getIsDivergence() && analise.getAnalisesComparadas() != null) {
-                analise.getAnalisesComparadas().forEach(analisePai -> {
-                    analiseFacade.inserirHistoricoAnalise(analisePai, user, String.format("A validação %s alterou o status para %s", analise.getIdentificadorAnalise(), status.getNome()));
-                });
+            if (Boolean.TRUE.equals(analise.getIsDivergence()) && analise.getAnalisesComparadas() != null) {
+                analise.getAnalisesComparadas().forEach(analisePai -> analiseFacade.inserirHistoricoAnalise(analisePai, user, String.format("A validação %s alterou o status para %s", analise.getIdentificadorAnalise(), status.getNome())));
             } else {
                 analiseFacade.inserirHistoricoAnalise(analise, user, "Alterou o status para " + status.getNome());
             }
             mensagens.adicionarNovoSucesso("O status da análise " + analise.getIdentificadorAnalise() + " foi alterado para " + status.getNome());
             formulario.setMensagens(mensagens);
             formulario.setAnalise(converterParaAnaliseEditDTO(analise));
-            return formulario;
         } else {
             mensagens.adicionarNovoErro("Usuário não tem permissão para alterar o status");
             formulario.setMensagens(mensagens);
-            return formulario;
         }
+        return formulario;
     }
 
     public AnaliseEditDTO gerarDivergencia1(Long idAnaliseComparada) {
@@ -1221,8 +1196,7 @@ public class AnaliseService extends BaseService {
         if (analise != null) {
             User user = analiseFacade.obterUsuarioPorLogin();
             if (user.getOrganizacoes().contains(analise.getOrganizacao())) {
-                AnaliseDivergenceEditDTO analiseDivergenceEditDTO = converterParaAnaliseDivergenciaEditDTO(analise);
-                return analiseDivergenceEditDTO;
+                return converterParaAnaliseDivergenciaEditDTO(analise);
             }
         }
         return null;
@@ -1257,11 +1231,13 @@ public class AnaliseService extends BaseService {
         if (analise.getIsEncerrada() == null) {
             analise.setIsEncerrada(false);
         }
-        if (analiseEncerramentoDTO.isEncerrada() != analise.getIsEncerrada() || analise.getDtEncerramento() == null && analiseEncerramentoDTO.getDtEncerramento() != null || analise.getDtEncerramento() != null && !analise.getDtEncerramento().equals(analiseEncerramentoDTO.getDtEncerramento())) {
+        if (Boolean.TRUE.equals(analiseEncerramentoDTO.isEncerrada() != analise.getIsEncerrada() || analise.getDtEncerramento() == null && analiseEncerramentoDTO.getDtEncerramento() != null) || analise.getDtEncerramento() != null && !analise.getDtEncerramento().equals(analiseEncerramentoDTO.getDtEncerramento())) {
             gerarHistorico = true;
         }
+        return null;
+    }
 
-        if (analiseEncerramentoDTO.isEncerrada() == false) {
+        if (!analiseEncerramentoDTO.isEncerrada()) {
             analise.setDtEncerramento(null);
         } else {
             analise.setDtEncerramento(analiseEncerramentoDTO.getDtEncerramento());
@@ -1271,15 +1247,16 @@ public class AnaliseService extends BaseService {
         salvarAnalise(analise);
         if (gerarHistorico) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            analiseFacade.inserirHistoricoAnalise(analise, null, analise.getIsEncerrada() ? "Encerrou para " + sdf.format(analise.getDtEncerramento()) : "Abriu (Desabilitou o encerramento)");
+            analiseFacade.inserirHistoricoAnalise(analise, null, Boolean.TRUE.equals(analise.getIsEncerrada()) ? "Encerrou para " + sdf.format(analise.getDtEncerramento()) : "Abriu (Desabilitou o encerramento)");
         }
     }
 
-    public Analise uploadExcel(MultipartFile file) throws Exception {
+    public Analise uploadExcel(MultipartFile file) throws IOException {
+        FileInputStream inputStream = null;
         Path tempDir = Files.createTempDirectory("");
         File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
         file.transferTo(tempFile);
-        FileInputStream inputStream = new FileInputStream(tempFile);
+        inputStream = new FileInputStream(tempFile);
         XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
         Analise analise = new Analise();
         Set<FuncaoDados> funcaoDados = new HashSet<>();
@@ -1289,7 +1266,7 @@ public class AnaliseService extends BaseService {
         if (analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)) {
             setarIndicativaExcelUpload(workbook, funcaoDados);
         } else {
-            setarInmExcelUpload(workbook, funcaoTransacaos, funcaoDados, false);
+            setarInmExcelUpload(workbook, funcaoTransacaos, funcaoDados);
         }
         if (analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
             setarExcelDetalhadaUpload(workbook, funcaoDados, funcaoTransacaos);
@@ -1301,18 +1278,17 @@ public class AnaliseService extends BaseService {
         return analise;
     }
 
-    //TODO Planilha Detalhada
-    public void setarExcelDetalhadaUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDadosList, Set<FuncaoTransacao> funcaoTransacaos) {
+    // Planilha Detalhada
+    public void setarExcelDetalhadaUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos) {
         XSSFSheet excelSheet = excelFile.getSheet(DETALHADA);
         for (int i = 9; i < 1323; i++) {
             XSSFRow row = excelSheet.getRow(i);
             if (row.getCell(0).getNumericCellValue() > 0) {
+                ders = new HashSet<>();
                 if (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue())) {
-                    ders = new HashSet<>();
                     rlrs = new HashSet<>();
-                    funcaoDadosList.add(setarFuncaoDadosDetalhada(row));
+                    funcaoDados.add(setarFuncaoDadosDetalhada(row));
                 } else if (tipoFuncaoTransacao().contains(row.getCell(6).getStringCellValue())) {
-                    ders = new HashSet<>();
                     alrs = new HashSet<>();
                     funcaoTransacaos.add(setarFuncaoTrasacaoDetalhada(row));
                 }
@@ -1322,30 +1298,15 @@ public class AnaliseService extends BaseService {
 
     private FuncaoDados setarFuncaoDadosDetalhada(XSSFRow row) {
         FuncaoDados funcaoDados = new FuncaoDados();
-        Funcionalidade funcionalidade = new Funcionalidade();
-        Modulo modulo = new Modulo();
-        FatorAjuste fatorAjuste = new FatorAjuste();
         funcaoDados.setId((long) row.getCell(0).getNumericCellValue());
-        modulo.setNome(row.getCell(3).getStringCellValue());
-        funcionalidade.setModulo(modulo);
-        funcionalidade.setNome(row.getCell(4).getStringCellValue());
-        funcaoDados.setFuncionalidade(funcionalidade);
-        funcaoDados.setName(row.getCell(5).getStringCellValue());
-        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
-        funcaoDados.setFatorAjuste(fatorAjuste);
-        switch (row.getCell(6).getStringCellValue()) {
-            case METODO_AIE:
-                funcaoDados.setTipo(TipoFuncaoDados.AIE);
-                break;
-            case METODO_ALI:
-                funcaoDados.setTipo(TipoFuncaoDados.ALI);
-                break;
-            case METODO_INM:
-                funcaoDados.setTipo(TipoFuncaoDados.INM);
-                break;
-            default:
-                break;
-        }
+        setarModuloFuncionalidade(funcaoDados, row);
+        setarTipoFuncaoDados(row, funcaoDados);
+        setarDerRlrFuncaoDados(funcaoDados, row);
+        setarSustentacaoStatus(funcaoDados, row);
+        return funcaoDados;
+    }
+
+    private void setarDerRlrFuncaoDados(FuncaoDados funcaoDados, XSSFRow row) {
         Der der = new Der();
         der.setNome(row.getCell(8).getStringCellValue());
         ders.add(der);
@@ -1354,59 +1315,49 @@ public class AnaliseService extends BaseService {
         rlrs.add(rlr);
         funcaoDados.setDers(ders);
         funcaoDados.setRlrs(rlrs);
-        switch (row.getCell(12).getStringCellValue()) {
-            case METODO_SEM:
-                funcaoDados.setComplexidade(Complexidade.SEM);
-                break;
-            case METODO_BAIXO:
-                funcaoDados.setComplexidade(Complexidade.BAIXA);
-                break;
-            case METODO_MEDIO:
-                funcaoDados.setComplexidade(Complexidade.MEDIA);
-                break;
-            case METODO_ALTA:
-                funcaoDados.setComplexidade(Complexidade.ALTA);
-                break;
-            default:
-                break;
-        }
-        funcaoDados.setPf(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
-        funcaoDados.setGrossPF(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
-        funcaoDados.setSustantation(row.getCell(17).getStringCellValue());
-        if (statusFuncao().contains(row.getCell(19).getStringCellValue()) == true) {
+        setarFuncaoComplexidade(funcaoDados, row);
+    }
+
+    private void setarSustentacaoStatus(FuncaoAnalise funcao, XSSFRow row) {
+        funcao.setSustantation(row.getCell(17).getStringCellValue());
+        if (statusFuncao().contains(row.getCell(19).getStringCellValue())) {
             switch (row.getCell(19).getStringCellValue()) {
                 case DIVERGENTE:
-                    funcaoDados.setStatusFuncao(StatusFuncao.DIVERGENTE);
+                    funcao.setStatusFuncao(StatusFuncao.DIVERGENTE);
                     break;
                 case EXCLUIDO:
-                    funcaoDados.setStatusFuncao(StatusFuncao.EXCLUIDO);
+                    funcao.setStatusFuncao(StatusFuncao.EXCLUIDO);
                     break;
                 case VALIDADO:
-                    funcaoDados.setStatusFuncao(StatusFuncao.VALIDADO);
+                    funcao.setStatusFuncao(StatusFuncao.VALIDADO);
                     break;
                 case PENDENTE:
-                    funcaoDados.setStatusFuncao(StatusFuncao.PENDENTE);
+                    funcao.setStatusFuncao(StatusFuncao.PENDENTE);
                     break;
                 default:
                     break;
             }
         }
-        return funcaoDados;
+    }
+
+    private void setarModuloFuncionalidade(FuncaoAnalise funcao, XSSFRow row) {
+        Funcionalidade funcionalidade = new Funcionalidade();
+        Modulo modulo = new Modulo();
+        FatorAjuste fatorAjuste = new FatorAjuste();
+        modulo.setNome(row.getCell(3).getStringCellValue());
+        funcionalidade.setModulo(modulo);
+        funcionalidade.setNome(row.getCell(4).getStringCellValue());
+        funcao.setFuncionalidade(funcionalidade);
+        funcao.setName(row.getCell(5).getStringCellValue());
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+        funcao.setFatorAjuste(fatorAjuste);
+
     }
 
     private FuncaoTransacao setarFuncaoTrasacaoDetalhada(XSSFRow row) {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
-        Funcionalidade funcionalidade = new Funcionalidade();
-        Modulo modulo = new Modulo();
-        FatorAjuste fatorAjuste = new FatorAjuste();
         funcaoTransacao.setId((long) row.getCell(0).getNumericCellValue());
-        modulo.setNome(row.getCell(3).getStringCellValue());
-        funcionalidade.setModulo(modulo);
-        funcionalidade.setNome(row.getCell(4).getStringCellValue());
-        funcaoTransacao.setFuncionalidade(funcionalidade);
-        funcaoTransacao.setName(row.getCell(5).getStringCellValue());
-        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
-        funcaoTransacao.setFatorAjuste(fatorAjuste);
+        setarModuloFuncionalidade(funcaoTransacao, row);
         switch (row.getCell(6).getStringCellValue()) {
             case METODO_CE:
                 funcaoTransacao.setTipo(TipoFuncaoTransacao.CE);
@@ -1423,6 +1374,12 @@ public class AnaliseService extends BaseService {
             default:
                 break;
         }
+        setarDerAlrFuncaoTransacao(funcaoTransacao, row);
+        setarSustentacaoStatus(funcaoTransacao, row);
+        return funcaoTransacao;
+    }
+
+    private void setarDerAlrFuncaoTransacao(FuncaoTransacao funcaoTransacao, XSSFRow row) {
         Der der = new Der();
         der.setNome(row.getCell(8).getStringCellValue());
         ders.add(der);
@@ -1431,49 +1388,11 @@ public class AnaliseService extends BaseService {
         alrs.add(alr);
         funcaoTransacao.setDers(ders);
         funcaoTransacao.setAlrs(alrs);
-        switch (row.getCell(12).getStringCellValue()) {
-            case METODO_SEM:
-                funcaoTransacao.setComplexidade(Complexidade.SEM);
-                break;
-            case METODO_BAIXO:
-                funcaoTransacao.setComplexidade(Complexidade.BAIXA);
-                break;
-            case METODO_MEDIO:
-                funcaoTransacao.setComplexidade(Complexidade.MEDIA);
-                break;
-            case METODO_ALTA:
-                funcaoTransacao.setComplexidade(Complexidade.ALTA);
-                break;
-            default:
-                break;
-
-        }
-        funcaoTransacao.setPf(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
-        funcaoTransacao.setGrossPF(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
-        funcaoTransacao.setSustantation(row.getCell(17).getStringCellValue());
-        if (statusFuncao().contains(row.getCell(19).getStringCellValue()) == true) {
-            switch (row.getCell(19).getStringCellValue()) {
-                case DIVERGENTE:
-                    funcaoTransacao.setStatusFuncao(StatusFuncao.DIVERGENTE);
-                    break;
-                case EXCLUIDO:
-                    funcaoTransacao.setStatusFuncao(StatusFuncao.EXCLUIDO);
-                    break;
-                case VALIDADO:
-                    funcaoTransacao.setStatusFuncao(StatusFuncao.VALIDADO);
-                    break;
-                case PENDENTE:
-                    funcaoTransacao.setStatusFuncao(StatusFuncao.PENDENTE);
-                    break;
-                default:
-                    break;
-            }
-        }
-        return funcaoTransacao;
+        setarFuncaoComplexidade(funcaoTransacao, row);
     }
 
 
-    //TODO Planilha Estimada
+    // Planilha Estimada
     public void setarExcelEstimadaUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos) {
         XSSFSheet excelSheetEstimada = excelFile.getSheet(ESTIMATIVA);
         for (int i = 10; i < 1081; i++) {
@@ -1488,20 +1407,24 @@ public class AnaliseService extends BaseService {
         }
     }
 
-    private FuncaoDados setarFuncaoDadosEstimada(XSSFRow rows) {
-        FuncaoDados funcaoDados = new FuncaoDados();
+    private void setarModuloFuncionalidadeEstimada(FuncaoAnalise funcao, XSSFRow row) {
         Funcionalidade funcionalidade = new Funcionalidade();
         Modulo modulo = new Modulo();
         FatorAjuste fatorAjuste = new FatorAjuste();
-        funcaoDados.setId((long) rows.getCell(0).getNumericCellValue());
-        modulo.setNome(rows.getCell(4).getStringCellValue());
+        funcao.setId((long) row.getCell(0).getNumericCellValue());
+        modulo.setNome(row.getCell(4).getStringCellValue());
         funcionalidade.setModulo(modulo);
-        funcionalidade.setNome(rows.getCell(5).getStringCellValue());
-        funcaoDados.setFuncionalidade(funcionalidade);
-        funcaoDados.setName(rows.getCell(6).getStringCellValue());
-        fatorAjuste.setNome(rows.getCell(1).getStringCellValue());
-        funcaoDados.setFatorAjuste(fatorAjuste);
-        switch (rows.getCell(7).getStringCellValue()) {
+        funcionalidade.setNome(row.getCell(5).getStringCellValue());
+        funcao.setFuncionalidade(funcionalidade);
+        funcao.setName(row.getCell(6).getStringCellValue());
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+        funcao.setFatorAjuste(fatorAjuste);
+    }
+
+    private FuncaoDados setarFuncaoDadosEstimada(XSSFRow row) {
+        FuncaoDados funcaoDados = new FuncaoDados();
+        setarModuloFuncionalidadeEstimada(funcaoDados, row);
+        switch (row.getCell(7).getStringCellValue()) {
             case METODO_AIE:
                 funcaoDados.setTipo(TipoFuncaoDados.AIE);
                 break;
@@ -1514,25 +1437,15 @@ public class AnaliseService extends BaseService {
             default:
                 break;
         }
-        funcaoDados.setPf(BigDecimal.valueOf(rows.getCell(8).getNumericCellValue()));
-        funcaoDados.setGrossPF(BigDecimal.valueOf(rows.getCell(8).getNumericCellValue()));
-        funcaoDados.setSustantation(rows.getCell(9).getStringCellValue());
+        funcaoDados.setPf(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoDados.setGrossPF(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoDados.setSustantation(row.getCell(9).getStringCellValue());
         return funcaoDados;
     }
 
     private FuncaoTransacao setarFuncaoTransacaoEstimada(XSSFRow row) {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
-        Funcionalidade funcionalidade = new Funcionalidade();
-        Modulo modulo = new Modulo();
-        FatorAjuste fatorAjuste = new FatorAjuste();
-        funcaoTransacao.setId((long) row.getCell(0).getNumericCellValue());
-        modulo.setNome(row.getCell(4).getStringCellValue());
-        funcionalidade.setModulo(modulo);
-        funcionalidade.setNome(row.getCell(5).getStringCellValue());
-        funcaoTransacao.setFuncionalidade(funcionalidade);
-        funcaoTransacao.setName(row.getCell(6).getStringCellValue());
-        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
-        funcaoTransacao.setFatorAjuste(fatorAjuste);
+        setarModuloFuncionalidadeEstimada(funcaoTransacao, row);
         switch (row.getCell(7).getStringCellValue()) {
             case METODO_CE:
                 funcaoTransacao.setTipo(TipoFuncaoTransacao.CE);
@@ -1555,7 +1468,7 @@ public class AnaliseService extends BaseService {
         return funcaoTransacao;
     }
 
-    //TODO Planilha Resumo
+    // Planilha Resumo
     public void setarResumoExcelUpload(XSSFWorkbook excelFile, Analise analise) {
         XSSFSheet sheet = excelFile.getSheet(RESUMO);
         analise.setNumeroOs(sheet.getRow(3).getCell(1).getStringCellValue());
@@ -1576,15 +1489,14 @@ public class AnaliseService extends BaseService {
         }
     }
 
-    //TODO Planilha Indicativa
+    // Planilha Indicativa
     public void setarIndicativaExcelUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDadosList) {
-        XSSFSheet excelSheetIndicativa = excelFile.getSheet(INDICATIVA);
+        XSSFSheet excelSheetIndicativa = excelFile.getSheet(SHEET_INM_INDICATIVA);
         for (int i = 9; i < 107; i++) {
             XSSFRow row = excelSheetIndicativa.getRow(i);
-            if (row.getCell(0).getNumericCellValue() > 0) {
-                if (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue())) {
-                    funcaoDadosList.add(setarFuncaoDadosIndicativa(row));
-                }
+            if (row.getCell(0).getNumericCellValue() > 0 && (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue()))) {
+                funcaoDadosList.add(setarFuncaoDadosIndicativa(row));
+
             }
         }
     }
@@ -1599,6 +1511,14 @@ public class AnaliseService extends BaseService {
         funcionalidade.setNome(row.getCell(3).getStringCellValue());
         funcaoDados.setFuncionalidade(funcionalidade);
         funcaoDados.setName(row.getCell(5).getStringCellValue());
+        setarTipoFuncaoDados(row, funcaoDados);
+        funcaoDados.setPf(BigDecimal.valueOf(row.getCell(7).getNumericCellValue()));
+        funcaoDados.setGrossPF(BigDecimal.valueOf(row.getCell(7).getNumericCellValue()));
+        funcaoDados.setSustantation(row.getCell(8).getStringCellValue());
+        return funcaoDados;
+    }
+
+    private void setarTipoFuncaoDados(XSSFRow row, FuncaoDados funcaoDados) {
         switch (row.getCell(6).getStringCellValue()) {
             case METODO_AIE:
                 funcaoDados.setTipo(TipoFuncaoDados.AIE);
@@ -1612,29 +1532,21 @@ public class AnaliseService extends BaseService {
             default:
                 break;
         }
-        funcaoDados.setPf(BigDecimal.valueOf(row.getCell(7).getNumericCellValue()));
-        funcaoDados.setGrossPF(BigDecimal.valueOf(row.getCell(7).getNumericCellValue()));
-        funcaoDados.setSustantation(row.getCell(8).getStringCellValue());
-        return funcaoDados;
     }
 
-    //TODO Planilha INM
-    public void setarInmExcelUpload(XSSFWorkbook excelFile, Set<FuncaoTransacao> funcaoTransacaos, Set<FuncaoDados> funcaoDados,
-                                    boolean isDivergence) {
+    // Planilha INM
+    public void setarInmExcelUpload(XSSFWorkbook excelFile, Set<FuncaoTransacao> funcaoTransacaos, Set<FuncaoDados> funcaoDados) {
         XSSFSheet excelSheetINM = excelFile.getSheet(SHEET_INM);
-        if (excelSheetINM != null) {
-            for (int i = 10; i < 382; i++) {
-                XSSFRow row = excelSheetINM.getRow(i);
-                if (row.getCell(0).getNumericCellValue() > 0) {
-                    if (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue())) {
-                        ders = new HashSet<>();
-                        alrs = new HashSet<>();
-                        funcaoTransacaos.add(setarInm(row));
-                    } else if (tipoFuncaoTransacao().contains(row.getCell(6).getStringCellValue())) {
-                        ders = new HashSet<>();
-                        rlrs = new HashSet<>();
-                        funcaoDados.add(setarFuncaoDadosInm(row));
-                    }
+        for (int i = 10; i < 382; i++) {
+            XSSFRow row = excelSheetINM.getRow(i);
+            if (row.getCell(0).getNumericCellValue() > 0) {
+                ders = new HashSet<>();
+                if (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue())) {
+                    alrs = new HashSet<>();
+                    funcaoTransacaos.add(setarInm(row));
+                } else if (tipoFuncaoTransacao().contains(row.getCell(6).getStringCellValue())) {
+                    rlrs = new HashSet<>();
+                    funcaoDados.add(setarFuncaoDadosInm(row));
                 }
             }
         }
@@ -1642,54 +1554,14 @@ public class AnaliseService extends BaseService {
 
     private FuncaoTransacao setarInm(XSSFRow row) {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
-        Funcionalidade funcionalidade = new Funcionalidade();
-        Modulo modulo = new Modulo();
-        FatorAjuste fatorAjuste = new FatorAjuste();
-        if (row.getCell(12).getStringCellValue().equals(TipoFuncaoTransacao.INM)) {
-            funcaoTransacao.setId((long) row.getCell(0).getNumericCellValue());
-            modulo.setNome(row.getCell(5).getStringCellValue());
-            funcionalidade.setModulo(modulo);
-            funcionalidade.setNome(row.getCell(6).getStringCellValue());
-            funcaoTransacao.setFuncionalidade(funcionalidade);
-            funcaoTransacao.setName(row.getCell(7).getStringCellValue());
-            fatorAjuste.setNome(row.getCell(1).getStringCellValue());
-            funcaoTransacao.setFatorAjuste(fatorAjuste);
-            switch (row.getCell(12).getStringCellValue()) {
-                case METODO_CE:
-                    funcaoTransacao.setTipo(TipoFuncaoTransacao.INM);
-                    break;
-                default:
-                    break;
+        if (TipoFuncaoTransacao.INM.toString().equals(row.getCell(12).getStringCellValue())) {
+            setarModuloFuncionalidadeInm(funcaoTransacao, row);
+            if (METODO_CE.equals(row.getCell(12).getStringCellValue())) {
+                funcaoTransacao.setTipo(TipoFuncaoTransacao.INM);
             }
-            Der der = new Der();
-            der.setNome(row.getCell(8).getStringCellValue());
-            ders.add(der);
-            Alr alr = new Alr();
-            alr.setNome(row.getCell(10).getStringCellValue());
-            alrs.add(alr);
-            funcaoTransacao.setDers(ders);
-            funcaoTransacao.setAlrs(alrs);
-            switch (row.getCell(12).getStringCellValue()) {
-                case METODO_SEM:
-                    funcaoTransacao.setComplexidade(Complexidade.SEM);
-                    break;
-                case METODO_BAIXO:
-                    funcaoTransacao.setComplexidade(Complexidade.BAIXA);
-                    break;
-                case METODO_MEDIO:
-                    funcaoTransacao.setComplexidade(Complexidade.MEDIA);
-                    break;
-                case METODO_ALTA:
-                    funcaoTransacao.setComplexidade(Complexidade.ALTA);
-                    break;
-                default:
-                    break;
-
-            }
-            funcaoTransacao.setPf(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
-            funcaoTransacao.setGrossPF(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
+            setarDerAlrFuncaoTransacao(funcaoTransacao, row);
             funcaoTransacao.setSustantation(row.getCell(17).getStringCellValue());
-            if (statusFuncao().contains(row.getCell(21).getStringCellValue()) == true) {
+            if (statusFuncao().contains(row.getCell(21).getStringCellValue())) {
                 switch (row.getCell(21).getStringCellValue()) {
                     case DIVERGENTE:
                         funcaoTransacao.setStatusFuncao(StatusFuncao.DIVERGENTE);
@@ -1712,55 +1584,51 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoDados setarFuncaoDadosInm(XSSFRow row) {
-        FuncaoDados funcaoDado = new FuncaoDados();
-        Funcionalidade funcionalidade = new Funcionalidade();
+        FuncaoDados funcaoDados = new FuncaoDados();
+        if (TipoFuncaoTransacao.INM.toString().equals(row.getCell(12).getStringCellValue())) {
+            setarModuloFuncionalidadeInm(funcaoDados, row);
+            if (row.getCell(12).getStringCellValue().equals(METODO_CE)) {
+                funcaoDados.setTipo(TipoFuncaoDados.INM);
+            }
+            setarDerRlrFuncaoDados(funcaoDados, row);
+        }
+        return funcaoDados;
+    }
+
+    private void setarModuloFuncionalidadeInm(FuncaoAnalise funcao, XSSFRow row) {
         Modulo modulo = new Modulo();
         FatorAjuste fatorAjuste = new FatorAjuste();
-        if (TipoFuncaoTransacao.INM.toString().equals(row.getCell(12).getStringCellValue())) {
-            funcaoDado.setId((long) row.getCell(0).getNumericCellValue());
-            modulo.setNome(row.getCell(5).getStringCellValue());
-            funcionalidade.setModulo(modulo);
-            funcionalidade.setNome(row.getCell(6).getStringCellValue());
-            funcaoDado.setFuncionalidade(funcionalidade);
-            funcaoDado.setName(row.getCell(7).getStringCellValue());
-            fatorAjuste.setNome(row.getCell(1).getStringCellValue());
-            funcaoDado.setFatorAjuste(fatorAjuste);
-            switch (row.getCell(12).getStringCellValue()) {
-                case METODO_CE:
-                    funcaoDado.setTipo(TipoFuncaoDados.INM);
-                    break;
-                default:
-                    break;
-            }
-            Der der = new Der();
-            der.setNome(row.getCell(8).getStringCellValue());
-            ders.add(der);
-            Rlr rlr = new Rlr();
-            rlr.setNome(row.getCell(10).getStringCellValue());
-            rlrs.add(rlr);
-            funcaoDado.setDers(ders);
-            funcaoDado.setRlrs(rlrs);
-            switch (row.getCell(12).getStringCellValue()) {
-                case METODO_SEM:
-                    funcaoDado.setComplexidade(Complexidade.SEM);
-                    break;
-                case METODO_BAIXO:
-                    funcaoDado.setComplexidade(Complexidade.BAIXA);
-                    break;
-                case METODO_MEDIO:
-                    funcaoDado.setComplexidade(Complexidade.MEDIA);
-                    break;
-                case METODO_ALTA:
-                    funcaoDado.setComplexidade(Complexidade.ALTA);
-                    break;
-                default:
-                    break;
+        Funcionalidade funcionalidade = new Funcionalidade();
+        funcao.setId((long) row.getCell(0).getNumericCellValue());
+        modulo.setNome(row.getCell(5).getStringCellValue());
+        funcionalidade.setModulo(modulo);
+        funcionalidade.setNome(row.getCell(6).getStringCellValue());
+        funcao.setFuncionalidade(funcionalidade);
+        funcao.setName(row.getCell(7).getStringCellValue());
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+        funcao.setFatorAjuste(fatorAjuste);
+    }
 
-            }
-            funcaoDado.setPf(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
-            funcaoDado.setGrossPF(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
+    private void setarFuncaoComplexidade(FuncaoAnalise funcao, XSSFRow row) {
+        switch (row.getCell(12).getStringCellValue()) {
+            case METODO_SEM:
+                funcao.setComplexidade(Complexidade.SEM);
+                break;
+            case METODO_BAIXO:
+                funcao.setComplexidade(Complexidade.BAIXA);
+                break;
+            case METODO_MEDIO:
+                funcao.setComplexidade(Complexidade.MEDIA);
+                break;
+            case METODO_ALTA:
+                funcao.setComplexidade(Complexidade.ALTA);
+                break;
+            default:
+                break;
+
         }
-        return funcaoDado;
+        funcao.setPf(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
+        funcao.setGrossPF(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
     }
 
     public void salvarAnalise(Analise analise) {
@@ -1773,10 +1641,6 @@ public class AnaliseService extends BaseService {
 
     public Compartilhada converterCompartilhadaParaEntidade(CompartilhadaDTO compartilhadaDTO) {
         return analiseFacade.converterCompartilhadaParaEntidade(compartilhadaDTO);
-    }
-
-    public CompartilhadaDTO converterCompartilhadaParaDto(Compartilhada compartilhada) {
-        return analiseFacade.converterCompartilhadaParaDto(compartilhada);
     }
 
     public Analise converterParaEntidade(AnaliseDTO analiseDTO) {
@@ -1803,7 +1667,6 @@ public class AnaliseService extends BaseService {
     public AnaliseDivergenceDTO converterParaAnaliseDivergenciaDTO(Analise analise) {
         return analiseFacade.converterParaAnaliseDivergenciaDTO(analise);
     }
-
 
 
     private List<String> tipoFuncaoDados() {

@@ -1,10 +1,12 @@
 package br.com.basis.abaco.service.dto;
 
+import java.io.Serializable;
+
 /**
  * @author alexandre.costa
  * @since 27/02/2019
  */
-public class FuncionalidadesDTO {
+public class FuncionalidadesDTO implements Serializable {
 
     private Long id;
 

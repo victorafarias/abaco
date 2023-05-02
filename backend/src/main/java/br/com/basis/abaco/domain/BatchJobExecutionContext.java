@@ -24,8 +24,8 @@ public class BatchJobExecutionContext {
 
     @NotNull
     @Column(name = "short_context")
-    private String short_context;
+    private String shortContext;
 
     @Column(name = "serialized_context")
-    private String serialized_context;
+    private String serializedContext;
 }

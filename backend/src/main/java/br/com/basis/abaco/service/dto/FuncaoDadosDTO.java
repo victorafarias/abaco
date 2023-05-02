@@ -10,8 +10,8 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author eduardo.andrade
@@ -47,6 +47,7 @@ public class FuncaoDadosDTO implements Serializable {
     private Complexidade complexidade;
     private FuncionalidadeDTO funcionalidade;
     private FatorAjusteDTO fatorAjuste;
+    private List<UploadedFileDTO> files;
 
     private AlrDTO alr;
     private Set<DerDTO> ders = new HashSet<>();
