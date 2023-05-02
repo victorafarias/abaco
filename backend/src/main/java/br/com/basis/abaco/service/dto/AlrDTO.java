@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -14,17 +15,16 @@ import java.util.Objects;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class AlrDTO implements Comparable{
+public class AlrDTO implements Comparable<AlrDTO>, Serializable {
     private Long id;
     private String nome;
     private Integer valor;
     private Integer numeracao;
 
     @Override
-    public int compareTo(@NotNull Object o) {
-        AlrDTO alr = (AlrDTO) o;
-        if(alr.getNumeracao() != null && numeracao != null){
-            return numeracao - alr.getNumeracao();
+    public int compareTo(@NotNull AlrDTO alrDTO) {
+        if((alrDTO).getNumeracao() != null && numeracao != null){
+            return numeracao - (alrDTO).getNumeracao();
         }else{
             return 1;
         }

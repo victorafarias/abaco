@@ -28,8 +28,8 @@ public class BatchJobInstance {
     private String version;
 
     @Column(name = "job_name")
-    private String job_name;
+    private String jobName;
 
     @Column(name = "job_key")
-    private String job_key;
+    private String jobKey;
 }

@@ -30,7 +30,7 @@ public class BatchStepExecution {
 
     @NotNull
     @Column(name = "step_name")
-    private String step_name;
+    private String stepName;
 
     @NotNull
     @OneToOne
@@ -39,188 +39,69 @@ public class BatchStepExecution {
 
     @NotNull
     @Column(name = "start_time")
-    private Timestamp start_time;
+    private Timestamp startTime;
 
     @Column(name = "end_time")
-    private Timestamp end_time;
+    private Timestamp endTime;
 
     @Column(name = "status")
     private String status;
 
     @Column(name = "commit_count")
-    private Long commit_count;
+    private Long commitCount;
 
     @Column(name = "read_count")
-    private Long read_count;
+    private Long readCount;
 
     @Column(name = "filter_count")
-    private Long filter_count;
+    private Long filterCount;
 
     @Column(name = "write_count")
-    private Long write_count;
+    private Long writeCount;
 
     @Column(name = "read_skip_count")
-    private Long read_skip_count;
+    private Long readSkipCount;
 
     @Column(name = "write_skip_count")
-    private Long write_skip_count;
+    private Long writeSkipCount;
 
     @Column(name = "process_skip_count")
-    private Long process_skip_count;
+    private Long processSkipCount;
 
     @Column(name = "rollback_count")
-    private Long rollback_count;
+    private Long rollbackCount;
 
     @Column(name = "exit_code")
-    private String exit_code;
+    private String exitCode;
 
     @Column(name = "exit_message")
-    private String exit_message;
+    private String exitMessage;
 
     @Column(name = "last_updated")
-    private Timestamp last_updated;
+    private Timestamp lastUpdated;
 
-    public Long getId() {
-        return id;
+
+    public Timestamp getStartTime() {
+        return ObjectUtils.clone(startTime);
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = ObjectUtils.clone(startTime);
     }
 
-    public Long getVersion() {
-        return version;
+    public Timestamp getEndTime() {
+        return ObjectUtils.clone(endTime);
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = ObjectUtils.clone(endTime);
     }
 
-    public String getStep_name() {
-        return step_name;
+    public Timestamp getLastUpdated() {
+        return ObjectUtils.clone(lastUpdated);
     }
 
-    public void setStep_name(String step_name) {
-        this.step_name = step_name;
-    }
-
-    public BatchJobExecution getBatchJobExecution() {
-        return batchJobExecution;
-    }
-
-    public void setBatchJobExecution(BatchJobExecution batchJobExecution) {
-        this.batchJobExecution = batchJobExecution;
-    }
-
-    public Timestamp getStart_time() {
-        return ObjectUtils.clone(start_time);
-    }
-
-    public void setStart_time(Timestamp start_time) {
-        this.start_time = ObjectUtils.clone(start_time);
-    }
-
-    public Timestamp getEnd_time() {
-        return ObjectUtils.clone(end_time);
-    }
-
-    public void setEnd_time(Timestamp end_time) {
-        this.end_time = ObjectUtils.clone(end_time);
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Long getCommit_count() {
-        return commit_count;
-    }
-
-    public void setCommit_count(Long commit_count) {
-        this.commit_count = commit_count;
-    }
-
-    public Long getRead_count() {
-        return read_count;
-    }
-
-    public void setRead_count(Long read_count) {
-        this.read_count = read_count;
-    }
-
-    public Long getFilter_count() {
-        return filter_count;
-    }
-
-    public void setFilter_count(Long filter_count) {
-        this.filter_count = filter_count;
-    }
-
-    public Long getWrite_count() {
-        return write_count;
-    }
-
-    public void setWrite_count(Long write_count) {
-        this.write_count = write_count;
-    }
-
-    public Long getRead_skip_count() {
-        return read_skip_count;
-    }
-
-    public void setRead_skip_count(Long read_skip_count) {
-        this.read_skip_count = read_skip_count;
-    }
-
-    public Long getWrite_skip_count() {
-        return write_skip_count;
-    }
-
-    public void setWrite_skip_count(Long write_skip_count) {
-        this.write_skip_count = write_skip_count;
-    }
-
-    public Long getProcess_skip_count() {
-        return process_skip_count;
-    }
-
-    public void setProcess_skip_count(Long process_skip_count) {
-        this.process_skip_count = process_skip_count;
-    }
-
-    public Long getRollback_count() {
-        return rollback_count;
-    }
-
-    public void setRollback_count(Long rollback_count) {
-        this.rollback_count = rollback_count;
-    }
-
-    public String getExit_code() {
-        return exit_code;
-    }
-
-    public void setExit_code(String exit_code) {
-        this.exit_code = exit_code;
-    }
-
-    public String getExit_message() {
-        return exit_message;
-    }
-
-    public void setExit_message(String exit_message) {
-        this.exit_message = exit_message;
-    }
-
-    public Timestamp getLast_updated() {
-        return ObjectUtils.clone(last_updated);
-    }
-
-    public void setLast_updated(Timestamp last_updated) {
-        this.last_updated = ObjectUtils.clone(last_updated);
+    public void setLastUpdated(Timestamp lastUpdated) {
+        this.lastUpdated = ObjectUtils.clone(lastUpdated);
     }
 }

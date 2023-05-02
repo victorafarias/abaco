@@ -3,6 +3,7 @@ package br.com.basis.abaco.service;
 import br.com.basis.abaco.domain.Alr;
 import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.Der;
+import br.com.basis.abaco.domain.DivergenceComment;
 import br.com.basis.abaco.domain.EsforcoFase;
 import br.com.basis.abaco.domain.FatorAjuste;
 import br.com.basis.abaco.domain.FuncaoDados;
@@ -44,23 +45,23 @@ import java.util.stream.Collectors;
 @Transactional
 public class PlanilhaService {
 
-    private final static String ESTIMATIVA = "AFP - Estimativa";
-    private final static String DETALHADA = "AFP - Detalhada";
-    private final static String RESUMO = "Resumo";
-    private final static String PF_POR_FUNCIONALIDADE = "Funcionalidade";
-    private final static String SHEET_INM = "AFP - INM";
+    private static final String ESTIMATIVA = "AFP - Estimativa";
+    private static final String DETALHADA = "AFP - Detalhada";
+    private static final String RESUMO = "Resumo";
+    private static final String PF_POR_FUNCIONALIDADE = "Funcionalidade";
+    private static final String SHEET_INM = "AFP - INM";
 
-    private final static String METODO_DETALHADO = "Detalhada";
-    private final static String METODO_ESTIMATIVA = "Estimativa";
-    private final static String METODO_INDICATIVA = "Indicativa";
+    private static final String METODO_DETALHADO = "Detalhada";
+    private static final String METODO_ESTIMATIVA = "Estimativa";
+    private static final String METODO_INDICATIVA = "Indicativa";
 
-    private final static String TIPO_INM = "-------";
+    private static final String TIPO_INM = "-------";
 
-    private final static String DIVERGENTE = "Divergente";
+    private static final String DIVERGENTE = "Divergente";
 
-    private final static String BASIS_MINUSCULO = "basis";
+    private static final String BASIS_MINUSCULO = "basis";
 
-    private final static Integer QUANTIDADE_SISTEMAS_BNB = 121;
+    private static final Integer QUANTIDADE_SISTEMAS_BNB = 121;
 
     public ByteArrayOutputStream selecionarModelo(Analise analise, Long modelo) throws IOException {
         List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
@@ -93,7 +94,7 @@ public class PlanilhaService {
         XSSFFormulaEvaluator xssfFormulaEvaluator = excelFile.getCreationHelper().createFormulaEvaluator();
         xssfFormulaEvaluator.clearAllCachedResultValues();
 
-        this.setarResumoExcelPadraoBNB(excelFile, analise, xssfFormulaEvaluator);
+        this.setarResumoExcelPadraoBNB(excelFile, analise);
         this.setarFuncoesExcelPadraoBNB(excelFile, funcaoDadosList, funcaoTransacaoList, xssfFormulaEvaluator);
         this.setarFuncoesINMExcelPadraoBNB(excelFile, funcaoTransacaoList, xssfFormulaEvaluator);
 
@@ -203,7 +204,7 @@ public class PlanilhaService {
         }
     }
 
-    private void setarResumoExcelPadraoBNB(XSSFWorkbook excelFile, Analise analise, XSSFFormulaEvaluator hssfFormulaEvaluator) {
+    private void setarResumoExcelPadraoBNB(XSSFWorkbook excelFile, Analise analise) {
         XSSFSheet excelSheet = excelFile.getSheet("Contagem");
         String nomeElaborador = analise.getEquipeResponsavel().getCfpsResponsavel() != null ?
             analise.getEquipeResponsavel().getCfpsResponsavel().getFirstName() + " "+ analise.getEquipeResponsavel().getCfpsResponsavel().getLastName() : analise.getEquipeResponsavel().getPreposto();
@@ -1267,7 +1268,7 @@ public class PlanilhaService {
             row.getCell(12).setCellValue(TIPO_INM);
             row.getCell(19).setCellValue(this.getFundamentacao(funcaoPrimaria));
             row.getCell(21).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
-            row.getCell(37).setCellValue(funcaoPrimaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
+            row.getCell(37).setCellValue(funcaoPrimaria.getLstDivergenceComments().stream().map(DivergenceComment::getComment).collect(Collectors.joining(", ")));
             evaluator.evaluateFormulaCell(row.getCell(16));
             evaluator.evaluateFormulaCell(row.getCell(18));
         }else {
@@ -1358,17 +1359,17 @@ public class PlanilhaService {
             row.getCell(6).setCellValue(funcaoPrimaria.getTipo().toString());
             if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoSecundaria.getDers()));
-                String ders = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String ders = funcaoSecundaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
                 row.getCell(8).setCellValue(ders);
                 row.getCell(9).setCellValue(this.getTotalAlr(funcaoSecundaria.getAlrs()));
-                String alrs = funcaoPrimaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String alrs = funcaoPrimaria.getAlrs().stream().map(Alr::getNome).collect(Collectors.joining(", "));
                 row.getCell(10).setCellValue(alrs);
             }else {
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoPrimaria.getDers()));
-                String ders = funcaoPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String ders = funcaoPrimaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
                 row.getCell(8).setCellValue(ders);
                 row.getCell(9).setCellValue(this.getTotalAlr(funcaoPrimaria.getAlrs()));
-                String alrs = funcaoPrimaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String alrs = funcaoPrimaria.getAlrs().stream().map(Alr::getNome).collect(Collectors.joining(", "));
                 row.getCell(10).setCellValue(alrs);
             }
             row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
@@ -1454,17 +1455,17 @@ public class PlanilhaService {
             row.getCell(6).setCellValue(funcaoDadosPrimaria.getTipo().toString());
             if (funcaoDadosPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) && funcaoDadosSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)) {
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosSecundaria.getDers()));
-                String ders = funcaoDadosSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String ders = funcaoDadosSecundaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
                 row.getCell(8).setCellValue(ders);
                 row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosSecundaria.getRlrs()));
-                String rlrs = funcaoDadosSecundaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String rlrs = funcaoDadosSecundaria.getRlrs().stream().map(Rlr::getNome).collect(Collectors.joining(", "));
                 row.getCell(10).setCellValue(rlrs);
             }else {
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosPrimaria.getDers()));
-                String ders = funcaoDadosPrimaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String ders = funcaoDadosPrimaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
                 row.getCell(8).setCellValue(ders);
                 row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosPrimaria.getRlrs()));
-                String rlrs = funcaoDadosPrimaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
+                String rlrs = funcaoDadosPrimaria.getRlrs().stream().map(Rlr::getNome).collect(Collectors.joining(", "));
                 row.getCell(10).setCellValue(rlrs);
             }
             row.getCell(1).setCellValue(funcaoDadosPrimaria.getFatorAjuste().getNome());

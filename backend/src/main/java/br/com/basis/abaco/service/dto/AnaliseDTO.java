@@ -6,6 +6,7 @@ import br.com.basis.dynamicexports.pojo.ReportObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -53,4 +54,27 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private Set<FuncaoDadosDTO> funcaoDados = new HashSet<>();
     private Set<FuncaoTransacaoDTO> funcaoTransacaos = new HashSet<>();
 
+    public Timestamp getDataCriacaoOrdemServico() {
+        return ObjectUtils.clone(dataCriacaoOrdemServico);
+    }
+
+    public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
+        this.dataCriacaoOrdemServico = ObjectUtils.clone(dataCriacaoOrdemServico);
+    }
+
+    public Timestamp getDataHomologacao() {
+        return ObjectUtils.clone(dataHomologacao);
+    }
+
+    public void setDataHomologacao(Timestamp dataHomologacao) {
+        this.dataHomologacao = ObjectUtils.clone(dataHomologacao);
+    }
+
+    public Timestamp getDtEncerramento() {
+        return ObjectUtils.clone(dtEncerramento);
+    }
+
+    public void setDtEncerramento(Timestamp dtEncerramento) {
+        this.dtEncerramento = ObjectUtils.clone(dtEncerramento);
+    }
 }

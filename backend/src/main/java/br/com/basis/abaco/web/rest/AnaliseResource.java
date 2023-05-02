@@ -95,7 +95,7 @@ public class AnaliseResource {
     @PostMapping("/analises")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_CADASTRAR")
-    public ResponseEntity<AnaliseDTO> criarAnalise(@Valid @RequestBody AnaliseDTO analise) throws URISyntaxException {
+    public ResponseEntity<AnaliseDTO> criarAnalise(@Valid @RequestBody AnaliseEditDTO analise) throws URISyntaxException {
         if (analise.getId() != null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new analise cannot already have an ID")).body(null);
         } else {
@@ -107,7 +107,7 @@ public class AnaliseResource {
     @PutMapping("/analises")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EDITAR")
-    public ResponseEntity<AnaliseDTO> atualizarAnalise(@Valid @RequestBody AnaliseDTO analiseDTO) throws URISyntaxException {
+    public ResponseEntity<AnaliseDTO> atualizarAnalise(@Valid @RequestBody AnaliseEditDTO analiseDTO) throws URISyntaxException {
         if (analiseDTO.getId() == null) {
             return criarAnalise(analiseDTO);
         } else {
@@ -203,7 +203,7 @@ public class AnaliseResource {
     @PostMapping("/analises/compartilhar")
     @Timed
     @Secured("ROLE_ABACO_ANALISE_COMPARTILHAR")
-    public ResponseEntity<AbacoMensagens> preencherCompartilhar(@Valid @RequestBody Set<CompartilhadaDTO> compartilhadaList, @RequestParam(value = "ehMultiplo", required = false) Boolean ehMultiplo) throws URISyntaxException {
+    public ResponseEntity<AbacoMensagens> preencherCompartilhar(@Valid @RequestBody Set<CompartilhadaDTO> compartilhadaList, @RequestParam(value = "ehMultiplo", required = false) Boolean ehMultiplo) {
         return new ResponseEntity<>(analiseService.preencherCompartilhar(compartilhadaList, ehMultiplo), HttpStatus.OK);
     }
 
@@ -220,7 +220,7 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_COMPARTILHAR")
     public ResponseEntity<Compartilhada> visualizarApenas(@Valid @RequestBody CompartilhadaDTO compartilhadaDTO) {
-        Compartilhada result = analiseService.salvarCompartilhada(compartilhadaDTO);;
+        Compartilhada result = analiseService.salvarCompartilhada(compartilhadaDTO);
         return ResponseEntity.ok().headers(HeaderUtil.blockEntityUpdateAlert(ENTITY_NAME, compartilhadaDTO.getId().toString())).body(result);
     }
 
@@ -260,14 +260,14 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_FUNDAMENTACAO")
     public @ResponseBody
-    ResponseEntity<InputStreamResource> gerarRelatorioContagemPdf(@PathVariable Long id) throws IOException, JRException {
+    ResponseEntity<InputStreamResource> gerarRelatorioContagemPdf(@PathVariable Long id) throws IOException {
         return relatorioAnaliseRest.downloadReportContagem(analiseService.obterAnaliseSetarFuncoes(id));
     }
 
     @GetMapping(value = "/analise/exportaPdf", produces = MediaType.APPLICATION_PDF_VALUE)
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR")
-    public ResponseEntity<InputStreamResource> gerarRelatorioPdf(@RequestParam(defaultValue = "*") String query) throws RelatorioException, IOException {
+    public ResponseEntity<InputStreamResource> gerarRelatorioPdf(@RequestParam(defaultValue = "*") String query) throws RelatorioException {
         return DynamicExporter.output(analiseService.gerarRelatorioPdf(query), "relatorio" + "pdf");
     }
 
@@ -282,7 +282,7 @@ public class AnaliseResource {
     @PostMapping(value = "/analise/exportacao-arquivo", produces = MediaType.APPLICATION_PDF_VALUE)
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR")
-    public ResponseEntity<byte[]> gerarRelatorioAnaliseImprimir(@RequestBody AnaliseFilterDTO filter) throws RelatorioException {
+    public ResponseEntity<byte[]> gerarRelatorioAnaliseImprimir(@RequestBody AnaliseFilterDTO filter) {
         return new ResponseEntity<>(analiseService.gerarRelatorioAnaliseImprimir(filter).toByteArray(), HttpStatus.OK);
     }
 
@@ -368,7 +368,7 @@ public class AnaliseResource {
     }
 
     @PostMapping("/analises/importar-excel/Xlsx")
-    public ResponseEntity<Analise> carregarArquivoExcel(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws Exception {
+    public ResponseEntity<Analise> carregarArquivoExcel(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
         Analise analise = analiseService.uploadExcel(file);
         return ResponseEntity.status(HttpStatus.OK).body(analise);
     }
@@ -384,7 +384,7 @@ public class AnaliseResource {
     @PostMapping("/analises/carregarAnalise")
     public ResponseEntity<Analise> carregarAnaliseExcel(@Valid @RequestBody AnaliseDTO analiseDTO) {
         AnaliseDTO novaAnalise = analiseService.carregarAnaliseExcel(analiseDTO);
-        analiseService.carregarDadosExcel(analiseService.converterParaEntidade(novaAnalise),analiseService.converterParaEntidade(analiseDTO));
+        analiseService.carregarDadosExcel(analiseService.converterParaEntidade(novaAnalise), analiseService.converterParaEntidade(analiseDTO));
         return ResponseEntity.status(HttpStatus.OK).body(analiseService.converterParaEntidade(novaAnalise));
     }
 
@@ -463,8 +463,8 @@ public class AnaliseResource {
                                                               @RequestParam(value = "sistema", required = false) Set<Long> sistema,
                                                               @RequestParam(value = "organizacao", required = false) Set<Long> organizacao,
                                                               @RequestParam(value = "status", required = false) Set<Long> status,
-                                                              @RequestParam(value = "bloqueiaAnalise",required = false) boolean bloqueado) throws URISyntaxException {
-        Page<AnaliseDTO> dtoPage = analiseService.obterDivergencias(order, pageNumber, size, sort, identificador, sistema, organizacao,status,bloqueado);
+                                                              @RequestParam(value = "bloqueiaAnalise", required = false) boolean bloqueado) throws URISyntaxException {
+        Page<AnaliseDTO> dtoPage = analiseService.obterDivergencias(order, pageNumber, size, sort, identificador, sistema, organizacao, status, bloqueado);
         return new ResponseEntity<>(dtoPage.getContent(), PaginationUtil.generatePaginationHttpHeaders(dtoPage, API_ANALISES), HttpStatus.OK);
     }
 
@@ -490,7 +490,7 @@ public class AnaliseResource {
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
         String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analiseService.recuperarAnalise(id)), extensaoModelo));
-        return new ResponseEntity<byte[]>(analiseService.importarExcelDivergencia(id, modelo), headers, HttpStatus.OK);
+        return new ResponseEntity<>(analiseService.importarExcelDivergencia(id, modelo), headers, HttpStatus.OK);
     }
 
 }

@@ -1,5 +1,6 @@
 package br.com.basis.abaco.service.dto;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -8,8 +9,7 @@ import java.util.Set;
  * @author alexandre.costa
  * @since 27/02/2019
  */
-public class ModuloDTO {
-
+public class ModuloDTO implements Serializable {
     private Long id;
 
     private String nome;
@@ -33,10 +33,10 @@ public class ModuloDTO {
     }
 
     public Set<FuncionalidadesDTO> getFuncionalidades() {
-        return new LinkedHashSet<FuncionalidadesDTO>(funcionalidades);
+        return new LinkedHashSet<>(funcionalidades);
     }
 
     public void setFuncionalidades(Set<FuncionalidadesDTO> funcionalidades) {
-        this.funcionalidades = new LinkedHashSet<FuncionalidadesDTO>(funcionalidades);
+        this.funcionalidades = new LinkedHashSet<>(funcionalidades);
     }
 }
