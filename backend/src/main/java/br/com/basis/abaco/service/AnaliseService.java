@@ -135,8 +135,6 @@ public class AnaliseService extends BaseService {
 
     private static final String GEROU_VALIDACAO = "Gerou a validação ";
 
-    private final static String GEROU_VALIDACAO = "Gerou a validação ";
-
     public static final String ORGANIZACAO_ID = "organizacao.id";
     public static final String EQUIPE_RESPONSAVEL_ID = "equipeResponsavel.id";
     public static final String COMPARTILHADAS_EQUIPE_ID = "compartilhadas.equipeId";
@@ -580,7 +578,6 @@ public class AnaliseService extends BaseService {
                 }
             }
         }
-    }
 
         for (FuncaoDados funcao : lstFuncaoDados) {
             if (!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)) {
@@ -1110,8 +1107,6 @@ public class AnaliseService extends BaseService {
             ResponseEntity.status(HttpStatus.BAD_REQUEST);
             return formulario;
         }
-        return abacoMensagens;
-    }
 
         if (changeStatusAnalise(analise, status, user)) {
             if (Boolean.FALSE.equals(analise.getIsDivergence())) {
@@ -1234,8 +1229,6 @@ public class AnaliseService extends BaseService {
         if (Boolean.TRUE.equals(analiseEncerramentoDTO.isEncerrada() != analise.getIsEncerrada() || analise.getDtEncerramento() == null && analiseEncerramentoDTO.getDtEncerramento() != null) || analise.getDtEncerramento() != null && !analise.getDtEncerramento().equals(analiseEncerramentoDTO.getDtEncerramento())) {
             gerarHistorico = true;
         }
-        return null;
-    }
 
         if (!analiseEncerramentoDTO.isEncerrada()) {
             analise.setDtEncerramento(null);
