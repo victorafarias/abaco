@@ -1,24 +1,5 @@
 package br.com.basis.abaco.security.jwt;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
-
 import br.com.basis.abaco.domain.Permissao;
 import br.com.basis.abaco.domain.User;
 import br.com.basis.abaco.repository.PermissaoRepository;
@@ -32,6 +13,22 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class TokenProvider {
@@ -126,19 +123,19 @@ public class TokenProvider {
             return true;
 
         } catch (SignatureException e) {
-            log.info("Invalid JWT signature."); log.trace("Invalid JWT signature trace: {}", e);
+            log.info("Invalid JWT signature."); log.trace("Invalid JWT signature trace: {0}", e);
 
         } catch (MalformedJwtException e) {
-            log.info("Invalid JWT token."); log.trace("Invalid JWT token trace: {}", e);
+            log.info("Invalid JWT token."); log.trace("Invalid JWT token trace: {0}", e);
 
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token."); log.trace("Expired JWT token trace: {}", e);
+            log.info("Expired JWT token."); log.trace("Expired JWT token trace: {0}", e);
 
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT token."); log.trace("Unsupported JWT token trace: {}", e);
+            log.info("Unsupported JWT token."); log.trace("Unsupported JWT token trace: {0}", e);
 
         } catch (IllegalArgumentException e) {
-            log.info("JWT token compact of handler are invalid."); log.trace("JWT token compact of handler are invalid trace: {}", e);
+            log.info("JWT token compact of handler are invalid."); log.trace("JWT token compact of handler are invalid trace: {0}", e);
         }
         return false;
     }

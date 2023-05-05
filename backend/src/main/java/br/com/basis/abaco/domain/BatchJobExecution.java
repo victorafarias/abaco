@@ -1,8 +1,6 @@
 package br.com.basis.abaco.domain;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.ObjectUtils;
 
 import javax.persistence.Column;
@@ -12,14 +10,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @EqualsAndHashCode
-@Getter
-@Setter
 @Table(name = "batch_job_execution")
-public class BatchJobExecution {
+public class BatchJobExecution implements Serializable {
 
     @Id
     @NotNull
@@ -59,23 +56,29 @@ public class BatchJobExecution {
     @Column(name = "job_configuration_location")
     private String jobConfigurationLocation;
 
-    @Override
-    public String toString() {
-        return "BatchJobExecution{" +
-            "id=" + id +
-            ", version=" + version +
-            ", job_instance_id=" + jobInstance +
-            ", create_time=" + createTime +
-            ", start_time=" + startTime +
-            ", end_time=" + endTime +
-            ", status='" + status + '\'' +
-            ", exit_code='" + exitCode + '\'' +
-            ", exit_message='" + exitMessage + '\'' +
-            ", last_updated=" + lastUpdated +
-            ", job_configuration_location='" + jobConfigurationLocation + '\'' +
-            '}';
+    public Long getId() {
+        return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
+    public BatchJobInstance getJobInstance() {
+        return jobInstance;
+    }
+
+    public void setJobInstance(BatchJobInstance jobInstance) {
+        this.jobInstance = jobInstance;
+    }
 
     public Timestamp getCreateTime() {
         return ObjectUtils.clone(createTime);
@@ -101,6 +104,29 @@ public class BatchJobExecution {
         this.endTime = ObjectUtils.clone(endTime);
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getExitCode() {
+        return exitCode;
+    }
+
+    public void setExitCode(String exitCode) {
+        this.exitCode = exitCode;
+    }
+
+    public String getExitMessage() {
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+        this.exitMessage = exitMessage;
+    }
 
     public Timestamp getLastUpdated() {
         return ObjectUtils.clone(lastUpdated);
@@ -108,5 +134,13 @@ public class BatchJobExecution {
 
     public void setLastUpdated(Timestamp lastUpdated) {
         this.lastUpdated = ObjectUtils.clone(lastUpdated);
+    }
+
+    public String getJobConfigurationLocation() {
+        return jobConfigurationLocation;
+    }
+
+    public void setJobConfigurationLocation(String jobConfigurationLocation) {
+        this.jobConfigurationLocation = jobConfigurationLocation;
     }
 }

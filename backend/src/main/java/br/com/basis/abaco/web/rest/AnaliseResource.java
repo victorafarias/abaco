@@ -19,6 +19,7 @@ import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
+import br.com.basis.abaco.service.dto.pesquisa.AnalisePesquisaDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import br.com.basis.abaco.web.rest.util.PaginationUtil;
@@ -303,9 +304,16 @@ public class AnaliseResource {
                                                                       @RequestParam(value = "data", required = false) TipoDeDataAnalise data,
                                                                       @RequestParam(value = "dataInicio", required = false) Date dataInicio,
                                                                       @RequestParam(value = "dataFim", required = false) Date dataFim) throws URISyntaxException {
-        Page<AnaliseDTO> dtoPage = analiseService.obterTodasAnalisesEquipes(order, pageNumber, size, sort, identificador, sistema, metodo, organizacao, equipe, status, usuario, data, dataInicio, dataFim);
+        AnalisePesquisaDTO pesquisaDTO = new AnalisePesquisaDTO();
+        preencherOrganizacaoEquipeUsuarioStatusFiltro(pesquisaDTO, organizacao, equipe, status, usuario);
+        preencherIdentificadorSistemaMetodoFiltro(pesquisaDTO, identificador, sistema, metodo, null);
+        preencherSortPageNumberFiltro(pesquisaDTO, order, pageNumber, size, sort);
+        preencherDatasFiltro(pesquisaDTO, data, dataInicio, dataFim);
+        Page<AnaliseDTO> dtoPage = analiseService.obterTodasAnalisesEquipes(pesquisaDTO);
         return new ResponseEntity<>(dtoPage.getContent().stream().filter(analise -> analise.getId() != null).collect(Collectors.toList()), PaginationUtil.generatePaginationHttpHeaders(dtoPage, API_ANALISES), HttpStatus.OK);
     }
+
+
 
 
     @GetMapping("/analises/update-pf/{id}")
@@ -368,7 +376,7 @@ public class AnaliseResource {
     }
 
     @PostMapping("/analises/importar-excel/Xlsx")
-    public ResponseEntity<Analise> carregarArquivoExcel(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
+    public ResponseEntity<Analise> carregarArquivoExcel(@RequestParam("file") MultipartFile file) throws IOException {
         Analise analise = analiseService.uploadExcel(file);
         return ResponseEntity.status(HttpStatus.OK).body(analise);
     }
@@ -464,7 +472,11 @@ public class AnaliseResource {
                                                               @RequestParam(value = "organizacao", required = false) Set<Long> organizacao,
                                                               @RequestParam(value = "status", required = false) Set<Long> status,
                                                               @RequestParam(value = "bloqueiaAnalise", required = false) boolean bloqueado) throws URISyntaxException {
-        Page<AnaliseDTO> dtoPage = analiseService.obterDivergencias(order, pageNumber, size, sort, identificador, sistema, organizacao, status, bloqueado);
+        AnalisePesquisaDTO pesquisaDTO = new AnalisePesquisaDTO();
+        preencherOrganizacaoEquipeUsuarioStatusFiltro(pesquisaDTO, organizacao, null, status, null);
+        preencherIdentificadorSistemaMetodoFiltro(pesquisaDTO, identificador, sistema, null, bloqueado);
+        preencherSortPageNumberFiltro(pesquisaDTO, order, pageNumber, size, sort);
+        Page<AnaliseDTO> dtoPage = analiseService.obterDivergencias(pesquisaDTO);
         return new ResponseEntity<>(dtoPage.getContent(), PaginationUtil.generatePaginationHttpHeaders(dtoPage, API_ANALISES), HttpStatus.OK);
     }
 
@@ -491,6 +503,33 @@ public class AnaliseResource {
         String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analiseService.recuperarAnalise(id)), extensaoModelo));
         return new ResponseEntity<>(analiseService.importarExcelDivergencia(id, modelo), headers, HttpStatus.OK);
+    }
+
+    private void preencherOrganizacaoEquipeUsuarioStatusFiltro(AnalisePesquisaDTO pesquisaDTO,Set<Long> organizacao, Long equipe, Set<Long> status, Set<Long> usuario) {
+        pesquisaDTO.setOrganizacao(organizacao);
+        pesquisaDTO.setEquipe(equipe);
+        pesquisaDTO.setUsuario(usuario);
+        pesquisaDTO.setStatus(status);
+    }
+
+    private void preencherIdentificadorSistemaMetodoFiltro(AnalisePesquisaDTO pesquisaDTO, String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Boolean bloqueado) {
+        pesquisaDTO.setIdentificador(identificador);
+        pesquisaDTO.setSistema(sistema);
+        pesquisaDTO.setMetodo(metodo);
+        pesquisaDTO.setBloqueado(bloqueado);
+    }
+
+    private void preencherSortPageNumberFiltro(AnalisePesquisaDTO pesquisaDTO, String order, int pageNumber, int size, String sort) {
+        pesquisaDTO.setOrder(order);
+        pesquisaDTO.setPageNumber(pageNumber);
+        pesquisaDTO.setSize(size);
+        pesquisaDTO.setSort(sort);
+    }
+
+    private void preencherDatasFiltro(AnalisePesquisaDTO pesquisaDTO, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
+        pesquisaDTO.setData(data);
+        pesquisaDTO.setDataInicio(dataInicio);
+        pesquisaDTO.setDataFim(dataFim);
     }
 
 }

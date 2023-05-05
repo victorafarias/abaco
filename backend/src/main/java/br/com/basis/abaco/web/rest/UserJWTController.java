@@ -43,9 +43,9 @@ public class UserJWTController {
 
   private final AuthenticationManager authenticationManager;
 
-  private UserService userService;
+  private final UserService userService;
 
-  private CookieUtil cookieUtil;
+  private final CookieUtil cookieUtil;
 
   public UserJWTController(TokenProvider tokenProvider, AuthenticationManager authenticationManager,
       UserService userService, CookieUtil cookieUtil) {
@@ -74,7 +74,7 @@ public class UserJWTController {
 
       return ResponseEntity.ok(new JWTToken(jwt));
     } catch (AuthenticationException ae) {
-      log.trace("Authentication exception trace: {}", ae);
+      log.trace("Authentication exception trace: ", ae);
       return new ResponseEntity<>(Collections.singletonMap("AuthenticationException", ae.getLocalizedMessage()),
           HttpStatus.UNAUTHORIZED);
     }

@@ -1,15 +1,13 @@
 package br.com.basis.abaco.service.dto;
 
 import br.com.basis.abaco.domain.BatchJobExecution;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-@Getter
-@Setter
+@NoArgsConstructor
 public class BatchJobExecutionDTO implements Serializable {
 
     private Long id;
@@ -36,6 +34,62 @@ public class BatchJobExecutionDTO implements Serializable {
         this.exitMessage = batchJobExecution.getExitMessage();
         this.lastUpdated = batchJobExecution.getLastUpdated();
         this.jobConfigurationLocation = batchJobExecution.getJobConfigurationLocation();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
+    public Long getJobInstanceId() {
+        return jobInstanceId;
+    }
+
+    public void setJobInstanceId(Long jobInstanceId) {
+        this.jobInstanceId = jobInstanceId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getExitCode() {
+        return exitCode;
+    }
+
+    public void setExitCode(String exitCode) {
+        this.exitCode = exitCode;
+    }
+
+    public String getExitMessage() {
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+        this.exitMessage = exitMessage;
+    }
+
+    public String getJobConfigurationLocation() {
+        return jobConfigurationLocation;
+    }
+
+    public void setJobConfigurationLocation(String jobConfigurationLocation) {
+        this.jobConfigurationLocation = jobConfigurationLocation;
     }
 
     public Timestamp getCreateTime() {

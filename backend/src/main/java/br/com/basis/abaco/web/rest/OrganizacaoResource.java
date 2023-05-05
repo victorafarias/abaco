@@ -57,12 +57,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
@@ -295,23 +294,18 @@ public class OrganizacaoResource {
         for (int i = 0; i<usuarios.size(); i++){
             User user = usuarios.get(i);
             if(user.getOrganizacoes().contains(organizacao)){
-                List<Organizacao> organizacoes = new ArrayList<>();
-                organizacoes.addAll(user.getOrganizacoes());
+                List<Organizacao> organizacoes = new ArrayList<>(user.getOrganizacoes());
                 organizacoes.remove(organizacao);
-                user.setOrganizacoes(organizacoes.stream().collect(Collectors.toSet()));
+                user.setOrganizacoes(new HashSet<>(organizacoes));
             }
             user.getPerfilOrganizacoes().forEach(perfilOrganizacao -> {
                 if(perfilOrganizacao.getOrganizacoes().contains(organizacao)){
-                    List<Organizacao> organizacoes = new ArrayList<>();
-                    organizacoes.addAll(perfilOrganizacao.getOrganizacoes());
+                    List<Organizacao> organizacoes = new ArrayList<>(perfilOrganizacao.getOrganizacoes());
                     organizacoes.remove(organizacao);
                     perfilOrganizacao.setOrganizacoes(organizacoes);
                 }
             });
 
-            user.getPerfilOrganizacoes().stream().filter(perfilOrganizacao -> {
-                return perfilOrganizacao.getOrganizacoes().size() == 0;
-            });
             userService.prepareUserToBeSaved(user);
         }
 

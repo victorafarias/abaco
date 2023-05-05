@@ -8,8 +8,6 @@ import br.com.basis.abaco.domain.Status;
 import br.com.basis.abaco.domain.User;
 import br.com.basis.abaco.domain.VwAnaliseDivergenteSomaPf;
 import br.com.basis.abaco.domain.VwAnaliseSomaPf;
-import br.com.basis.abaco.domain.enumeration.MetodoContagem;
-import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.search.AnaliseSearchRepository;
 import br.com.basis.abaco.service.ConsultasService;
@@ -23,6 +21,7 @@ import br.com.basis.abaco.service.dto.AnaliseEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
 import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
+import br.com.basis.abaco.service.dto.pesquisa.AnalisePesquisaDTO;
 import br.com.basis.dynamicexports.pojo.PropriedadesRelatorio;
 import br.com.basis.dynamicexports.pojo.ReportObject;
 import net.sf.dynamicreports.report.exception.DRException;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -152,8 +150,8 @@ public class AnaliseFacade {
         return consultasService.obterAnaliseDivergenteSomaPfPorId(idAnalise);
     }
 
-    public BoolQueryBuilder obterBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
-        return relatorioService.getBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, idsStatus, data, dataInicio, dataFim);
+    public BoolQueryBuilder obterBoolQueryBuilder(AnalisePesquisaDTO pesquisaDTO) {
+        return relatorioService.getBoolQueryBuilder(pesquisaDTO);
     }
 
     public BoolQueryBuilder obterBoolQueryBuilderDivergencia(String identificador, Set<Long> sistema, Set<Long> organizacao,Set<Long> status,Boolean bloqueado) {

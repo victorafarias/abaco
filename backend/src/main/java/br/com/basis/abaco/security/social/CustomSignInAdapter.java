@@ -50,7 +50,7 @@ public class CustomSignInAdapter implements SignInAdapter {
             servletWebRequest.getResponse().addCookie(getSocialAuthenticationCookie(jwt));
         } catch (AuthenticationException ae) {
             log.error("Social authentication error");
-            log.trace("Authentication exception trace: {}", ae);
+            log.trace("Authentication exception trace: {0}", ae);
         }
         return jHipsterProperties.getSocial().getRedirectAfterSignIn();
     }

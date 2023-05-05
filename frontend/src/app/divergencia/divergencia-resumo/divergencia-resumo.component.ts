@@ -17,7 +17,6 @@ import {User, UserService} from '../../user';
 import {MessageUtil} from '../../util/message.util';
 import {AnaliseShareEquipe} from '../../analise/analise-share-equipe.model';
 import {Analise} from '../../analise/analise.model';
-import {AnaliseService} from '../../analise/analise.service';
 import {Resumo} from './resumo.model';
 import {BlockUiService} from '@nuvem/angular-base';
 import {DivergenciaService} from '../divergencia.service';
@@ -330,7 +329,7 @@ export class DivergenciaResumoComponent implements OnInit {
 	}
 
 	bloquearValidacao() {
-		if (this.analise.status.nome == 'Aprovada') {
+		if (this.analise.status.nome == 'Aprovada' || this.statusNovo.nome == 'Aprovada') {
 			this.divergenciaService.block(this.analise.toJSONState()).subscribe(() => {
 				this.mensagemAnaliseBloqueada(this.analise.bloqueiaAnalise, this.analise.identificadorAnalise)
 				this.popUpConfirmarBloquearDesbloquear = false;

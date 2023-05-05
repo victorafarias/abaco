@@ -21,7 +21,6 @@ import br.com.basis.abaco.domain.VwAnaliseSomaPf;
 import br.com.basis.abaco.domain.enumeration.Complexidade;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
-import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import br.com.basis.abaco.repository.CompartilhadaRepository;
@@ -39,6 +38,7 @@ import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
 import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
+import br.com.basis.abaco.service.dto.pesquisa.AnalisePesquisaDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.service.facades.AnaliseFacade;
 import br.com.basis.abaco.service.relatorio.RelatorioAnaliseColunas;
@@ -85,7 +85,6 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -784,7 +783,7 @@ public class AnaliseService extends BaseService {
     public void saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas, AbacoMensagens
         abacoMensagens) {
         if (lstCompartilhadas != null && !lstCompartilhadas.isEmpty()) {
-            long idAnalise = lstCompartilhadas.stream().findFirst().get().getAnaliseId();
+            long idAnalise = lstCompartilhadas.stream().findFirst().orElse(new Compartilhada()).getAnaliseId();
             Analise analise = analiseFacade.obterAnalisePorIdLimpo(idAnalise);
             compartilharAnalise(analise, lstCompartilhadas, abacoMensagens);
         }
@@ -1039,31 +1038,18 @@ public class AnaliseService extends BaseService {
         return gerarRelatorioDivergencia(tipoRelatorio, filter);
     }
 
-    public Page<AnaliseDTO> obterTodasAnalisesEquipes(String order,
-                                                      int pageNumber,
-                                                      int size,
-                                                      String sort,
-                                                      String identificador,
-                                                      Set<Long> sistema,
-                                                      Set<MetodoContagem> metodo,
-                                                      Set<Long> organizacao,
-                                                      Long equipe,
-                                                      Set<Long> status,
-                                                      Set<Long> usuario,
-                                                      TipoDeDataAnalise data,
-                                                      Date dataInicio,
-                                                      Date dataFim) {
+    public Page<AnaliseDTO> obterTodasAnalisesEquipes(AnalisePesquisaDTO pesquisaDTO) {
         log.debug("DEBUG Consulta Analises - Inicio metodo");
         SortOrder sortOrderQb;
-        if (order.equals("asc")) {
+        if (pesquisaDTO.getOrder().equals("asc")) {
             sortOrderQb = SortOrder.ASC;
         } else {
             sortOrderQb = SortOrder.DESC;
         }
-        Sort.Direction sortOrder = PageUtils.getSortDirection(order);
-        Pageable pageable = new PageRequest(pageNumber, size, sortOrder, sort);
-        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(sortOrderQb);
-        BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilder(identificador, sistema, metodo, organizacao, equipe, usuario, status, data, dataInicio, dataFim);
+        Sort.Direction sortOrder = PageUtils.getSortDirection(pesquisaDTO.getOrder());
+        Pageable pageable = new PageRequest(pesquisaDTO.getPageNumber(), pesquisaDTO.getSize(), sortOrder, pesquisaDTO.getSort());
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(pesquisaDTO.getSort()).order(sortOrderQb);
+        BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilder(pesquisaDTO);
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(analiseFacade.obterPaginacaoMaximaExportacao()).withSort(sortBuilder).build();
         Page<Analise> page = analiseFacade.obterPaginaAnalise(searchQuery);
         log.debug("DEBUG Consulta Analises -  Consulta realizada");
@@ -1171,13 +1157,12 @@ public class AnaliseService extends BaseService {
         return converterParaAnaliseEditDTO(analise);
     }
 
-    public Page<AnaliseDTO> obterDivergencias(String order, int pageNumber, int size, String sort, String
-        identificador, Set<Long> sistema, Set<Long> organizacao, Set<Long> status, Boolean bloqueado) {
+    public Page<AnaliseDTO> obterDivergencias(AnalisePesquisaDTO pesquisaDTO) {
         log.debug("DEBUG Consulta Validação -  Inicio método");
-        Sort.Direction sortOrder = PageUtils.getSortDirection(order);
-        Pageable pageable = new PageRequest(pageNumber, size, sortOrder, sort);
-        FieldSortBuilder sortBuilder = new FieldSortBuilder(sort).order(SortOrder.DESC);
-        BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilderDivergencia(identificador, sistema, organizacao, status, bloqueado);
+        Sort.Direction sortOrder = PageUtils.getSortDirection(pesquisaDTO.getOrder());
+        Pageable pageable = new PageRequest(pesquisaDTO.getPageNumber(), pesquisaDTO.getSize(), sortOrder, pesquisaDTO.getSort());
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(pesquisaDTO.getSort()).order(SortOrder.DESC);
+        BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilderDivergencia(pesquisaDTO.getIdentificador(), pesquisaDTO.getSistema(), pesquisaDTO.getOrganizacao(), pesquisaDTO.getStatus(), pesquisaDTO.getBloqueado());
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(analiseFacade.obterPaginacaoMaximaExportacao()).withSort(sortBuilder).build();
         Page<Analise> page = analiseFacade.obterPaginaAnalise(searchQuery);
         log.debug("DEBUG Consulta Validação -  Consulta realizada");
@@ -1351,22 +1336,7 @@ public class AnaliseService extends BaseService {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         funcaoTransacao.setId((long) row.getCell(0).getNumericCellValue());
         setarModuloFuncionalidade(funcaoTransacao, row);
-        switch (row.getCell(6).getStringCellValue()) {
-            case METODO_CE:
-                funcaoTransacao.setTipo(TipoFuncaoTransacao.CE);
-                break;
-            case METODO_EE:
-                funcaoTransacao.setTipo(TipoFuncaoTransacao.EE);
-                break;
-            case METODO_SE:
-                funcaoTransacao.setTipo(TipoFuncaoTransacao.SE);
-                break;
-            case METODO_INM:
-                funcaoTransacao.setTipo(TipoFuncaoTransacao.INM);
-                break;
-            default:
-                break;
-        }
+        setarTipoFuncaoTransacao(funcaoTransacao, row.getCell(6).getStringCellValue());
         setarDerAlrFuncaoTransacao(funcaoTransacao, row);
         setarSustentacaoStatus(funcaoTransacao, row);
         return funcaoTransacao;
@@ -1439,7 +1409,15 @@ public class AnaliseService extends BaseService {
     private FuncaoTransacao setarFuncaoTransacaoEstimada(XSSFRow row) {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         setarModuloFuncionalidadeEstimada(funcaoTransacao, row);
-        switch (row.getCell(7).getStringCellValue()) {
+        setarTipoFuncaoTransacao(funcaoTransacao, row.getCell(7).getStringCellValue());
+        funcaoTransacao.setPf(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoTransacao.setGrossPF(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoTransacao.setSustantation(row.getCell(9).getStringCellValue());
+        return funcaoTransacao;
+    }
+
+    private void setarTipoFuncaoTransacao(FuncaoTransacao funcaoTransacao,String tipo) {
+        switch (tipo) {
             case METODO_CE:
                 funcaoTransacao.setTipo(TipoFuncaoTransacao.CE);
                 break;
@@ -1455,10 +1433,6 @@ public class AnaliseService extends BaseService {
             default:
                 break;
         }
-        funcaoTransacao.setPf(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
-        funcaoTransacao.setGrossPF(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
-        funcaoTransacao.setSustantation(row.getCell(9).getStringCellValue());
-        return funcaoTransacao;
     }
 
     // Planilha Resumo

@@ -10,13 +10,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode
 @Table(name = "batch_job_instance")
-public class BatchJobInstance {
+public class BatchJobInstance implements Serializable {
 
     @Id
     @NotNull

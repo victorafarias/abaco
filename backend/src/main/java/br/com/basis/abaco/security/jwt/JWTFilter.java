@@ -51,7 +51,7 @@ public class JWTFilter extends GenericFilterBean {
         } catch (ExpiredJwtException eje) {
             log.info("Security exception for user {} - {}", eje.getClaims().getSubject(), eje.getMessage());
 
-            log.trace("Security exception trace: {}", eje);
+            log.trace("Security exception trace: {0}", eje);
             ((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
     }

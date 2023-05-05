@@ -1,8 +1,6 @@
 package br.com.basis.abaco.domain;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.ObjectUtils;
 
 import javax.persistence.Column;
@@ -10,14 +8,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
-@Getter
-@Setter
-@Table(name = "batch_job_execution_params")
 @EqualsAndHashCode
-public class BatchJobExecutionParams {
+@Table(name = "batch_job_execution_params")
+public class BatchJobExecutionParams implements Serializable {
 
     @Id
     @NotNull
@@ -48,11 +45,67 @@ public class BatchJobExecutionParams {
     @Column(name = "identifying")
     private String identifying;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTypeCd() {
+        return typeCd;
+    }
+
+    public void setTypeCd(String typeCd) {
+        this.typeCd = typeCd;
+    }
+
+    public String getKeyName() {
+        return keyName;
+    }
+
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
+
+    public String getStringVal() {
+        return stringVal;
+    }
+
+    public void setStringVal(String stringVal) {
+        this.stringVal = stringVal;
+    }
+
     public Timestamp getDateVal() {
         return ObjectUtils.clone(dateVal);
     }
 
     public void setDateVal(Timestamp dateVal) {
         this.dateVal = ObjectUtils.clone(dateVal);
+    }
+
+    public Long getLongVal() {
+        return longVal;
+    }
+
+    public void setLongVal(Long longVal) {
+        this.longVal = longVal;
+    }
+
+    public Double getDoubleVal() {
+        return doubleVal;
+    }
+
+    public void setDoubleVal(Double doubleVal) {
+        this.doubleVal = doubleVal;
+    }
+
+    public String getIdentifying() {
+        return identifying;
+    }
+
+    public void setIdentifying(String identifying) {
+        this.identifying = identifying;
     }
 }
