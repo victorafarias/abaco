@@ -40,12 +40,36 @@ public class BatchJobExecutionDTO implements Serializable {
         return id;
     }
 
+    public Timestamp getCreateTime() {
+        return ObjectUtils.clone(createTime);
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = ObjectUtils.clone(createTime);
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
 
+    public String getExitMessage() {
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+        this.exitMessage = exitMessage;
+    }
+
     public Long getVersion() {
         return version;
+    }
+
+    public Timestamp getEndTime() {
+        return ObjectUtils.clone(endTime);
+    }
+
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = ObjectUtils.clone(endTime);
     }
 
     public void setVersion(Long version) {
@@ -68,36 +92,12 @@ public class BatchJobExecutionDTO implements Serializable {
         this.status = status;
     }
 
-    public String getExitCode() {
-        return exitCode;
-    }
-
-    public void setExitCode(String exitCode) {
-        this.exitCode = exitCode;
-    }
-
-    public String getExitMessage() {
-        return exitMessage;
-    }
-
-    public void setExitMessage(String exitMessage) {
-        this.exitMessage = exitMessage;
-    }
-
     public String getJobConfigurationLocation() {
         return jobConfigurationLocation;
     }
 
     public void setJobConfigurationLocation(String jobConfigurationLocation) {
         this.jobConfigurationLocation = jobConfigurationLocation;
-    }
-
-    public Timestamp getCreateTime() {
-        return ObjectUtils.clone(createTime);
-    }
-
-    public void setCreateTime(Timestamp createTime) {
-        this.createTime = ObjectUtils.clone(createTime);
     }
 
     public Timestamp getStartTime() {
@@ -108,19 +108,19 @@ public class BatchJobExecutionDTO implements Serializable {
         this.startTime = ObjectUtils.clone(startTime);
     }
 
-    public Timestamp getEndTime() {
-        return ObjectUtils.clone(endTime);
-    }
-
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = ObjectUtils.clone(endTime);
-    }
-
     public Timestamp getLastUpdated() {
         return ObjectUtils.clone(lastUpdated);
     }
 
     public void setLastUpdated(Timestamp lastUpdated) {
         this.lastUpdated = ObjectUtils.clone(lastUpdated);
+    }
+
+    public String getExitCode() {
+        return exitCode;
+    }
+
+    public void setExitCode(String exitCode) {
+        this.exitCode = exitCode;
     }
 }

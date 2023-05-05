@@ -56,6 +56,14 @@ public class BatchJobExecution implements Serializable {
     @Column(name = "job_configuration_location")
     private String jobConfigurationLocation;
 
+    public Timestamp getEndTime() {
+        return ObjectUtils.clone(endTime);
+    }
+
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = ObjectUtils.clone(endTime);
+    }
+
     public Long getId() {
         return id;
     }
@@ -76,6 +84,14 @@ public class BatchJobExecution implements Serializable {
         return jobInstance;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public void setJobInstance(BatchJobInstance jobInstance) {
         this.jobInstance = jobInstance;
     }
@@ -88,44 +104,12 @@ public class BatchJobExecution implements Serializable {
         this.createTime = ObjectUtils.clone(createTime);
     }
 
-    public Timestamp getStartTime() {
-        return ObjectUtils.clone(startTime);
-    }
-
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = ObjectUtils.clone(startTime);
-    }
-
-    public Timestamp getEndTime() {
-        return ObjectUtils.clone(endTime);
-    }
-
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = ObjectUtils.clone(endTime);
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getExitCode() {
         return exitCode;
     }
 
     public void setExitCode(String exitCode) {
         this.exitCode = exitCode;
-    }
-
-    public String getExitMessage() {
-        return exitMessage;
-    }
-
-    public void setExitMessage(String exitMessage) {
-        this.exitMessage = exitMessage;
     }
 
     public Timestamp getLastUpdated() {
@@ -136,11 +120,27 @@ public class BatchJobExecution implements Serializable {
         this.lastUpdated = ObjectUtils.clone(lastUpdated);
     }
 
+    public Timestamp getStartTime() {
+        return ObjectUtils.clone(startTime);
+    }
+
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = ObjectUtils.clone(startTime);
+    }
+
     public String getJobConfigurationLocation() {
         return jobConfigurationLocation;
     }
 
     public void setJobConfigurationLocation(String jobConfigurationLocation) {
         this.jobConfigurationLocation = jobConfigurationLocation;
+    }
+
+    public String getExitMessage() {
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+        this.exitMessage = exitMessage;
     }
 }

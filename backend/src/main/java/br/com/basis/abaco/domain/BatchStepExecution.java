@@ -95,6 +95,14 @@ public class BatchStepExecution implements Serializable {
         this.version = version;
     }
 
+    public Timestamp getStartTime() {
+        return ObjectUtils.clone(startTime);
+    }
+
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = ObjectUtils.clone(startTime);
+    }
+
     public String getStepName() {
         return stepName;
     }
@@ -109,30 +117,6 @@ public class BatchStepExecution implements Serializable {
 
     public void setBatchJobExecution(BatchJobExecution batchJobExecution) {
         this.batchJobExecution = batchJobExecution;
-    }
-
-    public Timestamp getStartTime() {
-        return ObjectUtils.clone(startTime);
-    }
-
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = ObjectUtils.clone(startTime);
-    }
-
-    public Timestamp getEndTime() {
-        return ObjectUtils.clone(endTime);
-    }
-
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = ObjectUtils.clone(endTime);
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Long getCommitCount() {
@@ -161,6 +145,14 @@ public class BatchStepExecution implements Serializable {
 
     public Long getWriteCount() {
         return writeCount;
+    }
+
+    public Timestamp getEndTime() {
+        return ObjectUtils.clone(endTime);
+    }
+
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = ObjectUtils.clone(endTime);
     }
 
     public void setWriteCount(Long writeCount) {
@@ -213,6 +205,14 @@ public class BatchStepExecution implements Serializable {
 
     public void setExitMessage(String exitMessage) {
         this.exitMessage = exitMessage;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Timestamp getLastUpdated() {
