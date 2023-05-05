@@ -7,6 +7,7 @@ import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
 import br.com.basis.abaco.security.SecurityUtils;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
+import br.com.basis.abaco.service.dto.pesquisa.AnalisePesquisaDTO;
 import br.com.basis.abaco.utils.StringUtils;
 import br.com.basis.dynamicexports.pojo.PropriedadesRelatorio;
 import br.com.basis.dynamicexports.pojo.ReportObject;
@@ -58,7 +59,19 @@ public class RelatorioService {
         Set<Long> status = new HashSet<>();
         preencheFiltro(sistema, metodo, organizacao, usuario, status, filtro);
         Pageable pageable = dynamicExportsService.obterPageableMaximoExportacao();
-        BoolQueryBuilder qb = getBoolQueryBuilder(filtro.getIdentificadorAnalise(), sistema, metodo, organizacao, filtro.getEquipe() == null ? null : filtro.getEquipe().getId(), usuario, status, filtro.getData(), filtro.getDataInicio(), filtro.getDataFim());
+        AnalisePesquisaDTO pesquisaDTO = new AnalisePesquisaDTO();
+        pesquisaDTO.setIdentificador(filtro.getIdentificadorAnalise());
+        pesquisaDTO.setSistema(sistema);
+        pesquisaDTO.setMetodo(metodo);
+        pesquisaDTO.setOrganizacao(organizacao);
+        pesquisaDTO.setEquipe(filtro.getEquipe() == null ? null : filtro.getEquipe().getId());
+        pesquisaDTO.setUsuario(usuario);
+        pesquisaDTO.setStatus(status);
+        pesquisaDTO.setData(filtro.getData());
+        pesquisaDTO.setDataInicio(filtro.getDataInicio());
+        pesquisaDTO.setDataFim(filtro.getDataFim());
+
+        BoolQueryBuilder qb = getBoolQueryBuilder(pesquisaDTO);
         return new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
     }
 
@@ -109,43 +122,43 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
         qb.must(boolQueryBuilder);
     }
 
-    public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
+    public BoolQueryBuilder getBoolQueryBuilder(AnalisePesquisaDTO pesquisaDTO) {
         User user = userService.obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).orElse(new User());
         Set<Long> equipesIds = getIdEquipes(user);
-        Set<Long> organicoesIds = (organizacao != null && !organizacao.isEmpty()) ? organizacao : getIdOrganizacoes(user);
+        Set<Long> organicoesIds = (pesquisaDTO.getOrganizacao() != null && !pesquisaDTO.getOrganizacao().isEmpty()) ? pesquisaDTO.getOrganizacao() : getIdOrganizacoes(user);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
-        bindFilterSearch(identificador, sistema, metodo, usuario, equipe, equipesIds, organicoesIds, idsStatus, qb, data, dataInicio, dataFim);
+        bindFilterSearch(equipesIds, organicoesIds, qb, pesquisaDTO);
         return qb;
     }
 
-    public void bindFilterSearch(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> usuario, Long equipesIds, Set<Long> equipesUsersId, Set<Long> organizacoes, Set<Long> status, BoolQueryBuilder qb, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
-        if (!StringUtils.isEmptyString((identificador))) {
-            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery().must(nestedQuery("analisesComparadas", boolQuery().must(QueryBuilders.matchPhrasePrefixQuery("analisesComparadas.identificadorAnalise", identificador))));
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(queryBuilderIdentificador).should(QueryBuilders.matchPhrasePrefixQuery("numeroOs", identificador)).should(QueryBuilders.matchPhrasePrefixQuery("identificadorAnalise", identificador));
+    public void bindFilterSearch(Set<Long> equipesUsersId, Set<Long> organizacoes, BoolQueryBuilder qb, AnalisePesquisaDTO pesquisaDTO) {
+        if (!StringUtils.isEmptyString((pesquisaDTO.getIdentificador()))) {
+            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery().must(nestedQuery("analisesComparadas", boolQuery().must(QueryBuilders.matchPhrasePrefixQuery("analisesComparadas.identificadorAnalise", pesquisaDTO.getIdentificador()))));
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(queryBuilderIdentificador).should(QueryBuilders.matchPhrasePrefixQuery("numeroOs", pesquisaDTO.getIdentificador())).should(QueryBuilders.matchPhrasePrefixQuery("identificadorAnalise", pesquisaDTO.getIdentificador()));
             qb.must(boolQueryBuilder);
         }
-        bindFilterEquipeAndOrganizacao(equipesIds, equipesUsersId, organizacoes, qb);
+        bindFilterEquipeAndOrganizacao(pesquisaDTO.getEquipe(), equipesUsersId, organizacoes, qb);
         BoolQueryBuilder boolQueryBuilderDivergence;
         boolQueryBuilderDivergence = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery("isDivergence", true));
         qb.must(boolQueryBuilderDivergence);
-        if (sistema != null && !sistema.isEmpty()) {
-            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("sistema.id", sistema));
+        if (pesquisaDTO.getSistema() != null && !pesquisaDTO.getSistema().isEmpty()) {
+            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("sistema.id", pesquisaDTO.getSistema()));
             qb.must(boolQueryBuilderSistema);
         }
-        if (metodo != null && !metodo.isEmpty()) {
-            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("metodoContagem", metodo));
+        if (pesquisaDTO.getMetodo() != null && !pesquisaDTO.getMetodo().isEmpty()) {
+            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("metodoContagem", pesquisaDTO.getMetodo()));
             qb.must(boolQueryBuilderSistema);
         }
-        if (status != null && !status.isEmpty()) {
-            BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("status.id", status));
+        if (pesquisaDTO.getStatus() != null && !pesquisaDTO.getStatus().isEmpty()) {
+            BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("status.id", pesquisaDTO.getStatus()));
             qb.must(boolQueryBuilderStatus);
         }
 
-        if (usuario != null && !usuario.isEmpty()) {
-            BoolQueryBuilder queryBuilderUsers = QueryBuilders.boolQuery().must(nestedQuery("users", boolQuery().must(QueryBuilders.termsQuery("users.id", usuario))));
+        if (pesquisaDTO.getUsuario() != null && !pesquisaDTO.getUsuario().isEmpty()) {
+            BoolQueryBuilder queryBuilderUsers = QueryBuilders.boolQuery().must(nestedQuery("users", boolQuery().must(QueryBuilders.termsQuery("users.id", pesquisaDTO.getUsuario()))));
             qb.must(queryBuilderUsers);
         }
-        bindFilterDataAnalise(qb, data, dataInicio, dataFim);
+        bindFilterDataAnalise(qb, pesquisaDTO.getData(), pesquisaDTO.getDataInicio(), pesquisaDTO.getDataFim());
     }
 
     private void bindFilterEquipeAndOrganizacao(Long equipesIds, Set<Long> equipesUsersId, Set<Long> organizacoes, BoolQueryBuilder qb) {

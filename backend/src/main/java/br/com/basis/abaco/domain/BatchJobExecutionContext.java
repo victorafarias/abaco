@@ -9,13 +9,14 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode
 @Table(name = "batch_job_execution_context")
-public class BatchJobExecutionContext {
+public class BatchJobExecutionContext implements Serializable {
 
     @Id
     @NotNull
