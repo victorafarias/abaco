@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
@@ -69,27 +70,27 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public Set<Long> getSistema() {
-        return sistema;
+        return Collections.unmodifiableSet(sistema);
     }
 
     public void setSistema(Set<Long> sistema) {
-        this.sistema = sistema;
+        this.sistema = Collections.unmodifiableSet(sistema);
     }
 
     public Set<MetodoContagem> getMetodo() {
-        return metodo;
+        return Collections.unmodifiableSet(metodo);
     }
 
     public void setMetodo(Set<MetodoContagem> metodo) {
-        this.metodo = metodo;
+        this.metodo = Collections.unmodifiableSet(metodo);
     }
 
     public Set<Long> getOrganizacao() {
-        return organizacao;
+        return Collections.unmodifiableSet(organizacao);
     }
 
     public void setOrganizacao(Set<Long> organizacao) {
-        this.organizacao = organizacao;
+        this.organizacao = Collections.unmodifiableSet(organizacao);
     }
 
     public Long getEquipe() {
@@ -101,19 +102,19 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public Set<Long> getStatus() {
-        return status;
+        return Collections.unmodifiableSet(status);
     }
 
     public void setStatus(Set<Long> status) {
-        this.status = status;
+        this.status = Collections.unmodifiableSet(status);
     }
 
     public Set<Long> getUsuario() {
-        return usuario;
+        return Collections.unmodifiableSet(usuario);
     }
 
     public void setUsuario(Set<Long> usuario) {
-        this.usuario = usuario;
+        this.usuario = Collections.unmodifiableSet(usuario);
     }
 
     public TipoDeDataAnalise getData() {
