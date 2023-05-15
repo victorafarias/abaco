@@ -8,6 +8,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -18,12 +19,12 @@ public class AnalisePesquisaDTO implements Serializable {
     private int size = 20;
     private String sort = "id";
     private String identificador;
-    private Set<Long> sistema;
-    private Set<MetodoContagem> metodo;
-    private Set<Long> organizacao;
+    private Set<Long> sistema = new HashSet<>();
+    private Set<MetodoContagem> metodo = new HashSet<>();
+    private Set<Long> organizacao = new HashSet<>();
     private Long equipe;
-    private Set<Long> status;
-    private Set<Long> usuario;
+    private Set<Long> status = new HashSet<>();
+    private Set<Long> usuario = new HashSet<>();
     private TipoDeDataAnalise data;
     private Date dataInicio;
     private Date dataFim;
@@ -74,6 +75,9 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public void setSistema(Set<Long> sistema) {
+        if (sistema == null) {
+            sistema = new HashSet<>();
+        }
         this.sistema = Collections.unmodifiableSet(sistema);
     }
 
@@ -82,6 +86,9 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public void setMetodo(Set<MetodoContagem> metodo) {
+        if (metodo == null) {
+            metodo = new HashSet<>();
+        }
         this.metodo = Collections.unmodifiableSet(metodo);
     }
 
@@ -90,6 +97,9 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public void setOrganizacao(Set<Long> organizacao) {
+        if (organizacao == null) {
+            organizacao = new HashSet<>();
+        }
         this.organizacao = Collections.unmodifiableSet(organizacao);
     }
 
@@ -106,6 +116,9 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public void setStatus(Set<Long> status) {
+        if (status == null) {
+            status = new HashSet<>();
+        }
         this.status = Collections.unmodifiableSet(status);
     }
 
@@ -114,6 +127,9 @@ public class AnalisePesquisaDTO implements Serializable {
     }
 
     public void setUsuario(Set<Long> usuario) {
+        if (usuario == null) {
+            usuario = new HashSet<>();
+        }
         this.usuario = Collections.unmodifiableSet(usuario);
     }
 

@@ -507,16 +507,24 @@ public class AnaliseResource {
 
     private void preencherOrganizacaoEquipeUsuarioStatusFiltro(AnalisePesquisaDTO pesquisaDTO,Set<Long> organizacao, Long equipe, Set<Long> status, Set<Long> usuario) {
         pesquisaDTO.setOrganizacao(organizacao);
-        pesquisaDTO.setEquipe(equipe);
-        pesquisaDTO.setUsuario(usuario);
+        if (equipe != null) {
+            pesquisaDTO.setEquipe(equipe);
+        }
+        if (usuario != null) {
+            pesquisaDTO.setUsuario(usuario);
+        }
         pesquisaDTO.setStatus(status);
     }
 
     private void preencherIdentificadorSistemaMetodoFiltro(AnalisePesquisaDTO pesquisaDTO, String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Boolean bloqueado) {
         pesquisaDTO.setIdentificador(identificador);
         pesquisaDTO.setSistema(sistema);
-        pesquisaDTO.setMetodo(metodo);
-        pesquisaDTO.setBloqueado(bloqueado);
+        if (metodo != null) {
+            pesquisaDTO.setMetodo(metodo);
+        }
+        if (bloqueado != null) {
+            pesquisaDTO.setBloqueado(bloqueado);
+        }
     }
 
     private void preencherSortPageNumberFiltro(AnalisePesquisaDTO pesquisaDTO, String order, int pageNumber, int size, String sort) {
