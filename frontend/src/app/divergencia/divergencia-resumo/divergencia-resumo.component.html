@@ -140,9 +140,6 @@
 		<app-red-button *ngIf="!analise?.bloqueiaAnalise" [isDisabled]="statusNovo?.id == undefined" [buttonLabel]="this.getLabel('Bloquear validação')"
 						(click)="bloquearValidacao()">
 		</app-red-button>
-		<app-green-button *ngIf="analise?.bloqueiaAnalise" [isDisabled]="statusNovo?.id == undefined" [buttonLabel]="this.getLabel('Desbloquear validação')"
-						  (click)="desbloquearValidacao()">
-		</app-green-button>
 	</div>
 </p-dialog>
 
