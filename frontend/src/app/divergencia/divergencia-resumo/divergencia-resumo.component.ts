@@ -324,7 +324,7 @@ export class DivergenciaResumoComponent implements OnInit {
 		if (this.analise.bloqueiaAnalise == false && this.analise.status.nome == 'Aprovada') {
 			this.bloquearValidacao();
 		} else if (this.analise.bloqueiaAnalise == true) {
-			this.desbloquearValidacao();
+			this.confirmarDesbloqueio();
 		} else {
 			this.popUpConfirmarBloquearDesbloquear = this.popUpConfirmarBloquearDesbloquear != true;
 		}
@@ -346,6 +346,15 @@ export class DivergenciaResumoComponent implements OnInit {
 				}, error => this.pageNotificationService.addErrorMessage('Não foi possível bloquear a  Validação.'));
 			}, error => this.pageNotificationService.addErrorMessage('Não foi possível alterar o status da Validação.'));
 		}
+	}
+
+	confirmarDesbloqueio() {
+		this.confirmationService.confirm({
+			message: `Tem certeza que deseja desbloquear o registro ${this.analise.identificadorAnalise}?`,
+			accept: () => {
+				this.desbloquearValidacao();
+			}
+		});
 	}
 
 	desbloquearValidacao() {

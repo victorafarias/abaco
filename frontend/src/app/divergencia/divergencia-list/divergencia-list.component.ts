@@ -333,12 +333,22 @@ export class DivergenciaListComponent implements OnInit {
         * funcionalidade para bloqueio e mudança de status
         */
         public confirmBlockDivegence(divergence: Analise[]) {
-            if (divergence.length == 0) {
+            if (this.selectedDivergence.length === 0) {
                 this.pageNotificationService.addErrorMessage('Nenhuma Validação foi selecionada.');
                 return;
             }
-			this.verificaStatusAprovado()
-            this.changeStatusAndBlock()
+
+            if (this.selectedDivergence.some(a => a.bloqueiaAnalise)) {
+                this.confirmationService.confirm({
+                    message: `Tem certeza que deseja desbloquear os registros selecionados?`,
+                    accept: () => {
+                        this.selectedDivergence.forEach(a => this.desbloquearAnalise(a));
+                    }
+                });
+            } else {
+                this.verificaStatusAprovado();
+                this.changeStatusAndBlock();
+            }
         }
 
 		public verificaStatusAprovado(){
@@ -354,6 +364,15 @@ export class DivergenciaListComponent implements OnInit {
 
         public changeStatusAndBlock() {
             this.showDialogDivergenceBlock = true;
+        }
+
+        public desbloquearAnalise(divergencia: Analise) {
+            this.divergenciaService.block(divergencia).subscribe(() => {
+                this.mensagemAnaliseBloqueada(divergencia.bloqueiaAnalise, divergencia.identificadorAnalise);
+                this.datatable._filter();
+                this.datatable.selection = null;
+                this.showDialogDivergenceBlock = false;
+            });
         }
 
         public changeStatus(divergence: Analise) {
@@ -394,15 +413,15 @@ export class DivergenciaListComponent implements OnInit {
 
         public bloqueiaDivegence(divergencia: Analise) {
             this.analiseTemp = new Analise().copyFromJSON(divergencia);
-            let canBloqued = false;
+            let canBlock = false;
             if (this.tipoEquipesLoggedUser) {
                 this.tipoEquipesLoggedUser.forEach(equipe => {
                     if (equipe.id === this.analiseTemp.equipeResponsavel.id) {
-                        canBloqued = true;
+                        canBlock = true;
                     }
                 });
             }
-            if (canBloqued) {
+            if (canBlock) {
                 this.alterValidacaoStatusBlock(divergencia);
             } else {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Somente membros da equipe responsável podem bloquear esta análise!'));
@@ -425,8 +444,7 @@ export class DivergenciaListComponent implements OnInit {
                     });
                 },
                 err => this.pageNotificationService.addErrorMessage('Não foi possível alterar o status da Validação.'));
-            }
-            else {
+            } else {
                 this.pageNotificationService.addErrorMessage('Selecione um Status para continuar.');
             }
         }
