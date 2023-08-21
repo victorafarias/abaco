@@ -323,6 +323,8 @@ export class DivergenciaResumoComponent implements OnInit {
 	abrirFecharPopUpConfirmarBloquearDesbloquear() {
 		if (this.analise.bloqueiaAnalise == false && this.analise.status.nome == 'Aprovada') {
 			this.bloquearValidacao();
+		} else if (this.analise.bloqueiaAnalise == true) {
+			this.desbloquearValidacao();
 		} else {
 			this.popUpConfirmarBloquearDesbloquear = this.popUpConfirmarBloquearDesbloquear != true;
 		}
@@ -347,13 +349,11 @@ export class DivergenciaResumoComponent implements OnInit {
 	}
 
 	desbloquearValidacao() {
-		this.divergenciaService.changeStatusDivergence(this.analise.id, this.statusNovo).subscribe(formulario => {
-			this.divergenciaService.block(formulario.analise).subscribe(() => {
-				this.mensagemAnaliseBloqueada(formulario.analise.bloqueiaAnalise, formulario.analise.identificadorAnalise);
-				this.popUpConfirmarBloquearDesbloquear = false;
-				this.router.navigate(['/divergencia', formulario.analise.id, 'edit']);
-			}, error => this.pageNotificationService.addErrorMessage('Não foi possível desbloquear a  Validação.'));
-		}, error => this.pageNotificationService.addErrorMessage('Não foi possível alterar o status da Validação.'))
+		this.divergenciaService.block(this.analise).subscribe(() => {
+			this.mensagemAnaliseBloqueada(this.analise.bloqueiaAnalise, this.analise.identificadorAnalise);
+			this.popUpConfirmarBloquearDesbloquear = false;
+			this.router.navigate(['/divergencia', this.analise.id, 'edit']);
+		}, error => this.pageNotificationService.addErrorMessage('Não foi possível desbloquear a  Validação.'));
 	}
 
 	private mensagemAnaliseBloqueada(bloqueado: boolean, identificadoValidacao: string) {
