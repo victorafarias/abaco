@@ -6,6 +6,7 @@ import br.com.basis.abaco.domain.EsforcoFase;
 import br.com.basis.abaco.domain.FatorAjuste;
 import br.com.basis.abaco.domain.Manual;
 import br.com.basis.abaco.domain.Status;
+import br.com.basis.abaco.domain.enumeration.MotivoAnalise;
 import br.com.basis.dynamicexports.pojo.ReportObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,7 +43,7 @@ public class AnaliseEditDTO extends AnaliseBaseDTO implements ReportObject {
 
     private Timestamp dtEncerramento;
     private boolean isEncerrada;
-
+    private MotivoAnalise motivo;
 
     public void setDtEncerramento(Timestamp dtEncerramento) {
         this.dtEncerramento = dtEncerramento == null ? null : new Timestamp(dtEncerramento.getTime());
