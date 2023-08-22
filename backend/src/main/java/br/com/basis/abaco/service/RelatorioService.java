@@ -111,8 +111,10 @@ public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, 
             BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("status.id", status));
             qb.must(boolQueryBuilderStatus);
         }
+        if (bloqueado != null) {
             BoolQueryBuilder boolQueryBuilderBloqueado = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("bloqueiaAnalise", bloqueado));
             qb.must(boolQueryBuilderBloqueado);
+        }
     }
 
     private void bindFilterEquipeAndOrganizacaoDivergence(Set<Long> organizacoes, BoolQueryBuilder qb) {
