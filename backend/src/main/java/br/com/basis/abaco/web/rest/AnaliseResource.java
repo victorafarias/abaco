@@ -471,7 +471,7 @@ public class AnaliseResource {
                                                               @RequestParam(value = "sistema", required = false) Set<Long> sistema,
                                                               @RequestParam(value = "organizacao", required = false) Set<Long> organizacao,
                                                               @RequestParam(value = "status", required = false) Set<Long> status,
-                                                              @RequestParam(value = "bloqueiaAnalise", required = false) boolean bloqueado) throws URISyntaxException {
+                                                              @RequestParam(value = "bloqueiaAnalise", required = false) Boolean bloqueado) throws URISyntaxException {
         AnalisePesquisaDTO pesquisaDTO = new AnalisePesquisaDTO();
         preencherOrganizacaoEquipeUsuarioStatusFiltro(pesquisaDTO, organizacao, null, status, null);
         preencherIdentificadorSistemaMetodoFiltro(pesquisaDTO, identificador, sistema, null, bloqueado);
