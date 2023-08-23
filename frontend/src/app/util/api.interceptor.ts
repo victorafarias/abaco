@@ -4,10 +4,13 @@ import { PageNotificationService } from "@nuvem/primeng-components";
 import { Observable, throwError } from "rxjs";
 import { catchError, tap } from "rxjs/operators";
 import { AbacoMensagens, Mensagem, TipoMensagem } from "../shared/mensagens.dto";
+import { environment } from "../../environments/environment";
 
 
 @Injectable()
 export class APIInterceptor implements HttpInterceptor{
+
+	private readonly url = environment.auth.loginUrl;
 
 	constructor(private pageNotification: PageNotificationService){
 	}
@@ -32,6 +35,10 @@ export class APIInterceptor implements HttpInterceptor{
 	}
 
 	handleError(err: HttpErrorResponse): Observable<any>{
+		if (err.status === 401) {
+			this.redirect();
+		}
+
 		if(err?.error?.mensagens){
 			const abacoMensagens = new AbacoMensagens();
 			const erros = err?.error?.mensagens instanceof Object ? err?.error?.mensagens : JSON.parse(err?.error?.mensagem);
@@ -48,6 +55,10 @@ export class APIInterceptor implements HttpInterceptor{
 
 		this.pageNotification.addErrorMessage("Erro "+err.status+": "+err.statusText);
 		return throwError(err);
+	}
+
+	redirect() {
+		window.location.href = this.url;
 	}
 
 	ajustarMensagens(mensagens: Mensagem[]){
