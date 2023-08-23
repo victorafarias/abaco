@@ -147,8 +147,7 @@ public interface AnaliseRepository extends JpaRepository<Analise, Long> {
     @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(COUNT(*)) " +
         "FROM Analise a " +
         "WHERE a.status.id = 1805353 " +
-        "AND a.pfTotalOriginal IS NOT NULL " +
-        "AND a.pfTotalAprovado IS NOT NULL")
+        "AND a.isDivergence IS TRUE")
     List<Dashboard2DTO> getTotalDemandas();
 
     @Query(value = "SELECT new br.com.basis.abaco.service.dto.Dashboard2DTO(SUM(a.pfTotalOriginal - a.pfTotalAprovado))" +
