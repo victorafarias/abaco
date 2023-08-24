@@ -269,9 +269,7 @@ export class DivergenciaListComponent implements OnInit {
             `&organizacao=${this.searchDivergence.organizacao.id}` : '');
 			querySearch = querySearch.concat((this.searchDivergence.status && this.searchDivergence.status.id) ?
 			`&status=${this.searchDivergence.status.id}` : '');
-			// @ts-ignore
-			querySearch = querySearch.concat((this.searchDivergence.bloqueiaAnalise && this.searchDivergence.bloqueiaAnalise.valor) ?
-			// @ts-ignore
+			querySearch = querySearch.concat((this.searchDivergence.bloqueiaAnalise && this.searchDivergence.bloqueiaAnalise.valor !== null) ?
 			`&bloqueiaAnalise=${this.searchDivergence.bloqueiaAnalise.valor}` : '');
             return querySearch;
         }
