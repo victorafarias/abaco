@@ -329,6 +329,12 @@ public class AnaliseService extends BaseService {
 
         analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
         analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
+
+        if(analise.getAnaliseDivergence() != null
+                && analise.getAnaliseDivergence().getStatus().getNome().equals("Aprovada")
+                && analise.getAnaliseDivergence().isBloqueiaAnalise()) {
+            analise.setPfTotalAprovado(analise.getAnaliseDivergence().getPfTotalAprovado());
+        }
     }
 
     public void atualizarPFDivergente(Analise analise) {
@@ -804,7 +810,7 @@ public class AnaliseService extends BaseService {
                 }
             });
             analiseFacade.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
-            abacoMensagens.adicionarNovoSucesso(String.format("Análise " + analise.getIdentificadorAnalise() + " compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+            abacoMensagens.adicionarNovoSucesso(String.format("Análise %s compartilhou para a(s) equipe(s) %s", analise.getIdentificadorAnalise(), String.join(", ", nomeDasEquipes)));
         }
     }
 
@@ -862,6 +868,7 @@ public class AnaliseService extends BaseService {
             }
             if (analise.getStatus().getNome().equals("Aprovada")) {
                 analise.getAnalisesComparadas().forEach(analiseComparada -> {
+                    analiseComparada.setPfTotalAprovado(analise.getPfTotalAprovado());
                     analiseComparada.setDtEncerramento(Timestamp.from(Instant.now()));
                     analiseComparada.setIsEncerrada(true);
                     analiseComparada.setStatus(analise.getStatus());
@@ -1230,30 +1237,35 @@ public class AnaliseService extends BaseService {
     }
 
     public Analise uploadExcel(MultipartFile file) throws IOException {
-        FileInputStream inputStream = null;
         Path tempDir = Files.createTempDirectory("");
         File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
         file.transferTo(tempFile);
-        inputStream = new FileInputStream(tempFile);
-        XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-        Analise analise = new Analise();
-        Set<FuncaoDados> funcaoDados = new HashSet<>();
-        Set<FuncaoTransacao> funcaoTransacaos = new HashSet<>();
 
-        setarResumoExcelUpload(workbook, analise);
-        if (analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)) {
-            setarIndicativaExcelUpload(workbook, funcaoDados);
-        } else {
-            setarInmExcelUpload(workbook, funcaoTransacaos, funcaoDados);
+        try(
+            FileInputStream inputStream = new FileInputStream(tempFile);
+            XSSFWorkbook workbook = new XSSFWorkbook(inputStream)
+        ) {
+
+            Analise analise = new Analise();
+            Set<FuncaoDados> funcaoDados = new HashSet<>();
+            Set<FuncaoTransacao> funcaoTransacaos = new HashSet<>();
+
+            setarResumoExcelUpload(workbook, analise);
+            if (analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)) {
+                setarIndicativaExcelUpload(workbook, funcaoDados);
+            } else {
+                setarInmExcelUpload(workbook, funcaoTransacaos, funcaoDados);
+            }
+            if (analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
+                setarExcelDetalhadaUpload(workbook, funcaoDados, funcaoTransacaos);
+            } else if (analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)) {
+                setarExcelEstimadaUpload(workbook, funcaoDados, funcaoTransacaos);
+            }
+            analise.setFuncaoDados(funcaoDados);
+            analise.setFuncaoTransacaos(funcaoTransacaos);
+            return analise;
+
         }
-        if (analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
-            setarExcelDetalhadaUpload(workbook, funcaoDados, funcaoTransacaos);
-        } else if (analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)) {
-            setarExcelEstimadaUpload(workbook, funcaoDados, funcaoTransacaos);
-        }
-        analise.setFuncaoDados(funcaoDados);
-        analise.setFuncaoTransacaos(funcaoTransacaos);
-        return analise;
     }
 
     // Planilha Detalhada

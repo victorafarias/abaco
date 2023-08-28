@@ -54,7 +54,7 @@ export class AnaliseListComponent implements OnInit {
         { value: 'status.nome', label: 'Status' },
         { value: 'pfTotalValor', label: 'PF Total' },
         { value: 'pfTotalAjustadoValor', label: 'PF Ajustado' },
-        { value: 'analiseDivergence.pfTotalAprovado', label: 'PF Conciliado' },
+        { value: 'pfTotalAprovado', label: 'PF Conciliado' },
         { value: 'dataCriacaoOrdemServico', label: 'Data de criação' },
         { value: 'dataHomologacao', label: 'Data de Conclusão' },
         { value: 'dtEncerramento', label: 'Data de Encerramento' },
