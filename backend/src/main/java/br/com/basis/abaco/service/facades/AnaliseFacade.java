@@ -205,7 +205,11 @@ public class AnaliseFacade {
     }
 
     public AnaliseDTO converterParaDto(Analise analise) {
-        return modelMapper.map(analise, AnaliseDTO.class);
+        AnaliseDTO analiseDTO = modelMapper.map(analise, AnaliseDTO.class);
+        if (analise.getAnaliseDivergence() != null) {
+            analiseDTO.setAnaliseDivergence(modelMapper.map(analise.getAnaliseDivergence(), AnaliseDivergenceDTO.class));
+        }
+        return analiseDTO;
     }
 
     public AnaliseEditDTO converterParaAnaliseEditDTO(Analise analise) {
