@@ -131,10 +131,12 @@
                                         {{rowData.metodoContagem}}
                                     </td>
                                     <td>
-                                        {{rowData.pfTotalOriginal}}
+                                        {{
+                                            ((rowData.pfTotalOriginal || rowData.analisesComparadas[0]?.pfTotal) | number: '1.2-2')?.replace(".", ",")
+                                        }}
                                     </td>
                                     <td>
-                                        {{rowData.pfTotalAprovado}}
+                                        {{ ((rowData.pfTotalAprovado) | number: '1.2-2')?.replace(".", ",") }}
                                     </td>
                                     <td >
                                         {{rowData.dataCriacaoOrdemServico | date: 'dd/MM/y - HH:mm' }}
