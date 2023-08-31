@@ -57,5 +57,6 @@
     <include file="classpath:config/liquibase/changelog/20230201163810_add_column_prazo_organizacao.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20230131131500_alteracao_colunas_pf_analise.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20230412111000_add_tables_spring_batch.xml" relativeToChangelogFile="false"/>
+    <include file="classpath:config/liquibase/changelog/20230830143400_alter_vw_funcao_transacao.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 

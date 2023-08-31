@@ -673,13 +673,18 @@ public class AnaliseService extends BaseService {
 
     private void verificarFuncoes(FuncaoAnalise funcao, Analise analise) {
         if (analise.getManual() != null && (!analise.getManual().getFatoresAjuste().contains(funcao.getFatorAjuste()))) {
-            funcao.setFatorAjuste(new ArrayList<>(analise.getManual().getFatoresAjuste()).get(0));
+            Set<FatorAjuste> fatoresSemelhantes = new HashSet<>();
             analise.getManual().getFatoresAjuste().forEach(fatorAjuste -> {
-                if (funcao.getFatorAjuste().getNome().equals(fatorAjuste.getNome())) {
-                    funcao.setFatorAjuste(fatorAjuste);
+                if(funcao.getFatorAjuste().getNome().contains(fatorAjuste.getNome())) {
+                    fatoresSemelhantes.add(fatorAjuste);
                 }
             });
 
+            if(fatoresSemelhantes.size() == 1) {
+                funcao.setFatorAjuste(fatoresSemelhantes.iterator().next());
+            } else {
+                funcao.setFatorAjuste(null);
+            }
         }
     }
 
