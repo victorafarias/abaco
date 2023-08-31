@@ -109,8 +109,7 @@ export class DivergenciaResumoComponent implements OnInit {
 						this.esforcoFases = this.analiseSharedDataService.analise.esforcoFases;
 						this.pfTotal = analise.pfTotal.toFixed(2);
 						this.pfAjustada = parseFloat(analise.adjustPFTotal).toFixed(2);
-						this.pfOriginal = analise.pfTotalOriginal.toFixed(2);
-						;
+						this.pfOriginal = analise.analisesComparadas[0]?.pfTotal.toFixed(2);
 						this.divergenciaService.getDivergenciaResumo(this.idAnalise)
 							.subscribe(res => {
 								const jsonResponse = res;
