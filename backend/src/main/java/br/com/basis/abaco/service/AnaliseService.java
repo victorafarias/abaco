@@ -351,9 +351,7 @@ public class AnaliseService extends BaseService {
             sumFase = sumFase.divide(percent).setScale(DECIMAL_PLACE);
             analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(DECIMAL_PLACE));
             analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN));
-
-            setDivergencePfTotalAprovado(analise);
-
+            analise.setPfTotalAprovado(analise.getAdjustPFTotal());
             Timestamp hoje = Timestamp.from(Instant.now());
             Analise analiseOriginalBasis = new Analise();
             if (!analise.getCompartilhadas().isEmpty()) {
@@ -368,12 +366,6 @@ public class AnaliseService extends BaseService {
             analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
             analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
             analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
-        }
-    }
-
-    private static void setDivergencePfTotalAprovado(Analise analise) {
-        if (Boolean.TRUE.equals(analise.getIsDivergence()) && analise.getStatus().getNome().equals(APROVADA)) {
-            analise.setPfTotalAprovado(analise.getAdjustPFTotal());
         }
     }
 
