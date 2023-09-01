@@ -84,6 +84,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -1362,12 +1363,18 @@ public class AnaliseService extends BaseService {
     }
 
     private void setarDerAlrFuncaoTransacao(FuncaoTransacao funcaoTransacao, XSSFRow row) {
-        Der der = new Der();
-        der.setNome(row.getCell(8).getStringCellValue());
-        ders.add(der);
-        Alr alr = new Alr();
-        alr.setNome(row.getCell(10).getStringCellValue());
-        alrs.add(alr);
+        Arrays.stream(row.getCell(8).getStringCellValue().split(", ")).forEach(value -> {
+            Der der = new Der();
+            der.setNome(value);
+            ders.add(der);
+        });
+
+        Arrays.stream(row.getCell(10).getStringCellValue().split(", ")).forEach(value -> {
+            Alr alr = new Alr();
+            alr.setNome(value);
+            alrs.add(alr);
+        });
+
         funcaoTransacao.setDers(ders);
         funcaoTransacao.setAlrs(alrs);
         setarFuncaoComplexidade(funcaoTransacao, row);
