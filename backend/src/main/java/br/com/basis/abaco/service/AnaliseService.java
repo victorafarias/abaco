@@ -1305,15 +1305,24 @@ public class AnaliseService extends BaseService {
     }
 
     private void setarDerRlrFuncaoDados(FuncaoDados funcaoDados, XSSFRow row) {
-        Der der = new Der();
-        der.setNome(row.getCell(8).getStringCellValue());
-        ders.add(der);
-        Rlr rlr = new Rlr();
-        rlr.setNome(row.getCell(10).getStringCellValue());
-        rlrs.add(rlr);
+        setarDerAlr(row);
         funcaoDados.setDers(ders);
         funcaoDados.setRlrs(rlrs);
         setarFuncaoComplexidade(funcaoDados, row);
+    }
+
+    private void setarDerAlr(XSSFRow row) {
+        Arrays.stream(row.getCell(8).getStringCellValue().split(", ")).forEach(value -> {
+            Der der = new Der();
+            der.setNome(value);
+            ders.add(der);
+        });
+
+        Arrays.stream(row.getCell(10).getStringCellValue().split(", ")).forEach(value -> {
+            Alr alr = new Alr();
+            alr.setNome(value);
+            alrs.add(alr);
+        });
     }
 
     private void setarSustentacaoStatus(FuncaoAnalise funcao, XSSFRow row) {
@@ -1363,18 +1372,7 @@ public class AnaliseService extends BaseService {
     }
 
     private void setarDerAlrFuncaoTransacao(FuncaoTransacao funcaoTransacao, XSSFRow row) {
-        Arrays.stream(row.getCell(8).getStringCellValue().split(", ")).forEach(value -> {
-            Der der = new Der();
-            der.setNome(value);
-            ders.add(der);
-        });
-
-        Arrays.stream(row.getCell(10).getStringCellValue().split(", ")).forEach(value -> {
-            Alr alr = new Alr();
-            alr.setNome(value);
-            alrs.add(alr);
-        });
-
+        setarDerAlr(row);
         funcaoTransacao.setDers(ders);
         funcaoTransacao.setAlrs(alrs);
         setarFuncaoComplexidade(funcaoTransacao, row);
