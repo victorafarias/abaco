@@ -12,6 +12,7 @@ import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.Funcionalidade;
 import br.com.basis.abaco.domain.Modulo;
 import br.com.basis.abaco.domain.Rlr;
+import br.com.basis.abaco.domain.Sistema;
 import br.com.basis.abaco.domain.Status;
 import br.com.basis.abaco.domain.TipoEquipe;
 import br.com.basis.abaco.domain.UploadedFile;
@@ -86,6 +87,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -158,6 +160,7 @@ public class AnaliseService extends BaseService {
     private final PerfilService perfilService;
     private final AnaliseFacade analiseFacade;
     private final OrganizacaoRepository organizacaoRepository;
+    private final FuncionalidadeService funcionalidadeService;
 
     private Boolean checarPermissao(Long idAnalise) {
         User logged = analiseFacade.obterUsuarioComAutorizacao();
@@ -708,7 +711,7 @@ public class AnaliseService extends BaseService {
     }
 
     private void salvarFuncaoTransacaoExcel(Set<FuncaoTransacao> funcaoTransacaos, Analise analise) {
-        funcaoTransacaos.forEach(funcaoTransacao -> {
+        funcaoTransacaos.stream().sorted(Comparator.comparing(FuncaoTransacao::getId)).forEach(funcaoTransacao -> {
             funcaoTransacao.setId(null);
             funcaoTransacao.setAnalise(analise);
             funcaoTransacao.setEquipe(null);
@@ -727,7 +730,7 @@ public class AnaliseService extends BaseService {
     }
 
     private void salvarFuncaoDadosExcel(Set<FuncaoDados> funcaoDados, Analise analise) {
-        funcaoDados.forEach(funcaoDado -> {
+        funcaoDados.stream().sorted(Comparator.comparing(FuncaoDados::getId)).forEach(funcaoDado -> {
             funcaoDado.setId(null);
             funcaoDado.setAnalise(analise);
             verificarFuncoes(funcaoDado, analise);
@@ -745,12 +748,27 @@ public class AnaliseService extends BaseService {
     }
 
     private void setarFuncionalidadeFuncao(FuncaoAnalise funcao, Analise analise) {
-        funcao.setFuncionalidade(new ArrayList<>(new ArrayList<>(analise.getSistema().getModulos()).get(0).getFuncionalidades()).get(0));
-        analise.getSistema().getModulos().forEach(modulo -> modulo.getFuncionalidades().forEach(func -> {
-            if (func.getNome().contains(funcao.getFuncionalidade().getNome())) {
-                funcao.setFuncionalidade(func);
-            }
-        }));
+        Sistema sistema = sistemaRepository.findOne(analise.getSistema().getId());
+
+        sistema.getModulos().forEach(modulo -> {
+            modulo.getFuncionalidades().forEach(func -> {
+                boolean moduloIgual = modulo.getNome().equals(funcao.getFuncionalidade().getModulo().getNome());
+                boolean funcionalidadeIgual = func.getNome().contains(funcao.getFuncionalidade().getNome());
+
+                if (moduloIgual) {
+                    funcao.getFuncionalidade().setModulo(modulo);
+                }
+
+                if (moduloIgual && funcionalidadeIgual) {
+                    funcao.setFuncionalidade(func);
+                }
+            });
+        });
+
+        if (funcao.getFuncionalidade().getId() == null) {
+            Funcionalidade funcionalidade = funcionalidadeService.criarFuncionalidade(funcao.getFuncionalidade(), analise.getSistema());
+            funcao.setFuncionalidade(funcionalidade);
+        }
     }
 
     public List<AnaliseDTO> carregarAnalisesFromFuncaoFD(String nomeFuncao, String nomeModulo, String
@@ -1348,17 +1366,19 @@ public class AnaliseService extends BaseService {
     }
 
     private void setarModuloFuncionalidade(FuncaoAnalise funcao, XSSFRow row) {
-        Funcionalidade funcionalidade = new Funcionalidade();
         Modulo modulo = new Modulo();
-        FatorAjuste fatorAjuste = new FatorAjuste();
         modulo.setNome(row.getCell(3).getStringCellValue());
+
+        Funcionalidade funcionalidade = new Funcionalidade();
         funcionalidade.setModulo(modulo);
         funcionalidade.setNome(row.getCell(4).getStringCellValue());
+
+        FatorAjuste fatorAjuste = new FatorAjuste();
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+
         funcao.setFuncionalidade(funcionalidade);
         funcao.setName(row.getCell(5).getStringCellValue());
-        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
         funcao.setFatorAjuste(fatorAjuste);
-
     }
 
     private FuncaoTransacao setarFuncaoTrasacaoDetalhada(XSSFRow row) {
