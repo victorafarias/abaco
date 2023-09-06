@@ -48,6 +48,7 @@ public class FuncaoDadosDTO implements Serializable {
     private FuncionalidadeDTO funcionalidade;
     private FatorAjusteDTO fatorAjuste;
     private List<UploadedFileDTO> files;
+    private TipoEquipeDTO equipe;
 
     private AlrDTO alr;
     private Set<DerDTO> ders = new HashSet<>();
