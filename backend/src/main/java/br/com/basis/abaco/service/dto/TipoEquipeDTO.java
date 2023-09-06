@@ -4,13 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
 @Getter
 @Setter
-public class TipoEquipeDTO {
+public class TipoEquipeDTO implements Serializable {
 
     @Id
     private Long id;
