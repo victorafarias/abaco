@@ -33,13 +33,13 @@
                                         <ng-template let-col let-funcaoDado="rowData" pTemplate="body">
                                             <span *ngIf="!habilitaEditarOrdem" (click)="habilitarEdicaoOrdem(funcaoDado)">{{ funcaoDado?.ordem ? funcaoDado?.ordem : funcoesDados?.indexOf(funcaoDado)
                                                 + 1 }}</span>
-                                                <input 
+                                                <input
                                                 [ngModelOptions]="{ updateOn: 'blur' }"
                                                 (ngModelChange)="trocarOrdem($event, funcaoDado)" *ngIf="habilitaEditarOrdem" type="number" class="ui-inputtext" min="1"
                                                 [(ngModel)]="funcaoDado.ordem" id="idEditOrdem">
                                         </ng-template>
                                     </p-column>
-                                    
+
                                     <p-column field="statusFuncao" header="Status" [sortable]="true">
                                         <ng-template let-statusFuncao="rowData.statusFuncao" pTemplate="body">
                                             <button type="button" pButton icon="ui-icon-schedule"
@@ -276,7 +276,7 @@
 
                         <div class="ui-g">
                             <div class="ui-g-3 ui-md-12 ui-sm-12">
-                                <label>Equipe</label>
+                                <label>Equipe *</label>
                                 <p-dropdown [filter]="true" [options]="equipes"
                                     id="idEquipeFormFuncaoDados" [(ngModel)]="seletedFuncaoDados.equipe"
                                     [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
@@ -529,9 +529,9 @@
                                     <label><b>Equipe: </b></label>
                                     {{seletedFuncaoDados.equipe.nome}}
                                 </div>
-                            </div> 
+                            </div>
                             <div class="ui-g">
-                                
+
                                 <div class="ui-md-6 ui-sm-12">
                                     <label><b>Deflator: </b></label>
                                     <div>{{seletedFuncaoDados.fatorAjuste.origem}} -
