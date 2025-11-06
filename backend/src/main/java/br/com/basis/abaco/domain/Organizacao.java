@@ -28,7 +28,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -92,6 +91,10 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
 
     @Column(name = "logo_id")
     private Long logoId;
+
+    @NotNull
+    @Column(name = "prazo_aprovacao_divergencia_dias")
+    private Integer prazoAprovacaoDivergenciaDias;
 
     public Long getId() {
         return id;
@@ -162,14 +165,14 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
 
     public Set<Sistema> getSistemas() {
         return Optional.ofNullable(this.sistemas)
-                .map(lista -> new LinkedHashSet<Sistema>(lista))
-                .orElse(new LinkedHashSet<Sistema>());
+                .map(LinkedHashSet::new)
+                .orElse(new LinkedHashSet<>());
     }
 
     public Organizacao sistemas(Set<Sistema> sistemas) {
         this.sistemas = Optional.ofNullable(sistemas)
-                .map(lista -> new LinkedHashSet<Sistema>(lista))
-                .orElse(new LinkedHashSet<Sistema>());
+                .map(LinkedHashSet::new)
+                .orElse(new LinkedHashSet<>());
         return this;
     }
 
@@ -193,8 +196,8 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
 
     public void setSistemas(Set<Sistema> sistemas) {
         this.sistemas = Optional.ofNullable(sistemas)
-                .map(lista -> new LinkedHashSet<Sistema>(lista))
-                .orElse(new LinkedHashSet<Sistema>());
+                .map(LinkedHashSet::new)
+                .orElse(new LinkedHashSet<>());
     }
 
     public String getSigla() {
@@ -227,14 +230,14 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
 
     public Set<Contrato> getContracts() {
         return Optional.ofNullable(this.contracts)
-                .map(lista -> new LinkedHashSet<Contrato>(lista))
-                .orElse(new LinkedHashSet<Contrato>());
+                .map(LinkedHashSet::new)
+                .orElse(new LinkedHashSet<>());
     }
 
     public void setContracts(Set<Contrato> contracts) {
         this.contracts = Optional.ofNullable(contracts)
-                .map(lista -> new LinkedHashSet<Contrato>(lista))
-                .orElse(new LinkedHashSet<Contrato>());
+                .map(LinkedHashSet::new)
+                .orElse(new LinkedHashSet<>());
     }
 
     public Long getLogoId() {
@@ -245,13 +248,9 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
         this.logoId = logoId;
     }
 
-    public Set<TipoEquipe> gettipoEquipes() {
-        return Collections.unmodifiableSet(tipoEquipes);
-    }
-
     public void setTipoEquipes(Set<TipoEquipe> tipoEquipes) {
         this.tipoEquipes = Optional.ofNullable(tipoEquipes)
-                .map((lista) -> new HashSet<>(lista))
+                .map(HashSet::new)
                 .orElse(new HashSet<>());
     }
 
@@ -263,7 +262,7 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
     @Override
     public String toString() {
         return "Organizacao{" + "id=" + id + ", nome='" + nome + "'" + ", cnpj='" + cnpj + "'" + ", ativo='" + ativo
-                + "'" + ", numeroOcorrencia='" + numeroOcorrencia + "'" + '}';
+                + "'" + ", numeroOcorrencia='" + numeroOcorrencia + "'" + "prazoDivergenciaDias='" + prazoAprovacaoDivergenciaDias + "'" + '}';
     }
 
     @Override
@@ -273,4 +272,15 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
         return clone;
     }
 
+    public Set<TipoEquipe> getTipoEquipes() {
+        return new HashSet<>(tipoEquipes);
+    }
+
+    public Integer getPrazoAprovacaoDivergenciaDias() {
+        return prazoAprovacaoDivergenciaDias;
+    }
+
+    public void setPrazoAprovacaoDivergenciaDias(Integer prazoDivergenciaDias) {
+        this.prazoAprovacaoDivergenciaDias = prazoDivergenciaDias;
+    }
 }

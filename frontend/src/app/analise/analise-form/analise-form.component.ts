@@ -75,9 +75,10 @@ export class AnaliseFormComponent implements OnInit {
 
 
     tiposAnalise: SelectItem[] = [
+		{label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO},
         {label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO},
-        {label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA},
-        {label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO}
+        {label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA}
+
     ];
 
 
@@ -213,7 +214,7 @@ export class AnaliseFormComponent implements OnInit {
                 this.isEdicao = true;
                 this.analiseService.find(params['id']).subscribe(analise => {
                     this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
-                    if(parseInt(analise.pfTotal) <= 0){
+                    if(analise.pfTotal <= 0){
                         this.canEditMetodo = true;
                     }
                     analise = new  Analise().copyFromJSON(analise);
@@ -361,16 +362,16 @@ export class AnaliseFormComponent implements OnInit {
                 label: this.getLabel('Detalhada (IFPUG)')
             },
             {
-                value: MessageUtil.INDICATIVA,
-                label: this.getLabelValorVariacao(
-                    this.getLabel('Indicativa (NESMA)'),
-                    manual.valorVariacaoIndicativa)
+				value: MessageUtil.ESTIMADA,
+				label: this.getLabelValorVariacao(
+					this.getLabel('Estimada (NESMA)'),
+					manual.valorVariacaoEstimada)
             },
             {
-                value: MessageUtil.ESTIMADA,
-                label: this.getLabelValorVariacao(
-                    this.getLabel('Estimada (NESMA)'),
-                    manual.valorVariacaoEstimada)
+				value: MessageUtil.INDICATIVA,
+				label: this.getLabelValorVariacao(
+					this.getLabel('Indicativa (NESMA)'),
+					manual.valorVariacaoIndicativa)
             }
         ];
     }

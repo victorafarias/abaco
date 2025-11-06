@@ -39,8 +39,8 @@ spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         url: jdbc:postgresql://localhost:5432/abaco
-        username: postgres
-        password: postgres
+        username: abaco
+        password: abacosenha
     jpa:
         database-platform: io.github.jhipster.domain.util.FixedPostgreSQL82Dialect
         database: POSTGRESQL
@@ -55,8 +55,10 @@ spring:
             hibernate.event.merge.entity_copy_observe: allow
     data:
         elasticsearch:
-            cluster-name:
+            cluster-name: abaco
             cluster-nodes: localhost:9300
+            properties:
+                index.number_of_replicas: 0
     mail:
         host: localhost
         port: 1025

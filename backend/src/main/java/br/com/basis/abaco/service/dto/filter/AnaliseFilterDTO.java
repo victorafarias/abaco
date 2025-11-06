@@ -28,6 +28,7 @@ public class AnaliseFilterDTO {
     private Date dataInicio;
     private Date dataFim;
     private List<String> columnsVisible;
+    private boolean bloqueiaAnalise;
 
 
     public void setDataInicio(Date dataInicio) {

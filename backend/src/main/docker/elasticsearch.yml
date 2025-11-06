@@ -7,3 +7,5 @@ services:
         ports:
             - 9200:9200
             - 9300:9300
+        environment:
+            ES_JAVA_OPTS: -Xms1g -Xmx1g -Des.cluster.name=abaco -Des.discovery.zen.minimum_master_nodes=1 -Des.discovery.zen.ping.unicast.hosts=abaco-elasticsearch -Des.index.number_of_replicas=0

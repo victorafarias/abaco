@@ -35,14 +35,18 @@ public interface OrganizacaoRepository extends JpaRepository<Organizacao, Long> 
     @EntityGraph(attributePaths = { "sistemas", "contracts"})
     Organizacao findOne(Long id);
 
-    @Query("SELECT new br.com.basis.abaco.service.dto.OrganizacaoDropdownDTO(o.id, o.nome, o.sigla ,o.cnpj) FROM Organizacao o")
+    @Query("SELECT new br.com.basis.abaco.service.dto.OrganizacaoDropdownDTO(o.id, o.nome, o.sigla ,o.cnpj) " +
+        "FROM Organizacao o ORDER BY o.nome")
     List<OrganizacaoDropdownDTO> getOrganizacaoDropdown();
 
-    @Query("SELECT new br.com.basis.abaco.service.dto.OrganizacaoDropdownDTO(o.id, o.nome, o.sigla, o.cnpj) FROM Organizacao o WHERE  o.ativo IS TRUE")
+    @Query("SELECT new br.com.basis.abaco.service.dto.OrganizacaoDropdownDTO(o.id, o.nome, o.sigla, o.cnpj) " +
+        "FROM Organizacao o " +
+        "WHERE  o.ativo IS TRUE ORDER BY o.nome")
     List<OrganizacaoDropdownDTO> getOrganizacaoDropdownAtivo();
 
-    @Query(value = "SELECT new br.com.basis.abaco.service.dto.OrganizacaoDropdownDTO(o.id, o.nome, o.sigla, o.cnpj) FROM User u JOIN u.organizacoes o "
-            + " WHERE u.login = :currentUserLogin AND u.activated IS TRUE AND o.ativo IS TRUE ")
+    @Query(value = "SELECT new br.com.basis.abaco.service.dto.OrganizacaoDropdownDTO(o.id, o.nome, o.sigla, o.cnpj) " +
+        "FROM User u JOIN u.organizacoes o " +
+        "WHERE u.login = :currentUserLogin AND u.activated IS TRUE AND o.ativo IS TRUE ORDER BY o.nome")
     List<DropdownDTO> findActiveUserOrganizations(@Param("currentUserLogin") String currentUserLogin);
 
 }

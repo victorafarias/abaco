@@ -1,3 +1,6 @@
 /.history
 backend/target/
 frontend/package-lock.json
+requirements.lock
+charts/charts/
+charts/abaco*.tgz

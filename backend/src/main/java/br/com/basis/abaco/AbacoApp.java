@@ -71,9 +71,9 @@ public class AbacoApp {
         }
         defineLog(env, protocol);
     }
-    
+
     /**
-     * 
+     *
      * @param env
      * @param protocol
      * @throws UnknownHostException

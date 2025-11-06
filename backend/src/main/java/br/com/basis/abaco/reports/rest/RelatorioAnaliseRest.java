@@ -94,7 +94,7 @@ public class RelatorioAnaliseRest {
      *
      */
     private void init() {
-        listFuncoes = new ArrayList<FuncoesDTO>();
+        listFuncoes = new ArrayList<>();
         analise = new Analise();
         relatorio = new RelatorioUtil(this.response, this.request);
         relatorioFuncoes = new RelatorioFuncoes();
@@ -189,7 +189,7 @@ public class RelatorioAnaliseRest {
      * Método responsável por popular o parametro do Jasper.
      */
     private Map<String, Object> popularParametroAnalise() {
-        parametro = new HashMap<String, Object>();
+        parametro = new HashMap<>();
         this.popularImagemRelatorio();
         this.popularUsuarios();
         this.popularDadosGerais();
@@ -258,16 +258,16 @@ public class RelatorioAnaliseRest {
         if(analise.getFatorCriticidade() == null || !analise.getFatorCriticidade()){
             parametro.put(FATOR_CRITICIDADE, "SEM");
         }else{
-            if(isExcel == true){
+            if(Boolean.TRUE.equals(isExcel)){
                 parametro.put(FATOR_CRITICIDADE, +analise.getValorCriticidade().intValue()+"%");
             }else{
                 parametro.put(FATOR_CRITICIDADE, " III. Total c/ Criticidade (II + "+analise.getValorCriticidade().intValue()+"%):");
             }
-            String pfCriticidade = String.format("%.2f", Double.parseDouble(analise.getAdjustPFTotal()) *  (analise.getValorCriticidade() / 100 + 1));
+            String pfCriticidade = String.format("%.2f", analise.getAdjustPFTotal().doubleValue() *  (analise.getValorCriticidade() / 100 + 1));
             parametro.put("PFCRITICIDADE", pfCriticidade);
         }
     }
-    
+
 
     /**
      * Método responsável por acessar o caminho da imagem da logo do relatório e popular o parâmetro.
@@ -358,7 +358,7 @@ public class RelatorioAnaliseRest {
         if(!analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             String scopeCreep = "";
             if(analise.getFatorCriticidade() != null){
-                scopeCreep = !analise.getFatorCriticidade() ?
+                scopeCreep = Boolean.FALSE.equals(analise.getFatorCriticidade()) ?
                     " III. Total c/ Scope Creep (II +" :
                     " IV. Total c/ Scope Creep (III +";
             }else{
@@ -366,16 +366,16 @@ public class RelatorioAnaliseRest {
             }
 
             if (analise.getScopeCreep() != null) {
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal(), Double.valueOf(analise.getScopeCreep())/100+1));
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getScopeCreep()/100+1));
                 scopeCreep += analise.getScopeCreep().intValue()+"%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }else{
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal(), analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa));
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa));
                 scopeCreep += "35%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }
         }
-        parametro.put("AJUSTESPF", calcularPFsAjustado(analise.getPfTotal(), analise.getAdjustPFTotal()));
+        parametro.put("AJUSTESPF", calcularPFsAjustado(analise.getPfTotal().toString(), analise.getAdjustPFTotal().toString()));
         parametro.put("PFAJUSTADO", analise.getAdjustPFTotal());
     }
 
@@ -547,7 +547,8 @@ public class RelatorioAnaliseRest {
     private void verificaFuncaoTransacao(List<ListaFdFtDTO> listaFdFt, Set<FuncaoTransacao> funcaoTransacaos, Integer identificador) {
         if (funcaoTransacaos != null) {
             for (FuncaoTransacao ft : funcaoTransacaos) {
-                String der = "", alrTr = "";
+                String der = "";
+                String alrTr = "";
                 ListaFdFtDTO objeto = new ListaFdFtDTO();
                 objeto.setNome(ft.getName());
 
@@ -569,7 +570,8 @@ public class RelatorioAnaliseRest {
         if (funcaoDados != null) {
             for (FuncaoDados fd : funcaoDados) {
                 ListaFdFtDTO objeto = new ListaFdFtDTO();
-                String der = "", alrTr = "";
+                String der = "";
+                String alrTr = "";
 
                 der = popularDersFd(fd, der);
                 objeto.setDer(der);
@@ -959,7 +961,10 @@ public class RelatorioAnaliseRest {
      * @param
      */
     private Integer somaQuantidades(Integer sem, Integer baixa, Integer media, Integer alta) {
-        Integer sem2 = sem, baixa2 = baixa, media2 = media, alta2 = alta;
+        Integer sem2 = sem;
+        Integer baixa2 = baixa;
+        Integer media2 = media;
+        Integer alta2 = alta;
         if (sem2 == null) {
             sem2 = 0;
         }
@@ -1003,7 +1008,7 @@ public class RelatorioAnaliseRest {
      *
      */
     private String garantia() {
-        if (analise.getBaselineImediatamente()) {
+        if (Boolean.TRUE.equals(analise.getBaselineImediatamente())) {
             return "Sim";
         } else {
             return "Não";
@@ -1014,7 +1019,7 @@ public class RelatorioAnaliseRest {
      *
      */
     private boolean validarObjetosNulos(Object objeto) {
-        return objeto == null ? false : true;
+        return objeto != null;
     }
 
     /**
@@ -1040,7 +1045,7 @@ public class RelatorioAnaliseRest {
      * @return
      */
     private String verificarCondicao(Boolean valor) {
-        return (valor) ? "Sim" : "Não";
+        return Boolean.TRUE.equals((valor)) ? "Sim" : "Não";
     }
 
     /**
@@ -1087,7 +1092,7 @@ public class RelatorioAnaliseRest {
         Double valorCalculado = 0.0;
         if (valor1 != null && valor2 != null) {
             valorCalculado = Double.parseDouble(valor1) * valor2;
-            if(analise.getFatorCriticidade() != null && analise.getFatorCriticidade() == true){
+            if(analise.getFatorCriticidade() != null && analise.getFatorCriticidade()){
                 valorCalculado *= analise.getValorCriticidade()/100+1;
             }
         }

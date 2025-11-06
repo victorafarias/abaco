@@ -1,14 +1,12 @@
 package br.com.basis.abaco.service.dto;
 
-import br.com.basis.abaco.domain.Analise;
-import br.com.basis.abaco.domain.Compartilhada;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.TipoAnalise;
 import br.com.basis.dynamicexports.pojo.ReportObject;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -25,63 +23,58 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private String identificadorAnalise;
     private String numeroOs;
     private OrganizacaoAnaliseDTO organizacao;
+    private Boolean baselineImediatamente;
     private TipoEquipeAnaliseDTO equipeResponsavel;
     private SistemaAnaliseDTO sistema;
     private MetodoContagem metodoContagem;
-    private String pfTotal;
-    private String adjustPFTotal;
+    private BigDecimal pfTotal;
+    private BigDecimal adjustPFTotal;
     private Timestamp dataCriacaoOrdemServico;
     private TipoAnalise tipoAnalise;
     private Boolean isDivergence;
     private boolean bloqueiaAnalise;
     private boolean clonadaParaEquipe;
-    private Set<UserAnaliseDTO> users = new HashSet<>();
-    private Set<Compartilhada> compartilhadas = new HashSet<>();
     private StatusDTO status;
     private AnaliseDivergenceDTO analiseDivergence;
-    private Set<AnaliseDivergenceDTO> analisesComparadas = new HashSet<>();
-
-    private String pfTotalOriginal;
-    private String pfTotalAprovado;
-
+    private BigDecimal pfTotalOriginal;
+    private BigDecimal pfTotalAprovado;
     private Double pfTotalValor;
     private Double pfTotalAjustadoValor;
-
-    @JsonIgnoreProperties("analiseClonadaParaEquipe")
-    private AnaliseDTO analiseClonadaParaEquipe;
+    private String propositoContagem;
+    private String escopo;
     private Boolean analiseClonou;
-
     private Timestamp dataHomologacao;
     private Timestamp dtEncerramento;
     private boolean isEncerrada;
 
-    public void setDataHomologacao(Timestamp dataHomologacao) {
-        if (dataHomologacao != null) {
-            this.dataHomologacao = new Timestamp(dataHomologacao.getTime());
-        } else {
-            this.dataHomologacao = null;
-        }
+    private Set<AnaliseDivergenceDTO> analisesComparadas = new HashSet<>();
+    private Set<UserAnaliseDTO> users = new HashSet<>();
+    private Set<CompartilhadaDTO> compartilhadas = new HashSet<>();
+
+    private Set<FuncaoDadosDTO> funcaoDados = new HashSet<>();
+    private Set<FuncaoTransacaoDTO> funcaoTransacaos = new HashSet<>();
+
+    public Timestamp getDataCriacaoOrdemServico() {
+        return ObjectUtils.clone(dataCriacaoOrdemServico);
+    }
+
+    public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
+        this.dataCriacaoOrdemServico = ObjectUtils.clone(dataCriacaoOrdemServico);
     }
 
     public Timestamp getDataHomologacao() {
-        return this.dataHomologacao != null ? new Timestamp(this.dataHomologacao.getTime()) : null;
+        return ObjectUtils.clone(dataHomologacao);
     }
 
-
-    public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
-        this.dataCriacaoOrdemServico = dataCriacaoOrdemServico == null ? null : new Timestamp(dataCriacaoOrdemServico.getTime());
-    }
-
-    public Timestamp getDataCriacaoOrdemServico() {
-        return dataCriacaoOrdemServico == null ? null : new Timestamp(this.dataCriacaoOrdemServico.getTime());
-    }
-
-    public void setDtEncerramento(Timestamp dtEncerramento) {
-        this.dtEncerramento = dtEncerramento == null ? null : new Timestamp(dtEncerramento.getTime());
+    public void setDataHomologacao(Timestamp dataHomologacao) {
+        this.dataHomologacao = ObjectUtils.clone(dataHomologacao);
     }
 
     public Timestamp getDtEncerramento() {
-        return dtEncerramento == null ? null : new Timestamp(this.dtEncerramento.getTime());
+        return ObjectUtils.clone(dtEncerramento);
     }
 
+    public void setDtEncerramento(Timestamp dtEncerramento) {
+        this.dtEncerramento = ObjectUtils.clone(dtEncerramento);
+    }
 }

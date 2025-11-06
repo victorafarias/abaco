@@ -86,7 +86,7 @@ public abstract class FuncaoAnalise implements AbacoAuditable {
     @JoinColumn(name = "equipe_id")
     @JsonIgnoreProperties("cfpsResponsavel")
     private TipoEquipe equipe;
-    
+
     @Embedded
     // XXX deve ter o new() mesmo?
     private AbacoAudit audit = new AbacoAudit();

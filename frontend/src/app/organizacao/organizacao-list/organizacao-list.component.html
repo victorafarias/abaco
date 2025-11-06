@@ -65,6 +65,8 @@
             [disableEdit]="!canEditar"
             [disableView]="!canConsultar"
             [showVisibleColumnsControl]="false"
+			[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+			[title]="'Organizações'"
             #datatable>
           <p-column header="Sigla" field="sigla" [sortable]="true" ></p-column>
           <p-column header="Nome" field="nome" [sortable]="true"></p-column>
@@ -81,8 +83,8 @@
           </p-column>
 
         </basis-datatable>
-        <div class="ui-g-12 ui-md-2">
-            <app-export-button [dataTable]="datatable" resourceName="organizacaos" [columnsVisible]="columnsVisible" [filter]="organizacaoFiltro" funcionalidadeName="organizacao">
+        <div class="ui-g-11 div-btn-exportar">
+            <app-export-button [dataTable]="datatable" resourceName="organizacaos" [columnsVisible]="columnsVisible" [filter]="organizacaoFiltro" funcionalidadeName="organizacao" class="ui-g-12 ui-md-3 btn-exportar">
             </app-export-button>
         </div>
       </div>

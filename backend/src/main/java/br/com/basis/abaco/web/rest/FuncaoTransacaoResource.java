@@ -19,15 +19,14 @@ import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
-import br.com.basis.abaco.service.dto.DerFtDTO;
+import br.com.basis.abaco.service.dto.DerDTO;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
-import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
+import br.com.basis.abaco.service.dto.FuncaoTransacaoDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
-import br.com.basis.abaco.utils.ConfiguracaoUtils;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -53,7 +52,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedHashSet;
@@ -117,8 +115,8 @@ public class FuncaoTransacaoResource {
 
         log.debug("REST request to save FuncaoTransacao : {}", funcaoTransacao);
         Analise analise = analiseRepository.findOneByIdClean(idAnalise);
-        funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao);});
-        funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao);}));
+        funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
+        funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
         funcaoTransacao.setAnalise(analise);
         if (funcaoTransacao.getId() != null || analise.getId() == null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
@@ -136,7 +134,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao()) && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
         }
 
@@ -156,14 +154,14 @@ public class FuncaoTransacaoResource {
      */
     @PutMapping(path = "/funcao-transacaos/{id}", consumes = {"multipart/form-data"})
     @Timed
-    public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(@PathVariable Long id, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException, InvocationTargetException, IllegalAccessException {
+    public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(@PathVariable Long id, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException{
         FuncaoTransacao funcaoTransacao = convertToEntity(funcaoTransacaoDTO);
 
         log.debug("REST request to update FuncaoTransacao : {}", funcaoTransacao);
         FuncaoTransacao funcaoTransacaoOld = funcaoTransacaoRepository.findOne(id);
         Analise analise = analiseRepository.findOneByIdClean(funcaoTransacaoOld.getAnalise().getId());
-        funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao);});
-        funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao);}));
+        funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
+        funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
         funcaoTransacao.setAnalise(analise);
 
         if (funcaoTransacao.getId() == null) {
@@ -183,7 +181,7 @@ public class FuncaoTransacaoResource {
 
         FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && MetodoContagem.DETALHADA.equals(analise.getMetodoContagem())) {
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao()) && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
         }
 
@@ -219,14 +217,14 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacao(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
-        Set<DerFtDTO> ders = new LinkedHashSet<>();
+        FuncaoTransacaoDTO funcaoTransacaoDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
+        Set<DerDTO> ders = new LinkedHashSet<>();
         Set<AlrDTO> alrs = new LinkedHashSet<>();
         funcaoTransacao.getDers().forEach(der -> {
-            DerFtDTO derDto = new DerFtDTO();
+            DerDTO derDto = new DerDTO();
             derDto.setNome(der.getNome());
             derDto.setValor(der.getValor());
             ders.add(derDto);
@@ -237,16 +235,15 @@ public class FuncaoTransacaoResource {
             alrDto.setValor(alr.getValor());
             alrs.add(alrDto);
         });
-        funcaoDadosDTO.setDers(ders);
-        funcaoDadosDTO.setAlrs(alrs);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
+        funcaoTransacaoDTO.setDers(ders);
+        funcaoTransacaoDTO.setAlrs(alrs);
+        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoTransacaoDTO));
     }
 
     @GetMapping("/funcao-transacaos/analise/{id}")
     @Timed
     public Set<FuncaoTransacao> getFuncaoTransacaoAnalise(@PathVariable Long id) {
-        Set<FuncaoTransacao> lstFuncaoTransacao = funcaoTransacaoRepository.findAllByAnaliseId(id);
-        return lstFuncaoTransacao;
+        return funcaoTransacaoRepository.findAllByAnaliseId(id);
     }
 
     @GetMapping("/funcao-transacaos-dto/analise/{id}")
@@ -267,10 +264,10 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/completa/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao Completa : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findWithDerAndAlr(id);
-        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
+        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
@@ -285,7 +282,7 @@ public class FuncaoTransacaoResource {
     public ResponseEntity<Void> deleteFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true){
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao())){
             funcaoTransacao.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
             funcaoTransacao.getAlrs().forEach(item -> vwAlrSearchRepository.delete(item.getId()));
         }
@@ -310,35 +307,35 @@ public class FuncaoTransacaoResource {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/funcao-transacaos/{idAnalise}/{idfuncionalidade}/{idModulo}")
+    @GetMapping("/funcao-transacaos/{idAnalise}/{idfuncionalidade}")
     @Timed
-    public ResponseEntity<Boolean> existFuncaoDados(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @PathVariable Long idModulo, @RequestParam String name, @RequestParam(required = false) Long id) {
+    public ResponseEntity<Boolean> existFuncaoDados(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @RequestParam String name, @RequestParam(required = false) Long id) {
         log.debug("REST request to exist FuncaoDados");
         Boolean existInAnalise;
         if (id != null && id > 0) {
 
-            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
+            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNot(name, idAnalise, idfuncionalidade, id);
         } else {
-            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+            existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeId(name, idAnalise, idfuncionalidade);
         }
         return ResponseEntity.ok(existInAnalise);
     }
-    @GetMapping("/funcao-transacaos/divergencia/{idAnalise}/{idfuncionalidade}/{idModulo}")
+    @GetMapping("/funcao-transacaos/divergencia/{idAnalise}/{idfuncionalidade}")
     @Timed
-    public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @PathVariable Long idModulo, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
+    public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
         log.debug("REST request to exist FuncaoDados");
         Boolean existInAnalise = false;
         if(idEquipe != null && idEquipe > 0){
             if (id != null && id > 0) {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, id, idEquipe);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNotAndEquipeId(name, idAnalise, idfuncionalidade, id, idEquipe);
             } else {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(name, idAnalise, idfuncionalidade, idModulo, idEquipe);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndEquipeId(name, idAnalise, idfuncionalidade, idEquipe);
             }
         }else{
             if (id != null && id > 0) {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(name, idAnalise, idfuncionalidade, idModulo, id);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNot(name, idAnalise, idfuncionalidade, id);
             } else {
-                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(name, idAnalise, idfuncionalidade, idModulo);
+                existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeId(name, idAnalise, idfuncionalidade);
             }
         }
         return ResponseEntity.ok(existInAnalise);
@@ -351,13 +348,13 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/update-status/{id}/{statusFuncao}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoApiDTO> updateFuncaoTransacao(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
+    public ResponseEntity<FuncaoTransacaoDTO> updateFuncaoTransacao(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
         log.debug("REST request to get FuncaoTransacao by Status : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
         funcaoTransacao.setStatusFuncao(statusFuncao);
         funcaoTransacaoRepository.save(funcaoTransacao);
-        analiseService.save(funcaoTransacao.getAnalise());
-        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
+        analiseService.salvar(funcaoTransacao.getAnalise());
+        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
@@ -380,7 +377,7 @@ public class FuncaoTransacaoResource {
 
     @PatchMapping("/funcao-transacaos/update-pf")
     public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
-        if(funcaoPFDTO != null && funcaoPFDTO.size() > 0){
+        if(funcaoPFDTO != null && !funcaoPFDTO.isEmpty()){
             for (FuncaoPFDTO funcao : funcaoPFDTO) {
                 FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(funcao.getId());
                 funcaoTransacao.setPf(funcao.getPf());

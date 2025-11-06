@@ -3,11 +3,17 @@ package br.com.basis.abaco.service;
 import br.com.basis.abaco.domain.FuncaoDados;
 import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.Funcionalidade;
+import br.com.basis.abaco.domain.Modulo;
+import br.com.basis.abaco.domain.Sistema;
 import br.com.basis.abaco.domain.Status;
 import br.com.basis.abaco.repository.FuncaoDadosRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
 import br.com.basis.abaco.repository.FuncionalidadeRepository;
+import br.com.basis.abaco.repository.ModuloRepository;
+import br.com.basis.abaco.repository.SistemaRepository;
 import br.com.basis.abaco.repository.search.FuncionalidadeSearchRepository;
+import br.com.basis.abaco.repository.search.ModuloSearchRepository;
+import br.com.basis.abaco.repository.search.SistemaSearchRepository;
 import br.com.basis.abaco.service.dto.DropdownDTO;
 import br.com.basis.abaco.service.dto.filter.SearchFilterDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
@@ -23,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,13 +45,25 @@ public class FuncionalidadeService {
     private final FuncaoTransacaoRepository funcaoTransacaoRepository;
 
     private final DynamicExportsService dynamicExportsService;
+    private final ModuloRepository moduloRepository;
+    private final SistemaRepository sistemaRepository;
+    private final ModuloSearchRepository moduloSearchRepository;
+    private final SistemaSearchRepository sistemaSearchRepository;
 
-    public FuncionalidadeService(FuncionalidadeRepository funcionalidadeRepository, FuncionalidadeSearchRepository funcionalidadeSearchRepository, FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoDadosRepository funcaoDadosRepository, DynamicExportsService dynamicExportsService) {
+    public FuncionalidadeService(FuncionalidadeRepository funcionalidadeRepository, FuncionalidadeSearchRepository funcionalidadeSearchRepository, FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoDadosRepository funcaoDadosRepository, DynamicExportsService dynamicExportsService,
+                                 ModuloRepository moduloRepository,
+                                 SistemaRepository sistemaRepository,
+                                 ModuloSearchRepository moduloSearchRepository,
+                                 SistemaSearchRepository sistemaSearchRepository) {
         this.funcionalidadeRepository = funcionalidadeRepository;
         this.funcionalidadeSearchRepository = funcionalidadeSearchRepository;
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
         this.funcaoDadosRepository = funcaoDadosRepository;
         this.dynamicExportsService = dynamicExportsService;
+        this.moduloRepository = moduloRepository;
+        this.sistemaRepository = sistemaRepository;
+        this.moduloSearchRepository = moduloSearchRepository;
+        this.sistemaSearchRepository = sistemaSearchRepository;
     }
 
     @Transactional(readOnly = true)
@@ -87,5 +106,22 @@ public class FuncionalidadeService {
         }
 
         return byteArrayOutputStream;
+    }
+
+    public Funcionalidade criarFuncionalidade(Funcionalidade funcionalidade, Sistema sistema) {
+        funcionalidade = funcionalidadeRepository.save(funcionalidade);
+        if (funcionalidade.getModulo().getId() == null) {
+            Modulo modulo = funcionalidade.getModulo();
+            modulo.setSistema(sistema);
+            modulo.setFuncionalidades(Collections.singleton(funcionalidade));
+            moduloRepository.save(modulo);
+            moduloSearchRepository.save(modulo);
+
+            sistema.getModulos().add(modulo);
+            sistemaRepository.save(sistema);
+            sistemaSearchRepository.save(sistema);
+        }
+
+        return funcionalidadeRepository.save(funcionalidade);
     }
 }

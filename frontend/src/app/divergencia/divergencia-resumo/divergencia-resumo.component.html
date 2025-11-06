@@ -1,122 +1,166 @@
 <basis-block-ui></basis-block-ui>
 <p-tabView (onChange)="handleChange($event)" *ngIf="analise">
-    <p-tabPanel [header]="this.getLabel('Geral')"></p-tabPanel>
+	<p-tabPanel [header]="this.getLabel('Geral')"></p-tabPanel>
 
-    <p-tabPanel [header]="this.getLabel('Funções de Dados')"></p-tabPanel>
+	<p-tabPanel [header]="this.getLabel('Funções de Dados')"></p-tabPanel>
 
-    <p-tabPanel [header]="this.getLabel('Funções de Transações')" [disabled]="disableAba" ></p-tabPanel>
+	<p-tabPanel [header]="this.getLabel('Funções de Transações')" [disabled]="disableAba"></p-tabPanel>
 
-    <p-tabPanel [header]="this.getLabel('Resumo')" [selected]="true">
-        <div class="ui-g ui-fluid">
-            <div class="card card-w-title">
-                <div class="ui-g-12" *ngIf="analise">
-                    <h2>{{this.getLabel('PF Final Total:')}} {{ pfTotal }}</h2>
-                    <h2>{{this.getLabel('PF Final Ajustado:')}} {{ pfAjustada }}</h2>
-                    <h2>{{this.getLabel('PF Ajustado Original :')}} {{ pfOriginal }}</h2>
-                    <div class="ui-g-12 ui-md-12 ui-sm-12">
-                        <div class="ui-g-12 ui-md-12 ui-sm-12">
-                          <h2>Complexidade</h2>
-                          <basis-datatable
-                              type="memory"
-                              [value]="linhaResumo"
-                              [paginator]="false"
-                              disableEdit="true"
-                              disableView="true"
-                              disableDelete="true"
-                              disableClone="true"
-                              [rows]="20" >
-                            <p-column >
-                                <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                  {{ linhaResumo.tipo}}
-                                </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('SEM')">
-                              <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                {{ linhaResumo.sem}}
-                              </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('Baixa')">
-                                <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                  {{ linhaResumo.baixa}}
-                                </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('Média')">
-                                <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                  {{ linhaResumo.media}}
-                                </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('Alta')">
-                                <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                  {{ linhaResumo.alta}}
-                                </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('INM')">
-                                <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                  {{ linhaResumo.inm}}
-                                </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('Qtd')">
-                                <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                  {{ linhaResumo.quantidadeTipo}}
-                                </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('PF Total')">
-                              <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                {{ linhaResumo.pfTotal | number }}
-                              </ng-template>
-                            </p-column>
-                            <p-column [header]="this.getLabel('PF Ajustado')">
-                              <ng-template let-linhaResumo="rowData" pTemplate="body">
-                                {{ linhaResumo.pfAjustada | number }}
-                              </ng-template>
-                            </p-column>
-                          </basis-datatable>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="ui-g">
-          <div class="ui-g ui-md-12" >
-            <div class="ui-g-2 ui-md-2 ui-sm-12">
-              <app-white-button
-                      [buttonLabel]="this.getLabel('Voltar')"
-                      routerLink="/divergencia">
-              </app-white-button>
-            </div>
-            <div class="ui-g-2 ui-md-2 ui-sm-12">
-              <app-green-button 
-                      [buttonLabel]="this.getLabel('Gerar Relatório Excel')"
-                      (click)="geraRelatorioExcelBrowser()">
-              </app-green-button>
-            </div>
-            <div class="ui-g-2 ui-md-2 ui-sm-12">
-              <app-gray-button 
-                      [buttonLabel]="this.getLabel('Gerar Relatório PDF')"
-                      (click)="geraRelatorioPdfDetalhadoBrowser()">
-              </app-gray-button>
-            </div>
-            <div class="ui-g-2 ui-md-2 ui-sm-12">
-              <app-blue-button [buttonLabel]="this.getLabel('Exportar Planilha Excel')"
-                (click)="openModalImportarExcel(this.analise)">
-              </app-blue-button>
-            </div>
-          </div>
-      </div>
-    </p-tabPanel>
+	<p-tabPanel [header]="this.getLabel('Resumo')" [selected]="true">
+		<div class="ui-g ui-fluid">
+			<div class="card card-w-title">
+				<div class="ui-g-12" *ngIf="analise">
+					<h2>{{this.getLabel('PF Final Total:')}} {{ pfTotal }}</h2>
+					<h2>{{this.getLabel('PF Final Ajustado:')}} {{ pfAjustada }}</h2>
+					<h2>{{this.getLabel('PF Ajustado Original :')}} {{ pfOriginal }}</h2>
+					<div class="ui-g-12 ui-md-12 ui-sm-12">
+						<div class="ui-g-12 ui-md-12 ui-sm-12">
+							<h2>Complexidade</h2>
+							<basis-datatable
+								type="memory"
+								[value]="linhaResumo"
+								[paginator]="false"
+								disableEdit="true"
+								disableView="true"
+								disableDelete="true"
+								disableClone="true"
+								[rows]="20">
+								<p-column>
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.tipo}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('SEM')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.sem}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('Baixa')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.baixa}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('Média')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.media}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('Alta')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.alta}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('INM')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.inm}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('Qtd')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.quantidadeTipo}}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('PF Total')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.pfTotal | number }}
+									</ng-template>
+								</p-column>
+								<p-column [header]="this.getLabel('PF Ajustado')">
+									<ng-template let-linhaResumo="rowData" pTemplate="body">
+										{{ linhaResumo.pfAjustada | number }}
+									</ng-template>
+								</p-column>
+							</basis-datatable>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui-g">
+			<div class="ui-g ui-md-12">
+				<div class="ui-g-2 ui-md-2 ui-sm-12">
+					<app-white-button
+						[buttonLabel]="this.getLabel('Voltar')"
+						routerLink="/divergencia">
+					</app-white-button>
+				</div>
+				<div class="ui-g-2 ui-md-2 ui-sm-12">
+					<app-green-button
+						[buttonLabel]="this.getLabel('Gerar Relatório Excel')"
+						(click)="geraRelatorioExcelBrowser()">
+					</app-green-button>
+				</div>
+				<div class="ui-g-2 ui-md-2 ui-sm-12">
+					<app-gray-button
+						[buttonLabel]="this.getLabel('Gerar Relatório PDF')"
+						(click)="geraRelatorioPdfDetalhadoBrowser()">
+					</app-gray-button>
+				</div>
+				<div class="ui-g-2 ui-md-2 ui-sm-12">
+					<app-blue-button [buttonLabel]="this.getLabel('Exportar Planilha Excel')"
+									 (click)="openModalImportarExcel(this.analise)">
+					</app-blue-button>
+				</div>
+				<div class="ui-g-2 ui-md-2 ui-sm-12" *ngIf="!analise?.bloqueiaAnalise">
+					<app-red-button [buttonLabel]="this.getLabel('Bloquear validação')"
+									(click)="abrirFecharPopUpConfirmarBloquearDesbloquear()">
+					</app-red-button>
+				</div>
+				<div class="ui-g-2 ui-md-2 ui-sm-12" *ngIf="analise?.bloqueiaAnalise">
+					<app-green-button [buttonLabel]="this.getLabel('Desbloquear validação')"
+									  (click)="abrirFecharPopUpConfirmarBloquearDesbloquear()">
+					</app-green-button>
+				</div>
+			</div>
+		</div>
+	</p-tabPanel>
 </p-tabView>
 
 
+<!-- Dialog bloquear e alterar status validação-->
+<p-dialog
+	[header]="analise?.bloqueiaAnalise ? 'Alterar status para desbloquear a validação.' : 'Alterar status para bloquear a validação.'"
+	[(visible)]="popUpConfirmarBloquearDesbloquear"
+	[style]="{width: '40vw', minHeight: '200px'}" [modal]="true">
+	<div style="min-height:200px">
+		<div class="ui-g">
+			<div class="ui-g-12 ui-md-12 ui-sm-12">
+				<p-dropdown
+					id="idStatusAnalise"
+					dataKey=id
+					optionLabel="nome"
+					placeholder="Selecione um Status"
+					[style]="{'width':'100%'}"
+					[filter]="true"
+					[options]="listaStatus"
+					[(ngModel)]="statusNovo">
+				</p-dropdown>
+			</div>
+		</div>
+		<app-red-button *ngIf="!analise?.bloqueiaAnalise" [isDisabled]="statusNovo?.id == undefined" [buttonLabel]="this.getLabel('Bloquear validação')"
+						(click)="bloquearValidacao()">
+		</app-red-button>
+	</div>
+</p-dialog>
+
 <p-dialog header="Exportar planilha excel" [(visible)]="showDialogImportarExcel" [style]="{width: '50vw'}"
-    [minHeight]="300" [modal]="true" #dialogPlanilha>
+		  [minHeight]="300" [modal]="true" #dialogPlanilha>
 
-    <p-dropdown [style]="{'width':'100%', 'margin-bottom': '55px'}" [appendTo]="dialogPlanilha" [options]="lstModelosExcel" optionLabel="label"
-        id="idModeloExcel" [(ngModel)]="modeloSelecionado" placeholder="Selecione um modelo">
-    </p-dropdown>
+	<p-dropdown [style]="{'width':'100%', 'margin-bottom': '55px'}" [appendTo]="dialogPlanilha"
+				[options]="lstModelosExcel" optionLabel="label"
+				id="idModeloExcel" [(ngModel)]="modeloSelecionado" placeholder="Selecione um modelo">
+	</p-dropdown>
 
-    <app-green-button buttonLabel="Exportar" (click)="exportarPlanilha()" style="float:right; margin: 5px">
-    </app-green-button>
-    <app-white-button buttonLabel="Cancelar" (click)="closeModalExportarExcel()" style="float:right; margin: 5px">
-    </app-white-button>
+	<app-green-button buttonLabel="Exportar" (click)="exportarPlanilha()" style="float:right; margin: 5px">
+	</app-green-button>
+	<app-white-button buttonLabel="Cancelar" (click)="closeModalExportarExcel()" style="float:right; margin: 5px">
+	</app-white-button>
 
 </p-dialog>
+
+<p-confirmDialog header="Confirmação" #dialog>
+	<p-footer>
+		<button type="button" pButton icon="fa-close" label="Não" (click)="dialog.reject()"></button>
+		<button type="button" pButton icon="fa-check" label="Sim" (click)="dialog.accept()"></button>
+	</p-footer>
+</p-confirmDialog>

@@ -74,6 +74,7 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit, AfterCont
                     { label: 'Análise', routerLink: 'analise', icon: 'description', visible : false },
                     { label: 'Baseline', routerLink: 'baseline', icon: 'view_list' , visible : false},
                     { label: 'Validação', routerLink: 'divergencia', icon: 'compare_arrows', visible : false },
+                    { label: 'Dashboard', routerLink: 'dashboard2', icon: 'pi-chart-pie', visible : true },
                 ]
             }
         ];

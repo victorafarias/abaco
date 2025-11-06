@@ -54,10 +54,10 @@ public class StatusService {
     }
 
     public List<Status> findAllActive() {
-        return statusRepository.findByAtivoTrue();
+        return statusRepository.findByAtivoTrueOrderByNome();
     }
     public List<Status> findAll() {
-        return statusRepository.findAll();
+        return statusRepository.findByAtivoTrueOrderByNome();
     }
     public StatusDTO convertToDto(Status status) {
         return modelMapper.map(status, StatusDTO.class);
@@ -92,6 +92,6 @@ public class StatusService {
     }
 
     public List<Status> buscarStatusAtivosValidacao() {
-        return statusRepository.findAllByAtivoTrueAndDivergenciaTrue();
+        return statusRepository.findAllByAtivoTrueAndDivergenciaTrueOrderByNome();
     }
 }

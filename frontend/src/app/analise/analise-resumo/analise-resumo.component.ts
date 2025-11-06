@@ -30,7 +30,7 @@ export class AnaliseResumoComponent implements OnInit {
 
     resumoTotal: ResumoTotal;
     public linhaResumo: Resumo[] = [];
-    public pfTotal: string;
+    public pfTotal: number;
     public pfAjustada: string;
     complexidades: string[];
 
@@ -339,10 +339,11 @@ export class AnaliseResumoComponent implements OnInit {
                 this.selectedEquipes.forEach(item => {
                     this.equipeShare = this.equipeShare.filter(
                         compartilha => {
-                            return compartilha.id !== item.id ? true : false;
+                            return compartilha.id !== item.id;
                         });
                 });
                 this.limparSelecaoCompartilhar();
+				window.location.reload();
             });
         } else {
             this.pageNotificationService.addInfoMessage(this.getLabel('Selecione pelo menos um registro para poder adicionar ou clique no X para sair!'));
@@ -350,11 +351,11 @@ export class AnaliseResumoComponent implements OnInit {
     }
 
     public deletarCompartilhar() {
-        if (this.selectedToDelete && this.selectedToDelete !== null) {
+        if (this.selectedToDelete) {
             this.analiseService.deletarCompartilhar(this.selectedToDelete.id).subscribe((res) => {
                 this.analise.compartilhadas = this.analise.compartilhadas.filter(
                     compartilha => {
-                        return compartilha.id !== this.selectedToDelete.id ? true : false;
+                        return compartilha.id !== this.selectedToDelete.id;
                     });
                 this.mostrarDialog = false;
                 this.pageNotificationService.addSuccessMessage(this.getLabel('Compartilhamento removido com sucesso!'));

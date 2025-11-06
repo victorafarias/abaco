@@ -138,13 +138,13 @@ export class FuncaoTransacaoService {
         return this.http.delete<void>(`${this.resourceUrlComment}/${id}`);
     }
 
-    existsWithName(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: Number = 0): Observable<Boolean> {
-        const url = `${this.funcaoTransacaoResourceUrl}/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}`;
+    existsWithName(name: String, idAnalise: number, idFuncionalade: number, id: Number = 0): Observable<Boolean> {
+        const url = `${this.funcaoTransacaoResourceUrl}/${idAnalise}/${idFuncionalade}?name=${name}&id=${id}`;
         return this.http.get<Boolean>(url);
     }
 
-    existsWithNameAndEquipe(name: String, idAnalise: number, idFuncionalade: number, idModulo: number, id: number = 0, idEquipe: number): Observable<Boolean> {
-        const url = `${this.funcaoTransacaoResourceUrl}/divergencia/${idAnalise}/${idFuncionalade}/${idModulo}?name=${name}&id=${id}&idEquipe=${idEquipe}`;
+    existsWithNameAndEquipe(name: String, idAnalise: number, idFuncionalade: number, id: number = 0, idEquipe: number): Observable<Boolean> {
+        const url = `${this.funcaoTransacaoResourceUrl}/divergencia/${idAnalise}/${idFuncionalade}?name=${name}&id=${id}&idEquipe=${idEquipe}`;
         return this.http.get<Boolean>(url);
     }
 

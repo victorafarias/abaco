@@ -3,6 +3,7 @@ package br.com.basis.abaco.service.dto;
 import br.com.basis.abaco.domain.Grupo;
 import br.com.basis.abaco.domain.User;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -21,13 +22,13 @@ public class GrupoDTO {
 
     private String equipe;
 
-    private String pfTotal;
+    private BigDecimal pfTotal;
 
     private String metodoContagem;
 
     private Integer diasDeGarantia;
 
-    private String pfAjustado;
+    private BigDecimal pfAjustado;
 
     private Boolean bloqueado;
 
@@ -46,7 +47,7 @@ public class GrupoDTO {
     }
 
     public GrupoDTO(Long idAnalise, String identificadorAnalise, String organizacao, String sistema, String equipe
-        , String pfTotal, String metodoContagem, Integer diasDeGarantia, String pfAjustado, Boolean bloqueado
+        , BigDecimal pfTotal, String metodoContagem, Integer diasDeGarantia, BigDecimal pfAjustado, Boolean bloqueado
         , Timestamp dataHomologacao, Set<User> usuarios, Timestamp dataCriacao) {
         this.idAnalise = idAnalise;
         this.identificadorAnalise = identificadorAnalise;
@@ -105,11 +106,11 @@ public class GrupoDTO {
         this.equipe = equipe;
     }
 
-    public String getPfTotal() {
+    public BigDecimal getPfTotal() {
         return pfTotal;
     }
 
-    public void setPfTotal(String pfTotal) {
+    public void setPfTotal(BigDecimal pfTotal) {
         this.pfTotal = pfTotal;
     }
 
@@ -129,11 +130,11 @@ public class GrupoDTO {
         this.diasDeGarantia = diasDeGarantia;
     }
 
-    public String getPfAjustado() {
+    public BigDecimal getPfAjustado() {
         return pfAjustado;
     }
 
-    public void setPfAjustado(String pfAjustado) {
+    public void setPfAjustado(BigDecimal pfAjustado) {
         this.pfAjustado = pfAjustado;
     }
 

@@ -1,0 +1,42 @@
+<div class="ui-g ui-fluid">
+	<div class="ui-g-12 ui-md-12 ui-sm-12">
+		<basis-datatable #datatable
+						 [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}', 'autoLayout': true}"
+						 [rows]="20"
+						 [showPaginationFooter]="true"
+						 [title]="'Rotinas Executadas'"
+						 [value]="rotinas"
+						 disableDelete="true"
+						 disableEdit="true"
+						 disableView="true"
+						 id="rotinas_executadas" type="memory">
+			<p-column [sortable]="true" field="job_execution_id" filterType="select" header="Id"></p-column>
+			<p-column [sortable]="true" field="version" filterType="select" header="Versão"></p-column>
+			<p-column [sortable]="true" field="job_instance_id" filterType="select" header="Job Instance Id"></p-column>
+			<p-column [sortable]="true" field="create_time" filterType="select" header="Data de criação">
+				<ng-template let-col let-rotina="rowData" pTemplate="body">
+					{{ rotina.create_time | date: 'dd/mm/yyyyy'}}
+				</ng-template>
+			</p-column>
+			<p-column [sortable]="true" field="start_time" filterType="select" header="Data inicío">
+				<ng-template let-col let-rotina="rowData" pTemplate="body">
+					{{ rotina.start_time | date: 'dd/mm/yyyyy'}}
+				</ng-template>
+			</p-column>
+			<p-column [sortable]="true" field="end_time" filterType="select" header="Data fim">
+				<ng-template let-col let-rotina="rowData" pTemplate="body">
+					{{ rotina.end_time | date: 'dd/mm/yyyyy'}}
+				</ng-template>
+			</p-column>
+			<p-column [sortable]="true" field="status" filterType="select" header="Status"></p-column>
+			<p-column [sortable]="true" field="exit_code" filterType="select" header="Código saída"></p-column>
+			<p-column [sortable]="true" field="exit_message" filterType="select" header="Mensagem de saída"></p-column>
+			<p-column [sortable]="true" field="last_updated" filterType="select" header="Última atualização">
+				<ng-template let-col let-rotina="rowData" pTemplate="body">
+					{{ rotina.create_time | date: 'dd/mm/yyyyy'}}
+				</ng-template>
+			</p-column>
+			<p-column [sortable]="true" field="job_configuration_location" filterType="select" header="Job Configuration Location"></p-column>
+		</basis-datatable>
+	</div>
+</div>

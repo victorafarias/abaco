@@ -2,9 +2,16 @@
     width: 100% !important;
     height: inherit !important;
     background: top left no-repeat !important;
+	max-width: 110px;
+	max-height: 48px;
   }
-  .topbar-left {
-    background-color: #DCDCDC !important;
+  .topbar{
+	  background-color: #EF4436 !important;
+	  height: 60px;
+  }
+
+.topbar-right{
+	padding: 0 10px 0 20px !important;
 }
 
 
@@ -31,5 +38,47 @@
   }
 
   :host ::ng-deep .ui-dialog .ui-dialog-titlebar{
-    background: rgba(99, 99, 99, 0.329); 
+    background: rgba(99, 99, 99, 0.329);
 }
+
+  .usuario-nome{
+
+  }
+  .divs{
+	  align-items: center;
+	  display: flex;
+  }
+  .div-ajuste{
+	  text-align: end;
+	  justify-content: flex-end;
+  }
+  .icons-settings {
+		text-align: initial;
+  }
+  .label{
+	  font-family: Titillium Web, sans-serif;
+	  font-weight: 700;
+	  font-size: 20px;
+	  color: #FFFFFF;
+	  text-transform: uppercase;
+  }
+
+  .titulo{
+	  font-size: 37px !important;
+  }
+.topbar-icon{
+	font-size: 25px !important;
+}
+
+.ultima-menu{
+	text-align: left;
+}
+
+.icons-ajuste {
+	margin-left: 14px;
+}
+
+
+
+
+

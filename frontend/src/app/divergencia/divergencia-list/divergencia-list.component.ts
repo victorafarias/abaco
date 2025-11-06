@@ -58,7 +58,7 @@ export class DivergenciaListComponent implements OnInit {
 
     customOptions: Object = {};
 
-    userAnaliseUrl: string = this.analiseService.resourceUrl;
+    userAnaliseUrl: string = this.divergenciaService.resourceUrl;
 
     analiseSelecionada: any[] = []
     analiseTableSelecionada: Divergencia = new Divergencia();
@@ -88,6 +88,10 @@ export class DivergenciaListComponent implements OnInit {
     ];
     blocked;
     inicial: boolean;
+    bloquear = [
+    	{titulo: 'Sim', valor: true },
+		{titulo: 'Não', valor: false}
+	]
     showDialogAnaliseCloneTipoEquipe = false;
     showDialogAnaliseBlock = false;
     mostrarDialog = false;
@@ -110,7 +114,6 @@ export class DivergenciaListComponent implements OnInit {
     constructor(
         private router: Router,
         private sistemaService: SistemaService,
-        private analiseService: DivergenciaService,
         private tipoEquipeService: TipoEquipeService,
         private organizacaoService: OrganizacaoService,
         private pageNotificationService: PageNotificationService,
@@ -264,6 +267,10 @@ export class DivergenciaListComponent implements OnInit {
             `&sistema=${this.searchDivergence.sistema.id}` : '');
             querySearch = querySearch.concat((this.searchDivergence.organizacao && this.searchDivergence.organizacao.id) ?
             `&organizacao=${this.searchDivergence.organizacao.id}` : '');
+			querySearch = querySearch.concat((this.searchDivergence.status && this.searchDivergence.status.id) ?
+			`&status=${this.searchDivergence.status.id}` : '');
+			querySearch = querySearch.concat((this.searchDivergence.bloqueiaAnalise && this.searchDivergence.bloqueiaAnalise.valor !== null) ?
+			`&bloqueiaAnalise=${this.searchDivergence.bloqueiaAnalise.valor}` : '');
             return querySearch;
         }
 
@@ -288,7 +295,7 @@ export class DivergenciaListComponent implements OnInit {
         loadDirvenceLazy(event: LazyLoadEvent) {
             this.blockUiService.show();
             this.event = event;
-            this.analiseService.search(event, event.rows, false, this.changeUrl()).subscribe(response => {
+            this.divergenciaService.search(event, event.rows, false, this.changeUrl()).subscribe(response => {
                 this.lstDivergence = response.body;
                 this.datatable.totalRecords = parseInt(response.headers.get('x-total-count'), 10);
                 this.blockUiService.hide();
@@ -324,15 +331,46 @@ export class DivergenciaListComponent implements OnInit {
         * funcionalidade para bloqueio e mudança de status
         */
         public confirmBlockDivegence(divergence: Analise[]) {
-            if (divergence.length == 0) {
+            if (this.selectedDivergence.length === 0) {
                 this.pageNotificationService.addErrorMessage('Nenhuma Validação foi selecionada.');
                 return;
             }
-            this.changeStatusAndBlock()
+
+            if (this.selectedDivergence.some(a => a.bloqueiaAnalise)) {
+                this.confirmationService.confirm({
+                    message: `Tem certeza que deseja desbloquear os registros selecionados?`,
+                    accept: () => {
+                        this.selectedDivergence.forEach(a => this.desbloquearAnalise(a));
+                    }
+                });
+            } else {
+                this.verificaStatusAprovado();
+                this.changeStatusAndBlock();
+            }
         }
+
+		public verificaStatusAprovado(){
+			let aprovada : Analise[] = this.selectedDivergence.filter(divergence => {
+				return divergence.status.nome == "Aprovada"
+			});
+			if(aprovada.length == this.selectedDivergence.length){
+				this.statusToChange = aprovada[0].status;
+			}else {
+				this.statusToChange = null;
+			}
+		}
 
         public changeStatusAndBlock() {
             this.showDialogDivergenceBlock = true;
+        }
+
+        public desbloquearAnalise(divergencia: Analise) {
+            this.divergenciaService.block(divergencia).subscribe(() => {
+                this.mensagemAnaliseBloqueada(divergencia.bloqueiaAnalise, divergencia.identificadorAnalise);
+                this.datatable._filter();
+                this.datatable.selection = null;
+                this.showDialogDivergenceBlock = false;
+            });
         }
 
         public changeStatus(divergence: Analise) {
@@ -373,15 +411,15 @@ export class DivergenciaListComponent implements OnInit {
 
         public bloqueiaDivegence(divergencia: Analise) {
             this.analiseTemp = new Analise().copyFromJSON(divergencia);
-            let canBloqued = false;
+            let canBlock = false;
             if (this.tipoEquipesLoggedUser) {
                 this.tipoEquipesLoggedUser.forEach(equipe => {
                     if (equipe.id === this.analiseTemp.equipeResponsavel.id) {
-                        canBloqued = true;
+                        canBlock = true;
                     }
                 });
             }
-            if (canBloqued) {
+            if (canBlock) {
                 this.alterValidacaoStatusBlock(divergencia);
             } else {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Somente membros da equipe responsável podem bloquear esta análise!'));
@@ -404,8 +442,7 @@ export class DivergenciaListComponent implements OnInit {
                     });
                 },
                 err => this.pageNotificationService.addErrorMessage('Não foi possível alterar o status da Validação.'));
-            }
-            else {
+            } else {
                 this.pageNotificationService.addErrorMessage('Selecione um Status para continuar.');
             }
         }

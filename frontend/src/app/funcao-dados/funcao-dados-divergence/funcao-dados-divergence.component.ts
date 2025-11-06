@@ -745,7 +745,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                     }else{
                         this.pageNotificationService.addErrorMessage("Função já cadastrada.")
                     }
-                    
+
                 });
         }
     }
@@ -863,7 +863,6 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             funcaoTransacaoAtual.name,
             this.analise.id,
             funcaoTransacaoAtual.funcionalidade.id,
-            funcaoTransacaoAtual.funcionalidade.modulo.id,
             0,
             this.seletedFuncaoDados.equipe.id)
             .subscribe(existFuncaoTranasacao => {
@@ -1341,7 +1340,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
 
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos;
+            this.modulos = sistemaRecarregado.modulos.sort((m1, m2) => m1.nome.localeCompare(m2.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
         });
@@ -1363,7 +1362,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.hideShowQuantidade = true;
     }
 
-    
+
     fecharDialogEditarEmLote() {
         this.evidenciaEmLote = null;
         this.classificacaoEmLote = null;
@@ -1435,7 +1434,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         if (this.moduloSelecionadoEmLote) {
             moduloSelecionado = this.moduloSelecionadoEmLote;
         }
-        
+
         for (let i = 0; i < this.funcaoDadosEmLote.length; i++) {
             let funcaoDado = this.funcaoDadosEmLote[i];
             if(this.verificarFuncoesEmLote(funcaoDado) == true){
@@ -1666,7 +1665,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         }
         this.deselecionaFuncionalidadesSeModuloForDiferente();
         this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.seletedFuncaoDados.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades;
+            this.funcionalidades = funcionalidades.sort((f1,f2) => f1.nome.localeCompare(f2.nome));
             this.selecionaFuncionalidadeFromCurrentAnalise(this.seletedFuncaoDados.modulo);
             this.oldModuloId = modulo.id;
         });
@@ -1685,7 +1684,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             }
         }
     }
-    
+
     isModuloSelected() {
         return this.seletedFuncaoDados.modulo != null;
     }
@@ -1791,7 +1790,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
                         this.seletedFuncaoDados.lstDivergenceComments.splice(this.seletedFuncaoDados.lstDivergenceComments.indexOf(divergenceComment), 1);
                         this.pageNotificationService.addSuccessMessage("Comentário excluído com sucesso!");
                     })
-                    
+
                 }
             }
         });
@@ -1802,7 +1801,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
             this.pageNotificationService.addErrorMessage('É obrigatório preencher o campo comentário.');
             return;
         }
-        
+
         this.funcaoDadosService.updateComment(divergenceComment.id, divergenceComment.comment).subscribe(r => {
             this.seletedFuncaoDados.lstDivergenceComments.forEach(lstDComment => {
                 if(lstDComment.id === divergenceComment.id){
@@ -1814,11 +1813,11 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         })
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoDados){ 
+    habilitarEdicaoOrdem(funcao: FuncaoDados){
         if(this.habilitaEditarOrdem == false && this.isOrderning){
             this.habilitaEditarOrdem = true;
         }
-        
+
     }
 
     trocarOrdem(numero, funcao: FuncaoDados){

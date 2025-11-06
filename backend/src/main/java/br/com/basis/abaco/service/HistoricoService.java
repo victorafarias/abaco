@@ -43,7 +43,7 @@ public class HistoricoService {
         this.userRepository = userRepository;
         this.dynamicExportsService = dynamicExportsService;
     }
-    
+
 
     public List<HistoricoDTO> findAllByAnalise(Long idAnalise){
         if(idAnalise != null){
@@ -51,7 +51,7 @@ public class HistoricoService {
             if(historicos.size() > 0){
                 List<HistoricoDTO> listaHistoricoDTO = new ArrayList<>();
                 for (Historico historico : historicos) {
-                    AnaliseDTO analiseDTO = analiseService.convertToDto(historico.getAnalise());
+                    AnaliseDTO analiseDTO = analiseService.converterParaDto(historico.getAnalise());
                     UserDTO userDTO = new UserDTO(historico.getUsuario());
                     HistoricoDTO historicoDTO = new HistoricoDTO();
                     historicoDTO.setAcao(historico.getAcao());

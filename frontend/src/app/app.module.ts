@@ -5,7 +5,14 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { SecurityModule, VersionTagModule } from '@nuvem/angular-base';
-import { BlockUiModule, BreadcrumbModule, ErrorStackModule, MenuModule, PageNotificationModule } from '@nuvem/primeng-components';
+import {
+	BlockUiModule,
+	BreadcrumbModule,
+	DatatableModule,
+	ErrorStackModule,
+	MenuModule,
+	PageNotificationModule
+} from '@nuvem/primeng-components';
 import { environment } from '../environments/environment';
 import { AnaliseModule } from './analise/analise.module';
 import { AppRoutingModule } from './app-routing.module';
@@ -46,6 +53,9 @@ import { UserModule } from './user/user.module';
 import { APIInterceptor } from './util/api.interceptor';
 import { AuthGuardService } from './util/auth.guard.service';
 import { AuthService } from './util/auth.service';
+import { Dashboard2Component } from './dashboard2/dashboard2.component';
+import { AdministracaoComponent } from './administracao/administracao.component';
+import {AdministracaoModule} from "./administracao/administracao.module";
 
 @NgModule({
     declarations: [
@@ -54,49 +64,53 @@ import { AuthService } from './util/auth.service';
         AppFooterComponent,
         AppRightpanelComponent,
         AppInlineProfileComponent,
-        DiarioErrosComponent
+        DiarioErrosComponent,
+        Dashboard2Component,
+        AdministracaoComponent
     ],
-    imports: [
-        BrowserModule,
-        BrowserAnimationsModule,
-        AppRoutingModule,
-        SharedModule,
-        HttpClientModule,
-        PageNotificationModule,
-        BreadcrumbModule,
-        ErrorStackModule,
-        VersionTagModule.forRoot(environment),
-        SecurityModule.forRoot(environment.auth),
-        MenuModule,
-        FaseModule,
-        IndexadorModule,
-        AbacoButtonsModule,
-        ManualModule,
-        EsforcoFaseModule,
-        OrganizacaoModule,
-        ContratoModule,
-        FuncionalidadeModule,
-        SistemaModule,
-        ModuloModule,
-        FuncionalidadeModule,
-        TipoEquipeModule,
-        UserModule,
-        AnaliseModule,
-        FuncaoDadosModule,
-        FuncaoTransacaoModule,
-        BaselineModule,
-        SenhaModule,
-        LoginModule,
-        DashboardModule,
-        PesquisarFuncaoTransacaoModule,
-        BlockUiModule,
-        StatusModule,
-        NomenclaturaModule,
-        DivergenciaModule,
-        ConfiguracaoBaselineModule,
+	imports: [
+		BrowserModule,
+		BrowserAnimationsModule,
+		AppRoutingModule,
+		SharedModule,
+		HttpClientModule,
+		PageNotificationModule,
+		BreadcrumbModule,
+		ErrorStackModule,
+		VersionTagModule.forRoot(environment),
+		SecurityModule.forRoot(environment.auth),
+		MenuModule,
+		FaseModule,
+		IndexadorModule,
+		AbacoButtonsModule,
+		ManualModule,
+		EsforcoFaseModule,
+		OrganizacaoModule,
+		ContratoModule,
+		FuncionalidadeModule,
+		SistemaModule,
+		ModuloModule,
+		FuncionalidadeModule,
+		TipoEquipeModule,
+		UserModule,
+		AnaliseModule,
+		FuncaoDadosModule,
+		FuncaoTransacaoModule,
+		BaselineModule,
+		SenhaModule,
+		LoginModule,
+		DashboardModule,
+		PesquisarFuncaoTransacaoModule,
+		BlockUiModule,
+		StatusModule,
+		NomenclaturaModule,
+		DivergenciaModule,
+		ConfiguracaoBaselineModule,
 		ConfiguracaoModule,
-        PerfilModule
-    ],
+		PerfilModule,
+		AdministracaoModule,
+		DatatableModule
+	],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
         UploadService, AuthService, AuthGuardService, NovidadesVersaoService,

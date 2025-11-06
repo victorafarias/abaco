@@ -97,7 +97,6 @@ import br.com.basis.abaco.service.mapper.SistemaElasticSearchMapper;
 import br.com.basis.abaco.service.mapper.TipoEquipeMapper;
 import br.com.basis.abaco.service.mapper.UserElasticSearchMapper;
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
@@ -107,7 +106,6 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 public class IndexadorConfiguration {
 
     private ElasticsearchTemplate elasticsearchTemplate;
-    private ModelMapper modelMapper;
 
     private AnaliseRepository analiseRepository;
     private AlrRepository alrRepository;

@@ -3,79 +3,91 @@ package br.com.basis.abaco.service;
 import br.com.basis.abaco.domain.Alr;
 import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.Compartilhada;
-import br.com.basis.abaco.domain.Contrato;
 import br.com.basis.abaco.domain.Der;
 import br.com.basis.abaco.domain.EsforcoFase;
+import br.com.basis.abaco.domain.FatorAjuste;
 import br.com.basis.abaco.domain.FuncaoAnalise;
 import br.com.basis.abaco.domain.FuncaoDados;
-import br.com.basis.abaco.domain.FuncaoDadosVersionavel;
 import br.com.basis.abaco.domain.FuncaoTransacao;
-import br.com.basis.abaco.domain.Manual;
-import br.com.basis.abaco.domain.Organizacao;
+import br.com.basis.abaco.domain.Funcionalidade;
+import br.com.basis.abaco.domain.Modulo;
 import br.com.basis.abaco.domain.Rlr;
 import br.com.basis.abaco.domain.Sistema;
 import br.com.basis.abaco.domain.Status;
 import br.com.basis.abaco.domain.TipoEquipe;
+import br.com.basis.abaco.domain.UploadedFile;
 import br.com.basis.abaco.domain.User;
 import br.com.basis.abaco.domain.VwAnaliseDivergenteSomaPf;
-import br.com.basis.abaco.domain.VwAnaliseFD;
-import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.domain.VwAnaliseSomaPf;
+import br.com.basis.abaco.domain.enumeration.Complexidade;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
-import br.com.basis.abaco.domain.enumeration.TipoDeDataAnalise;
-import br.com.basis.abaco.repository.AnaliseRepository;
+import br.com.basis.abaco.domain.enumeration.TipoFuncaoDados;
+import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
 import br.com.basis.abaco.repository.CompartilhadaRepository;
-import br.com.basis.abaco.repository.ContratoRepository;
-import br.com.basis.abaco.repository.FuncaoDadosRepository;
-import br.com.basis.abaco.repository.FuncaoDadosVersionavelRepository;
-import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
-import br.com.basis.abaco.repository.ManualRepository;
 import br.com.basis.abaco.repository.OrganizacaoRepository;
 import br.com.basis.abaco.repository.SistemaRepository;
-import br.com.basis.abaco.repository.StatusRepository;
 import br.com.basis.abaco.repository.TipoEquipeRepository;
-import br.com.basis.abaco.repository.UserRepository;
-import br.com.basis.abaco.repository.VwAnaliseDivergenteSomaPfRepository;
-import br.com.basis.abaco.repository.VwAnaliseFDRepository;
-import br.com.basis.abaco.repository.VwAnaliseFTRepository;
-import br.com.basis.abaco.repository.VwAnaliseSomaPfRepository;
-import br.com.basis.abaco.repository.search.AnaliseSearchRepository;
-import br.com.basis.abaco.repository.search.FuncaoDadosSearchRepository;
-import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
-import br.com.basis.abaco.repository.search.UserSearchRepository;
-import br.com.basis.abaco.security.SecurityUtils;
+import br.com.basis.abaco.repository.UploadedFilesRepository;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
 import br.com.basis.abaco.service.dto.AnaliseEditDTO;
+import br.com.basis.abaco.service.dto.AnaliseEncerramentoDTO;
 import br.com.basis.abaco.service.dto.AnaliseJsonDTO;
 import br.com.basis.abaco.service.dto.CompartilhadaDTO;
 import br.com.basis.abaco.service.dto.filter.AnaliseFilterDTO;
+import br.com.basis.abaco.service.dto.formularios.AnaliseFormulario;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
+import br.com.basis.abaco.service.dto.pesquisa.AnalisePesquisaDTO;
+import br.com.basis.abaco.service.exception.RelatorioException;
+import br.com.basis.abaco.service.facades.AnaliseFacade;
+import br.com.basis.abaco.service.relatorio.RelatorioAnaliseColunas;
+import br.com.basis.abaco.service.relatorio.RelatorioDivergenciaColunas;
+import br.com.basis.abaco.service.validadores.AnaliseValidador;
+import br.com.basis.abaco.utils.AbacoUtil;
+import br.com.basis.abaco.utils.PageUtils;
 import br.com.basis.abaco.utils.StringUtils;
-import br.com.basis.dynamicexports.service.DynamicExportsService;
+import lombok.RequiredArgsConstructor;
+import net.sf.dynamicreports.report.exception.DRException;
+import net.sf.jasperreports.engine.JRException;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -83,396 +95,99 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
+import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 
 
 @Service
+@RequiredArgsConstructor
 public class AnaliseService extends BaseService {
+
+    private static final String ESTIMATIVA = "AFP - Estimativa";
+    private static final String DETALHADA = "AFP - Detalhada";
+    private static final String RESUMO = "Resumo";
+    private static final String SHEET_INM = "AFP - INM";
+    private static final String SHEET_INM_INDICATIVA = "AFP - Indicativa";
+
+    // Tipo Metodo de Contagem
+    private static final String METODO_DETALHADO = "Detalhada";
+    private static final String METODO_ESTIMATIVA = "Estimativa";
+    private static final String METODO_INDICATIVA = "Indicativa";
+
+    // Tipo Função Dados
+    private static final String METODO_ALI = "ALI";
+    private static final String METODO_AIE = "AIE";
+    private static final String METODO_INM = "INM";
+
+    // Tipo Função Transação
+    private static final String METODO_EE = "EE";
+    private static final String METODO_SE = "SE";
+    private static final String METODO_CE = "CE";
+
+    // Complexidade
+    private static final String METODO_SEM = "Sem";
+    private static final String METODO_BAIXO = "Simples";
+    private static final String METODO_MEDIO = "Médio";
+    private static final String METODO_ALTA = "Complexo";
+
+    // Função Status
+    private static final String DIVERGENTE = "Divergente";
+    private static final String EXCLUIDO = "Excluido";
+    private static final String VALIDADO = "Validado";
+    private static final String PENDENTE = "Pendente";
+
+    private static final String GEROU_VALIDACAO = "Gerou a validação ";
+
     public static final String ORGANIZACAO_ID = "organizacao.id";
     public static final String EQUIPE_RESPONSAVEL_ID = "equipeResponsavel.id";
     public static final String COMPARTILHADAS_EQUIPE_ID = "compartilhadas.equipeId";
-
-    private final static String BASIS_MINUSCULO = "basis";
-
+    private static final String EMPTY_STRING = "";
+    private static final String BASIS_MINUSCULO = "basis";
     private static final String BASIS = "basis";
-    private BigDecimal percent = new BigDecimal("100");
-    private static final int decimalPlace = 2;
-    private final static String EMPTY_STRING = "";
+    private static final int DECIMAL_PLACE = 2;
+    public static final String APROVADA = "Aprovada";
+    private final BigDecimal percent = new BigDecimal("100");
 
-    private final AnaliseRepository analiseRepository;
-    private final AnaliseSearchRepository analiseSearchRepository;
-    private final UserRepository userRepository;
+    private Set<Der> ders = new HashSet<>();
+    private Set<Rlr> rlrs = new HashSet<>();
+    private Set<Alr> alrs = new HashSet<>();
+
+    private final Logger log = LoggerFactory.getLogger(AnaliseService.class);
+    private final SistemaRepository sistemaRepository;
     private final CompartilhadaRepository compartilhadaRepository;
-    private final FuncaoDadosVersionavelRepository funcaoDadosVersionavelRepository;
-    private final FuncaoDadosRepository funcaoDadosRepository;
-    private final FuncaoTransacaoRepository funcaoTransacaoRepository;
-    private final VwAnaliseDivergenteSomaPfRepository vwAnaliseDivergenteSomaPfRepository;
-    private final VwAnaliseSomaPfRepository vwAnaliseSomaPfRepository;
     private final TipoEquipeRepository tipoEquipeRepository;
+    private final UploadedFilesRepository uploadedFilesRepository;
     private final MailService mailService;
-    private final DynamicExportsService dynamicExportsService;
-
-
-    @Autowired
-    private UserSearchRepository userSearchRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private OrganizacaoRepository organizacaoRepository;
-    @Autowired
-    private ManualRepository manualRepository;
-    @Autowired
-    private SistemaRepository sistemaRepository;
-    @Autowired
-    private ContratoRepository contratoRepository;
-    @Autowired
-    private StatusRepository statusRepository;
-    @Autowired
-    private FuncaoDadosSearchRepository funcaoDadosSearchRepository;
-    @Autowired
-    private FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository;
-
-    @Autowired
-    private VwAnaliseFDRepository vwAnaliseFDRepository;
-
-    @Autowired
-    private VwAnaliseFTRepository vwAnaliseFTRepository;
-
-    @Autowired
-    private HistoricoService historicoService;
-
-
-    public AnaliseService(AnaliseRepository analiseRepository,
-                          FuncaoDadosVersionavelRepository funcaoDadosVersionavelRepository,
-                          UserRepository userRepository,
-                          FuncaoDadosRepository funcaoDadosRepository,
-                          CompartilhadaRepository compartilhadaRepository,
-                          FuncaoTransacaoRepository funcaoTransacaoRepository,
-                          AnaliseSearchRepository analiseSearchRepository,
-                          VwAnaliseSomaPfRepository vwAnaliseSomaPfRepository,
-                          TipoEquipeRepository tipoEquipeRepository,
-                          VwAnaliseDivergenteSomaPfRepository vwAnaliseDivergenteSomaPfRepository,
-                          MailService mailService
-        ,DynamicExportsService dynamicExportsService) {
-        this.analiseRepository = analiseRepository;
-        this.funcaoDadosVersionavelRepository = funcaoDadosVersionavelRepository;
-        this.userRepository = userRepository;
-        this.compartilhadaRepository = compartilhadaRepository;
-        this.funcaoDadosRepository = funcaoDadosRepository;
-        this.funcaoTransacaoRepository = funcaoTransacaoRepository;
-        this.analiseSearchRepository = analiseSearchRepository;
-        this.mailService = mailService;
-        this.vwAnaliseSomaPfRepository = vwAnaliseSomaPfRepository;
-        this.vwAnaliseDivergenteSomaPfRepository = vwAnaliseDivergenteSomaPfRepository;
-        this.tipoEquipeRepository = tipoEquipeRepository;
-        this.dynamicExportsService = dynamicExportsService;
-    }
-
-    public void bindFilterSearch(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> usuario, Long equipesIds, Set<Long> equipesUsersId, Set<Long> organizacoes, Set<Long> status, BoolQueryBuilder qb, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
-        if (!StringUtils.isEmptyString((identificador))) {
-            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery()
-                .must(
-                    nestedQuery(
-                        "analisesComparadas",
-                        boolQuery().must(QueryBuilders.matchPhrasePrefixQuery("analisesComparadas.identificadorAnalise", identificador)
-                        )
-                    )
-                );
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                .should(queryBuilderIdentificador)
-                .should(QueryBuilders.matchPhrasePrefixQuery("numeroOs", identificador))
-                .should(QueryBuilders.matchPhrasePrefixQuery("identificadorAnalise", identificador));
-            qb.must(boolQueryBuilder);
-        }
-        bindFilterEquipeAndOrganizacao(equipesIds, equipesUsersId, organizacoes, qb);
-        BoolQueryBuilder boolQueryBuilderDivergence;
-        boolQueryBuilderDivergence = QueryBuilders.boolQuery()
-            .mustNot(QueryBuilders.termQuery("isDivergence", true));
-        qb.must(boolQueryBuilderDivergence);
-        if (sistema != null && sistema.size() > 0) {
-            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termsQuery("sistema.id", sistema));
-            qb.must(boolQueryBuilderSistema);
-        }
-        if (metodo != null && metodo.size() > 0) {
-            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termsQuery("metodoContagem", metodo));
-            qb.must(boolQueryBuilderSistema);
-        }
-        if (status != null && status.size() > 0) {
-            BoolQueryBuilder boolQueryBuilderStatus = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termsQuery("status.id", status));
-            qb.must(boolQueryBuilderStatus);
-        }
-
-        if (usuario != null && usuario.size() > 0) {
-            BoolQueryBuilder queryBuilderUsers = QueryBuilders.boolQuery()
-                .must(
-                    nestedQuery(
-                        "users",
-                        boolQuery().must(QueryBuilders.termsQuery("users.id", usuario)
-                        )
-                    )
-                );
-            qb.must(queryBuilderUsers);
-        }
-
-
-        bindFilterDataAnalise(qb, data, dataInicio, dataFim);
-    }
-
-    private void bindFilterDataAnalise(BoolQueryBuilder qb, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
-        if(data != null && (dataInicio != null || dataFim != null)){
-
-            Timestamp start = Timestamp.from(Instant.ofEpochMilli(1L));
-            Timestamp end = Timestamp.from(Instant.now());;
-
-            if (dataInicio != null) {
-                start = new Timestamp(dataInicio.getTime());
-            }
-            if (dataFim != null) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(dataFim.getTime());
-                cal.set(Calendar.HOUR_OF_DAY, 23);
-                cal.set(Calendar.MINUTE, 59);
-                cal.set(Calendar.SECOND, 59);
-                end = new Timestamp(cal.getTimeInMillis());
-            }
-
-            BoolQueryBuilder boolQueryBuilderData = QueryBuilders.boolQuery()
-                .must(QueryBuilders.rangeQuery(getNomeData(data)).gte(start).lte(end));
-            qb.must(boolQueryBuilderData);
-        }
-    }
-
-    private String getNomeData(TipoDeDataAnalise data) {
-        switch(data){
-            case CRIACAO:
-                return "dataCriacaoOrdemServico";
-            case BLOQUEIO:
-                return "dataHomologacao";
-            case ENCERRAMENTO:
-                return "dtEncerramento";
-        }
-        return "";
-    }
-
-    public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, Set<Long> organizacoes, BoolQueryBuilder qb) {
-        if (!StringUtils.isEmptyString((identificador))) {
-            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery()
-                .must(
-                    nestedQuery(
-                        "analisesComparadas",
-                        boolQuery().must(QueryBuilders.matchPhraseQuery("analisesComparadas.identificadorAnalise", identificador)
-                        )
-                    )
-                );
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                .should(queryBuilderIdentificador)
-                .should(QueryBuilders.matchPhraseQuery("numeroOs", identificador))
-                .should(QueryBuilders.matchPhraseQuery("identificadorAnalise", identificador));
-            qb.must(boolQueryBuilder);
-        }
-        bindFilterEquipeAndOrganizacaoDivergence(organizacoes, qb);
-        BoolQueryBuilder boolQueryBuilderDivergence;
-        boolQueryBuilderDivergence = QueryBuilders.boolQuery()
-            .must(QueryBuilders.termQuery("isDivergence", true));
-        qb.must(boolQueryBuilderDivergence);
-        if (sistema != null && sistema.size() > 0) {
-            BoolQueryBuilder boolQueryBuilderSistema = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termsQuery("sistema.id", sistema));
-            qb.must(boolQueryBuilderSistema);
-        }
-    }
-
-    private void bindFilterEquipeAndOrganizacao(Long equipesIds, Set<Long> equipesUsersId, Set<Long> organizacoes, BoolQueryBuilder qb) {
-        BoolQueryBuilder boolQueryBuilderEquipe;
-        BoolQueryBuilder boolQueryBuilderCompartilhada;
-        if (equipesIds != null && equipesIds > 0) {
-            if (equipesUsersId.contains(equipesIds)) {
-                boolQueryBuilderEquipe = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery(EQUIPE_RESPONSAVEL_ID, equipesIds))
-                    .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-                boolQueryBuilderCompartilhada = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery(EQUIPE_RESPONSAVEL_ID, equipesIds))
-                    .must(QueryBuilders.termsQuery(COMPARTILHADAS_EQUIPE_ID, equipesUsersId))
-                    .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-
-                BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                    .should(boolQueryBuilderEquipe)
-                    .should(boolQueryBuilderCompartilhada);
-                qb.must(boolQueryBuilder);
-            } else {
-                boolQueryBuilderCompartilhada = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery(EQUIPE_RESPONSAVEL_ID, equipesIds))
-                    .must(QueryBuilders.termsQuery(COMPARTILHADAS_EQUIPE_ID, equipesUsersId))
-                    .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-
-                BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                    .should(boolQueryBuilderCompartilhada);
-                qb.must(boolQueryBuilder);
-            }
-        } else {
-            boolQueryBuilderEquipe = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termsQuery(EQUIPE_RESPONSAVEL_ID, equipesUsersId))
-                .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-
-            boolQueryBuilderCompartilhada = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termsQuery(COMPARTILHADAS_EQUIPE_ID, equipesUsersId))
-                .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                .should(boolQueryBuilderEquipe)
-                .should(boolQueryBuilderCompartilhada);
-            qb.must(boolQueryBuilder);
-        }
-    }
-
-    private void bindFilterEquipeAndOrganizacaoDivergence( Set<Long> organizacoes, BoolQueryBuilder qb) {
-        BoolQueryBuilder boolQueryBuilderEquipe = QueryBuilders.boolQuery()
-            .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-        BoolQueryBuilder boolQueryBuilderCompartilhada = QueryBuilders.boolQuery()
-            .must(QueryBuilders.termsQuery(ORGANIZACAO_ID, organizacoes));
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-            .should(boolQueryBuilderEquipe)
-            .should(boolQueryBuilderCompartilhada);
-        qb.must(boolQueryBuilder);
-    }
-
-
-    private Set<Long> getIdEquipes(User user) {
-        Set<TipoEquipe> listaEquipes = user.getTipoEquipes();
-        Set<Long> equipesIds = new HashSet<>();
-        listaEquipes.forEach(tipoEquipe -> {
-            equipesIds.add(tipoEquipe.getId());
-        });
-        return equipesIds;
-    }
-
-    private Set<Long> getIdOrganizacoes(User user) {
-        Set<Organizacao> organizacaos = user.getOrganizacoes();
-        Set<Long> organizacoesIds = new HashSet<>();
-        organizacaos.forEach(organizacao -> {
-            organizacoesIds.add(organizacao.getId());
-        });
-        return organizacoesIds;
-    }
+    private final PerfilService perfilService;
+    private final AnaliseFacade analiseFacade;
+    private final OrganizacaoRepository organizacaoRepository;
+    private final FuncionalidadeService funcionalidadeService;
 
     private Boolean checarPermissao(Long idAnalise) {
-        Optional<User> logged = userRepository.findOneWithAuthoritiesByLogin(SecurityUtils.getCurrentUserLogin());
-        List<Long> equipesIds = logged.get().getTipoEquipes().stream().map(tipoEquipe -> tipoEquipe.getId()).collect(Collectors.toList());
-        Integer analiseDaEquipe = analiseRepository.analiseEquipe(idAnalise, equipesIds);
-        if (analiseDaEquipe.intValue() == 0) {
+        User logged = analiseFacade.obterUsuarioComAutorizacao();
+        List<Long> equipesIds = logged.getTipoEquipes().stream().map(TipoEquipe::getId).collect(Collectors.toList());
+        Integer analiseDaEquipe = analiseFacade.obterAnaliseEquipe(idAnalise, equipesIds);
+        if (analiseDaEquipe == 0) {
             return verificaCompartilhada(idAnalise);
         } else {
             return true;
         }
-
     }
 
     private Boolean verificaCompartilhada(Long idAnalise) {
         return compartilhadaRepository.existsByAnaliseId(idAnalise);
     }
 
-    public Analise recuperarAnalise(Long id) {
-
-        boolean retorno = checarPermissao(id);
-
+    public Analise recuperarAnalise(Long idAnalise) {
+        boolean retorno = checarPermissao(idAnalise);
         if (retorno) {
-            return analiseRepository.findById(id);
+            return analiseFacade.obterAnalisePorId(idAnalise);
         } else {
             return null;
         }
     }
 
-    public Analise recuperarAnaliseDivergence(Long id) {
-        return analiseRepository.findOneById(id);
-    }
-
-    @Transactional(readOnly = true)
-    public Analise recuperarAnaliseContagem(@NotNull Long id) {
-
-        boolean retorno = checarPermissao(id);
-
-        if (retorno) {
-            Analise analise = analiseRepository.reportContagem(id);
-            Sistema sistema = analise.getSistema();
-            if (sistema != null) {
-                sistema.getModulos().forEach(modulo -> {
-                    modulo.getFuncionalidades().forEach(funcionalidade -> {
-                        funcionalidade.setFuncoesDados(funcaoDadosRepository.findByAnaliseFuncionalidade(id, funcionalidade.getId()));
-                        funcionalidade.setFuncoesTransacao(funcaoTransacaoRepository.findByAnaliseFuncionalidade(id, funcionalidade.getId()));
-                    });
-                });
-                return analise;
-            }
-            return null;
-        } else {
-            return null;
-        }
-    }
-
-    public void linkFuncoesToAnalise(Analise analise) {
-        linkAnaliseToFuncaoDados(analise);
-        linkAnaliseToFuncaoTransacaos(analise);
-    }
-
-    private void linkAnaliseToFuncaoDados(Analise analise) {
-        Optional.ofNullable(analise.getFuncaoDados()).orElse(Collections.emptySet())
-            .forEach(funcaoDados -> {
-                funcaoDados.setAnalise(analise);
-                linkFuncaoDadosRelationships(funcaoDados);
-                handleVersionFuncaoDados(funcaoDados, analise.getSistema());
-            });
-    }
-
-    private void linkFuncaoDadosRelationships(FuncaoDados funcaoDados) {
-        Optional.ofNullable(funcaoDados.getFiles()).orElse(Collections.emptyList())
-            .forEach(file -> file.setFuncaoDados(funcaoDados));
-        Optional.ofNullable(funcaoDados.getDers()).orElse(Collections.emptySet())
-            .forEach(der -> der.setFuncaoDados(funcaoDados));
-        Optional.ofNullable(funcaoDados.getRlrs()).orElse(Collections.emptySet())
-            .forEach(rlr -> rlr.setFuncaoDados(funcaoDados));
-    }
-
-    private void handleVersionFuncaoDados(FuncaoDados funcaoDados, Sistema sistema) {
-        String nome = funcaoDados.getName();
-        Optional<FuncaoDadosVersionavel> funcaoDadosVersionavel =
-            funcaoDadosVersionavelRepository.findOneByNomeIgnoreCaseAndSistemaId(nome, sistema.getId());
-        if (funcaoDadosVersionavel.isPresent()) {
-            funcaoDados.setFuncaoDadosVersionavel(funcaoDadosVersionavel.get());
-        } else {
-            FuncaoDadosVersionavel novaFDVersionavel = new FuncaoDadosVersionavel();
-            novaFDVersionavel.setNome(funcaoDados.getName());
-            novaFDVersionavel.setSistema(sistema);
-            FuncaoDadosVersionavel result = funcaoDadosVersionavelRepository.save(novaFDVersionavel);
-            funcaoDados.setFuncaoDadosVersionavel(result);
-        }
-    }
-
-    private void linkAnaliseToFuncaoTransacaos(Analise analise) {
-        Optional.ofNullable(analise.getFuncaoTransacaos()).orElse(Collections.emptySet())
-            .forEach(funcaoTransacao -> {
-                funcaoTransacao.setAnalise(analise);
-                Optional.ofNullable(funcaoTransacao.getFiles()).orElse(Collections.emptyList())
-                    .forEach(file -> file.setFuncaoTransacao(funcaoTransacao));
-                Optional.ofNullable(funcaoTransacao.getDers()).orElse(Collections.emptySet())
-                    .forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
-                Optional.ofNullable(funcaoTransacao.getAlrs()).orElse(Collections.emptySet())
-                    .forEach(alr -> alr.setFuncaoTransacao(funcaoTransacao));
-            });
-    }
-
-    public void salvaNovaData(Analise analise) {
-        if (analise.getDataHomologacao() != null) {
-            Timestamp dataDeHoje = new Timestamp(System.currentTimeMillis());
-            Timestamp dataParam = analise.getDataHomologacao();
-            dataParam.setHours(dataDeHoje.getHours());
-            dataParam.setMinutes(dataDeHoje.getMinutes());
-            dataParam.setSeconds(dataDeHoje.getSeconds());
-        }
+    public Analise recuperarAnaliseDivergence(Long idAnalise) {
+        return analiseFacade.obterAnalisePorId(idAnalise);
     }
 
     public Set<FuncaoDados> bindCloneFuncaoDados(Analise analise, Analise analiseClone) {
@@ -485,10 +200,10 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoDados bindFuncaoDados(Analise analiseClone, FuncaoDados fd) {
-        Set<Rlr> rlrs = new LinkedHashSet<>();
-        Set<Der> ders = new LinkedHashSet<>();
+        Set<Rlr> rlrSet = new LinkedHashSet<>();
+        Set<Der> derSet = new LinkedHashSet<>();
         FuncaoDados funcaoDado = new FuncaoDados();
-        bindFuncaoDados(analiseClone, fd, rlrs, ders, funcaoDado);
+        bindFuncaoDados(analiseClone, fd, rlrSet, derSet, funcaoDado);
         return funcaoDado;
     }
 
@@ -522,96 +237,48 @@ public class AnaliseService extends BaseService {
     }
 
     private FuncaoTransacao bindFuncaoTransacao(Analise analiseClone, FuncaoTransacao ft) {
-        Set<Alr> alrs = new LinkedHashSet<>();
-        Set<Der> ders = new LinkedHashSet<>();
+        Set<Alr> alrSet = new LinkedHashSet<>();
+        Set<Der> derSet = new LinkedHashSet<>();
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         ft.getAlrs().forEach(alr -> {
             Alr alrClone = new Alr(null, alr.getNome(), alr.getValor(), funcaoTransacao, null);
-            alrs.add(alrClone);
+            alrSet.add(alrClone);
         });
         ft.getDers().forEach(der -> {
             Der derClone = new Der(null, der.getNome(), der.getValor(), der.getRlr(), null, funcaoTransacao);
-            ders.add(derClone);
+            derSet.add(derClone);
         });
-        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrs, null, ft.getFtrValues(), ft.getImpacto(), ders, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
+        funcaoTransacao.bindFuncaoTransacao(ft.getTipo(), ft.getFtrStr(), ft.getQuantidade(), alrSet, null, ft.getFtrValues(), ft.getImpacto(), derSet, analiseClone, ft.getComplexidade(), ft.getPf(), ft.getGrossPF(), ft.getFuncionalidade(), ft.getDetStr(), ft.getFatorAjuste(), ft.getName(), ft.getSustantation(), ft.getDerValues(), ft.getEquipe(), ft.getOrdem());
         funcaoTransacao.setFuncionalidade(ft.getFuncionalidade());
         return funcaoTransacao;
     }
 
-    public void bindAnaliseCloneForTipoEquipe(Analise analise, TipoEquipe tipoEquipe, Analise analiseClone) {
-        analiseClone.setPfTotal("0");
-        analiseClone.setAdjustPFTotal("0");
-        analiseClone.setEquipeResponsavel(tipoEquipe);
-        analiseClone.setUsers(new HashSet<>());
-        analiseClone.setBloqueiaAnalise(false);
-        analiseClone.setClonadaParaEquipe(true);
-        analiseClone.setAnaliseClonadaParaEquipe(analise);
-        analiseClone.setAnaliseClonou(false);
-        salvaNovaData(analiseClone);
-        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
-        analiseClone.setDataHomologacao(null);
-        analiseClone.setDtEncerramento(null);
-        analiseClone.setIsEncerrada(false);
-    }
-
     private void bindFuncaoDados(Analise analiseClone, FuncaoDados fd, Set<Rlr> rlrs, Set<Der> ders, FuncaoDados funcaoDado) {
-        Optional.ofNullable(fd.getDers()).orElse(Collections.emptySet())
-            .forEach(der -> {
-                Rlr rlr = null;
-                if (der.getRlr() != null) {
-                    rlr = new Rlr(null, der.getRlr().getNome(), der.getRlr().getValor(), der.getRlr().getDers(), funcaoDado);
-                }
-                Der derClone = new Der(null, der.getNome(), der.getValor(), rlr, funcaoDado, null);
-                ders.add(derClone);
-            });
-        Optional.ofNullable(fd.getRlrs()).orElse(Collections.emptySet())
-            .forEach(rlr -> {
-                Rlr rlrClone = new Rlr(null, rlr.getNome(), rlr.getValor(), ders, funcaoDado);
-                rlrs.add(rlrClone);
-            });
+        Optional.ofNullable(fd.getDers()).orElse(Collections.emptySet()).forEach(der -> {
+            Rlr rlr = null;
+            if (der.getRlr() != null) {
+                rlr = new Rlr(null, der.getRlr().getNome(), der.getRlr().getValor(), der.getRlr().getDers(), funcaoDado);
+            }
+            Der derClone = new Der(null, der.getNome(), der.getValor(), rlr, funcaoDado, null);
+            ders.add(derClone);
+        });
+        Optional.ofNullable(fd.getRlrs()).orElse(Collections.emptySet()).forEach(rlr -> {
+            Rlr rlrClone = new Rlr(null, rlr.getNome(), rlr.getValor(), ders, funcaoDado);
+            rlrs.add(rlrClone);
+        });
         funcaoDado.bindFuncaoDados(fd.getComplexidade(), fd.getPf(), fd.getGrossPF(), analiseClone, fd.getFuncionalidade(), fd.getDetStr(), fd.getFatorAjuste(), fd.getName(), fd.getSustantation(), fd.getDerValues(), fd.getTipo(), fd.getRetStr(), fd.getQuantidade(), rlrs, fd.getAlr(), fd.getFiles(), fd.getRlrValues(), ders, fd.getFuncaoDadosVersionavel(), fd.getImpacto(), fd.getEquipe(), fd.getOrdem());
 
     }
 
-    public AnaliseDTO convertToDto(Analise analise) {
-        AnaliseDTO analiseDto = modelMapper.map(analise, AnaliseDTO.class);
-        if(analise.getAnaliseDivergence() != null){
-            analiseDto.setAnaliseDivergence(this.convertToAnaliseDivergenceDTO(analise.getAnaliseDivergence()));
+    public AnaliseDTO converterParaDto(Analise analise) {
+        AnaliseDTO analiseDto = analiseFacade.converterParaDto(analise);
+        if (analise.getAnaliseDivergence() != null) {
+            analiseDto.setAnaliseDivergence(converterParaAnaliseDivergenciaDTO(analise.getAnaliseDivergence()));
         }
         return analiseDto;
     }
 
-    public Analise convertToEntity(AnaliseDTO analiseDTO) {
-        return modelMapper.map(analiseDTO, Analise.class);
-    }
-
-    public AnaliseEditDTO convertToAnaliseEditDTO(Analise analise) {
-        return modelMapper.map(analise, AnaliseEditDTO.class);
-    }
-
-    public AnaliseJsonDTO convertToAnaliseJsonDTO(Analise analise) {
-        return modelMapper.map(analise, AnaliseJsonDTO.class);
-    }
-
-    public AnaliseDivergenceEditDTO convertToAnaliseDivergenceEditDTO(Analise analise) {
-        return modelMapper.map(analise, AnaliseDivergenceEditDTO.class);
-
-    }
-
-    public AnaliseDivergenceDTO convertToAnaliseDivergenceDTO(Analise analise){
-        return modelMapper.map(analise, AnaliseDivergenceDTO.class);
-    }
-
-    public Analise convertToEntity(AnaliseEditDTO analiseEditDTO) {
-        return modelMapper.map(analiseEditDTO, Analise.class);
-    }
-
-    public Analise convertToEntity(AnaliseJsonDTO analiseJsonDTO) {
-        return modelMapper.map(analiseJsonDTO, Analise.class);
-    }
-
-    public void bindAnalise(@RequestBody @Valid Analise analiseUpdate, Analise analise) {
-        salvaNovaData(analiseUpdate);
+    public void anexarAnalise(@Valid @RequestBody Analise analiseUpdate, Analise analise) {
         analise.setNumeroOs(analiseUpdate.getNumeroOs());
         analise.setEquipeResponsavel(analiseUpdate.getEquipeResponsavel());
         analise.setIdentificadorAnalise(analiseUpdate.getIdentificadorAnalise());
@@ -634,113 +301,113 @@ public class AnaliseService extends BaseService {
         analise.setMotivo(analiseUpdate.getMotivo());
     }
 
-    public BoolQueryBuilder getBoolQueryBuilder(String identificador, Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Long equipe, Set<Long> usuario, Set<Long> idsStatus, TipoDeDataAnalise data, Date dataInicio, Date dataFim) {
-        User user = userSearchRepository.findByLogin(SecurityUtils.getCurrentUserLogin());
-        Set<Long> equipesIds = getIdEquipes(user);
-        Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
-        BoolQueryBuilder qb = QueryBuilders.boolQuery();
-        bindFilterSearch(identificador, sistema, metodo, usuario, equipe, equipesIds, organicoesIds, idsStatus, qb, data, dataInicio, dataFim);
-        return qb;
-    }
-
-    public BoolQueryBuilder getBoolQueryBuilderDivergence(String identificador, Set<Long> sistema, Set<Long> organizacao) {
-        User user = userSearchRepository.findByLogin(SecurityUtils.getCurrentUserLogin());
-        Set<Long> organicoesIds = (organizacao != null && organizacao.size() > 0) ? organizacao : getIdOrganizacoes(user);
-        BoolQueryBuilder qb = QueryBuilders.boolQuery();
-        bindFilterSearchDivergence(identificador, sistema, organicoesIds, qb);
-        return qb;
-    }
-
-
-
-    public boolean permissionToEdit(User user, Analise analise) {
-        boolean canEdit = false;
-        if (user.getOrganizacoes().contains(analise.getOrganizacao())) {
-            if (user.getTipoEquipes().contains(analise.getEquipeResponsavel())) {
-                return true;
-            } else {
-                for (TipoEquipe tipoEquipe : user.getTipoEquipes()) {
-                    for (Compartilhada compartilhada : analise.getCompartilhadas()) {
-                        if (compartilhada.getEquipeId().longValue() == tipoEquipe.getId().longValue() && !compartilhada.isViewOnly()) {
-                            canEdit = true;
-                        }
-                    }
+    public boolean permissaoParaEditar(User user, Analise analise) {
+        boolean podeEditar = false;
+        if (!user.getOrganizacoes().contains(analise.getOrganizacao())) {
+            return false;
+        }
+        if (user.getTipoEquipes().contains(analise.getEquipeResponsavel())) {
+            return true;
+        }
+        for (TipoEquipe equipe : user.getTipoEquipes()) {
+            for (Compartilhada compartilhada : analise.getCompartilhadas()) {
+                if (equipe.getId().equals(compartilhada.getEquipeId()) && !compartilhada.isViewOnly()) {
+                    return true;
                 }
             }
         }
-        return canEdit;
+        return podeEditar;
     }
 
-    public void updatePf(Analise analise) {
-        VwAnaliseSomaPf vwAnaliseSomaPf = vwAnaliseSomaPfRepository.findByAnaliseId(analise.getId());
-        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(decimalPlace);
-        for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
-            sumFase = sumFase.add(esforcoFase.getEsforco().setScale(decimalPlace));
-        }
-        sumFase = sumFase.divide(percent).setScale(decimalPlace);
-        analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).toString());
-        analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+    public void atualizarPF(Analise analise) {
+        VwAnaliseSomaPf vwAnaliseSomaPf = analiseFacade.obterAnaliseSomaPfPorId(analise.getId());
+        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(DECIMAL_PLACE);
+        if (analise.getEsforcoFases() != null && (!analise.getEsforcoFases().isEmpty())) {
+            for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
+                sumFase = sumFase.add(esforcoFase.getEsforco().setScale(DECIMAL_PLACE));
+            }
 
-        analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
-        analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
+        }
+        sumFase = sumFase.divide(percent).setScale(DECIMAL_PLACE);
+        analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE));
+        analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN));
+
+        analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
+        analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
+
+        if(analise.getAnaliseDivergence() != null
+                && analise.getAnaliseDivergence().getStatus().getNome().equals(APROVADA)
+                && analise.getAnaliseDivergence().isBloqueiaAnalise()) {
+            analise.setPfTotalAprovado(analise.getAnaliseDivergence().getPfTotalAprovado());
+        }
     }
 
-    public void updatePFDivergente(Analise analise) {
-        VwAnaliseDivergenteSomaPf vwAnaliseDivergenteSomaPf = vwAnaliseDivergenteSomaPfRepository.findByAnaliseId(analise.getId());
-        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(decimalPlace);
-        for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
-            sumFase = sumFase.add(esforcoFase.getEsforco().setScale(decimalPlace));
-        }
-        if(vwAnaliseDivergenteSomaPf != null){
-            sumFase = sumFase.divide(percent).setScale(decimalPlace);
-            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).toString());
-            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).toString());
+    public void atualizarPFDivergente(Analise analise) {
+        VwAnaliseDivergenteSomaPf vwAnaliseDivergenteSomaPf = analiseFacade.obterAnaliseDivergenteSomaPfPorId(analise.getId());
+        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(DECIMAL_PLACE);
+        if (analise.getEsforcoFases() != null && (!analise.getEsforcoFases().isEmpty())) {
+            for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
+                sumFase = sumFase.add(esforcoFase.getEsforco().setScale(DECIMAL_PLACE));
+            }
 
+        }
+        if (vwAnaliseDivergenteSomaPf != null) {
+            sumFase = sumFase.divide(percent).setScale(DECIMAL_PLACE);
+            analise.setPfTotal(vwAnaliseDivergenteSomaPf.getPfGross().setScale(DECIMAL_PLACE));
+            analise.setAdjustPFTotal(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN));
             analise.setPfTotalAprovado(analise.getAdjustPFTotal());
-
             Timestamp hoje = Timestamp.from(Instant.now());
             Analise analiseOriginalBasis = new Analise();
-            for (Analise analiseComparada : analise.getAnalisesComparadas()) {
-                if(analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS)){
-                    if(analiseComparada.getDataCriacaoOrdemServico().before(hoje)){
+            if (!analise.getCompartilhadas().isEmpty()) {
+                for (Analise analiseComparada : analise.getAnalisesComparadas()) {
+                    if (analiseComparada.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && (analiseComparada.getDataCriacaoOrdemServico().before(hoje))) {
                         hoje = analiseComparada.getDataCriacaoOrdemServico();
                         analiseOriginalBasis = analiseComparada;
+
                     }
                 }
             }
-            
             analise.setPfTotalOriginal(analiseOriginalBasis.getAdjustPFTotal());
-
-            analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(decimalPlace).doubleValue());
-            analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(decimalPlace, BigDecimal.ROUND_HALF_DOWN).doubleValue());
+            analise.setPfTotalValor(vwAnaliseDivergenteSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
+            analise.setPfTotalAjustadoValor(vwAnaliseDivergenteSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
         }
     }
 
-
-    public Analise bindCloneAnalise(Analise analiseClone, Analise analise, User user) {
-        Set<User> lstUsers = new LinkedHashSet<>();
-        lstUsers.add(user);
-        salvaNovaData(analiseClone);
-        analiseClone.setUsers(lstUsers);
-        analiseClone.setDocumentacao(EMPTY_STRING);
-        analiseClone.setFronteiras(EMPTY_STRING);
-        analiseClone.setPropositoContagem(EMPTY_STRING);
-        analiseClone.setEscopo(EMPTY_STRING);
-        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+    public void setarAnaliseClone(Analise analiseClone, Analise analise, User user, Long idEquipe) {
+        if (idEquipe == null) {
+            Set<User> lstUsers = new LinkedHashSet<>();
+            lstUsers.add(user);
+            analiseClone.setIdentificadorAnalise(analise.getIdentificadorAnalise() + " - CÓPIA");
+            analiseClone.setUsers(lstUsers);
+            analiseClone.setDocumentacao(EMPTY_STRING);
+            analiseClone.setFronteiras(EMPTY_STRING);
+            analiseClone.setPropositoContagem(EMPTY_STRING);
+            analise.setClonadaParaEquipe(false);
+            analiseClone.setEscopo(EMPTY_STRING);
+            analiseClone.setFuncaoDados(bindCloneFuncaoDados(analise, analiseClone));
+            analiseClone.setFuncaoTransacaos(bindCloneFuncaoTransacaos(analise, analiseClone));
+            analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
+        } else {
+            TipoEquipe equipe = tipoEquipeRepository.findById(idEquipe);
+            analiseClone.setIdentificadorAnalise(analise.getIdentificadorAnalise() + " - CÓPIADA PARA EQUIPE");
+            analiseClone.setPfTotal(BigDecimal.ZERO);
+            analiseClone.setAdjustPFTotal(BigDecimal.ZERO);
+            analiseClone.setEquipeResponsavel(equipe);
+            analiseClone.setUsers(new HashSet<>());
+            analiseClone.setClonadaParaEquipe(true);
+            analiseClone.setAnaliseClonadaParaEquipe(analise);
+            analiseClone.setAnaliseClonou(false);
+        }
+        analiseClone.setBloqueiaAnalise(false);
         analiseClone.setDataHomologacao(null);
         analiseClone.setDtEncerramento(null);
         analiseClone.setIsEncerrada(false);
-        analiseClone.setFuncaoDados(bindCloneFuncaoDados(analise, analiseClone));
-        analiseClone.setFuncaoTransacaos(bindCloneFuncaoTransacaos(analise, analiseClone));
-        analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
-        analiseClone.setBloqueiaAnalise(false);
-        return analiseClone;
+        analiseClone.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
     }
 
     public Analise bindDivergenceAnalise(Analise analiseClone, Analise analise, User user) {
         Set<User> lstUsers = new LinkedHashSet<>();
         lstUsers.add(user);
-        salvaNovaData(analiseClone);
         analiseClone.setUsers(lstUsers);
         analiseClone.setDocumentacao(EMPTY_STRING);
         analiseClone.setFronteiras(EMPTY_STRING);
@@ -775,30 +442,28 @@ public class AnaliseService extends BaseService {
         }
     }
 
-    @Transactional
-    public Analise generateDivergence(Analise analise, Status status) {
-        Optional<User> optUser = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin());
-        if (optUser.isPresent()) {
-            User user = optUser.get();
+    public Analise generateDivergence1(Analise analise, Status status) {
+        if (analiseFacade.obterUsuarioPorLogin() != null) {
+            User user = analiseFacade.obterUsuarioPorLogin();
             Analise analiseDivergencia = new Analise(analise, user);
             analiseDivergencia = bindDivergenceAnalise(analiseDivergencia, analise, user);
             analiseDivergencia.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
             analiseDivergencia.setStatus(status);
             analiseDivergencia.setIsDivergence(true);
-            analiseDivergencia = save(analiseDivergencia);
+            analiseDivergencia = salvar(analiseDivergencia);
             updateAnaliseRelationAndSendEmail(analise, status, analiseDivergencia);
 
-            this.historicoService.inserirHistoricoAnalise(analise, user, "Gerou a validação "+analiseDivergencia.getId());
+            analiseFacade.inserirHistoricoAnalise(analise, user, GEROU_VALIDACAO + analiseDivergencia.getId());
             return analiseDivergencia;
         }
         return new Analise();
     }
 
-    @Transactional
-    public Analise generateDivergence(Analise analisePricinpal, Analise analiseSecundaria, Status status, boolean isUnionFunction) {
+    public Analise generateDivergence2(Analise analisePricinpal, Analise analiseSecundaria, Status status,
+                                       boolean isUnionFunction) {
         Analise analiseDivergencia = bindAnaliseDivegernce(analisePricinpal, analiseSecundaria, status, isUnionFunction);
 
-        save(analiseDivergencia);
+        salvar(analiseDivergencia);
         updateAnaliseRelationAndSendEmail(analisePricinpal, status, analiseDivergencia);
         updateAnaliseRelationAndSendEmail(analiseSecundaria, status, analiseDivergencia);
         sharedAnaliseDivergence(analiseSecundaria, analiseDivergencia);
@@ -814,19 +479,21 @@ public class AnaliseService extends BaseService {
         compartilhadaRepository.save(compartilhada);
     }
 
-    private void updateAnaliseRelationAndSendEmail(Analise analisePricinpal, Status status, Analise analiseDivergencia) {
+    private void updateAnaliseRelationAndSendEmail(Analise analisePricinpal, Status status, Analise
+        analiseDivergencia) {
         analisePricinpal.setStatus(status);
+        analiseDivergencia.setIdentificadorAnalise(analiseDivergencia.getId().toString());
         analisePricinpal.setAnaliseDivergence(analiseDivergencia);
-        save(analisePricinpal);
+        salvar(analisePricinpal);
         if (analisePricinpal.getEquipeResponsavel().getNome() != null && analisePricinpal.getEquipeResponsavel().getEmailPreposto() != null) {
             mailService.sendDivergenceEmail(analisePricinpal);
         }
     }
 
-    private Analise bindAnaliseDivegernce(Analise analisePrincipal, Analise analiseSecundaria, Status status, boolean isUnionFunction) {
-        Optional<User> optUser = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin());
-        if (optUser.isPresent()) {
-            User user = optUser.get();
+    private Analise bindAnaliseDivegernce(Analise analisePrincipal, Analise analiseSecundaria, Status status,
+                                          boolean isUnionFunction) {
+        if (verificaUsuarioNulo()) {
+            User user = analiseFacade.obterUsuarioPorLogin();
             Analise analiseDivergenciaPrincipal = new Analise(analisePrincipal, user);
             analiseDivergenciaPrincipal = bindDivergenceAnalise(analiseDivergenciaPrincipal, analisePrincipal, user);
             if (isUnionFunction) {
@@ -835,11 +502,11 @@ public class AnaliseService extends BaseService {
             analiseDivergenciaPrincipal.setStatus(status);
             analiseDivergenciaPrincipal.setIsDivergence(true);
             analiseDivergenciaPrincipal.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
-            if(analisePrincipal.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analisePrincipal.getDataCriacaoOrdemServico().before(analiseSecundaria.getDataCriacaoOrdemServico())){
+            if (analisePrincipal.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analisePrincipal.getDataCriacaoOrdemServico().before(analiseSecundaria.getDataCriacaoOrdemServico())) {
                 analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
-            }else if(analiseSecundaria.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analiseSecundaria.getDataCriacaoOrdemServico().before(analisePrincipal.getDataCriacaoOrdemServico())){
+            } else if (analiseSecundaria.getEquipeResponsavel().getNome().toLowerCase().contains(BASIS) && analiseSecundaria.getDataCriacaoOrdemServico().before(analisePrincipal.getDataCriacaoOrdemServico())) {
                 analiseDivergenciaPrincipal.setAdjustPFTotal(analiseSecundaria.getAdjustPFTotal());
-            }else{
+            } else {
                 analiseDivergenciaPrincipal.setAdjustPFTotal(analisePrincipal.getAdjustPFTotal());
             }
             return analiseDivergenciaPrincipal;
@@ -847,12 +514,15 @@ public class AnaliseService extends BaseService {
         return new Analise();
     }
 
+    private boolean verificaUsuarioNulo() {
+        return analiseFacade.obterUsuarioPorLogin() != null && analiseFacade.obterUsuarioPorLogin().getId() != null;
+    }
 
 
-    private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise analiseDivergenciaPrincipal) {
+    private void unionFuncaoDadosAndFuncaoTransacao(Analise analisePrincipal, Analise analiseSecundaria, Analise
+        analiseDivergenciaPrincipal) {
         Set<FuncaoDados> lstFuncaoDados = new LinkedHashSet<>();
         Set<FuncaoTransacao> lstFuncaoTransacaos = new LinkedHashSet<>();
-
         Set<FuncaoDados> lstOrganizadaFuncaoDados = new LinkedHashSet<>();
         Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao = new LinkedHashSet<>();
 
@@ -863,329 +533,268 @@ public class AnaliseService extends BaseService {
 
         lstFuncaoDados.addAll(analisePrincipal.getFuncaoDados());
         lstFuncaoDados.addAll(analiseSecundaria.getFuncaoDados());
-
         lstFuncaoTransacaos.addAll(analisePrincipal.getFuncaoTransacaos());
         lstFuncaoTransacaos.addAll(analiseSecundaria.getFuncaoTransacaos());
 
-        this.carregarFuncoes(lstFuncaoDados, lstFuncaoTransacaos, lstOrganizadaFuncaoDados, lstOrganizadaFuncaoTransacao);
-
+        carregarFuncoes(lstFuncaoDados, lstFuncaoTransacaos, lstOrganizadaFuncaoDados, lstOrganizadaFuncaoTransacao);
         analisePrincipal.setFuncaoDados(lstOrganizadaFuncaoDados);
         analisePrincipal.setFuncaoTransacaos(lstOrganizadaFuncaoTransacao);
         analiseDivergenciaPrincipal.setFuncaoDados(bindDivergenceFuncaoDados(analisePrincipal, analiseDivergenciaPrincipal));
         analiseDivergenciaPrincipal.setFuncaoTransacaos(bindDivergenceFuncaoTransacaos(analisePrincipal, analiseDivergenciaPrincipal));
     }
 
-    private void carregarFuncoes(Set<FuncaoDados> lstFuncaoDados, Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoDados> lstOrganizadaFuncaoDados, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
-        this.carregarFuncoesDados(lstFuncaoDados, lstOrganizadaFuncaoDados);
-        this.carregarFuncoesTransacao(lstFuncaoTransacaos, lstOrganizadaFuncaoTransacao);
+    private void carregarFuncoes
+        (Set<FuncaoDados> lstFuncaoDados, Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoDados> lstOrganizadaFuncaoDados, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
+        carregarFuncoesDados(lstFuncaoDados, lstOrganizadaFuncaoDados);
+        carregarFuncoesTransacao(lstFuncaoTransacaos, lstOrganizadaFuncaoTransacao);
     }
 
-    private void carregarFuncoesTransacao(Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
+    private void carregarFuncoesTransacao
+        (Set<FuncaoTransacao> lstFuncaoTransacaos, Set<FuncaoTransacao> lstOrganizadaFuncaoTransacao) {
         int ordem = 1;
-        for(FuncaoTransacao funcao : lstFuncaoTransacaos){
-            if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
-                funcao.setOrdem(Long.valueOf(ordem++));
+        for (FuncaoTransacao funcao : lstFuncaoTransacaos) {
+            if (funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)) {
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoTransacao.add(funcao);
-                for(FuncaoTransacao funcaoSecundaria : lstFuncaoTransacaos){
-                    if(!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true){
-                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                for (FuncaoTransacao funcaoSecundaria : lstFuncaoTransacaos) {
+                    if (!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria)) {
+                        funcaoSecundaria.setOrdem((long) ordem++);
                         lstOrganizadaFuncaoTransacao.add(funcaoSecundaria);
                     }
                 }
             }
         }
 
-        for(FuncaoTransacao funcao : lstFuncaoTransacaos){
-            if(!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoTransacao.contains(funcao)){
-                funcao.setOrdem(Long.valueOf(ordem++));
+        for (FuncaoTransacao funcao : lstFuncaoTransacaos) {
+            if (!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoTransacao.contains(funcao)) {
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoTransacao.add(funcao);
             }
         }
     }
 
 
-    private void carregarFuncoesDados(Set<FuncaoDados> lstFuncaoDados, Set<FuncaoDados> lstOrganizadaFuncaoDados) {
+    private void carregarFuncoesDados
+        (Set<FuncaoDados> lstFuncaoDados, Set<FuncaoDados> lstOrganizadaFuncaoDados) {
         int ordem = 1;
-        for(FuncaoDados funcao : lstFuncaoDados){
-            if(funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)){
-                funcao.setOrdem(Long.valueOf(ordem++));
+        for (FuncaoDados funcao : lstFuncaoDados) {
+            if (funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO)) {
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoDados.add(funcao);
-                for(FuncaoDados funcaoSecundaria : lstFuncaoDados){
-                    if(!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria) == true){
-                        funcaoSecundaria.setOrdem(Long.valueOf(ordem++));
+                for (FuncaoDados funcaoSecundaria : lstFuncaoDados) {
+                    if (!funcaoSecundaria.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && isFuncaoEquiparada(funcao, funcaoSecundaria)) {
+                        funcaoSecundaria.setOrdem((long) ordem++);
                         lstOrganizadaFuncaoDados.add(funcaoSecundaria);
                     }
                 }
             }
         }
 
-        for(FuncaoDados funcao : lstFuncaoDados){
-            if(!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)){
-                funcao.setOrdem(Long.valueOf(ordem++));
+        for (FuncaoDados funcao : lstFuncaoDados) {
+            if (!funcao.getEquipe().getNome().toLowerCase().contains(BASIS_MINUSCULO) && !lstOrganizadaFuncaoDados.contains(funcao)) {
+                funcao.setOrdem((long) ordem++);
                 lstOrganizadaFuncaoDados.add(funcao);
             }
         }
     }
 
     private boolean isFuncaoEquiparada(FuncaoAnalise funcaoPrimaria, FuncaoAnalise funcaoSecundaria) {
-        if(funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) &&
-            funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) &&
-            funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome())){
-            return true;
-        }else{
-            return false;
-        }
+        return funcaoPrimaria.getName().equals(funcaoSecundaria.getName()) && funcaoPrimaria.getFuncionalidade().getNome().equals(funcaoSecundaria.getFuncionalidade().getNome()) && funcaoPrimaria.getFuncionalidade().getModulo().getNome().equals(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
     }
 
 
-    public Analise save(Analise analise) {
-        if(!analise.getIsDivergence()){
-            this.updatePf(analise);
-        }else{
-            this.updatePFDivergente(analise);
+    public Analise salvar(Analise analise) {
+        if (analise.getIsDivergence() != null) {
+            if (Boolean.FALSE.equals(analise.getIsDivergence())) {
+                atualizarPF(analise);
+            } else {
+                atualizarPFDivergente(analise);
+            }
         }
-        analise = analiseRepository.save(analise);
-        AnaliseDTO analiseDTO = convertToDto(analise);
-        analise = convertToEntity(analiseDTO);
-        analise = analiseSearchRepository.save(analise);
+        salvarAnalise(analise);
         return analise;
     }
 
-    public Analise updateDivergenceAnalise(Analise analise) {
+    public Analise atualizarDivergenciaAnalise(Analise analise) {
         analise.setIdentificadorAnalise(analise.getId().toString());
-        analise = save(analise);
+        analise = salvar(analise);
         return analise;
     }
 
-    public void deleteDivergence(Long id, Analise analise) {
-        analise.getCompartilhadas().forEach(compartilhada -> {
-            compartilhadaRepository.delete(compartilhada.getId());
-        });
+    public void excluirDivergencia(Analise analise) {
+        analise.getCompartilhadas().forEach(compartilhada -> compartilhadaRepository.delete(compartilhada.getId()));
         analise.getAnalisesComparadas().forEach(analiseComparada -> {
             analiseComparada.setAnaliseDivergence(null);
-            save(analiseComparada);
-            this.historicoService.inserirHistoricoAnalise(analiseComparada, null, String.format("A validação %s foi excluída", analise.getIdentificadorAnalise()));
+            salvar(analiseComparada);
+            analiseFacade.inserirHistoricoAnalise(analiseComparada, null, String.format("A validação %s foi excluída", analise.getIdentificadorAnalise()));
         });
-        analiseRepository.delete(id);
-        analiseSearchRepository.delete(id);
+        excluirAnalise(analise);
     }
 
-
-    public SearchQuery getQueryExportRelatorio(AnaliseFilterDTO filter,  Pageable pageable) {
-        Set<Long> sistema = new HashSet<>();
-        Set<MetodoContagem> metodo = new HashSet<>();
-        Set<Long> organizacao = new HashSet<>();
-        Set<Long> usuario = new HashSet<>();
-        Set<Long> status = new HashSet<>();
-
-        preencheFiltro(sistema,metodo,organizacao,usuario,status, filter);
-
-        pageable = dynamicExportsService.obterPageableMaximoExportacao();
-        BoolQueryBuilder qb =  getBoolQueryBuilder(filter.getIdentificadorAnalise(), sistema, metodo, organizacao, filter.getEquipe() == null ? null : filter.getEquipe().getId(), usuario, status, filter.getData(), filter.getDataInicio(), filter.getDataFim());
-        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
-        return searchQuery;
+    public AnaliseDTO carregarAnaliseExcel(AnaliseDTO analiseDTO) {
+        Analise analise = converterParaEntidade(analiseDTO);
+        Analise analiseNova = new Analise();
+        analiseNova.setOrganizacao(analise.getOrganizacao());
+        analiseNova.setManual(analise.getManual());
+        analiseNova.setEsforcoFases(analise.getEsforcoFases());
+        analiseNova.setSistema(analise.getSistema());
+        analiseNova.setContrato(analise.getContrato());
+        analiseNova.setStatus(analise.getStatus());
+        carregarDadosExcel(analiseNova, analise);
+        return converterParaDto(analiseNova);
     }
 
-    private void preencheFiltro(Set<Long> sistema, Set<MetodoContagem> metodo, Set<Long> organizacao, Set<Long> usuario,
-            Set<Long> status, AnaliseFilterDTO filter) {
-        if(filter.getSistema() != null) {
-            sistema.add(filter.getSistema().getId());
-        }
-        if(filter.getMetodoContagem() != null) {
-            metodo.add(filter.getMetodoContagem());
-        }
-        if(filter.getOrganizacao() != null) {
-            organizacao.add(filter.getOrganizacao().getId());
-        }
-        if(filter.getUsuario() != null) {
-            usuario.add(filter.getUsuario().getId());
-        }
-        if(filter.getStatus() != null) {
-            status.add(filter.getStatus().getId());
-        }
-
+    public void carregarDadosExcel(Analise analiseNova, Analise analise) {
+        analiseNova.setDocumentacao(analise.getDocumentacao());
+        analiseNova.setTipoAnalise(analise.getTipoAnalise());
+        analiseNova.setPropositoContagem(analise.getPropositoContagem());
+        analiseNova.setObservacoes(analise.getObservacoes());
+        analiseNova.setNumeroOs(analise.getNumeroOs());
+        analiseNova.setMetodoContagem(analise.getMetodoContagem());
+        analiseNova.setIsDivergence(analise.getIsDivergence());
+        analiseNova.setIdentificadorAnalise(analise.getIdentificadorAnalise());
+        analiseNova.setFronteiras(analise.getFronteiras());
+        analiseNova.setEscopo(analise.getEscopo());
+        analiseNova.setFuncaoDados(analise.getFuncaoDados());
+        analiseNova.setFuncaoTransacaos(analise.getFuncaoTransacaos());
+        analiseNova.setDataCriacaoOrdemServico(analise.getDataCriacaoOrdemServico());
     }
 
-    public SearchQuery getQueryExportRelatorioDivergencia(AnaliseFilterDTO filter, Pageable pageable) {
-        Set<Long> sistema = new HashSet<>();
-        Set<Long> organizacao = new HashSet<>();
-        preencheFiltro(sistema,null,organizacao,null,null, filter);
-
-        BoolQueryBuilder qb = getBoolQueryBuilderDivergence(filter.getIdentificadorAnalise(), sistema, organizacao);
-        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(pageable).build();
-        return searchQuery;
+    public boolean verificaModulos(AnaliseEditDTO analiseDTO) {
+        if (analiseDTO.getSistema() != null) {
+            return sistemaRepository.findOne(analiseDTO.getSistema().getId()).getModulos().isEmpty();
+        }
+        return false;
     }
 
-    public Analise carregarAnaliseJson(Analise analise) {
-        Analise newAnalise = new Analise();
-        this.carregarOrganizacaoAnaliseJson(newAnalise, analise);
-        this.carregarManualAnaliseJson(newAnalise, analise);
-        this.carregarSistemaAnaliseJson(newAnalise, analise);
-        this.carregarContratoAnaliseJson(newAnalise, analise);
-        this.carregarStatusAnaliseJson(newAnalise, analise);
-        return newAnalise;
-    }
-
-    private void carregarStatusAnaliseJson(Analise newAnalise, Analise analise) {
-        if(analise.getStatus() != null){
-            if(analise.getStatus().getNome() != null){
-                Optional<Status> status = statusRepository.findByNome(analise.getStatus().getNome());
-                if(status.isPresent()){
-                    newAnalise.setStatus(status.get());
+    private void verificarFuncoes(FuncaoAnalise funcao, Analise analise) {
+        if (analise.getManual() != null && (!analise.getManual().getFatoresAjuste().contains(funcao.getFatorAjuste()))) {
+            Set<FatorAjuste> fatoresSemelhantes = new HashSet<>();
+            analise.getManual().getFatoresAjuste().forEach(fatorAjuste -> {
+                if(funcao.getFatorAjuste().getNome().contains(fatorAjuste.getNome())) {
+                    fatoresSemelhantes.add(fatorAjuste);
                 }
-            }
-        }
-    }
+            });
 
-    private void carregarContratoAnaliseJson(Analise newAnalise, Analise analise) {
-        if(analise.getContrato().getNumeroContrato() != null){
-            Optional<Contrato> contrato = contratoRepository.findByNumeroContrato(analise.getContrato().getNumeroContrato());
-            if(contrato.isPresent()){
-                newAnalise.setContrato(contrato.get());
-            }
-        }
-    }
-
-    private void carregarSistemaAnaliseJson(Analise newAnalise, Analise analise) {
-        if(analise.getSistema().getSigla() != null){
-            Optional<Sistema> sistema = sistemaRepository.findBySigla(analise.getSistema().getSigla());
-            if(sistema.isPresent()){
-                newAnalise.setSistema(sistema.get());
-            }
-        }
-    }
-
-    private void carregarManualAnaliseJson(Analise newAnalise, Analise analise) {
-        if(analise.getManual().getNome() != null){
-            Optional<Manual> manual = manualRepository.findOneByNome(analise.getManual().getNome());
-            if(manual.isPresent()){
-                newAnalise.setManual(manual.get());
-                newAnalise.setEsforcoFases(manual.get().getEsforcoFases());
-            }
-        }
-    }
-
-    private void carregarOrganizacaoAnaliseJson(Analise newAnalise, Analise analise) {
-        if(analise.getOrganizacao().getNome() != null){
-            Optional<Organizacao> organizacao = organizacaoRepository.findByNome(analise.getOrganizacao().getNome());
-            if(organizacao.isPresent()){
-                newAnalise.setOrganizacao(organizacao.get());
+            if(fatoresSemelhantes.size() == 1) {
+                funcao.setFatorAjuste(fatoresSemelhantes.iterator().next());
+            } else {
+                funcao.setFatorAjuste(null);
             }
         }
     }
 
 
-    public void carregarDadosJson(Analise newAnalise, Analise analise) {
-        newAnalise.setDocumentacao(analise.getDocumentacao());
-        newAnalise.setTipoAnalise(analise.getTipoAnalise());
-        newAnalise.setPropositoContagem(analise.getPropositoContagem());
-        newAnalise.setObservacoes(analise.getObservacoes());
-        newAnalise.setNumeroOs(analise.getNumeroOs());
-        newAnalise.setMetodoContagem(analise.getMetodoContagem());
-        newAnalise.setIsDivergence(analise.getIsDivergence());
-        newAnalise.setIdentificadorAnalise(analise.getIdentificadorAnalise());
-        newAnalise.setFronteiras(analise.getFronteiras());
-        newAnalise.setEscopo(analise.getEscopo());
-        newAnalise.setFuncaoDados(analise.getFuncaoDados());
-        newAnalise.setFuncaoTransacaos(analise.getFuncaoTransacaos());
-        newAnalise.setDataCriacaoOrdemServico(analise.getDataCriacaoOrdemServico());
+    public void salvarFuncoesExcel(Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos, Analise analise) {
+        salvarFuncaoDadosExcel(funcaoDados, analise);
+        salvarFuncaoTransacaoExcel(funcaoTransacaos, analise);
+        atualizarPF(analise);
+        salvarAnalise(analise);
     }
 
-    public void salvarFuncoesJson(Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos, Analise analise) {
-        if(analise.getSistema().getSigla() != null){
-            Optional<Sistema> sistema = sistemaRepository.findBySigla(analise.getSistema().getSigla());
-            if(sistema.isPresent()){
-                analise.setSistema(sistema.get());
-            }
-        }
-        this.salvarFuncaoDadosJson(funcaoDados, analise);
-        this.salvarFuncaoTransacaoJson(funcaoTransacaos, analise);
-        this.updatePf(analise);
-        analiseRepository.save(analise);
-        analiseSearchRepository.save(this.convertToEntity(this.convertToDto(analise)));
+    public Analise importarAnaliseExcel(AnaliseEditDTO analiseDTO) {
+        User usuario = analiseFacade.obterUsuarioPorLogin();
+        Analise analise = converterEditDtoParaEntidade(analiseDTO);
+        analise.setIdentificadorAnalise(analise.getIdentificadorAnalise() + " Importada");
+        analise.setCreatedBy(usuario);
+        analise.getUsers().add(usuario);
+        analise.setSistema(sistemaRepository.findOne(analise.getSistema().getId()));
+        analise.setOrganizacao(organizacaoRepository.findOne(analise.getOrganizacao().getId()));
+        Set<FuncaoDados> funcaoDados = analise.getFuncaoDados();
+        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
+        analise.setFuncaoTransacaos(new HashSet<>());
+        analise.setFuncaoDados(new HashSet<>());
+        analise.setDataCriacaoOrdemServico(Timestamp.from(Instant.now()));
+        salvarAnalise(analise);
+        salvarFuncoesExcel(funcaoDados, funcaoTransacaos, analise);
+        return analise;
     }
 
-    private void salvarFuncaoTransacaoJson(Set<FuncaoTransacao> funcaoTransacaos, Analise analise) {
-        funcaoTransacaos.forEach(funcaoTransacao -> {
+    private void salvarFuncaoTransacaoExcel(Set<FuncaoTransacao> funcaoTransacaos, Analise analise) {
+        funcaoTransacaos.stream().sorted(Comparator.comparing(FuncaoTransacao::getId)).forEach(funcaoTransacao -> {
             funcaoTransacao.setId(null);
             funcaoTransacao.setAnalise(analise);
             funcaoTransacao.setEquipe(null);
-            if(!analise.getManual().getFatoresAjuste().contains(funcaoTransacao.getFatorAjuste())){
-                funcaoTransacao.setFatorAjuste(analise.getManual().getFatoresAjuste().stream().collect(Collectors.toList()).get(0));
-                analise.getManual().getFatoresAjuste().forEach(fatorAjuste ->{
-                    if(funcaoTransacao.getFatorAjuste().getNome().equals(fatorAjuste.getNome())){
-                        funcaoTransacao.setFatorAjuste(fatorAjuste);
-                    }
-                });
-            }
-            funcaoTransacao.getDers().forEach(der -> {der.setFuncaoTransacao(funcaoTransacao); der.setId(null);});
-            funcaoTransacao.getAlrs().forEach((alr -> {alr.setFuncaoTransacao(funcaoTransacao); alr.setId(null);}));
-            funcaoTransacao.setFuncionalidade(analise.getSistema().getModulos().stream().collect(Collectors.toList()).get(0).getFuncionalidades().stream().collect(Collectors.toList()).get(0));
-            analise.getSistema().getModulos().forEach(modulo -> {
-                modulo.getFuncionalidades().forEach(funcionalidade -> {
-                    if(funcionalidade.getNome().contains(funcaoTransacao.getFuncionalidade().getNome())){
-                        funcaoTransacao.setFuncionalidade(funcionalidade);
-                    }
-                });
+            verificarFuncoes(funcaoTransacao, analise);
+            funcaoTransacao.getDers().forEach(der -> {
+                der.setFuncaoTransacao(funcaoTransacao);
+                der.setId(null);
             });
-            funcaoTransacaoRepository.save(funcaoTransacao);
-            funcaoTransacaoSearchRepository.save(funcaoTransacao);
+            funcaoTransacao.getAlrs().forEach((alr -> {
+                alr.setFuncaoTransacao(funcaoTransacao);
+                alr.setId(null);
+            }));
+            setarFuncionalidadeFuncao(funcaoTransacao, analise);
+            analiseFacade.salvarFuncaoTransacao(funcaoTransacao);
         });
     }
 
-    private void salvarFuncaoDadosJson(Set<FuncaoDados> funcaoDados, Analise analise) {
-        funcaoDados.forEach(funcaoDado -> {
+    private void salvarFuncaoDadosExcel(Set<FuncaoDados> funcaoDados, Analise analise) {
+        funcaoDados.stream().sorted(Comparator.comparing(FuncaoDados::getId)).forEach(funcaoDado -> {
             funcaoDado.setId(null);
             funcaoDado.setAnalise(analise);
-            if(!analise.getManual().getFatoresAjuste().contains(funcaoDado.getFatorAjuste())){
-                funcaoDado.setFatorAjuste(analise.getManual().getFatoresAjuste().stream().collect(Collectors.toList()).get(0));
-                analise.getManual().getFatoresAjuste().forEach(fatorAjuste ->{
-                    if(funcaoDado.getFatorAjuste().getNome().equals(fatorAjuste.getNome())){
-                        funcaoDado.setFatorAjuste(fatorAjuste);
-                    }
-                });
-            }
-            funcaoDado.getDers().forEach(der -> { der.setFuncaoDados(funcaoDado); der.setId(null);});
-            funcaoDado.getRlrs().forEach(rlr -> { rlr.setFuncaoDados(funcaoDado); rlr.setId(null);});
-            funcaoDado.setFuncionalidade(analise.getSistema().getModulos().stream().collect(Collectors.toList()).get(0).getFuncionalidades().stream().collect(Collectors.toList()).get(0));
-            analise.getSistema().getModulos().forEach(modulo -> {
-                modulo.getFuncionalidades().forEach(funcionalidade -> {
-                    if(funcionalidade.getNome().contains(funcaoDado.getFuncionalidade().getNome())){
-                        funcaoDado.setFuncionalidade(funcionalidade);
-                    }
-                });
+            verificarFuncoes(funcaoDado, analise);
+            funcaoDado.getDers().forEach(der -> {
+                der.setFuncaoDados(funcaoDado);
+                der.setId(null);
             });
-            funcaoDadosRepository.save(funcaoDado);
-            funcaoDadosSearchRepository.save(funcaoDado);
+            funcaoDado.getRlrs().forEach(rlr -> {
+                rlr.setFuncaoDados(funcaoDado);
+                rlr.setId(null);
+            });
+            setarFuncionalidadeFuncao(funcaoDado, analise);
+            analiseFacade.salvarFuncaoDado(funcaoDado);
         });
     }
 
-    public List<VwAnaliseFD> carregarAnalisesFromFuncaoFD(String nomeFuncao, String nomeModulo, String nomeFuncionalidade, String nomeSistema, String nomeEquipe) {
-        List<VwAnaliseFD> analises = vwAnaliseFDRepository.findAllByFuncao(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
-        return analises;
-    }
-    public List<VwAnaliseFT> carregarAnalisesFromFuncaoFT(String nomeFuncao, String nomeModulo, String nomeFuncionalidade, String nomeSistema, String nomeEquipe) {
-        List<VwAnaliseFT> analises = vwAnaliseFTRepository.findAllByFuncao(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
-        return analises;
+    private void setarFuncionalidadeFuncao(FuncaoAnalise funcao, Analise analise) {
+        Sistema sistema = sistemaRepository.findOne(analise.getSistema().getId());
+
+        sistema.getModulos().forEach(modulo -> {
+            modulo.getFuncionalidades().forEach(func -> {
+                boolean moduloIgual = modulo.getNome().equals(funcao.getFuncionalidade().getModulo().getNome());
+                boolean funcionalidadeIgual = func.getNome().contains(funcao.getFuncionalidade().getNome());
+
+                if (moduloIgual) {
+                    funcao.getFuncionalidade().setModulo(modulo);
+                }
+
+                if (moduloIgual && funcionalidadeIgual) {
+                    funcao.setFuncionalidade(func);
+                }
+            });
+        });
+
+        if (funcao.getFuncionalidade().getId() == null) {
+            Funcionalidade funcionalidade = funcionalidadeService.criarFuncionalidade(funcao.getFuncionalidade(), analise.getSistema());
+            funcao.setFuncionalidade(funcionalidade);
+        }
     }
 
-    public AbacoMensagens salvarCompartilhadasMultiplas(Set<CompartilhadaDTO> compartilhadaList, AbacoMensagens abacoMensagens) {
-        List<Long> idsAnalise = compartilhadaList.stream().findFirst().get().getAnalisesId();
+    public List<AnaliseDTO> carregarAnalisesFromFuncaoFD(String nomeFuncao, String nomeModulo, String
+        nomeFuncionalidade, String nomeSistema, String nomeEquipe) {
+        return analiseFacade.obterPorFuncaoDados(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe).stream().map(this::converterParaDto).collect(Collectors.toList());
+    }
+
+    public List<AnaliseDTO> carregarAnalisesFromFuncaoFT(String nomeFuncao, String nomeModulo, String
+        nomeFuncionalidade, String nomeSistema, String nomeEquipe) {
+        return analiseFacade.obterPorFuncaoTransacao(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe).stream().map(this::converterParaDto).collect(Collectors.toList());
+    }
+
+    public void salvarCompartilhadasMultiplas(Set<CompartilhadaDTO> compartilhadaList, AbacoMensagens
+        abacoMensagens) {
+        List<Long> idsAnalise = compartilhadaList.stream().findFirst().orElse(new CompartilhadaDTO()).getAnalisesId();
         for (Long idAnalise : idsAnalise) {
             Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
-            Analise analise = analiseRepository.findOneByIdClean(idAnalise);
-            List<Long> compartilhaveis =
-                tipoEquipeRepository.findAllEquipesCompartilhaveis(
-                    analise.getOrganizacao().getId(),
-                    analise.getEquipeResponsavel().getId(),
-                    analise.getId()).stream().map(tipoEquipe -> tipoEquipe.getId()).collect(Collectors.toList());
-            List<Long> jaCompartilhadas = analise.getCompartilhadas().stream().map(compartilhada -> compartilhada.getEquipeId()).collect(Collectors.toList());
+            Analise analise = analiseFacade.obterAnalisePorIdLimpo(idAnalise);
+            List<Long> compartilhaveis = tipoEquipeRepository.findAllEquipesCompartilhaveis(analise.getOrganizacao().getId(), analise.getEquipeResponsavel().getId(), analise.getId()).stream().map(TipoEquipe::getId).collect(Collectors.toList());
+            List<Long> jaCompartilhadas = analise.getCompartilhadas().stream().map(Compartilhada::getEquipeId).collect(Collectors.toList());
 
             compartilhadaList.forEach(compartilhadaDto -> {
-                if(jaCompartilhadas != null && !jaCompartilhadas.isEmpty() && jaCompartilhadas.contains(compartilhadaDto.getEquipeId())){
-                    abacoMensagens.adicionarNovoErro("Analise "+analise.getIdentificadorAnalise()+" já compartilhada para "+compartilhadaDto.getNomeEquipe());
-                }else{
-                    if(compartilhaveis.contains(compartilhadaDto.getEquipeId())){
+                if (!jaCompartilhadas.isEmpty() && jaCompartilhadas.contains(compartilhadaDto.getEquipeId())) {
+                    abacoMensagens.adicionarNovoErro("Analise " + analise.getIdentificadorAnalise() + " já compartilhada para " + compartilhadaDto.getNomeEquipe());
+                } else {
+                    if (compartilhaveis.contains(compartilhadaDto.getEquipeId())) {
                         Compartilhada compartilhada = new Compartilhada();
                         compartilhada.setAnaliseId(idAnalise);
                         compartilhada.setEquipeId(compartilhadaDto.getEquipeId());
@@ -1193,62 +802,907 @@ public class AnaliseService extends BaseService {
                         compartilhada.setViewOnly(compartilhadaDto.isViewOnly());
                         compartilhadaRepository.save(compartilhada);
                         compartilhadas.add(compartilhada);
-                    }else{
-                        abacoMensagens.adicionarNovoErro("Não é permitido compartilhar análise "+analise.getIdentificadorAnalise()+" para equipe "+compartilhadaDto.getNomeEquipe()+".");
+                    } else {
+                        abacoMensagens.adicionarNovoErro("Não é permitido compartilhar análise " + analise.getIdentificadorAnalise() + " para equipe " + compartilhadaDto.getNomeEquipe() + ".");
                     }
                 }
             });
-            this.compartilharAnalise(analise, compartilhadas, abacoMensagens);
+            compartilharAnalise(analise, compartilhadas, abacoMensagens);
 
         }
-        return abacoMensagens;
     }
 
-    public AbacoMensagens saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas, AbacoMensagens abacoMensagens) {
-        if (lstCompartilhadas != null && lstCompartilhadas.size() > 0) {
-            long idAnalise = lstCompartilhadas.stream().findFirst().get().getAnaliseId();
-            Analise analise = analiseRepository.findOneByIdClean(idAnalise);
-            this.compartilharAnalise(analise, lstCompartilhadas, abacoMensagens);
+    public void saveAnaliseCompartilhada(Set<Compartilhada> lstCompartilhadas, AbacoMensagens
+        abacoMensagens) {
+        if (lstCompartilhadas != null && !lstCompartilhadas.isEmpty()) {
+            long idAnalise = lstCompartilhadas.stream().findFirst().orElse(new Compartilhada()).getAnaliseId();
+            Analise analise = analiseFacade.obterAnalisePorIdLimpo(idAnalise);
+            compartilharAnalise(analise, lstCompartilhadas, abacoMensagens);
         }
-        return abacoMensagens;
     }
 
-    private void compartilharAnalise(Analise analise, Set<Compartilhada> compartilhadas, AbacoMensagens abacoMensagens) {
-        if(compartilhadas.size() > 0){
+    private void compartilharAnalise(Analise analise, Set<Compartilhada> compartilhadas, AbacoMensagens
+        abacoMensagens) {
+        if (!compartilhadas.isEmpty()) {
             analise.setCompartilhadas(compartilhadas);
-            this.updatePf(analise);
-            analiseRepository.save(analise);
-            analiseSearchRepository.save(convertToEntity(convertToDto(analise)));
+            atualizarPF(analise);
+            salvarAnalise(analise);
             List<String> nomeDasEquipes = new ArrayList<>();
             compartilhadas.forEach(compartilhada -> {
-                TipoEquipe tipoEquipe = this.tipoEquipeRepository.findById(compartilhada.getEquipeId());
+                TipoEquipe tipoEquipe = tipoEquipeRepository.findById(compartilhada.getEquipeId());
                 nomeDasEquipes.add(tipoEquipe.getNome());
                 if (!(StringUtils.isEmptyString(tipoEquipe.getEmailPreposto()) && StringUtils.isEmptyString(tipoEquipe.getPreposto()))) {
-                    this.mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
+                    mailService.sendAnaliseSharedEmail(analise, tipoEquipe);
                 }
             });
-            this.historicoService.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
-            abacoMensagens.adicionarNovoSucesso(String.format("Análise "+analise.getIdentificadorAnalise()+" compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+            analiseFacade.inserirHistoricoAnalise(analise, null, String.format("Compartilhou para a(s) equipe(s) %s", String.join(", ", nomeDasEquipes)));
+            abacoMensagens.adicionarNovoSucesso(String.format("Análise %s compartilhou para a(s) equipe(s) %s", analise.getIdentificadorAnalise(), String.join(", ", nomeDasEquipes)));
         }
     }
 
-    public void atualizarPf(Analise analise) {
-        if(analise.getIsDivergence() == null || !analise.getIsDivergence()){
-            this.updatePf(analise);
-        }else{
-            this.updatePFDivergente(analise);
+    public void prepararAtualizarPF(Analise analise) {
+        if (analise.getIsDivergence() == null || !analise.getIsDivergence()) {
+            atualizarPF(analise);
+        } else {
+            atualizarPFDivergente(analise);
         }
     }
 
     public void inserirHistoricoBloquearDesbloquear(Analise analise) {
-        if(analise.getIsDivergence() != null && analise.getIsDivergence() == true && analise.getAnalisesComparadas() != null){
-            analise.getAnalisesComparadas().forEach(analisePai -> {
-                this.historicoService.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() == true ?
-                    String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) :
-                    String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise()));
-            });
-        }else{
-            this.historicoService.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() == true ? "Bloqueou" : "Desbloqueou");
+        if (analise.getIsDivergence() != null && analise.getIsDivergence() && analise.getAnalisesComparadas() != null) {
+            analise.getAnalisesComparadas().forEach(analisePai -> analiseFacade.inserirHistoricoAnalise(analisePai, null, analise.isBloqueiaAnalise() ? String.format("A validação %s foi bloqueada", analise.getIdentificadorAnalise()) : String.format("A validação %s foi desbloqueada", analise.getIdentificadorAnalise())));
+        } else {
+            analiseFacade.inserirHistoricoAnalise(analise, null, analise.isBloqueiaAnalise() ? "Bloqueou" : "Desbloqueou");
         }
+    }
+
+    public void excluirAnalise(Analise analise) {
+        analiseFacade.excluirAnalise(analise);
+    }
+
+    public List<Analise> obterAnalisesDivergenciaForaDoPrazo() {
+        return analiseFacade.obterAnalisesDivergenciaForaDoPrazo();
+    }
+
+    public AnaliseDTO criarAnalise(AnaliseEditDTO analiseDTO) {
+        User user = analiseFacade.obterUsuarioPorLogin();
+        Analise analise = converterEditDtoParaEntidade(analiseDTO);
+        analise.setSistema(sistemaRepository.findOne(analise.getSistema().getId()));
+        analise.setOrganizacao(organizacaoRepository.findOne(analise.getOrganizacao().getId()));
+        analise.setCreatedBy(user);
+        analise.getUsers().add(analise.getCreatedBy());
+        salvarAnalise(analise);
+        analiseFacade.inserirHistoricoAnalise(analise, user, "Criada");
+        return converterParaDto(analise);
+    }
+
+    public AnaliseDTO atualizarAnalise(AnaliseEditDTO analiseDTO) {
+        Analise analise = analiseFacade.obterAnalisePorIdLimpo(analiseDTO.getId());
+        anexarAnalise(converterEditDtoParaEntidade(analiseDTO), analise);
+        atualizarPF(analise);
+        analise.setEditedBy(analiseFacade.obterAnalisePorIdLimpo(analise.getId()).getCreatedBy());
+        analise.setAnaliseClonadaParaEquipe(null);
+        salvarAnalise(analise);
+        return converterParaDto(analise);
+    }
+
+    public AnaliseEditDTO bloquearDesbloquearAnalise(Long idAnalise) {
+        Analise analise = recuperarAnalise(idAnalise);
+        if (analise != null) {
+            if (analise.getDataHomologacao() == null) {
+                analise.setDataHomologacao(Timestamp.from(Instant.now()));
+            }
+            if (analise.getStatus().getNome().equals(APROVADA)) {
+                analise.getAnalisesComparadas().forEach(analiseComparada -> {
+                    analiseComparada.setPfTotalAprovado(analise.getPfTotalAprovado());
+                    analiseComparada.setDtEncerramento(Timestamp.from(Instant.now()));
+                    analiseComparada.setIsEncerrada(true);
+                    analiseComparada.setStatus(analise.getStatus());
+                    salvarAnalise(analiseComparada);
+                });
+            }
+            analise.setBloqueiaAnalise(!analise.isBloqueiaAnalise());
+            prepararAtualizarPF(analise);
+            salvarAnalise(analise);
+            inserirHistoricoBloquearDesbloquear(analise);
+        }
+        return converterParaAnaliseEditDTO(analise);
+    }
+
+    public AnaliseDTO clonarAnalise(Long idAnalise, Long idEquipe) {
+        User usuario = analiseFacade.obterUsuarioPorLogin();
+        Analise analise = recuperarAnalise(idAnalise);
+        Analise analiseClone = anexarAnaliseClone(analise, usuario, idEquipe);
+        return converterParaDto(analiseClone);
+    }
+
+    private Analise anexarAnaliseClone(Analise analise, User usuario, Long idEquipe) {
+        Analise analiseClone = new Analise(analise, usuario);
+        if ((analise.getClonadaParaEquipe() == null || !analise.getClonadaParaEquipe()) && idEquipe == null) {
+            setarAnaliseClone(analiseClone, analise, usuario, null);
+            salvarAnalise(analiseClone);
+            analiseFacade.inserirHistoricoAnalise(analise, null, String.format("Clonou para a análise %s", analiseClone.getNumeroOs() == null ? analiseClone.getIdentificadorAnalise() : analiseClone.getNumeroOs()));
+            analiseFacade.inserirHistoricoAnalise(analiseClone, null, String.format("Clonada da análise %s", analise.getNumeroOs() == null ? analise.getIdentificadorAnalise() : analise.getNumeroOs()));
+        } else {
+            TipoEquipe equipe = tipoEquipeRepository.findById(idEquipe);
+            setarAnaliseClone(analiseClone, analise, usuario, idEquipe);
+            salvarAnalise(analiseClone);
+            analise.setClonadaParaEquipe(true);
+            analise.setAnaliseClonou(true);
+            analise.setAnaliseClonadaParaEquipe(analiseClone);
+            salvarAnalise(analise);
+            analiseFacade.inserirHistoricoAnalise(analise, null, String.format("Clonou para equipe %s a análise %s", equipe.getNome(), analiseClone.getNumeroOs() == null ? analiseClone.getIdentificadorAnalise() : analiseClone.getNumeroOs()));
+            analiseFacade.inserirHistoricoAnalise(analiseClone, null, String.format("Clonada para equipe %s da análise %s", equipe.getNome(), analise.getNumeroOs() == null ? analise.getIdentificadorAnalise() : analise.getNumeroOs()));
+        }
+        return analiseClone;
+    }
+
+    public AnaliseEditDTO obterAnalise(Long idAnalise) {
+        Analise analise = recuperarAnalise(idAnalise);
+        AnaliseEditDTO analiseEditDTO = converterParaAnaliseEditDTO(analise);
+        if (recuperarAnalise(idAnalise) != null && permissaoParaEditar(analiseFacade.obterUsuarioPorLogin(), analise) && analise.getAnaliseDivergence() != null) {
+            analiseEditDTO.setAnaliseDivergence(converterParaDto(analise.getAnaliseDivergence()));
+        }
+        return converterParaAnaliseEditDTO(analise);
+    }
+
+    public void deletarAnalise(Long idAnalise) {
+        Analise analise = recuperarAnalise(idAnalise);
+        User user = analiseFacade.obterUsuarioPorLogin();
+        if (analise != null && user.getOrganizacoes().contains(analise.getOrganizacao()) && user.getTipoEquipes().contains(analise.getEquipeResponsavel())) {
+            if (analise.getAnaliseClonadaParaEquipe() != null) {
+                Analise analiseClonada = recuperarAnalise(analise.getAnaliseClonadaParaEquipe().getId());
+                analise.setAnaliseClonadaParaEquipe(null);
+                analiseClonada.setAnaliseClonadaParaEquipe(null);
+                analiseClonada.setAnaliseClonou(false);
+                analiseClonada.setClonadaParaEquipe(false);
+                salvarAnalise(analiseClonada);
+            }
+            excluirAnalise(analise);
+        }
+    }
+
+    public AbacoMensagens preencherCompartilhar(Set<CompartilhadaDTO> compartilhadaList, Boolean ehMultiplo) {
+        AbacoMensagens abacoMensagens = new AbacoMensagens();
+        if (Boolean.TRUE.equals(ehMultiplo)) {
+            salvarCompartilhadasMultiplas(compartilhadaList, abacoMensagens);
+        } else {
+            Set<Compartilhada> compartilhadas = new LinkedHashSet<>();
+            compartilhadaList.forEach(compartilhadaDto -> {
+                Compartilhada compartilhada = new Compartilhada();
+                compartilhada.setAnaliseId(compartilhadaDto.getAnalisesId().get(0));
+                compartilhada.setEquipeId(compartilhadaDto.getEquipeId());
+                compartilhada.setNomeEquipe(compartilhadaDto.getNomeEquipe());
+                compartilhada.setViewOnly(compartilhadaDto.isViewOnly());
+                compartilhadaRepository.save(compartilhada);
+                compartilhadas.add(compartilhada);
+            });
+            saveAnaliseCompartilhada(compartilhadas, abacoMensagens);
+        }
+        return abacoMensagens;
+    }
+
+    public void deletarAnaliseCompartilhada(Long idAnalise) {
+        Compartilhada compartilhada = compartilhadaRepository.getOne(idAnalise);
+        TipoEquipe tipoEquipe = tipoEquipeRepository.findById(compartilhada.getEquipeId());
+        Analise analise = analiseFacade.obterAnaliseCompartilhada(compartilhada.getAnaliseId());
+        analise.getCompartilhadas().remove(compartilhada);
+        atualizarPF(analise);
+        salvarAnalise(analise);
+        compartilhadaRepository.delete(idAnalise);
+        analiseFacade.inserirHistoricoAnalise(analise, null, String.format("Descompartilhou para a equipe %s", tipoEquipe.getNome()));
+    }
+
+    public Analise obterAnaliseSetarFuncoes(Long idAnalise) {
+        Analise analise = analiseFacade.obterAnalisePorIdLimpo(idAnalise);
+        if (analise.getIsDivergence() != null && !analise.getIsDivergence()) {
+            analise.setFuncaoDados(analiseFacade.obterFuncaoDadosPorAnaliseId(idAnalise));
+            analise.setFuncaoTransacaos(analiseFacade.obterFuncaoTransacaoPorAnaliseId(idAnalise));
+        }
+        analise.setFuncaoDados(analiseFacade.obterFuncaoDadosPorAnaliseIdStatusFuncao(idAnalise));
+        analise.setFuncaoTransacaos(analiseFacade.obterFuncaoTransacaoPorAnaliseIdStatusFuncao(idAnalise));
+        return analise;
+    }
+
+    public UploadedFile arquivosCarregados(Long idAnalise) {
+        Analise analise = obterAnaliseSetarFuncoes(idAnalise);
+        Long idLogo = analise.getOrganizacao().getLogoId();
+        UploadedFile uploadedFiles = new UploadedFile();
+        if (idLogo != null && idLogo > 0) {
+            uploadedFiles = uploadedFilesRepository.findOne(idLogo);
+        }
+        return uploadedFiles;
+    }
+
+    public ByteArrayOutputStream gerarRelatorioPdf(String query) throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream;
+        try {
+            new NativeSearchQueryBuilder().withQuery(multiMatchQuery(query)).build();
+            Page<Analise> result = analiseFacade.obterTodasAnalises();
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(null), result, "pdf", Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
+        } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
+            throw new RelatorioException(e);
+        }
+        return byteArrayOutputStream;
+    }
+
+    public ByteArrayOutputStream gerarRelatorioExportacao(String tipoRelatorio, AnaliseFilterDTO filtro) throws
+        RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream;
+        try {
+            Page<Analise> page = analiseFacade.obterPaginaAnaliseRelatorio(filtro);
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(filtro.getColumnsVisible()), page, tipoRelatorio, Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
+        } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
+            throw new RelatorioException(e);
+        }
+        return byteArrayOutputStream;
+    }
+
+    public ByteArrayOutputStream gerarRelatorioAnaliseImprimir(AnaliseFilterDTO filtro) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            Page<Analise> page = analiseFacade.obterPaginaAnaliseRelatorio(filtro);
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioAnaliseColunas(filtro.getColumnsVisible()), page, "pdf", Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
+        } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
+            log.error("Erro ao gerar o relátorio: ".concat(e.getMessage()));
+        }
+        return byteArrayOutputStream;
+    }
+
+    public byte[] gerarRelatorioDivergenciaImprimir(AnaliseFilterDTO filtro) throws RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream = gerarRelatorioDivergencia("pdf", filtro);
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    private ByteArrayOutputStream gerarRelatorioDivergencia(String tipoRelatorio, AnaliseFilterDTO filtro) throws
+        RelatorioException {
+        ByteArrayOutputStream byteArrayOutputStream;
+        try {
+            Page<Analise> page = analiseFacade.obterPaginaAnaliseDivergenciaRelatorio(filtro);
+            byteArrayOutputStream = analiseFacade.exportar(new RelatorioDivergenciaColunas(), page, tipoRelatorio, Optional.empty(), Optional.of(AbacoUtil.REPORT_LOGO_PATH), Optional.of(AbacoUtil.getReportFooter()));
+        } catch (DRException | ClassNotFoundException | JRException | NoClassDefFoundError e) {
+            throw new RelatorioException(e);
+        }
+        return byteArrayOutputStream;
+    }
+
+    public ByteArrayOutputStream gerarRelatorioDivergenciaExportacao(String tipoRelatorio,
+                                                                     AnaliseFilterDTO filter) throws RelatorioException {
+        return gerarRelatorioDivergencia(tipoRelatorio, filter);
+    }
+
+    public Page<AnaliseDTO> obterTodasAnalisesEquipes(AnalisePesquisaDTO pesquisaDTO) {
+        log.debug("DEBUG Consulta Analises - Inicio metodo");
+        SortOrder sortOrderQb;
+        if (pesquisaDTO.getOrder().equals("asc")) {
+            sortOrderQb = SortOrder.ASC;
+        } else {
+            sortOrderQb = SortOrder.DESC;
+        }
+        Sort.Direction sortOrder = PageUtils.getSortDirection(pesquisaDTO.getOrder());
+        Pageable pageable = new PageRequest(pesquisaDTO.getPageNumber(), pesquisaDTO.getSize(), sortOrder, pesquisaDTO.getSort());
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(pesquisaDTO.getSort()).order(sortOrderQb);
+        BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilder(pesquisaDTO);
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(analiseFacade.obterPaginacaoMaximaExportacao()).withSort(sortBuilder).build();
+        Page<Analise> page = analiseFacade.obterPaginaAnalise(searchQuery);
+        log.debug("DEBUG Consulta Analises -  Consulta realizada");
+        Page<AnaliseDTO> dtoPage = page.map(this::converterParaDto);
+        log.debug("DEBUG Consulta Analises -  Conversão realizada");
+        return perfilService.validarPerfilAnalise(dtoPage, pageable, false);
+    }
+
+    public AnaliseEditDTO atualizarSomaPF(Long idAnalise) {
+        Analise analise = recuperarAnalise(idAnalise);
+        if (analise.getId() != null) {
+            atualizarPF(analise);
+            salvarAnalise(analise);
+            return converterParaAnaliseEditDTO(analise);
+        } else {
+            return new AnaliseEditDTO();
+        }
+    }
+
+    public AnaliseEditDTO atualizarSomaDivergentePF(Long idAnalise) {
+        Analise analise = recuperarAnalise(idAnalise);
+        if (analise.getId() != null) {
+            atualizarPFDivergente(analise);
+            salvarAnalise(analise);
+            return converterParaAnaliseEditDTO(analise);
+        } else {
+            return new AnaliseEditDTO();
+        }
+    }
+
+    public AnaliseFormulario alterarStatusAnalise(Long idAnalise, Long idStatus) {
+        AbacoMensagens mensagens;
+        AnaliseFormulario formulario = new AnaliseFormulario();
+        Analise analise = recuperarAnalise(idAnalise);
+        Status status = analiseFacade.obterStatusPorId(idStatus);
+        User user = analiseFacade.obterUsuarioPorLogin();
+        mensagens = AnaliseValidador.validarAlterarStatus(idAnalise, idStatus, analise, status, user);
+
+        if (Boolean.TRUE.equals(mensagens.contemAvisoOuErro())) {
+            formulario.setMensagens(mensagens);
+            ResponseEntity.status(HttpStatus.BAD_REQUEST);
+            return formulario;
+        }
+
+        if (changeStatusAnalise(analise, status, user)) {
+            if (Boolean.FALSE.equals(analise.getIsDivergence())) {
+                atualizarPF(analise);
+            } else {
+                atualizarPFDivergente(analise);
+            }
+            salvarAnalise(analise);
+            if (Boolean.TRUE.equals(analise.getIsDivergence()) && analise.getAnalisesComparadas() != null) {
+                analise.getAnalisesComparadas().forEach(analisePai -> analiseFacade.inserirHistoricoAnalise(analisePai, user, String.format("A validação %s alterou o status para %s", analise.getIdentificadorAnalise(), status.getNome())));
+            } else {
+                analiseFacade.inserirHistoricoAnalise(analise, user, "Alterou o status para " + status.getNome());
+            }
+            mensagens.adicionarNovoSucesso("O status da análise " + analise.getIdentificadorAnalise() + " foi alterado para " + status.getNome());
+            formulario.setMensagens(mensagens);
+            formulario.setAnalise(converterParaAnaliseEditDTO(analise));
+        } else {
+            mensagens.adicionarNovoErro("Usuário não tem permissão para alterar o status");
+            formulario.setMensagens(mensagens);
+        }
+        return formulario;
+    }
+
+    public AnaliseEditDTO gerarDivergencia1(Long idAnaliseComparada) {
+        Analise analise = analiseFacade.obterAnalisePorId(idAnaliseComparada);
+        Status status = analiseFacade.obterStatusPorNome("Em Análise").orElse(analiseFacade.obterPrimeiroStatusPorDivergencia());
+        if (status == null || status.getId() == null) {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error status");
+        }
+        if (analise == null || analise.getId() == null) {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise");
+        }
+        Analise analiseDivergencia = generateDivergence1(analise, status);
+        return converterParaAnaliseEditDTO(analiseDivergencia);
+    }
+
+    public AnaliseEditDTO gerarDivergencia2(Long idAnalisePadrao, Long idAnaliseComparada, Boolean isUnionFunction) {
+        Analise analisePadrao = analiseFacade.obterAnalisePorId(idAnalisePadrao);
+        Analise analiseComparada = analiseFacade.obterAnalisePorId(idAnaliseComparada);
+        Status status = analiseFacade.obterStatusPorNome("Em Análise").orElse(analiseFacade.obterPrimeiroStatusPorDivergencia());
+        if (status == null || status.getId() == null) {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Status");
+        }
+        if (analisePadrao == null || analisePadrao.getId() == null) {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Padrão");
+        }
+        if (analiseComparada == null || analiseComparada.getId() == null) {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Comparada");
+        }
+        Analise analiseDivergencia = generateDivergence2(analisePadrao, analiseComparada, status, isUnionFunction);
+        analiseFacade.inserirHistoricoAnalise(analisePadrao, null, GEROU_VALIDACAO + analiseDivergencia.getId());
+        analiseFacade.inserirHistoricoAnalise(analiseComparada, null, GEROU_VALIDACAO + analiseDivergencia.getId());
+        return converterParaAnaliseEditDTO(analiseDivergencia);
+    }
+
+    public AnaliseEditDTO atualizarAnaliseDivergente(Long idAnalise) {
+        Analise analise = analiseFacade.obterAnalisePorId(idAnalise);
+        if (analise == null || analise.getId() == null) {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error analise Padrão");
+        }
+        analise = atualizarDivergenciaAnalise(analise);
+        return converterParaAnaliseEditDTO(analise);
+    }
+
+    public Page<AnaliseDTO> obterDivergencias(AnalisePesquisaDTO pesquisaDTO) {
+        log.debug("DEBUG Consulta Validação -  Inicio método");
+        Sort.Direction sortOrder = PageUtils.getSortDirection(pesquisaDTO.getOrder());
+        Pageable pageable = new PageRequest(pesquisaDTO.getPageNumber(), pesquisaDTO.getSize(), sortOrder, pesquisaDTO.getSort());
+        FieldSortBuilder sortBuilder = new FieldSortBuilder(pesquisaDTO.getSort()).order(SortOrder.DESC);
+        BoolQueryBuilder qb = analiseFacade.obterBoolQueryBuilderDivergencia(pesquisaDTO.getIdentificador(), pesquisaDTO.getSistema(), pesquisaDTO.getOrganizacao(), pesquisaDTO.getStatus(), pesquisaDTO.getBloqueado());
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(qb).withPageable(analiseFacade.obterPaginacaoMaximaExportacao()).withSort(sortBuilder).build();
+        Page<Analise> page = analiseFacade.obterPaginaAnalise(searchQuery);
+        log.debug("DEBUG Consulta Validação -  Consulta realizada");
+        Page<AnaliseDTO> dtoPage = page.map(this::converterParaDto);
+        log.debug("DEBUG Consulta Validação -  Conversão realizada");
+        return perfilService.validarPerfilAnalise(dtoPage, pageable, true);
+    }
+
+    public AnaliseDivergenceEditDTO obterDivergencia(Long idAnalise) {
+        Analise analise = recuperarAnaliseDivergence(idAnalise);
+        if (analise != null) {
+            User user = analiseFacade.obterUsuarioPorLogin();
+            if (user.getOrganizacoes().contains(analise.getOrganizacao())) {
+                return converterParaAnaliseDivergenciaEditDTO(analise);
+            }
+        }
+        return null;
+    }
+
+    public void deletarAnaliseDivergencia(Long idAnalise) {
+        Analise analise = recuperarAnalise(idAnalise);
+        User user = analiseFacade.obterUsuarioPorLogin();
+        if (analise != null) {
+            if (user.getOrganizacoes().contains(analise.getOrganizacao())) {
+                excluirDivergencia(analise);
+            }
+        } else {
+            ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+    }
+
+    public byte[] exportarExcel(Long idAnalise, Long modelo) throws IOException {
+        ByteArrayOutputStream outputStream = analiseFacade.selecionarModelo(recuperarAnalise(idAnalise), modelo);
+        return outputStream.toByteArray();
+    }
+
+    public byte[] importarExcelDivergencia(Long idAnalise, Long modelo) throws IOException {
+        Analise analise = obterAnaliseSetarFuncoes(idAnalise);
+        ByteArrayOutputStream outputStream = analiseFacade.selecionarModeloDivergencia(analise, modelo);
+        return outputStream.toByteArray();
+    }
+
+    public void atualizarEncerramentoAnalise(AnaliseEncerramentoDTO analiseEncerramentoDTO) {
+        Analise analise = analiseFacade.obterAnalisePorIdLimpo(analiseEncerramentoDTO.getId());
+        boolean gerarHistorico = false;
+        if (analise.getIsEncerrada() == null) {
+            analise.setIsEncerrada(false);
+        }
+        if (Boolean.TRUE.equals(analiseEncerramentoDTO.isEncerrada() != analise.getIsEncerrada() || analise.getDtEncerramento() == null && analiseEncerramentoDTO.getDtEncerramento() != null) || analise.getDtEncerramento() != null && !analise.getDtEncerramento().equals(analiseEncerramentoDTO.getDtEncerramento())) {
+            gerarHistorico = true;
+        }
+
+        if (!analiseEncerramentoDTO.isEncerrada()) {
+            analise.setDtEncerramento(null);
+        } else {
+            analise.setDtEncerramento(analiseEncerramentoDTO.getDtEncerramento());
+        }
+        analise.setIsEncerrada(analiseEncerramentoDTO.isEncerrada());
+        atualizarPF(analise);
+        salvarAnalise(analise);
+        if (gerarHistorico) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            analiseFacade.inserirHistoricoAnalise(analise, null, Boolean.TRUE.equals(analise.getIsEncerrada()) ? "Encerrou para " + sdf.format(analise.getDtEncerramento()) : "Abriu (Desabilitou o encerramento)");
+        }
+    }
+
+    public Analise uploadExcel(MultipartFile file) throws IOException {
+        Path tempDir = Files.createTempDirectory("");
+        File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
+        file.transferTo(tempFile);
+
+        try(
+            FileInputStream inputStream = new FileInputStream(tempFile);
+            XSSFWorkbook workbook = new XSSFWorkbook(inputStream)
+        ) {
+
+            Analise analise = new Analise();
+            Set<FuncaoDados> funcaoDados = new HashSet<>();
+            Set<FuncaoTransacao> funcaoTransacaos = new HashSet<>();
+
+            setarResumoExcelUpload(workbook, analise);
+            if (analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)) {
+                setarIndicativaExcelUpload(workbook, funcaoDados);
+            } else {
+                setarInmExcelUpload(workbook, funcaoTransacaos, funcaoDados);
+            }
+            if (analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
+                setarExcelDetalhadaUpload(workbook, funcaoDados, funcaoTransacaos);
+            } else if (analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)) {
+                setarExcelEstimadaUpload(workbook, funcaoDados, funcaoTransacaos);
+            }
+            analise.setFuncaoDados(funcaoDados);
+            analise.setFuncaoTransacaos(funcaoTransacaos);
+            return analise;
+
+        }
+    }
+
+    // Planilha Detalhada
+    public void setarExcelDetalhadaUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos) {
+        XSSFSheet excelSheet = excelFile.getSheet(DETALHADA);
+        for (int i = 9; i < 1323; i++) {
+            XSSFRow row = excelSheet.getRow(i);
+            if (row.getCell(0).getNumericCellValue() > 0) {
+                ders = new HashSet<>();
+                if (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue())) {
+                    rlrs = new HashSet<>();
+                    funcaoDados.add(setarFuncaoDadosDetalhada(row));
+                } else if (tipoFuncaoTransacao().contains(row.getCell(6).getStringCellValue())) {
+                    alrs = new HashSet<>();
+                    funcaoTransacaos.add(setarFuncaoTrasacaoDetalhada(row));
+                }
+            }
+        }
+    }
+
+    private FuncaoDados setarFuncaoDadosDetalhada(XSSFRow row) {
+        FuncaoDados funcaoDados = new FuncaoDados();
+        funcaoDados.setId((long) row.getCell(0).getNumericCellValue());
+        setarModuloFuncionalidade(funcaoDados, row);
+        setarTipoFuncaoDados(row, funcaoDados);
+        setarDerRlrFuncaoDados(funcaoDados, row);
+        setarSustentacaoStatus(funcaoDados, row);
+        return funcaoDados;
+    }
+
+    private void setarDerRlrFuncaoDados(FuncaoDados funcaoDados, XSSFRow row) {
+        setarDerAlr(row);
+        funcaoDados.setDers(ders);
+        funcaoDados.setRlrs(rlrs);
+        setarFuncaoComplexidade(funcaoDados, row);
+    }
+
+    private void setarDerAlr(XSSFRow row) {
+        Arrays.stream(row.getCell(8).getStringCellValue().split(", ")).forEach(value -> {
+            Der der = new Der();
+            der.setNome(value);
+            ders.add(der);
+        });
+
+        Arrays.stream(row.getCell(10).getStringCellValue().split(", ")).forEach(value -> {
+            Alr alr = new Alr();
+            alr.setNome(value);
+            alrs.add(alr);
+        });
+    }
+
+    private void setarSustentacaoStatus(FuncaoAnalise funcao, XSSFRow row) {
+        funcao.setSustantation(row.getCell(17).getStringCellValue());
+        if (statusFuncao().contains(row.getCell(19).getStringCellValue())) {
+            switch (row.getCell(19).getStringCellValue()) {
+                case DIVERGENTE:
+                    funcao.setStatusFuncao(StatusFuncao.DIVERGENTE);
+                    break;
+                case EXCLUIDO:
+                    funcao.setStatusFuncao(StatusFuncao.EXCLUIDO);
+                    break;
+                case VALIDADO:
+                    funcao.setStatusFuncao(StatusFuncao.VALIDADO);
+                    break;
+                case PENDENTE:
+                    funcao.setStatusFuncao(StatusFuncao.PENDENTE);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void setarModuloFuncionalidade(FuncaoAnalise funcao, XSSFRow row) {
+        Modulo modulo = new Modulo();
+        modulo.setNome(row.getCell(3).getStringCellValue());
+
+        Funcionalidade funcionalidade = new Funcionalidade();
+        funcionalidade.setModulo(modulo);
+        funcionalidade.setNome(row.getCell(4).getStringCellValue());
+
+        FatorAjuste fatorAjuste = new FatorAjuste();
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+
+        funcao.setFuncionalidade(funcionalidade);
+        funcao.setName(row.getCell(5).getStringCellValue());
+        funcao.setFatorAjuste(fatorAjuste);
+    }
+
+    private FuncaoTransacao setarFuncaoTrasacaoDetalhada(XSSFRow row) {
+        FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
+        funcaoTransacao.setId((long) row.getCell(0).getNumericCellValue());
+        setarModuloFuncionalidade(funcaoTransacao, row);
+        setarTipoFuncaoTransacao(funcaoTransacao, row.getCell(6).getStringCellValue());
+        setarDerAlrFuncaoTransacao(funcaoTransacao, row);
+        setarSustentacaoStatus(funcaoTransacao, row);
+        return funcaoTransacao;
+    }
+
+    private void setarDerAlrFuncaoTransacao(FuncaoTransacao funcaoTransacao, XSSFRow row) {
+        setarDerAlr(row);
+        funcaoTransacao.setDers(ders);
+        funcaoTransacao.setAlrs(alrs);
+        setarFuncaoComplexidade(funcaoTransacao, row);
+    }
+
+
+    // Planilha Estimada
+    public void setarExcelEstimadaUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDados, Set<FuncaoTransacao> funcaoTransacaos) {
+        XSSFSheet excelSheetEstimada = excelFile.getSheet(ESTIMATIVA);
+        for (int i = 10; i < 1081; i++) {
+            XSSFRow row = excelSheetEstimada.getRow(i);
+            if (row.getCell(0).getNumericCellValue() > 0) {
+                if (tipoFuncaoDados().contains(row.getCell(7).getStringCellValue())) {
+                    funcaoDados.add(setarFuncaoDadosEstimada(row));
+                } else if (tipoFuncaoTransacao().contains(row.getCell(7).getStringCellValue())) {
+                    funcaoTransacaos.add(setarFuncaoTransacaoEstimada(row));
+                }
+            }
+        }
+    }
+
+    private void setarModuloFuncionalidadeEstimada(FuncaoAnalise funcao, XSSFRow row) {
+        Funcionalidade funcionalidade = new Funcionalidade();
+        Modulo modulo = new Modulo();
+        FatorAjuste fatorAjuste = new FatorAjuste();
+        funcao.setId((long) row.getCell(0).getNumericCellValue());
+        modulo.setNome(row.getCell(4).getStringCellValue());
+        funcionalidade.setModulo(modulo);
+        funcionalidade.setNome(row.getCell(5).getStringCellValue());
+        funcao.setFuncionalidade(funcionalidade);
+        funcao.setName(row.getCell(6).getStringCellValue());
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+        funcao.setFatorAjuste(fatorAjuste);
+    }
+
+    private FuncaoDados setarFuncaoDadosEstimada(XSSFRow row) {
+        FuncaoDados funcaoDados = new FuncaoDados();
+        setarModuloFuncionalidadeEstimada(funcaoDados, row);
+        switch (row.getCell(7).getStringCellValue()) {
+            case METODO_AIE:
+                funcaoDados.setTipo(TipoFuncaoDados.AIE);
+                break;
+            case METODO_ALI:
+                funcaoDados.setTipo(TipoFuncaoDados.ALI);
+                break;
+            case METODO_INM:
+                funcaoDados.setTipo(TipoFuncaoDados.INM);
+                break;
+            default:
+                break;
+        }
+        funcaoDados.setPf(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoDados.setGrossPF(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoDados.setSustantation(row.getCell(9).getStringCellValue());
+        return funcaoDados;
+    }
+
+    private FuncaoTransacao setarFuncaoTransacaoEstimada(XSSFRow row) {
+        FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
+        setarModuloFuncionalidadeEstimada(funcaoTransacao, row);
+        setarTipoFuncaoTransacao(funcaoTransacao, row.getCell(7).getStringCellValue());
+        funcaoTransacao.setPf(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoTransacao.setGrossPF(BigDecimal.valueOf(row.getCell(8).getNumericCellValue()));
+        funcaoTransacao.setSustantation(row.getCell(9).getStringCellValue());
+        return funcaoTransacao;
+    }
+
+    private void setarTipoFuncaoTransacao(FuncaoTransacao funcaoTransacao,String tipo) {
+        switch (tipo) {
+            case METODO_CE:
+                funcaoTransacao.setTipo(TipoFuncaoTransacao.CE);
+                break;
+            case METODO_EE:
+                funcaoTransacao.setTipo(TipoFuncaoTransacao.EE);
+                break;
+            case METODO_SE:
+                funcaoTransacao.setTipo(TipoFuncaoTransacao.SE);
+                break;
+            case METODO_INM:
+                funcaoTransacao.setTipo(TipoFuncaoTransacao.INM);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Planilha Resumo
+    public void setarResumoExcelUpload(XSSFWorkbook excelFile, Analise analise) {
+        XSSFSheet sheet = excelFile.getSheet(RESUMO);
+        analise.setNumeroOs(sheet.getRow(3).getCell(1).getStringCellValue());
+        analise.setPropositoContagem(sheet.getRow(9).getCell(0).getStringCellValue());
+        analise.setEscopo(sheet.getRow(12).getCell(0).getStringCellValue());
+        switch (sheet.getRow(4).getCell(1).getStringCellValue()) {
+            case METODO_ESTIMATIVA:
+                analise.setMetodoContagem(MetodoContagem.ESTIMADA);
+                break;
+            case METODO_DETALHADO:
+                analise.setMetodoContagem(MetodoContagem.DETALHADA);
+                break;
+            case METODO_INDICATIVA:
+                analise.setMetodoContagem(MetodoContagem.INDICATIVA);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Planilha Indicativa
+    public void setarIndicativaExcelUpload(XSSFWorkbook excelFile, Set<FuncaoDados> funcaoDadosList) {
+        XSSFSheet excelSheetIndicativa = excelFile.getSheet(SHEET_INM_INDICATIVA);
+        for (int i = 9; i < 107; i++) {
+            XSSFRow row = excelSheetIndicativa.getRow(i);
+            if (row.getCell(0).getNumericCellValue() > 0 && (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue()))) {
+                funcaoDadosList.add(setarFuncaoDadosIndicativa(row));
+
+            }
+        }
+    }
+
+    private FuncaoDados setarFuncaoDadosIndicativa(XSSFRow row) {
+        FuncaoDados funcaoDados = new FuncaoDados();
+        Funcionalidade funcionalidade = new Funcionalidade();
+        Modulo modulo = new Modulo();
+        funcaoDados.setId((long) row.getCell(0).getNumericCellValue());
+        modulo.setNome(row.getCell(2).getStringCellValue());
+        funcionalidade.setModulo(modulo);
+        funcionalidade.setNome(row.getCell(3).getStringCellValue());
+        funcaoDados.setFuncionalidade(funcionalidade);
+        funcaoDados.setName(row.getCell(5).getStringCellValue());
+        setarTipoFuncaoDados(row, funcaoDados);
+        funcaoDados.setPf(BigDecimal.valueOf(row.getCell(7).getNumericCellValue()));
+        funcaoDados.setGrossPF(BigDecimal.valueOf(row.getCell(7).getNumericCellValue()));
+        funcaoDados.setSustantation(row.getCell(8).getStringCellValue());
+        return funcaoDados;
+    }
+
+    private void setarTipoFuncaoDados(XSSFRow row, FuncaoDados funcaoDados) {
+        switch (row.getCell(6).getStringCellValue()) {
+            case METODO_AIE:
+                funcaoDados.setTipo(TipoFuncaoDados.AIE);
+                break;
+            case METODO_ALI:
+                funcaoDados.setTipo(TipoFuncaoDados.ALI);
+                break;
+            case METODO_INM:
+                funcaoDados.setTipo(TipoFuncaoDados.INM);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Planilha INM
+    public void setarInmExcelUpload(XSSFWorkbook excelFile, Set<FuncaoTransacao> funcaoTransacaos, Set<FuncaoDados> funcaoDados) {
+        XSSFSheet excelSheetINM = excelFile.getSheet(SHEET_INM);
+        for (int i = 10; i < 382; i++) {
+            XSSFRow row = excelSheetINM.getRow(i);
+            if (row.getCell(0).getNumericCellValue() > 0) {
+                ders = new HashSet<>();
+                if (tipoFuncaoDados().contains(row.getCell(6).getStringCellValue())) {
+                    alrs = new HashSet<>();
+                    funcaoTransacaos.add(setarInm(row));
+                } else if (tipoFuncaoTransacao().contains(row.getCell(6).getStringCellValue())) {
+                    rlrs = new HashSet<>();
+                    funcaoDados.add(setarFuncaoDadosInm(row));
+                }
+            }
+        }
+    }
+
+    private FuncaoTransacao setarInm(XSSFRow row) {
+        FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
+        if (TipoFuncaoTransacao.INM.toString().equals(row.getCell(12).getStringCellValue())) {
+            setarModuloFuncionalidadeInm(funcaoTransacao, row);
+            if (METODO_CE.equals(row.getCell(12).getStringCellValue())) {
+                funcaoTransacao.setTipo(TipoFuncaoTransacao.INM);
+            }
+            setarDerAlrFuncaoTransacao(funcaoTransacao, row);
+            funcaoTransacao.setSustantation(row.getCell(17).getStringCellValue());
+            if (statusFuncao().contains(row.getCell(21).getStringCellValue())) {
+                switch (row.getCell(21).getStringCellValue()) {
+                    case DIVERGENTE:
+                        funcaoTransacao.setStatusFuncao(StatusFuncao.DIVERGENTE);
+                        break;
+                    case EXCLUIDO:
+                        funcaoTransacao.setStatusFuncao(StatusFuncao.EXCLUIDO);
+                        break;
+                    case VALIDADO:
+                        funcaoTransacao.setStatusFuncao(StatusFuncao.VALIDADO);
+                        break;
+                    case PENDENTE:
+                        funcaoTransacao.setStatusFuncao(StatusFuncao.PENDENTE);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return funcaoTransacao;
+    }
+
+    private FuncaoDados setarFuncaoDadosInm(XSSFRow row) {
+        FuncaoDados funcaoDados = new FuncaoDados();
+        if (TipoFuncaoTransacao.INM.toString().equals(row.getCell(12).getStringCellValue())) {
+            setarModuloFuncionalidadeInm(funcaoDados, row);
+            if (row.getCell(12).getStringCellValue().equals(METODO_CE)) {
+                funcaoDados.setTipo(TipoFuncaoDados.INM);
+            }
+            setarDerRlrFuncaoDados(funcaoDados, row);
+        }
+        return funcaoDados;
+    }
+
+    private void setarModuloFuncionalidadeInm(FuncaoAnalise funcao, XSSFRow row) {
+        Modulo modulo = new Modulo();
+        FatorAjuste fatorAjuste = new FatorAjuste();
+        Funcionalidade funcionalidade = new Funcionalidade();
+        funcao.setId((long) row.getCell(0).getNumericCellValue());
+        modulo.setNome(row.getCell(5).getStringCellValue());
+        funcionalidade.setModulo(modulo);
+        funcionalidade.setNome(row.getCell(6).getStringCellValue());
+        funcao.setFuncionalidade(funcionalidade);
+        funcao.setName(row.getCell(7).getStringCellValue());
+        fatorAjuste.setNome(row.getCell(1).getStringCellValue());
+        funcao.setFatorAjuste(fatorAjuste);
+    }
+
+    private void setarFuncaoComplexidade(FuncaoAnalise funcao, XSSFRow row) {
+        switch (row.getCell(12).getStringCellValue()) {
+            case METODO_SEM:
+                funcao.setComplexidade(Complexidade.SEM);
+                break;
+            case METODO_BAIXO:
+                funcao.setComplexidade(Complexidade.BAIXA);
+                break;
+            case METODO_MEDIO:
+                funcao.setComplexidade(Complexidade.MEDIA);
+                break;
+            case METODO_ALTA:
+                funcao.setComplexidade(Complexidade.ALTA);
+                break;
+            default:
+                break;
+
+        }
+        funcao.setPf(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
+        funcao.setGrossPF(BigDecimal.valueOf(row.getCell(16).getNumericCellValue()));
+    }
+
+    public void salvarAnalise(Analise analise) {
+        analiseFacade.salvarAnalise(analise);
+    }
+
+    public Compartilhada salvarCompartilhada(CompartilhadaDTO compartilhadaDTO) {
+        return converterCompartilhadaParaEntidade(compartilhadaDTO);
+    }
+
+    public Compartilhada converterCompartilhadaParaEntidade(CompartilhadaDTO compartilhadaDTO) {
+        return analiseFacade.converterCompartilhadaParaEntidade(compartilhadaDTO);
+    }
+
+    public Analise converterParaEntidade(AnaliseDTO analiseDTO) {
+        return analiseFacade.converterParaEntidade(analiseDTO);
+    }
+
+    public AnaliseEditDTO converterParaAnaliseEditDTO(Analise analise) {
+        return analiseFacade.converterParaAnaliseEditDTO(analise);
+    }
+
+    public AnaliseJsonDTO converterParaAnaliseJsonDTO(Analise analise) {
+        return analiseFacade.converterParaAnaliseJsonDTO(analise);
+    }
+
+    public Analise converterEditDtoParaEntidade(AnaliseEditDTO analiseEditDTO) {
+        return analiseFacade.converterEditDtoParaEntidade(analiseEditDTO);
+    }
+
+    public AnaliseDivergenceEditDTO converterParaAnaliseDivergenciaEditDTO(Analise analise) {
+        return analiseFacade.converterParaAnaliseDivergenciaEditDTO(analise);
+
+    }
+
+    public AnaliseDivergenceDTO converterParaAnaliseDivergenciaDTO(Analise analise) {
+        return analiseFacade.converterParaAnaliseDivergenciaDTO(analise);
+    }
+
+
+    private List<String> tipoFuncaoDados() {
+        List<String> valor = new ArrayList<>();
+        valor.add(METODO_ALI);
+        valor.add(METODO_AIE);
+        valor.add(METODO_INM);
+        return valor;
+    }
+
+    private List<String> tipoFuncaoTransacao() {
+        List<String> valor = new ArrayList<>();
+        valor.add(METODO_CE);
+        valor.add(METODO_EE);
+        valor.add(METODO_SE);
+        valor.add(METODO_INM);
+        return valor;
+    }
+
+    private List<String> statusFuncao() {
+        List<String> valor = new ArrayList<>();
+        valor.add(DIVERGENTE);
+        valor.add(EXCLUIDO);
+        valor.add(VALIDADO);
+        valor.add(PENDENTE);
+        return valor;
     }
 }

@@ -1,17 +1,18 @@
 package br.com.basis.abaco.repository;
 
-import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.Status;
 import br.com.basis.abaco.service.dto.DropdownDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 
+@Repository
 public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Boolean existsByNome(String nome);
@@ -20,7 +21,7 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Page<Status> findByNomeContains(String nome, Pageable page);
 
-    Optional<Status> findByNome(String nome);
+    Status findByNome(String nome);
 
 
     Optional<Status> findByNomeContainsIgnoreCase(String nome);
@@ -30,12 +31,11 @@ public interface StatusRepository extends JpaRepository<Status, Long> {
 
     Status findById(Long id);
 
-    List<Status> findByAtivoTrue();
+    List<Status> findByAtivoTrueOrderByNome();
 
     Status findFirstByDivergenciaTrue();
 
-    List<Status> findAllByAtivoTrueAndDivergenciaTrue();
-
+    List<Status> findAllByAtivoTrueAndDivergenciaTrueOrderByNome();
 
 
 }

@@ -14,12 +14,12 @@
         }">
         <app-topbar></app-topbar>
         <basis-block-ui></basis-block-ui>
-        <div class="layout-menu" [ngClass]="{ 'layout-menu-dark': darkMenu }" (click)="onMenuClick($event)">
+        <div class="layout-menu" [ngClass]="{ 'layout-menu-dark': darkMenu }" (click)="onMenuClick($event)" style="top: 60px;">
             <p-scrollPanel #scrollPanel [style]="{ height: '100%' }">
-                <app-menu #menu></app-menu>
+				<app-menu #menu class="menu-itens"></app-menu>
             </p-scrollPanel>
         </div>
-        <div class="layout-main">
+        <div class="layout-main" style="padding-top: 60px">
             <breadcrumb></breadcrumb>
             <div class="layout-content">
                 <router-outlet></router-outlet>

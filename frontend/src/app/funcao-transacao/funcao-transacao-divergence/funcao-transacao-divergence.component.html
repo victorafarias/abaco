@@ -277,7 +277,7 @@
 
                         <div class="ui-g">
                             <div class="ui-g-3 ui-md-12 ui-sm-12">
-                                <label>Equipe</label>
+                                <label>Equipe *</label>
                                 <p-dropdown [filter]="true" [options]="equipes"
                                     id="idEquipeFuncaoTransacao" [(ngModel)]="currentFuncaoTransacao.equipe"
                                     [placeholder]="this.getLabel('Selecione a Equipe')" name="equipe" >
@@ -522,7 +522,7 @@
                                     <label><b>Equipe: </b></label>
                                     {{currentFuncaoTransacao.equipe.nome}}
                                 </div>
-                                
+
                             </div>
                             <div class="ui-g">
                                 <div class="ui-md-6 ui-sm-12">

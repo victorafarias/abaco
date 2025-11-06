@@ -31,6 +31,8 @@ import { Analise, MetodoContagem } from '../analise.model';
 import { AnaliseService } from '../analise.service';
 import { SearchGroup } from '../grupo/grupo.model';
 import { GrupoService } from '../grupo/grupo.service';
+import {funcaoDadosRoute} from "../../funcao-dados/funcao-dados.route";
+import {FuncaoDados} from "../../funcao-dados";
 
 @Component({
     selector: 'app-analise',
@@ -52,12 +54,13 @@ export class AnaliseListComponent implements OnInit {
         { value: 'status.nome', label: 'Status' },
         { value: 'pfTotalValor', label: 'PF Total' },
         { value: 'pfTotalAjustadoValor', label: 'PF Ajustado' },
+        { value: 'pfTotalAprovado', label: 'PF Conciliado' },
         { value: 'dataCriacaoOrdemServico', label: 'Data de criação' },
         { value: 'dataHomologacao', label: 'Data de Conclusão' },
         { value: 'dtEncerramento', label: 'Data de Encerramento' },
         { value: 'bloqueiaAnalise', label: 'Bloqueado' },
         { value: 'clonadaParaEquipe', label: 'Clonada para outra equipe' },
-        { value: 'analiseClonadaParaEquipe', label: "Análise Relacionada" },
+        { value: 'analiseClonadaParaEquipe', label: 'Análise Relacionada' },
         { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência'},
         { value: 'users', label: 'Usuários' },
     ];
@@ -72,6 +75,7 @@ export class AnaliseListComponent implements OnInit {
         'status.nome',
         'pfTotalValor',
         'pfTotalAjustadoValor',
+        'pfTotalAprovado',
 		'dataCriacaoOrdemServico',
 		'dataHomologacao',
 		'dtEncerramento',
@@ -181,7 +185,7 @@ export class AnaliseListComponent implements OnInit {
     //JSON
     analisesImportar: Analise[] = [];
     downloadJsonHref;
-    analiseFileJson;
+    analiseFileExcel;
     showDialogImportar: boolean;
     carregadaAnalise: boolean = false;
     analiseImportar: Analise = new Analise();
@@ -1263,35 +1267,26 @@ export class AnaliseListComponent implements OnInit {
     closeModalImportAnalise() {
         this.showDialogImportar = false;
         this.analiseImportar = new Analise();
-        this.analiseFileJson = undefined;
+        this.analiseFileExcel = undefined;
         this.carregadaAnalise = false;
     }
 
-    removeJsonFiles(){
-        this.analiseFileJson = undefined;
+    removeExcelFiles(){
+        this.analiseFileExcel = undefined;
     }
 
-    selectJsonAnalise(event) {
-        this.analiseFileJson = event.currentFiles[0];
-        this.analisesImportar = [];
-        const reader = new FileReader();
-        let analises = this.analisesImportar;
-        let analise: Analise;
-        reader.onloadend = function () {
-            analise = JSON.parse(reader.result.toString());
-            if (analise.id) {
-                analise.id = null;
-                analises.push(analise);
-            }
-        }
-        reader.readAsText(this.analiseFileJson);
-    }
+	selectExcelAnalise(event) {
+		this.analiseFileExcel = <FileList> event.files[0];
+		this.analiseService.carregarArquivoExcel(this.analiseFileExcel).subscribe(analise => {
+			this.analisesImportar.push(analise);
+		});
+		console.log(this.analisesImportar);
+	}
 
     importarAnalise() {
-        if (this.analiseFileJson && this.analiseImportar) {
-            this.analiseImportar.identificadorAnalise = this.analiseImportar.identificadorAnalise + " - Importada";
-            this.analiseService.importarJson(this.analiseImportar).subscribe(r => {
-                this.pageNotificationService.addCreateMsg("Análise - " + r.identificadorAnalise + " importada com sucesso!");
+        if (this.analiseFileExcel && this.analiseImportar) {
+            this.analiseService.importarExcel(this.analiseImportar).subscribe(analise => {
+                this.pageNotificationService.addCreateMsg("Análise - " + analise.identificadorAnalise + " importada com sucesso!");
                 this.datatable.filter();
                 this.closeModalImportAnalise();
                 this.analisesImportar = [];
@@ -1303,11 +1298,11 @@ export class AnaliseListComponent implements OnInit {
 
     carregarAnalise(){
         this.carregadaAnalise = true;
-        this.analiseService.carregarAnaliseJson(this.analisesImportar[0]).subscribe(response =>{
+        this.analiseService.carregarAnaliseExcel(this.analisesImportar[0]).subscribe(response =>{
             this.analiseImportar = response;
-            if(this.analiseImportar.organizacao){
-                this.setSistemaOrganizacao(this.analiseImportar.organizacao);
-                this.getLstStatus();
+			this.getLstStatus();
+			if(this.analiseImportar.organizacao){
+				this.setSistemaOrganizacao(this.analiseImportar.organizacao);
                 if(this.analiseImportar.contrato){
                     this.contratoSelected(this.analiseImportar.contrato);
                 }

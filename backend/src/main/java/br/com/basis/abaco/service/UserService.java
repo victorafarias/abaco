@@ -111,7 +111,7 @@ public class UserService extends BaseService {
     }
 
     public Optional<User> requestPasswordResetUser(String login) {
-        return userRepository.findOneByLogin(login).filter(User::isActivated).map(user -> {
+        return obterUsuarioPorLogin(login).filter(User::isActivated).map(user -> {
             user.setResetKey(RandomUtil.generateResetKey());
             user.setResetDate(ZonedDateTime.now());
             return user;
@@ -230,7 +230,7 @@ public class UserService extends BaseService {
      * current user.
      */
     public void updateUser(String firstName, String lastName, String email, String langKey) {
-        userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).ifPresent(user -> {
+        obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).ifPresent(user -> {
             user.setFirstName(firstName);
             user.setLastName(lastName);
             user.setEmail(email);
@@ -252,7 +252,7 @@ public class UserService extends BaseService {
     }
 
     public void changePassword(String password) {
-        userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).ifPresent(user -> {
+        obterUsuarioPorLogin(SecurityUtils.getCurrentUserLogin()).ifPresent(user -> {
             String encryptedPassword = passwordEncoder.encode(password);
             user.setPassword(encryptedPassword);
             log.debug("Changed password for User: {}", user);
@@ -422,5 +422,13 @@ public class UserService extends BaseService {
     public void salvarUsuario(User user){
         userRepository.save(user);
         userSearchRepository.save(bindUserForSaveElatiscSearch(user));
+    }
+
+    public Optional<User> obterUsuarioPorLogin(String usuario) {
+        return userRepository.findOneByLogin(usuario);
+    }
+
+    public Optional<User> obterUsuarioComAutorizacao(String usuario) {
+        return userRepository.findOneWithAuthoritiesByLogin(usuario);
     }
 }

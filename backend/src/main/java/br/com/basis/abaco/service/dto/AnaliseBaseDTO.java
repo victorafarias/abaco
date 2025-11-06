@@ -6,7 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -20,13 +23,15 @@ public class AnaliseBaseDTO {
     protected TipoEquipeAnaliseDTO equipeResponsavel;
     protected SistemaAnaliseDTO sistema;
     protected MetodoContagem metodoContagem;
-    protected String pfTotal;
-    protected String adjustPFTotal;
+    protected BigDecimal pfTotal;
+    protected BigDecimal adjustPFTotal;
     protected TipoAnalise tipoAnalise;
     protected Timestamp dataCriacaoOrdemServico;
     protected Boolean fatorCriticidade;
     protected Double valorCriticidade;
     protected Double scopeCreep;
+    private Set<FuncaoDadosDTO> funcaoDados = new HashSet<>();
+    private Set<FuncaoTransacaoDTO> funcaoTransacaos = new HashSet<>();
 
     public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
         this.dataCriacaoOrdemServico = dataCriacaoOrdemServico == null ? null : new Timestamp(dataCriacaoOrdemServico.getTime());

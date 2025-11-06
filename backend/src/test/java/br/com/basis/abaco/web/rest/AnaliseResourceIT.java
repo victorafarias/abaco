@@ -61,8 +61,8 @@ public class AnaliseResourceIT {
     private static final BigDecimal DEFAULT_VALOR_AJUSTE = new BigDecimal(1);
     private static final BigDecimal UPDATED_VALOR_AJUSTE = new BigDecimal(2);
 
-    private static final String DEFAULT_PF_TOTAL = "AAAAAAAAAA";
-    private static final String UPDATED_PF_TOTAL = "BBBBBBBBBB";
+    private static final BigDecimal DEFAULT_PF_TOTAL = new BigDecimal(1);
+    private static final BigDecimal UPDATED_PF_TOTAL = new BigDecimal(2);
 
     private static final String DEFAULT_ESCOPO = "AAAAAAAAAA";
     private static final String UPDATED_ESCOPO = "BBBBBBBBBB";
@@ -142,15 +142,10 @@ public class AnaliseResourceIT {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        AnaliseResource analiseResource = new AnaliseResource(analiseRepository,
-            analiseSearchRepository,
-            dynamicExportsService,
-            userRepository,
-            funcaoDadosRepository,
+        AnaliseResource analiseResource = new AnaliseResource(
+            analiseRepository,
             compartilhadaRepository,
-            funcaoTransacaoRepository,
-            elasticsearchTemplate,
-            analiseService, statusRepository, perfilService);
+            analiseService);
         this.restAnaliseMockMvc = MockMvcBuilders.standaloneSetup(analiseResource)
             .setCustomArgumentResolvers(pageableArgumentResolver).setControllerAdvice(exceptionTranslator)
             .setMessageConverters(jacksonMessageConverter).build();

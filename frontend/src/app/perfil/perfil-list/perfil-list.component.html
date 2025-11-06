@@ -33,7 +33,9 @@
                 <basis-datatable type="server" [url]="searchUrl" (dblclick)="onRowDblclick($event)"
                     (click)="selectPerfil()" (buttonClick)="onClick($event)" [rows]="20" [disableLoadingBlockUI]="true"
                     [disableDelete]="!canDeletar" [disableEdit]="!canEditar" [disableView]="!canConsultar"
-                    [rowsPerPageOptions]="rowsPerPageOptions" [showPaginationFooter]="true" #datatable>
+                    [rowsPerPageOptions]="rowsPerPageOptions" [showPaginationFooter]="true"
+					[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+					[title]="'Perfis'"#datatable>
 
                     <p-column header="Nome" field="nome" [sortable]="true">
                         <ng-template let-row="rowData" pTemplate="body">
@@ -58,8 +60,8 @@
                     </p-column>
                 </basis-datatable>
 
-                <div class="ui-g-12 ui-md-2">
-                    <app-export-button [dataTable]="datatable" resourceName="perfils" funcionalidadeName="perfil">
+                <div class="ui-g-11 div-btn-exportar">
+                    <app-export-button [dataTable]="datatable" resourceName="perfils" funcionalidadeName="perfil" class="ui-g-12 ui-md-3 btn-exportar">
                     </app-export-button>
                 </div>
             </div>

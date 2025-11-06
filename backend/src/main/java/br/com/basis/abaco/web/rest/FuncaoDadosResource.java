@@ -17,18 +17,17 @@ import br.com.basis.abaco.repository.search.VwRlrSearchRepository;
 import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
-import br.com.basis.abaco.service.dto.DerFdDTO;
+import br.com.basis.abaco.service.dto.DerDTO;
 import br.com.basis.abaco.service.dto.DropdownDTO;
 import br.com.basis.abaco.service.dto.FuncaoDadoAnaliseDTO;
-import br.com.basis.abaco.service.dto.FuncaoDadoApiDTO;
+import br.com.basis.abaco.service.dto.FuncaoDadosDTO;
 import br.com.basis.abaco.service.dto.FuncaoDadosEditDTO;
 import br.com.basis.abaco.service.dto.FuncaoDadosSaveDTO;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.ImportarFDDTO;
-import br.com.basis.abaco.service.dto.RlrFdDTO;
-import br.com.basis.abaco.utils.ConfiguracaoUtils;
+import br.com.basis.abaco.service.dto.RlrDTO;
 import br.com.basis.abaco.web.rest.util.HeaderUtil;
 import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -222,7 +221,7 @@ public class FuncaoDadosResource {
      */
     @GetMapping("/funcao-dados/{id}")
     @Timed
-    public ResponseEntity<FuncaoDadoApiDTO> getFuncaoDados(@PathVariable Long id) {
+    public ResponseEntity<FuncaoDadosDTO> getFuncaoDados(@PathVariable Long id) {
         log.debug("REST request to get FuncaoDados : {}", id);
         FuncaoDados funcaoDados = funcaoDadosRepository.findByIdOrderByDersIdAscRlrsIdAsc(id);
         if (funcaoDados.getAnalise().getFuncaoDados() != null) {
@@ -231,7 +230,7 @@ public class FuncaoDadosResource {
         if (funcaoDados.getAnalise().getFuncaoTransacaos() != null) {
             funcaoDados.getAnalise().getFuncaoTransacaos().clear();
         }
-        FuncaoDadoApiDTO funcaoDadosDTO = getFuncaoDadoApiDTO(funcaoDados);
+        FuncaoDadosDTO funcaoDadosDTO = getFuncaoDados(funcaoDados);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
@@ -333,14 +332,14 @@ public class FuncaoDadosResource {
      */
     @GetMapping("/funcao-dados/update-status/{id}/{statusFuncao}")
     @Timed
-    public ResponseEntity<FuncaoDadoApiDTO> updateStatusFuncaoDados(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
+    public ResponseEntity<FuncaoDadosDTO> updateStatusFuncaoDados(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
         log.debug("REST request to update status FuncaoDados : {}", id);
         FuncaoDados funcaoDados = funcaoDadosRepository.findOne(id);
         funcaoDados.setStatusFuncao(statusFuncao);
         FuncaoDados result = funcaoDadosRepository.save(funcaoDados);
-        analiseService.save(funcaoDados.getAnalise());
-        FuncaoDadoApiDTO funcaoDadosDTO = getFuncaoDadoApiDTO(result);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
+        analiseService.salvar(funcaoDados.getAnalise());
+        FuncaoDadosDTO funcaoDadosDTO = getFuncaoDados(result);
+        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoDadosDTO));
     }
 
     @PatchMapping("/funcao-dados/update-ordem")
@@ -432,18 +431,18 @@ public class FuncaoDadosResource {
         return funcaoDados.getSustantation() != null && !(funcaoDados.getSustantation().isEmpty());
     }
 
-    private FuncaoDadoApiDTO getFuncaoDadoApiDTO(FuncaoDados funcaoDados) {
-        Set<DerFdDTO> ders = new LinkedHashSet<>();
-        Set<RlrFdDTO> rlrs = new LinkedHashSet<>();
-        FuncaoDadoApiDTO map = modelMapper.map(funcaoDados, FuncaoDadoApiDTO.class);
+    private FuncaoDadosDTO getFuncaoDados(FuncaoDados funcaoDados) {
+        Set<DerDTO> ders = new LinkedHashSet<>();
+        Set<RlrDTO> rlrs = new LinkedHashSet<>();
+        FuncaoDadosDTO map = modelMapper.map(funcaoDados, FuncaoDadosDTO.class);
         funcaoDados.getDers().forEach(der -> {
-            DerFdDTO derDto = new DerFdDTO();
+            DerDTO derDto = new DerDTO();
             derDto.setNome(der.getNome());
             derDto.setValor(der.getValor());
             ders.add(derDto);
         });
         funcaoDados.getRlrs().forEach(rlr -> {
-            RlrFdDTO rlrDto = new RlrFdDTO();
+            RlrDTO rlrDto = new RlrDTO();
             rlrDto.setNome(rlr.getNome());
             rlrDto.setValor(rlr.getValor());
             rlrs.add(rlrDto);

@@ -8,7 +8,7 @@
                         <input
                               type="text"
                               pInputText class="ui-inputtext"
-                              [(ngModel)]="searchDivergence.identificadorAnalise"
+                              [(ngModel)]="searchDivergence.identificadorAnalise" (keyup.enter)="performSearch()"
                               id="idIdentificadorComponentAnalise"
                               maxlength="50">
                         <label>Identificador</label>
@@ -36,6 +36,28 @@
                             [placeholder]="this.getLabel('Organização')">
                     </p-dropdown>
                 </div>
+				<div class="ui-g-4 ui-md-4 ui-sm-12">
+					<p-dropdown
+						id="idStatusComponentAnalise"
+						[filter]="true"
+						[options]="lstStatus"
+						optionLabel="nome"
+						[autoWidth]="false"
+						[(ngModel)]="searchDivergence.status"
+						[placeholder]="this.getLabel('Status')">
+					</p-dropdown>
+				</div>
+				<div class="ui-g-4 ui-md-4 ui-sm-12">
+					<p-dropdown
+						id="idBloqueadoComponentAnalise"
+						[filter]="true"
+						[options]="bloquear"
+						optionLabel="titulo"
+						[autoWidth]="false"
+						[(ngModel)]="searchDivergence.bloqueiaAnalise"
+						[placeholder]="this.getLabel('Bloqueado')">
+					</p-dropdown>
+				</div>
             </div>
             <div class="ui-g">
                 <div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 25px; margin-top: 25px">
@@ -68,14 +90,18 @@
                                     [paginator]="true"
                                     selectionMode="multiple"
                                     [rows]="20"
-                                    [scrollable]="true"
-                                    [scrollHeight]="'500px'"
                                     [rowsPerPageOptions]="rowsPerPageOptions"
                                     [metaKeySelection]="true"
                                     (click) = "selectAnalise()"
                                     (dblclick)="onRowDblclick($event)"
                                     [(selection)]="selectedDivergence"
+								    [showCurrentPageReport]="true"
+									[autoLayout]="true"
+								    currentPageReportTemplate='Registros {first} a {last} de {totalRecords}'
                                     #data >
+							<ng-template pTemplate="caption" class="valid">
+								Validação
+							</ng-template>
                             <ng-template pTemplate="header" let-columns>
                                 <tr>
                                     <th></th>
@@ -105,10 +131,12 @@
                                         {{rowData.metodoContagem}}
                                     </td>
                                     <td>
-                                        {{rowData.pfTotalOriginal}}
+                                        {{
+                                            ((rowData.pfTotalOriginal || rowData.analisesComparadas[0]?.pfTotal) | number: '1.2-2')?.replace(".", ",")
+                                        }}
                                     </td>
                                     <td>
-                                        {{rowData.pfTotalAprovado}}
+                                        {{ ((rowData.pfTotalAprovado) | number: '1.2-2')?.replace(".", ",") }}
                                     </td>
                                     <td >
                                         {{rowData.dataCriacaoOrdemServico | date: 'dd/MM/y - HH:mm' }}
@@ -122,7 +150,7 @@
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="rowexpansion" let-rowData let-columns="columns">
-                                <tr>
+                                <tr style="background: rgba(50, 74, 94, 0.1) !important;">
                                     <td [attr.colspan]="columns.length + 1">
                                         <div class="p-grid -fluid" style="font-size:16px;padding:20px">
                                             <div class="ui-g">

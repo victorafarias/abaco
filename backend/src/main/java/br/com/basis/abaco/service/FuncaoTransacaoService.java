@@ -126,7 +126,7 @@ public class FuncaoTransacaoService {
     }
 
     private Boolean verificarSeExisteFuncao(PEAnaliticoDTO funcao, FuncaoImportarDTO funcaoImportarDTO) {
-        Boolean existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(funcao.getName(), funcaoImportarDTO.getIdAnalise(), funcao.getIdFuncionalidade(), funcao.getIdModulo());
+        Boolean existInAnalise = funcaoTransacaoRepository.existsByNameAndAnaliseIdAndFuncionalidadeId(funcao.getName(), funcaoImportarDTO.getIdAnalise(), funcao.getIdFuncionalidade());
         return existInAnalise;
     }
 

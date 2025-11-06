@@ -1,13 +1,8 @@
 package br.com.basis.abaco.service.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.io.Serializable;
 
-import java.util.Date;
-
-public class UploadedFileDTO {
+public class UploadedFileDTO implements Serializable {
 
     private Long id;
 

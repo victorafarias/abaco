@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -20,8 +21,9 @@ public class AnaliseDivergenceDTO implements ReportObject, Serializable {
     private TipoEquipeAnaliseDTO equipeResponsavel;
     private SistemaAnaliseDTO sistema;
     private MetodoContagem metodoContagem;
-    private String pfTotal;
-    private String adjustPFTotal;
+    private BigDecimal pfTotal;
+    private BigDecimal adjustPFTotal;
+    private String pfTotalAprovado;
     private StatusDTO status;
 
 }

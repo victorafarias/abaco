@@ -38,9 +38,9 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
     @Query("SELECT ft FROM FuncaoTransacao ft WHERE ft.analise.id = ?1")
     Set<FuncaoTransacao> findAllByAnaliseId(Long id);
 
-    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloId(String name, Long analiseId, Long idFuncionalidade, Long idModulo);
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeId(String name, Long analiseId, Long idFuncionalidade);
 
-    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNot(String name, Long analiseId, Long idFuncionalidade, Long idModulo, Long id);
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNot(String name, Long analiseId, Long idFuncionalidade, Long id);
 
     Set<FuncaoTransacao> findByAnaliseIdOrderByFuncionalidadeModuloNomeAscFuncionalidadeNomeAscNameAsc(Long id);
 
@@ -59,7 +59,7 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
 
     Optional<List<FuncaoTransacao>> findAllByFuncionalidadeId(Long id);
 
-    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndIdNotAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idModulo, Long id, Long idEquipe);
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNotAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long id, Long idEquipe);
 
-    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndFuncionalidadeModuloIdAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idModulo, Long idEquipe);
+    Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idEquipe);
 }
