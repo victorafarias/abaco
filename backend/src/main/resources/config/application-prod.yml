@@ -12,7 +12,6 @@
 # Full reference is available at:
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
-
 eureka:
     instance:
         prefer-ip-address: true
@@ -142,3 +141,6 @@ jhipster:
 nuvem:
     elasticsearch:
         reindex.enabled: true
+logging:
+    level:
+      br.com.basis.abaco.AbacoApp: INFO
