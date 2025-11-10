@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Funcionalidade } from '..';
+import { Funcionalidade } from '../funcionalidade.model';
 import { Subscription, Observable } from 'rxjs';
 import { FuncionalidadeService } from '../funcionalidade.service';
 import { ResponseWrapper } from 'src/app/shared';
-import { Modulo, ModuloService } from 'src/app/modulo';
-import { FuncaoDados } from 'src/app/funcao-dados';
-import { FuncaoTransacao } from 'src/app/funcao-transacao';
+import { Modulo } from 'src/app/modulo/modulo.model';
+import { ModuloService } from 'src/app/modulo/modulo.service';
+import { FuncaoDados } from 'src/app/funcao-dados/funcao-dados.model';
+import { FuncaoTransacao } from 'src/app/funcao-transacao/funcao-transacao.model';
 import { FuncaoTransacaoService } from 'src/app/funcao-transacao/funcao-transacao.service';
 import { FuncaoDadosService } from 'src/app/funcao-dados/funcao-dados.service';
 

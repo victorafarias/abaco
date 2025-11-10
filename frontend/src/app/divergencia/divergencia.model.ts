@@ -1,21 +1,21 @@
 import { UserService } from '../user/user.service';
 import { Manual } from '../manual/manual.model';
-import { Contrato } from '../contrato';
-import { EsforcoFase } from '../esforco-fase/index';
-import { Sistema } from '../sistema/index';
+import { Contrato } from '../contrato/contrato.model';
+import { EsforcoFase } from '../esforco-fase/esforco-fase.model';
+import { Sistema } from '../sistema/sistema.model';
 import { ResumoTotal, ResumoFuncoes } from '../analise-shared/resumo-funcoes';
-import { FatorAjuste } from '../fator-ajuste';
+import { FatorAjuste } from '../fator-ajuste/fator-ajuste.model';
 import { FuncaoAnalise } from '../analise-shared/funcao-analise';
-import { Organizacao } from '../organizacao';
-import { TipoEquipe } from '../tipo-equipe';
-import { User } from '../user';
+import { Organizacao } from '../organizacao/organizacao.model';
+import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
+import { User } from '../user/user.model';
 import { BaseEntity } from '../shared';
 import { MappableEntities } from '../shared/mappable-entities';
-import { FuncaoDados } from '../funcao-dados';
-import { FuncaoTransacao } from '../funcao-transacao';
+import { FuncaoDados } from '../funcao-dados/funcao-dados.model';
+import { FuncaoTransacao } from '../funcao-transacao/funcao-transacao.model';
 import { Status } from '../status/status.model';
 import { ModuloDaFuncionalidadeFinder } from '../analise/modulo-finder';
-import { Analise } from '../analise';
+import { Analise } from '../analise/analise.model';
 
 export enum MetodoContagem {
     'DETALHADA' = 'DETALHADA',

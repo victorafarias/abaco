@@ -6,9 +6,9 @@ import {Observable} from '../../../node_modules/rxjs';
 import {BaselineSintetico} from './baseline-sintetico.model';
 import {BaselineAnalitico} from './baseline-analitico.model';
 import { HttpClient } from '@angular/common/http';
-import { FuncaoDados } from '../funcao-dados';
+import { FuncaoDados } from '../funcao-dados/funcao-dados.model';
 import { BlockUiService } from '@nuvem/angular-base';
-import { TipoEquipe } from '../tipo-equipe';
+import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
 import { catchError } from 'rxjs/internal/operators/catchError';
 import { PageNotificationService } from '@nuvem/primeng-components';
 

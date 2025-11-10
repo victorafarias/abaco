@@ -1,4 +1,3 @@
-version: '2'
 services:
     abaco-sonar:
         image: sonarqube:6.2-alpine

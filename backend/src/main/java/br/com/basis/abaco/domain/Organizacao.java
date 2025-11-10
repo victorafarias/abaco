@@ -92,8 +92,8 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
     @Column(name = "logo_id")
     private Long logoId;
 
-    @NotNull
-    @Column(name = "prazo_aprovacao_divergencia_dias")
+    //@NotNull
+    @Column(name = "prazo_aprovacao_divergencia_dias", nullable = true) 
     private Integer prazoAprovacaoDivergenciaDias;
 
     public Long getId() {

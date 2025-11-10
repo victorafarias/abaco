@@ -1,6 +1,6 @@
 import {BaseEntity} from '../shared';
-import { FatorAjuste } from '../fator-ajuste';
-import { EsforcoFase } from '../esforco-fase';
+import { FatorAjuste } from '../fator-ajuste/fator-ajuste.model';
+import { EsforcoFase } from '../esforco-fase/esforco-fase.model';
 import { MappableEntities } from '../shared/mappable-entities';
 import { Upload } from '../upload/upload.model';
 

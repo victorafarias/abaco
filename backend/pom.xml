@@ -115,6 +115,20 @@
         </dependencies>
     </dependencyManagement>
 
+    <repositories>
+        <repository>
+            <id>basis-public-repository</id>
+            <name>Basis Public Repository</name>
+            <url>https://nexus.basis.com.br/repository/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>br.gov.nuvem</groupId>
@@ -131,6 +145,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--<dependency>
+            <groupId>br.com.basis</groupId>
+            <artifactId>basis-dynamic-reports</artifactId>
+            <version>1.0.3</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>batik-bridge</artifactId>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jasperreports</artifactId>
+                    <groupId>net.sf.jasperreports</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-hibernate5</artifactId>
@@ -636,7 +666,7 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
+            <!--<plugin>
                 <groupId>com.github.ekryd.sortpom</groupId>
                 <artifactId>sortpom-maven-plugin</artifactId>
                 <version>${sortpom-maven-plugin.version}</version>
@@ -656,7 +686,7 @@
                     <keepBlankLines>true</keepBlankLines>
                     <expandEmptyElements>false</expandEmptyElements>
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>

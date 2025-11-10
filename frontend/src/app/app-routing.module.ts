@@ -23,12 +23,13 @@ const routes: Routes = [
 		breadcrumb: 'Configuração'
 	} },
   { path: 'login', component: LoginComponent, data: { breadcrumb: 'Login'}},
+  { path: 'login/:token', component: LoginComponent, data: { breadcrumb: 'Login'}}, // Atualização
     { path: 'dashboard2', component: Dashboard2Component}
 ];
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes, { useHash: true })
   ],
   exports: [RouterModule]
 })

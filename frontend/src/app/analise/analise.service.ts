@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
-import { Analise, AnaliseShareEquipe } from './';
-import { TipoEquipe } from '../tipo-equipe';
+import { Analise } from './analise.model';
+import { AnaliseShareEquipe } from './analise-share-equipe.model';
+import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
 import { Resumo } from './analise-resumo/resumo.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
@@ -12,8 +13,8 @@ import { HttpGenericErrorService, BlockUiService } from '@nuvem/angular-base';
 import { ResponseWrapper, createRequestOption } from '../shared';
 import { FuncaoDadosService } from '../funcao-dados/funcao-dados.service';
 import { FuncaoTransacaoService } from '../funcao-transacao/funcao-transacao.service';
-import { FuncaoTransacao } from '../funcao-transacao';
-import { FuncaoDados } from '../funcao-dados';
+import { FuncaoTransacao } from '../funcao-transacao/funcao-transacao.model';
+import { FuncaoDados } from '../funcao-dados/funcao-dados.model';
 import { Status } from '../status/status.model';
 import { AbacoButtonsModule } from '../components/abaco-buttons/abaco-buttons.module';
 import { TableBody } from 'primeng';

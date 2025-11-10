@@ -5,7 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SecurityModule, AuthorizationService } from '@nuvem/angular-base';
 import { SharedModule } from '../shared/shared.module';
-import { LoginComponent, LoginService } from './';
+import { LoginComponent } from './login.component';
+import { LoginService } from './login.service';
 import { loginRoute } from './login.route';
 
 
@@ -14,10 +15,10 @@ import { loginRoute } from './login.route';
         CommonModule,
         HttpClientModule,
         FormsModule,
-        RouterModule.forRoot(loginRoute, { useHash: true }),
+        // RouterModule.forRoot(loginRoute, { useHash: true }),
+        RouterModule.forChild(loginRoute), // Atualização
         SharedModule,
-        SecurityModule,
-        
+        SecurityModule
     ],
     declarations: [
         LoginComponent
@@ -30,6 +31,4 @@ import { loginRoute } from './login.route';
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 
-export class LoginModule {
-
-}
+export class LoginModule { }

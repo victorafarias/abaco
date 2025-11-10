@@ -3,12 +3,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { SelectItem } from 'primeng';
 import { Subscription } from 'rxjs';
-import { AnaliseService, Analise } from 'src/app/analise';
+import { Analise } from 'src/app/analise/analise.model';
+import { AnaliseService } from 'src/app/analise/analise.service';
 import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
-import { StatusService } from 'src/app/status';
+import { StatusService } from 'src/app/status/status.service';
 import { Status } from 'src/app/status/status.model';
 import { MessageUtil } from 'src/app/util/message.util';
-import { DivergenciaService } from '..';
+import { DivergenciaService } from '../divergencia.service';
 
 @Component({
   selector: 'app-divergencia-view',

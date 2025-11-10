@@ -1,16 +1,16 @@
 import {FuncaoTransacao} from './../funcao-transacao/funcao-transacao.model';
 import {Injectable} from '@angular/core';
 
-import {FuncaoDados} from '.';
+import {FuncaoDados} from './funcao-dados.model';
 import { environment } from 'src/environments/environment';
 import { Subject, Observable, asyncScheduler, asapScheduler, queueScheduler } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { catchError, observeOn } from 'rxjs/operators';
-import { Funcionalidade } from 'src/app/funcionalidade';
+import { Funcionalidade } from '../funcionalidade/funcionalidade.model';
 import { ResponseWrapper } from 'src/app/shared';
-import { Manual } from 'src/app/manual';
-import { Analise } from '../analise';
+import { Manual } from '../manual/manual.model';
+import { Analise } from '../analise/analise.model';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
 import { FuncaoImportarDTO, ImportarFDDTO } from '../pesquisar-ft/funcao-importar.dto';
 
