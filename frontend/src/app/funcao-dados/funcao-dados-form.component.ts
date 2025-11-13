@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Column, DatatableClickEvent, DatatableComponent, PageNotificationService} from '@nuvem/primeng-components';
 import * as _ from 'lodash';
@@ -39,6 +39,10 @@ import {SistemaService} from '../sistema/sistema.service';
 import {Upload} from '../upload/upload.model';
 import {DomSanitizer} from '@angular/platform-browser';
 import {Utilitarios} from '../util/utilitarios.util';
+import {catchError, map} from 'rxjs/operators';
+import {of, throwError} from 'rxjs'; // Adiciona throwError para o catchError
+import { MessageService } from 'primeng/api';
+
 
 @Component({
     selector: 'app-analise-funcao-dados',
@@ -131,6 +135,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
     public erroUnitario: boolean;
     public erroDeflator: boolean;
     public displayDescriptionDeflator = false;
+    public funcaoDados: FuncaoDados = new FuncaoDados();
+    public baselineAnalitico: BaselineAnalitico = new BaselineAnalitico();
     public funcoesDados: FuncaoDados[];
     public disableAba = false;
     public analise: Analise;
@@ -178,6 +184,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         private funcionalidadeService: FuncionalidadeService,
         private moduloService: ModuloService,
         sanitizer: DomSanitizer,
+        private messageService: MessageService // ATUALIZADO: Injeção do MessageService
     ) {
         this.sanitizer = sanitizer;
         this.lastObjectUrl = "";
@@ -390,10 +397,39 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         });
     }
 
-    public carregarDadosBaseline() {
-        this.baselineService.baselineAnaliticoFD(this.analise.sistema.id).subscribe((res: ResponseWrapper) => {
-            this.dadosBaselineFD = res.json;
-        });
+    carregarDadosBaseline() {
+
+        // ATUALIZADO: Usando a variável de objeto singular 'funcaoDados'
+        // E checando se a propriedade 'id' existe e é maior que zero
+        if (!this.funcaoDados.id || this.funcaoDados.id <= 0) {
+            // Se o ID for inválido, retorna um Observable vazio
+            // Isso encerra a cadeia de forma limpa, resolvendo o TypeError
+            return of(null);
+        }
+        
+        // ATUALIZADO: Chamando o método do service com o nome correto
+        this.baselineService.getBaselineFuncaoDados(this.funcaoDados.id).pipe(
+            // Adiciona um tratamento de erro robusto caso a chamada falhe
+            catchError(error => {
+                console.error('Erro ao carregar dados de baseline:', error);
+                // ATUALIZADO: Retorna um Observable de erro válido (throwError)
+                // Isso evita o TypeError: You provided 'undefined' where a stream was expected
+                return throwError(error);
+            })
+        ).subscribe(
+            (baseline: BaselineAnalitico) => {
+                this.baselineAnalitico = baseline;
+            },
+            (error) => {
+                // ATUALIZADO: Usando o MessageService injetado
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Não foi possível carregar o baseline: ' + (error.message || 'Erro de comunicação')
+                });
+                this.baselineAnalitico = new BaselineAnalitico();
+            }
+        );
     }
 
     private atualizaResumo() {
@@ -1631,4 +1667,5 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             this.tables.selectedRow = [];
         }
     }
+
 }

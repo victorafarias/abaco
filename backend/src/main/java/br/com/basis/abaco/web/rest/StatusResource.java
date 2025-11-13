@@ -70,11 +70,15 @@ public class StatusResource {
     public ResponseEntity<StatusDTO> createStatus(@Valid @RequestBody StatusDTO status)
         throws URISyntaxException {
         log.debug("REST request to save Status : {}", status);
-        if (status.getId() != null) {
-            return ResponseEntity.badRequest().headers(
-                    HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new Status cannot already have an ID"))
-                    .body(null);
-        }
+        
+        // Atualizado
+        status.setId(null);
+        
+        //if (status.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(
+        //            HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new Status cannot already have an ID"))
+        //            .body(null);
+        //}
         StatusDTO result = statusService.save(status);
         return ResponseEntity.created(new URI("/api/status/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);

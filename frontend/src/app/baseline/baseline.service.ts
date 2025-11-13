@@ -42,7 +42,7 @@ export class BaselineService {
         return this.http.get<BaselineSintetico>(`${this.sinteticosUrl}${id}/equipe/${idEquipe}`);
     }
 
-    baselineAnaliticoFD(id: number): Observable<ResponseWrapper> {
+    baselineAnalitico(id: number): Observable<ResponseWrapper> {
         return this.http.get<ResponseWrapper>(`${this.analiticosFDUrl}${id}`);
     }
 
@@ -52,7 +52,7 @@ export class BaselineService {
 
     // POR EQUIPE
 
-    baselineAnaliticoFDEquipe(id: number, idEquipe: number): Observable<ResponseWrapper> {
+    baselineAnaliticoEquipe(id: number, idEquipe: number): Observable<ResponseWrapper> {
         return this.http.get<ResponseWrapper>(`${this.analiticosFDUrl}${id}/equipe/${idEquipe}`);
     }
 
@@ -102,6 +102,16 @@ export class BaselineService {
 
     private convertItemAnalitico(json: any): BaselineAnalitico {
         return BaselineAnalitico.convertJsonToObject(json);
+    }
+
+    /**
+     * Busca o objeto Baseline Analítico de Função de Dados (FD) por ID.
+     * @param id O ID da Função de Dados.
+     * @returns Um Observable com o objeto BaselineAnalitico.
+     */
+    getBaselineFuncaoDados(id: number): Observable<any> {
+        // ATUALIZADO: Implementação do método que acessa o endpoint do backend
+        return this.http.get<BaselineAnalitico>(`${this.resourceUrl}/fd/${id}`);
     }
 
     /**

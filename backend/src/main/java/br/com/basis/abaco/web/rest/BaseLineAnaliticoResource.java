@@ -120,6 +120,11 @@ public class BaseLineAnaliticoResource {
     @Secured("ROLE_ABACO_BASELINE_CONSULTAR")
     public List<BaselineAnaliticoDTO> getBaseLineAnaliticoFDDTO(@PathVariable Long id) {
         log.debug(DBG_MSG_FD, id);
+        // ATUALIZADO: Tratamento de ID inválido (nulo ou não positivo)
+        if (id == null || id <= 0) {
+            log.warn("Tentativa de buscar BaseLineAnaliticoFD com ID inválido: {}", id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
         List<BaseLineAnaliticoFD> baseLineAnaliticos = baseLineAnaliticoFDSearchRepository.findByIdsistemaOrderByNameAsc(id);
         List<BaselineAnaliticoDTO> baselineAnaliticoDTOS = new ArrayList<>();
         baseLineAnaliticos.forEach(baseLineAnalitico ->

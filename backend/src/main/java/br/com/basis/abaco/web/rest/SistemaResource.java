@@ -101,11 +101,15 @@ public class SistemaResource {
     @Secured("ROLE_ABACO_SISTEMA_CADASTRAR")
     public ResponseEntity<Sistema> createSistema(@Valid @RequestBody Sistema sistema) throws URISyntaxException {
         log.debug("REST request to save Sistema : {}", sistema);
-        if (sistema.getId() != null) {
-            return ResponseEntity.badRequest().headers(
-                HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new sistema cannot already have an ID"))
-                .body(null);
-        }
+        
+        // Atualizado
+        sistema.setId(null);
+        
+        //if (sistema.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(
+        //        HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new sistema cannot already have an ID"))
+        //        .body(null);
+        //}
         Sistema linkedSistema = linkSistemaToModuleToFunctionalities(sistema);
         Sistema result = sistemaService.saveSistema(linkedSistema);
         return ResponseEntity.created(new URI("/api/sistemas/" + result.getId()))

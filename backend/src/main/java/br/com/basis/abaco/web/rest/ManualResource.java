@@ -137,11 +137,15 @@ public class ManualResource {
         Manual manual = manualDTO.toEntity();
 
         log.debug("REST request to save Manual : {}", manual);
-        if (manual.getId() != null) {
-            return ResponseEntity.badRequest().headers(
-                HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new manual cannot already have an ID"))
-                .body(null);
-        }
+
+        // Atualizado
+        manual.setId(null);
+
+        //if (manual.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(
+        //        HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new manual cannot already have an ID"))
+        //        .body(null);
+        //}
 
         Optional<Manual> existingManual = manualRepository.findOneByNome(manual.getNome());
         if (existingManual.isPresent()) {

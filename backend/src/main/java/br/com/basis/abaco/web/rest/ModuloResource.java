@@ -80,9 +80,13 @@ public class ModuloResource {
     @Timed
     public ResponseEntity<Modulo> createModulo(@Valid @RequestBody Modulo modulo) throws URISyntaxException {
         log.debug("REST request to save Modulo : {}", modulo);
-        if (modulo.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new modulo cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        modulo.setId(null);
+        
+        //if (modulo.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new modulo cannot already have an ID")).body(null);
+        //}
 
         Optional<List<Modulo>> findModulo = moduloRepository.findAllByNomeAndSistemaId(modulo.getNome().toLowerCase(), modulo.getSistema().getId());
         if(findModulo.isPresent() && !findModulo.get().isEmpty()){

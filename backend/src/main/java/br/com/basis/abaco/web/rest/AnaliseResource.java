@@ -97,12 +97,18 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_CADASTRAR")
     public ResponseEntity<AnaliseDTO> criarAnalise(@Valid @RequestBody AnaliseEditDTO analise) throws URISyntaxException {
-        if (analise.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new analise cannot already have an ID")).body(null);
-        } else {
-            AnaliseDTO analiseDTO = analiseService.criarAnalise(analise);
-            return ResponseEntity.created(new URI(API_ANALISES + null)).headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, analiseDTO.getId().toString())).body(analiseDTO);
-        }
+        
+        // Atualizado
+        analise.setId(null);
+
+        //if (analise.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new analise cannot already have an ID")).body(null);
+        //} else {
+            
+        AnaliseDTO analiseDTO = analiseService.criarAnalise(analise);            
+        return ResponseEntity.created(new URI(API_ANALISES + "/" + analiseDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, analiseDTO.getId().toString()))
+            .body(analiseDTO);
     }
 
     @PutMapping("/analises")

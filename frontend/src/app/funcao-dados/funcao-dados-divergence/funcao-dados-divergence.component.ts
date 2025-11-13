@@ -406,7 +406,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
     }
 
     public carregarDadosBaseline() {
-        this.baselineService.baselineAnaliticoFD(this.analise.sistema.id).subscribe((res: ResponseWrapper) => {
+        this.baselineService.baselineAnalitico(this.analise.sistema.id).subscribe((res: ResponseWrapper) => {
             this.dadosBaselineFD = res.json;
         });
     }

@@ -174,9 +174,13 @@ public class OrganizacaoResource {
         throws URISyntaxException {
         int i;
         log.debug("REST request to save Organizacao : {}", organizacao);
-        if (organizacao.getId() != null) {
-            return this.createBadRequest("idoexists", "A new organizacao cannot already have an ID");
-        }
+        
+        // Atualizado
+        organizacao.setId(null);
+        
+        //if (organizacao.getId() != null) {
+        //    return this.createBadRequest("idoexists", "A new organizacao cannot already have an ID");
+        //}
 
         i = validaCamposOrganizacao(organizacao);
         if (i >= 0) {

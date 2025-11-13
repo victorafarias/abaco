@@ -118,9 +118,13 @@ public class FuncaoTransacaoResource {
         funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
         funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
         funcaoTransacao.setAnalise(analise);
-        if (funcaoTransacao.getId() != null || analise.getId() == null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
-        }
+        
+        //if (funcaoTransacao.getId() != null || analise.getId() == null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
+        //}
+
+        // Atualizado
+        funcaoTransacao.setId(null);
 
         if(!files.isEmpty()){
             List<UploadedFile> uploadedFiles = funcaoDadosService.uploadFiles(files);
