@@ -478,12 +478,21 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     }
 
     contratoSelecionado() {
+        // ATUALIZADO: Guarda o valor atual da quantidade antes de processar mudanças
+        const quantidadeAtual = this.currentFuncaoTransacao.quantidade;
+
         if (this.currentFuncaoTransacao.fatorAjuste && this.currentFuncaoTransacao.fatorAjuste.tipoAjuste === 'UNITARIO') {
-            this.hideShowQuantidade = this.currentFuncaoTransacao.fatorAjuste === undefined;
+            this.hideShowQuantidade = false;
+            // ATUALIZADO: Restaura o valor da quantidade se estiver em modo de edição
+            if (this.isEdit && quantidadeAtual !== undefined && quantidadeAtual !== null) {
+                this.currentFuncaoTransacao.quantidade = quantidadeAtual;
+            }
         } else {
-            this.currentFuncaoTransacao.quantidade = undefined;
             this.hideShowQuantidade = true;
-            this.currentFuncaoTransacao.quantidade = undefined;
+            // ATUALIZADO: Só limpa se não estiver editando ou se não houver valor anterior
+            if (!this.isEdit || quantidadeAtual === undefined || quantidadeAtual === null) {
+                this.currentFuncaoTransacao.quantidade = undefined;
+            }
         }
     }
 
@@ -777,9 +786,24 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         this.blockUiService.show();
         this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
             funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+               
+            console.log('===== DEBUG QUANTIDADE =====');
+            console.log('Quantidade logo após copyFromJSON:', funcaoTransacao.quantidade);
+            console.log('Objeto recebido:', funcaoTransacao);
+            console.log('Valor do campo Quantidade:', funcaoTransacao.quantidade);
+            console.log('FatorAjuste:', funcaoTransacao.fatorAjuste);
+            console.log('TipoAjuste:', funcaoTransacao.fatorAjuste?.tipoAjuste);
+
+
             this.disableTRDER();
+
+            // ATUALIZADO: Preserva valores críticos antes de qualquer processamento
+            const quantidadeBackup = funcaoTransacao.quantidade;
+            const tipoAjusteBackup = funcaoTransacao.fatorAjuste?.tipoAjuste;
+
             this.currentFuncaoTransacao = funcaoTransacao;
             this.currentFuncaoTransacao.ordem = funcaoTransacaoSelecionada.ordem;
+
             if (this.currentFuncaoTransacao.fatorAjuste !== undefined) {
                 if (this.currentFuncaoTransacao.fatorAjuste.tipoAjuste === 'UNITARIO' && this.faS[0]) {
                     this.hideShowQuantidade = false;
@@ -787,7 +811,17 @@ export class FuncaoTransacaoFormComponent implements OnInit {
                     this.hideShowQuantidade = true;
                 }
             }
+
             this.carregarValoresNaPaginaParaEdicao(this.currentFuncaoTransacao);
+
+            // ATUALIZADO: Força a restauração da quantidade após todos os carregamentos
+            // Isso garante que o valor não seja perdido em nenhuma etapa do processo
+            if (tipoAjusteBackup === 'UNITARIO' && 
+                quantidadeBackup !== undefined && 
+                quantidadeBackup !== null) {
+                this.currentFuncaoTransacao.quantidade = quantidadeBackup;
+            }
+
             this.configurarDialog();
             this.blockUiService.hide();
         });
@@ -836,16 +870,27 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     }
 
     private carregarFatorDeAjusteNaEdicao(funcaoSelecionada: FuncaoTransacao) {
+        // ATUALIZADO: Guarda os valores críticos antes de processar
+        const quantidadeOriginal = funcaoSelecionada.quantidade;
+        const fatorAjusteOriginalId = funcaoSelecionada.fatorAjuste?.id;
+
         this.inicializaFatoresAjuste(this.manual);
+
         if (funcaoSelecionada.fatorAjuste !== undefined) {
             const item: SelectItem = this.fatoresAjuste.find(selectItem => {
                 return selectItem.value && funcaoSelecionada.fatorAjuste.id === selectItem.value['id'];
             });
+
             if (item && item.value) {
                 funcaoSelecionada.fatorAjuste = item.value;
+
+                // ATUALIZADO: Restaura a quantidade após trocar a referência do fatorAjuste
+                // Isso previne que eventos onChange limpem o valor
+                if (quantidadeOriginal !== undefined && quantidadeOriginal !== null) {
+                    funcaoSelecionada.quantidade = quantidadeOriginal;
+                }
             }
         }
-
     }
 
     private carregarDerEAlr(ft: FuncaoTransacao) {
@@ -1162,8 +1207,11 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     selecionarDeflatorEmLote(deflator: FatorAjuste) {
         if (deflator.tipoAjuste === 'UNITARIO') {
             this.hideShowQuantidade = false;
+            // ATUALIZADO: Não limpa quantidade ao selecionar deflator UNITARIO
         } else {
             this.hideShowQuantidade = true;
+            // ATUALIZADO: Limpa quantidade apenas se deflator não for UNITARIO
+            this.quantidadeEmLote = undefined;
         }
     }
 

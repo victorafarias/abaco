@@ -129,7 +129,7 @@ public class FuncaoDadosResource {
         
         // Atualizado
         funcaoDados.setId(null);
-         if (funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
+        if (funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
                 "A new funcaoDados must be associated with an Analise")).body(null);
         }    
@@ -230,7 +230,7 @@ public class FuncaoDadosResource {
         funcaoDados.setAnalise(analise);
 
         // Processar arquivos se fornecidos
-        if (files != null &amp;&amp; !files.isEmpty()) {
+        if (files != null && !files.isEmpty()) {
             try {
                 List<UploadedFile> uploadedFiles = funcaoDadosService.uploadFiles(files);
                 funcaoDadosOld.setFiles(uploadedFiles);
@@ -248,9 +248,9 @@ public class FuncaoDadosResource {
         FuncaoDadosEditDTO funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
         // Atualizar índices se necessário
-        if (configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() != null &amp;&amp; 
-            configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true &amp;&amp; 
-            analise.getMetodoContagem() != null &amp;&amp; 
+        if (configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() != null && 
+            configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && 
+            analise.getMetodoContagem() != null && 
             analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
 
             funcaoDadosService.saveVwDersAndVwRlrs(

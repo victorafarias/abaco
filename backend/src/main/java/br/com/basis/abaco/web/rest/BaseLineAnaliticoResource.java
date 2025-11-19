@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -118,13 +119,17 @@ public class BaseLineAnaliticoResource {
     @GetMapping("/baseline-analiticos/fd/{id}")
     @Timed
     @Secured("ROLE_ABACO_BASELINE_CONSULTAR")
-    public List<BaselineAnaliticoDTO> getBaseLineAnaliticoFDDTO(@PathVariable Long id) {
+    // ATUALIZADO: O tipo de retorno foi alterado de List<> para ResponseEntity<>
+    public ResponseEntity<List<BaselineAnaliticoDTO>> getBaseLineAnaliticoFDDTO(@PathVariable Long id) {
         log.debug(DBG_MSG_FD, id);
-        // ATUALIZADO: Tratamento de ID inválido (nulo ou não positivo)
+        
+        // Tratamento de ID inválido (nulo ou não positivo)
         if (id == null || id <= 0) {
             log.warn("Tentativa de buscar BaseLineAnaliticoFD com ID inválido: {}", id);
+            // Retorna um status 400 (Bad Request) se o ID for inválido
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
+
         List<BaseLineAnaliticoFD> baseLineAnaliticos = baseLineAnaliticoFDSearchRepository.findByIdsistemaOrderByNameAsc(id);
         List<BaselineAnaliticoDTO> baselineAnaliticoDTOS = new ArrayList<>();
         baseLineAnaliticos.forEach(baseLineAnalitico ->
@@ -133,7 +138,9 @@ public class BaseLineAnaliticoResource {
         baselineAnaliticoDTOS.forEach(baselineAnaliticoDTO ->
             baselineAnaliticoDTO.setIdfuncionalidade(pesquisarFuncionalidadeFD(baselineAnaliticoDTO.getIdfuncaodados()))
         );
-        return baselineAnaliticoDTOS;
+        
+        // ATUALIZADO: Retorno de sucesso agora é encapsulado em um ResponseEntity.ok()
+        return ResponseEntity.ok(baselineAnaliticoDTOS);
     }
 
 
@@ -145,8 +152,16 @@ public class BaseLineAnaliticoResource {
     @GetMapping("/baseline-analiticos/ft/{id}")
     @Timed
     @Secured("ROLE_ABACO_BASELINE_CONSULTAR")
-    public List<BaselineAnaliticoDTO> getBaseLineAnaliticoFTDTO(@PathVariable Long id) {
+    // ATUALIZADO: O tipo de retorno foi alterado de List<> para ResponseEntity<>
+    public ResponseEntity<List<BaselineAnaliticoDTO>> getBaseLineAnaliticoFTDTO(@PathVariable Long id) {
         log.debug("REST request to get FT BaseLineAnaliticoDTO : {}", id);
+
+        // ATUALIZADO: Adicionada validação de ID
+        if (id == null || id <= 0) {
+            log.warn("Tentativa de buscar BaseLineAnaliticoFT com ID inválido: {}", id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+        
         List<BaseLineAnaliticoFT> baseLineAnaliticos = baseLineAnaliticoFTSearchRepository.findByIdsistemaOrderByNameAsc(id);
         List<BaselineAnaliticoDTO> baselineAnaliticoDTOS = new ArrayList<>();
 
@@ -157,7 +172,9 @@ public class BaseLineAnaliticoResource {
         baselineAnaliticoDTOS.forEach(baselineAnaliticoDTO ->
             baselineAnaliticoDTO.setIdfuncionalidade(pesquisarFuncionalidadeFT(baselineAnaliticoDTO.getIdfuncaodados()))
         );
-        return baselineAnaliticoDTOS;
+        
+        // ATUALIZADO: Retorno de sucesso agora é encapsulado em um ResponseEntity.ok()
+        return ResponseEntity.ok(baselineAnaliticoDTOS);
     }
 
     private Long pesquisarFuncionalidadeFT(Long idfuncaodados) {

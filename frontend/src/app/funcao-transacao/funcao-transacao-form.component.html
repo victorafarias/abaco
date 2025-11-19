@@ -262,7 +262,7 @@ class="ui-button-success" icon="save">
 <div class="ui-g-3 ui-md-6 ui-sm-12" [hidden]="hideShowQuantidade">
     <label>Quantidade *</label>
     <input type="number" class="ui-inputtext" min="1" id="idQuantidadeFormFuncaoTransacao"
-    name="quantidade" [(ngModel)]="currentFuncaoTransacao.quantidade">
+    name="quantidade" [(ngModel)]="currentFuncaoTransacao.quantidade" [disabled]="isView">
     <span class="md-inputfield">
         <div *ngIf="erroUnitario" class="ui-message ui-messages-error">
             Campo obrigatório.
@@ -498,7 +498,7 @@ maxFileSize="1000000" #componenteFile>
 </div>
 <div class="ui-g-3 ui-md-6 ui-sm-12" [hidden]="hideShowQuantidade">
     <label>Quantidade *</label>
-    <input type="number" class="ui-inputtext" min="1" [(ngModel)]="quantidadeEmLote"
+    <input type="number" class="ui-inputtext" min="1" [(ngModel)]="quantidadeEmLote" [disabled]="isView"
     id="idQuantidadeFormFuncaoDados">
 </div>
 </div>

@@ -58,7 +58,7 @@ public class FuncaoTransacao extends FuncaoAnalise implements Serializable {
     @Column
     private String ftrStr;
 
-    @Column
+    @Column(name = "quantidade")
     private Integer quantidade;
 
     @OneToMany(mappedBy = FUNCAOTRANSACAO, cascade = CascadeType.ALL, orphanRemoval = true)

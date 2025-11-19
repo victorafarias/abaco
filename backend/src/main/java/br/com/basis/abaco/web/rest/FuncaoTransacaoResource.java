@@ -19,11 +19,13 @@ import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
-import br.com.basis.abaco.service.dto.DerDTO;
+import br.com.basis.abaco.service.dto.DerFtDTO;
+//import br.com.basis.abaco.service.dto.DerDTO;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
+import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
@@ -221,14 +223,16 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacao(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        FuncaoTransacaoDTO funcaoTransacaoDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
-        Set<DerDTO> ders = new LinkedHashSet<>();
+
+        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
+
+        Set<DerFtDTO> ders = new LinkedHashSet<>();
         Set<AlrDTO> alrs = new LinkedHashSet<>();
         funcaoTransacao.getDers().forEach(der -> {
-            DerDTO derDto = new DerDTO();
+            DerFtDTO derDto = new DerFtDTO();
             derDto.setNome(der.getNome());
             derDto.setValor(der.getValor());
             ders.add(derDto);
@@ -239,9 +243,9 @@ public class FuncaoTransacaoResource {
             alrDto.setValor(alr.getValor());
             alrs.add(alrDto);
         });
-        funcaoTransacaoDTO.setDers(ders);
-        funcaoTransacaoDTO.setAlrs(alrs);
-        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoTransacaoDTO));
+        funcaoDadosDTO.setDers(ders);
+        funcaoDadosDTO.setAlrs(alrs);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
     @GetMapping("/funcao-transacaos/analise/{id}")
@@ -268,10 +272,10 @@ public class FuncaoTransacaoResource {
      */
     @GetMapping("/funcao-transacaos/completa/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao Completa : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findWithDerAndAlr(id);
-        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
+        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
