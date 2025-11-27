@@ -7,7 +7,7 @@ import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
 import { Resumo } from './analise-resumo/resumo.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
-import { Observable, forkJoin, pipe } from 'rxjs';
+import { Observable, forkJoin, pipe, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { HttpGenericErrorService, BlockUiService } from '@nuvem/angular-base';
 import { ResponseWrapper, createRequestOption } from '../shared';
@@ -68,7 +68,7 @@ export class AnaliseService {
         return this.http.post<Analise>(this.resourceUrl, copy).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -97,7 +97,7 @@ export class AnaliseService {
         return this.http.put<Analise>(this.resourceUrl, copy).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -119,7 +119,7 @@ export class AnaliseService {
                     break;
                 }
             }
-            return Observable.throw(new Error(error.status));
+            return throwError(new Error(error.status));
         }));
     }
 
@@ -161,7 +161,7 @@ export class AnaliseService {
             if (error.status === 500) {
                 this.blockUiService.hide();
                 this.pageNotificationService.addErrorMessage(this.getLabel('Erro ao gerar relatório'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         })).subscribe(
             (response) => {
@@ -193,7 +193,7 @@ export class AnaliseService {
             if (error.status === 500) {
                 this.blockUiService.hide();
                 this.pageNotificationService.addErrorMessage(this.getLabel('Erro ao gerar relatório'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         })).subscribe(
             (response) => {
@@ -248,7 +248,7 @@ export class AnaliseService {
             if (error.status === 500) {
                 this.blockUiService.hide();
                 this.pageNotificationService.addErrorMessage(this.getLabel('Erro ao gerar relatório'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         })).subscribe(
             (response) => {
@@ -289,8 +289,8 @@ export class AnaliseService {
             this.funcaoTransacaoService.getFuncaoTransacaoAnalise(id));
     }
 
-    public findAnaliseByJson(id: number): Observable<Analise>{
-        return this.http.get<Analise>(this.resourceUrl+"/analise-json/"+id);
+    public findAnaliseByJson(id: number): Observable<Analise> {
+        return this.http.get<Analise>(this.resourceUrl + "/analise-json/" + id);
     }
 
     public clonarAnalise(id: number): Observable<Analise> {
@@ -302,7 +302,7 @@ export class AnaliseService {
         return this.http.get<Analise>(url).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Erro ao clonar para equipe está análise.!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -330,7 +330,7 @@ export class AnaliseService {
             catchError((error: any) => {
                 if (error.status === 403) {
                     this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                    return Observable.throw(new Error(error.status));
+                    return throwError(new Error(error.status));
                 }
             }));
     }
@@ -340,7 +340,7 @@ export class AnaliseService {
             catchError((error: any) => {
                 if (error.status === 403) {
                     this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                    return Observable.throw(new Error(error.status));
+                    return throwError(new Error(error.status));
                 }
             }
             ));
@@ -389,7 +389,7 @@ export class AnaliseService {
         return this.http.delete<Response>(`${this.resourceUrl}/compartilhar/delete/${id}`).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -399,7 +399,7 @@ export class AnaliseService {
         return this.http.put(`${this.resourceUrl}/compartilhar/viewonly/${copy.id}`, copy).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -414,7 +414,7 @@ export class AnaliseService {
             catchError((error: any) => {
                 if (error.status === 403) {
                     this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                    return Observable.throw(new Error(error.status));
+                    return throwError(new Error(error.status));
                 }
             }));
     }
@@ -424,7 +424,7 @@ export class AnaliseService {
             catchError((error: any) => {
                 if (error.status === 403) {
                     this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                    return Observable.throw(new Error(error.status));
+                    return throwError(new Error(error.status));
                 }
             }));
     }
@@ -446,28 +446,29 @@ export class AnaliseService {
             catchError((error: any) => {
                 if (error.status === 403) {
                     this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                    return Observable.throw(new Error(error.status));
+                    return throwError(new Error(error.status));
                 }
             }));
     }
 
-	public carregarArquivoExcel(file: File): Observable<Analise>{
-		const formData = new FormData();
-		formData.append('file',file,file.name);
-		return this.http.post<Analise>(this.resourceUrl + "/importar-excel/Xlsx" ,formData);
+    public carregarArquivoExcel(file: File): Observable<Analise> {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.http.post<Analise>(this.resourceUrl + "/importar-excel/Xlsx", formData);
 
-	}
+    }
 
     public importarExcel(analise: Analise): Observable<Analise> {
-        return this.http.post<Analise>(this.resourceUrl+"/importar-Excel", analise).pipe(catchError((error: any) => {
-			if (error.status === 404) {
-				this.pageNotificationService.addErrorMessage(this.getLabel('Esse sistema não pussui modulos cadastrados'));
-				return Observable.throw(new Error(error.status));
-			}
-			if (error.status === 403) {
-				this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-				return Observable.throw(new Error(error.status));
-			}
+        return this.http.post<Analise>(this.resourceUrl + "/importar-Excel", analise).pipe(catchError((error: any) => {
+            // Alterado: Preserva o erro HTTP original para permitir acesso aos headers
+            if (error.status === 404) {
+                this.pageNotificationService.addErrorMessage(this.getLabel('Esse sistema não pussui modulos cadastrados'));
+            }
+            if (error.status === 403) {
+                this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+            }
+            // Alterado: Retorna o erro original em vez de criar um novo, preservando headers e outras propriedades
+            return throwError(error);
         }));
     }
 
@@ -481,28 +482,28 @@ export class AnaliseService {
                 if (error.status === 500) {
                     this.blockUiService.hide();
                     this.pageNotificationService.addErrorMessage(this.getLabel('Erro ao gerar relatório'));
-                    return Observable.throw(new Error(error.status));
+                    return throwError(new Error(error.status));
                 }
             }))
     }
 
-    carregarAnaliseExcel(analise: Analise) : Observable<Analise> {
-        return this.http.post<Analise>(this.resourceUrl+"/carregarAnalise", analise);
+    carregarAnaliseExcel(analise: Analise): Observable<Analise> {
+        return this.http.post<Analise>(this.resourceUrl + "/carregarAnalise", analise);
     }
 
-    findAnalisesFromFD(nomeFuncao: String, nomeModulo: String, nomeFuncionalidade: String, nomeSistema: String, nomeEquipe: String): Observable<any[]>{
-        return this.http.get<any[]>(this.resourceUrl+"/FD?nomeFuncao="+nomeFuncao+"&nomeModulo="+nomeModulo+"&nomeFuncionalidade="+nomeFuncionalidade+"&nomeSistema="+nomeSistema+"&nomeEquipe="+nomeEquipe);
+    findAnalisesFromFD(nomeFuncao: String, nomeModulo: String, nomeFuncionalidade: String, nomeSistema: String, nomeEquipe: String): Observable<any[]> {
+        return this.http.get<any[]>(this.resourceUrl + "/FD?nomeFuncao=" + nomeFuncao + "&nomeModulo=" + nomeModulo + "&nomeFuncionalidade=" + nomeFuncionalidade + "&nomeSistema=" + nomeSistema + "&nomeEquipe=" + nomeEquipe);
     }
-    findAnalisesFromFT(nomeFuncao: String, nomeModulo: String, nomeFuncionalidade: String, nomeSistema: String, nomeEquipe: String): Observable<any[]>{
-        return this.http.get<any[]>(this.resourceUrl+"/FT?nomeFuncao="+nomeFuncao+"&nomeModulo="+nomeModulo+"&nomeFuncionalidade="+nomeFuncionalidade+"&nomeSistema="+nomeSistema+"&nomeEquipe="+nomeEquipe);
+    findAnalisesFromFT(nomeFuncao: String, nomeModulo: String, nomeFuncionalidade: String, nomeSistema: String, nomeEquipe: String): Observable<any[]> {
+        return this.http.get<any[]>(this.resourceUrl + "/FT?nomeFuncao=" + nomeFuncao + "&nomeModulo=" + nomeModulo + "&nomeFuncionalidade=" + nomeFuncionalidade + "&nomeSistema=" + nomeSistema + "&nomeEquipe=" + nomeEquipe);
     }
 
     public atualizarEncerramento(analise: Analise): Observable<Analise> {
-		const reqHeader = new HttpHeaders({ 'Content-Type': 'application/json', 'No-Auth': 'True' });
-        return this.http.patch<Analise>(this.resourceUrl+"/atualizar-encerramento", analise.toJSONState(), {headers: reqHeader}).pipe(catchError((error: any) => {
+        const reqHeader = new HttpHeaders({ 'Content-Type': 'application/json', 'No-Auth': 'True' });
+        return this.http.patch<Analise>(this.resourceUrl + "/atualizar-encerramento", analise.toJSONState(), { headers: reqHeader }).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }

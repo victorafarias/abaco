@@ -47,7 +47,7 @@ public class Funcionalidade implements Serializable, ReportObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     @NotNull
@@ -56,6 +56,7 @@ public class Funcionalidade implements Serializable, ReportObject {
     private String nome;
 
     @ManyToOne
+    @JsonBackReference
     private Modulo modulo;
 
     @JsonIgnore

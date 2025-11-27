@@ -183,6 +183,16 @@ public class AnaliseFacade {
         analiseSearchRepository.save(converterParaEntidade(converterParaDto(analise)));
     }
 
+    // Alterado: Método que salva apenas no banco, sem ElasticSearch (para uso em transações)
+    public void salvarAnaliseApenasDB(Analise analise) {
+        analiseRepository.save(analise);
+    }
+
+    // Alterado: Método que salva apenas no ElasticSearch
+    public void salvarAnaliseApenasES(Analise analise) {
+        analiseSearchRepository.save(converterParaEntidade(converterParaDto(analise)));
+    }
+
     public void excluirAnalise(Analise analise) {
         analiseRepository.delete(analise);
         analiseSearchRepository.delete(analise.getId());

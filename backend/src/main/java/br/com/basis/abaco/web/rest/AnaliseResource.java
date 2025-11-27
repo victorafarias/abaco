@@ -388,11 +388,18 @@ public class AnaliseResource {
     }
 
     @PostMapping("/analises/importar-Excel")
-    public ResponseEntity<Analise> importarAnaliseExcel(@Valid @RequestBody AnaliseEditDTO analise) {
+    public ResponseEntity<Object> importarAnaliseExcel(@Valid @RequestBody AnaliseEditDTO analise) {
         if (analiseService.verificaModulos(analise)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.ok().body(analiseService.importarAnaliseExcel(analise));
+        try {
+            return ResponseEntity.ok().body(analiseService.importarAnaliseExcel(analise));
+        } catch (br.com.basis.abaco.service.exception.FatorAjusteException e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-abacoApp-error-import", "error.fatorajuste");
+            headers.add("X-abacoApp-params", ENTITY_NAME);
+            return ResponseEntity.badRequest().headers(headers).body(e.getFatoresNaoEncontrados());
+        }
     }
 
     @PostMapping("/analises/carregarAnalise")

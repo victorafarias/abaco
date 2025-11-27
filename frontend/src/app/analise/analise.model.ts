@@ -91,16 +91,17 @@ export class Analise implements BaseEntity {
         public pfTotalAprovado?: number,
         public analiseDivergence?: Analise,
         public dtEncerramento?: any,
-        public encerrada?: boolean
+        public encerrada?: boolean,
+        public mapaFatorAjuste?: { [key: string]: number }
     ) {
         this.inicializaMappables(funcaoDados, funcaoTransacaos);
         this.inicializaResumos();
 
-        if(!fatorCriticidade){
+        if (!fatorCriticidade) {
             this.fatorCriticidade = false;
             this.valorCriticidade = 35;
         }
-        if(!scopeCreep){
+        if (!scopeCreep) {
             this.scopeCreep = 35;
         }
 
@@ -334,7 +335,7 @@ export class Analise implements BaseEntity {
             this.analiseDivergence,
             this.dtEncerramento,
             this.encerrada
-            );
+        );
     }
 
 }
@@ -383,10 +384,10 @@ class AnaliseCopyFromJSON {
         this._analiseConverted.propositoContagem = this._json.propositoContagem;
         this._analiseConverted.observacoes = this._json.observacoes;
         this._analiseConverted.baselineImediatamente = this._json.baselineImediatamente;
-        if(this._json.dataHomologacao){
+        if (this._json.dataHomologacao) {
             this._analiseConverted.dataHomologacao = new Date(this._json.dataHomologacao);
         }
-        if(this._json.dataCriacaoOrdemServico){
+        if (this._json.dataCriacaoOrdemServico) {
             this._analiseConverted.dataCriacaoOrdemServico = new Date(this._json.dataCriacaoOrdemServico);
         }
         this._analiseConverted.identificadorAnalise = this._json.identificadorAnalise;
@@ -404,12 +405,12 @@ class AnaliseCopyFromJSON {
         this._analiseConverted.users = this._json.users;
         this._analiseConverted.fatorCriticidade = this._json.fatorCriticidade;
         this._analiseConverted.valorCriticidade = this._json.valorCriticidade;
-        if(!this._analiseConverted.fatorCriticidade){
+        if (!this._analiseConverted.fatorCriticidade) {
             this._analiseConverted.fatorCriticidade = false;
             this._analiseConverted.valorCriticidade = 35;
         }
         this._analiseConverted.scopeCreep = this._json.scopeCreep;
-        if(!this._analiseConverted.scopeCreep){
+        if (!this._analiseConverted.scopeCreep) {
             this._analiseConverted.scopeCreep = 35;
         }
         this._analiseConverted.motivo = this._json.motivo;
@@ -417,7 +418,7 @@ class AnaliseCopyFromJSON {
         this._analiseConverted.pfTotalOriginal = this._json.pfTotalOriginal;
         this._analiseConverted.analiseDivergence = this._json.analiseDivergence;
 
-        if(this._json.dtEncerramento){
+        if (this._json.dtEncerramento) {
             this._analiseConverted.dtEncerramento = new Date(this._json.dtEncerramento);
         }
         this._analiseConverted.encerrada = this._json.encerrada;
@@ -453,7 +454,7 @@ class AnaliseCopyFromJSON {
     private populaModuloDasFuncionalidadesDasFuncoes(funcoes: FuncaoAnalise[], sistema: Sistema) {
         if (funcoes) {
             funcoes.forEach(f => {
-                if (!(f.funcionalidade.modulo && f.funcionalidade.modulo.nome )) {
+                if (!(f.funcionalidade.modulo && f.funcionalidade.modulo.nome)) {
                     const modulo = ModuloDaFuncionalidadeFinder.find(sistema, f.funcionalidade.id);
                     f.funcionalidade.modulo = modulo;
                 }
@@ -492,7 +493,7 @@ class AnaliseCopyFromJSON {
     }
 }
 
-export class AnaliseFormulario{
-	analise?: Analise;
-	mensagens?: AbacoMensagens;
+export class AnaliseFormulario {
+    analise?: Analise;
+    mensagens?: AbacoMensagens;
 }

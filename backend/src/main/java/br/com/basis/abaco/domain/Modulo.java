@@ -42,7 +42,7 @@ public class Modulo implements Serializable, ReportObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     @NotNull
@@ -56,7 +56,7 @@ public class Modulo implements Serializable, ReportObject {
 
     @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @JsonIgnore
+    @JsonManagedReference
     private Set<Funcionalidade> funcionalidades = new HashSet<>();
 
     public Long getId() {

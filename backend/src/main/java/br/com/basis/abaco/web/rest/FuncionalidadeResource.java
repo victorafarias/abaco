@@ -88,7 +88,7 @@ public class FuncionalidadeResource {
         //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcionalidade cannot already have an ID")).body(null);
         //}
         if (funcionalidade.getModulo() != null) {
-            Optional<List<Funcionalidade>> findFuncionalidade = funcionalidadeRepository.findAllByNomeAndModuloId(funcionalidade.getNome().toLowerCase(), funcionalidade.getModulo().getId());
+            Optional<List<Funcionalidade>> findFuncionalidade = funcionalidadeRepository.findAllByNomeIgnoreCaseAndModuloId(funcionalidade.getNome(), funcionalidade.getModulo().getId());
             if(findFuncionalidade.isPresent() && !findFuncionalidade.get().isEmpty()){
                 return ResponseEntity.badRequest()
                     .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "funcionalidadeexists", "Funcionalidade name and Modulo already in use")).body(null);

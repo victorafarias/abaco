@@ -14,7 +14,7 @@ public abstract class FuncaoAnaliseVersionavel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     @Column(name = "nome", unique = true)

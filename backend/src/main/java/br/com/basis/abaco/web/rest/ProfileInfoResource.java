@@ -23,6 +23,8 @@ public class ProfileInfoResource {
 
     private final JHipsterProperties jHipsterProperties;
 
+    private static String buildVersion = "1.0.53";
+
     public ProfileInfoResource(Environment env, JHipsterProperties jHipsterProperties) {
         this.env = env;
         this.jHipsterProperties = jHipsterProperties;
@@ -31,7 +33,7 @@ public class ProfileInfoResource {
     @GetMapping("/profile-info")
     public ProfileInfoVM getActiveProfiles() {
         String[] activeProfiles = DefaultProfileUtil.getActiveProfiles(env);
-        return new ProfileInfoVM(activeProfiles, getRibbonEnv(activeProfiles));
+        return new ProfileInfoVM(activeProfiles, getRibbonEnv(activeProfiles), buildVersion);
     }
 
     private String getRibbonEnv(String[] activeProfiles) {

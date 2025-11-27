@@ -88,7 +88,7 @@ public class ModuloResource {
         //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new modulo cannot already have an ID")).body(null);
         //}
 
-        Optional<List<Modulo>> findModulo = moduloRepository.findAllByNomeAndSistemaId(modulo.getNome().toLowerCase(), modulo.getSistema().getId());
+        Optional<List<Modulo>> findModulo = moduloRepository.findAllByNomeIgnoreCaseAndSistemaId(modulo.getNome(), modulo.getSistema().getId());
         if(findModulo.isPresent() && !findModulo.get().isEmpty()){
             return ResponseEntity.badRequest()
                 .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "moduloexists", "Modulo name and system already in use")).body(null);
