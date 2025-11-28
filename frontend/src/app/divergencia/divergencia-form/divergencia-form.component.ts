@@ -1,4 +1,4 @@
-import {ActivatedRoute, Router} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash';
 import { OnInit, Component } from '@angular/core';
 import { User } from '../../user/user.model';
@@ -41,7 +41,7 @@ import { MotivoAnalise } from '../divergencia.model';
 export class DivergenciaFormComponent implements OnInit {
 
     isEdicao: boolean;
-    canEditMetodo = false ;
+    canEditMetodo = false;
     disableFuncaoTrasacao = true;
     disableAba: boolean;
     equipeShare = [];
@@ -77,23 +77,23 @@ export class DivergenciaFormComponent implements OnInit {
     usuariosOptions: User[] = [];
 
     motivosAnalise: SelectItem[] = [
-        {label: "Contagem BASIS menor. Maior parte dos erros FME", value: MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_FME},
-        {label: "Contagem BASIS menor. Maior parte dos erros BASIS", value: MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_BASIS},
-        {label: "Contagem BASIS maior. Maior parte dos erros FME", value: MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_FME},
-        {label: "Contagem BASIS maior. Maior parte dos erros BASIS", value: MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS}
+        { label: "Contagem BASIS menor. Maior parte dos erros FME", value: MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_FME },
+        { label: "Contagem BASIS menor. Maior parte dos erros BASIS", value: MotivoAnalise.CONT_BASIS_MENOR_MAIOR_ERRO_BASIS },
+        { label: "Contagem BASIS maior. Maior parte dos erros FME", value: MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_FME },
+        { label: "Contagem BASIS maior. Maior parte dos erros BASIS", value: MotivoAnalise.CONT_BASIS_MAIOR_MAIOR_ERRO_BASIS }
     ]
 
     tiposAnalise: SelectItem[] = [
-        {label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO},
-        {label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA},
-        {label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO}
+        { label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO },
+        { label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA },
+        { label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO }
     ];
 
 
     metodoContagem: SelectItem[] = [
-        {label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG},
-        {label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA},
-        {label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA}
+        { label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG },
+        { label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA },
+        { label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA }
     ];
 
     private routeSub: Subscription;
@@ -126,9 +126,9 @@ export class DivergenciaFormComponent implements OnInit {
 
     carregarStatus() {
         this.statusService.listaAtivoDivergencia().subscribe(
-        lstStatus => {
-            this.statusCombo = lstStatus;
-        });
+            lstStatus => {
+                this.statusCombo = lstStatus;
+            });
     }
 
     getLabel(label) {
@@ -165,7 +165,7 @@ export class DivergenciaFormComponent implements OnInit {
                 this.divergenciaService.find(params['id']).subscribe(analise => {
                     this.analise = analise;
                     this.carregarAnalise(this.analise);
-                    },
+                },
                     err => {
                         this.pageNotificationService.addErrorMessage(
                             this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
@@ -192,7 +192,7 @@ export class DivergenciaFormComponent implements OnInit {
         let canEditAnalise: Boolean = false;
         this.tipoEquipesLoggedUser.forEach(equip => {
             if (equip.id === analise.equipeResponsavel.id) {
-                canEditAnalise =  true;
+                canEditAnalise = true;
             }
         });
         return canEditAnalise;
@@ -270,9 +270,9 @@ export class DivergenciaFormComponent implements OnInit {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
-                this.fatoresAjuste.push({label, value: fa});
+                this.fatoresAjuste.push({ label, value: fa });
             });
-            this.fatoresAjuste.unshift({label: this.getLabel('Nenhum'), value: null});
+            this.fatoresAjuste.unshift({ label: this.getLabel('Nenhum'), value: null });
         }
     }
 
@@ -436,7 +436,7 @@ export class DivergenciaFormComponent implements OnInit {
             this.analise.esforcoFases = _.cloneDeep(manual.esforcoFases);
         }
     }
-    
+
 
     private formataData(data: Date): String {
         const dt = `${data.getDay()}/${(data.getMonth() + 1)}/${data.getFullYear()}`;
@@ -500,12 +500,12 @@ export class DivergenciaFormComponent implements OnInit {
         return this.isEdicao;
     }
 
-    save(){
-        if(this.analise.status == undefined || this.analise.status == null){
+    save() {
+        if (this.analise.status == undefined || this.analise.status == null) {
             return this.pageNotificationService.addErrorMessage("Campos obrigatórios não preenchidos.");
         }
         const analise = new Analise().copyFromJSON(this.analise);
-        this.analiseService.update(analise).subscribe(() =>{
+        this.analiseService.update(analise).subscribe(() => {
             this.pageNotificationService.addSuccessMessage('Dados alterados com sucesso!');
             this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
         })
@@ -517,20 +517,20 @@ export class DivergenciaFormComponent implements OnInit {
             this.equipeService.findAllCompartilhaveis(this.analise.organizacao.id,
                 this.analise.id,
                 this.analise.equipeResponsavel.id).subscribe((equipes) => {
-                if (equipes) {
-                    equipes.forEach((equipe) => {
-                        const entity: Divergencia = Object.assign(new Divergencia,
-                            {
-                                id: undefined,
-                                equipeId: equipe.id,
-                                analiseId: this.analise.id,
-                                viewOnly: false,
-                                nomeEquipe: equipe.nome
-                            });
-                        this.equipeShare.push(entity);
-                    });
-                }
-            });
+                    if (equipes) {
+                        equipes.forEach((equipe) => {
+                            const entity: Divergencia = Object.assign(new Divergencia,
+                                {
+                                    id: undefined,
+                                    equipeId: equipe.id,
+                                    analiseId: this.analise.id,
+                                    viewOnly: false,
+                                    nomeEquipe: equipe.nome
+                                });
+                            this.equipeShare.push(entity);
+                        });
+                    }
+                });
             this.mostrarDialog = true;
         } else {
             this.pageNotificationService.addErrorMessage(this.getLabel('Somente membros da equipe responsável podem compartilhar esta análise!'));
@@ -555,7 +555,7 @@ export class DivergenciaFormComponent implements OnInit {
                     this.users = this.usersDropDown;
                 }
                 if (this.analise.users && this.analise.users.length === 0) {
-                    const user = _.find(this.users, {id: this.loggedUser});
+                    const user = _.find(this.users, { id: this.loggedUser });
                     this.analise.users.push(user);
                 }
             });
@@ -573,7 +573,7 @@ export class DivergenciaFormComponent implements OnInit {
     alterarMetodoContagem() {
         if (this.isEdicao) {
             if (this.analise.metodoContagem !== MetodoContagem.INDICATIVA) {
-                this.analise.funcaoTransacaos = [];
+                this.analise.funcaoTransacao = [];
             }
         } else {
             if (this.analise.metodoContagem === MetodoContagem.DETALHADA) {

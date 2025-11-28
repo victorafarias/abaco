@@ -1,7 +1,7 @@
-import {FuncaoTransacao} from './../funcao-transacao/funcao-transacao.model';
-import {Injectable} from '@angular/core';
+import { FuncaoTransacao } from './../funcao-transacao/funcao-transacao.model';
+import { Injectable } from '@angular/core';
 
-import {FuncaoDados} from './funcao-dados.model';
+import { FuncaoDados } from './funcao-dados.model';
 import { environment } from 'src/environments/environment';
 import { Subject, Observable, asyncScheduler, asapScheduler, queueScheduler } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -21,7 +21,7 @@ export class FuncaoDadosService {
     resourceUrlComment = environment.apiUrl + '/comment/funcao-dados';
     vwresourceUrl = environment.apiUrl + '/vw-funcao-dados';
     resourceUrlPEAnalitico = environment.apiUrl + '/peanalitico/';
-    funcaoTransacaoResourceUrl = environment.apiUrl + '/funcao-transacaos';
+    funcaoTransacaoResourceUrl = environment.apiUrl + '/funcaoTransacao';
     manualResourceUrl = environment.apiUrl + '/manuals';
     /*
     Subject criado para Buscar funcionalidade da Baseline.
@@ -31,7 +31,7 @@ export class FuncaoDadosService {
     dataModd$ = this.mod.asObservable();
 
     constructor(private http: HttpClient,
-                private pageNotificationService: PageNotificationService) {
+        private pageNotificationService: PageNotificationService) {
     }
 
     gerarCrud(funcaoTransacao: FuncaoTransacao) {
@@ -47,7 +47,7 @@ export class FuncaoDadosService {
     }
 
     dropDownPEAnalitico(idSistema, idEquipeResponsavel): Observable<any> {
-        return this.http.get(this.resourceUrlPEAnalitico + 'drop-down/' + idSistema + "/" +idEquipeResponsavel);
+        return this.http.get(this.resourceUrlPEAnalitico + 'drop-down/' + idSistema + "/" + idEquipeResponsavel);
     }
 
     autoCompletePEAnalitico(name: String, idFuncionalidade: number, idEquipeResponsavel: number): Observable<any> {
@@ -131,11 +131,11 @@ export class FuncaoDadosService {
         return this.http.post<CommentFuncaoDados>(`${this.resourceUrlComment}/${idStatus}`, comment);
     }
 
-    updateComment(id: number, comment: string){
+    updateComment(id: number, comment: string) {
         return this.http.put<CommentFuncaoDados>(`${this.resourceUrlComment}/${id}`, comment);
     }
 
-    deleteComment(id: number){
+    deleteComment(id: number) {
         return this.http.delete<void>(`${this.resourceUrlComment}/${id}`);
     }
 
@@ -256,21 +256,21 @@ export class FuncaoDadosService {
         return this.http.get<[]>(url);
     }
 
-    updateOrdem(funcaoDado: FuncaoDados) :Observable<void>{
-        return this.http.patch<void>(this.resourceUrl+"/update-ordem", funcaoDado);
+    updateOrdem(funcaoDado: FuncaoDados): Observable<void> {
+        return this.http.patch<void>(this.resourceUrl + "/update-ordem", funcaoDado);
     }
 
-    findByID(id: number): Observable<any>{
-        return this.http.get<any>(this.vwresourceUrl+"/id/"+id);
+    findByID(id: number): Observable<any> {
+        return this.http.get<any>(this.vwresourceUrl + "/id/" + id);
     }
 
-	updatePF(funcoesCalculadas: FuncaoDados[]): Observable<void>{
-        return this.http.patch<void>(this.resourceUrl+"/update-pf", funcoesCalculadas);
-	}
-	importarFuncoesAnalise(funcoesFDImportar: FuncaoImportarDTO): Observable<ImportarFDDTO> {
-		const headers = new HttpHeaders({'content-type': 'application/json'})
-		return this.http.post<ImportarFDDTO>(`${this.resourceUrl}/importar-funcoes-analise`, funcoesFDImportar, {headers: headers});
-	}
+    updatePF(funcoesCalculadas: FuncaoDados[]): Observable<void> {
+        return this.http.patch<void>(this.resourceUrl + "/update-pf", funcoesCalculadas);
+    }
+    importarFuncoesAnalise(funcoesFDImportar: FuncaoImportarDTO): Observable<ImportarFDDTO> {
+        const headers = new HttpHeaders({ 'content-type': 'application/json' })
+        return this.http.post<ImportarFDDTO>(`${this.resourceUrl}/importar-funcoes-analise`, funcoesFDImportar, { headers: headers });
+    }
 
 }
 enum StatusFunction {
@@ -278,4 +278,4 @@ enum StatusFunction {
     EXCLUIDO = 'EXCLUIDO',
     VALIDADO = 'VALIDADO',
     PENDENTE = 'PENDENTE'
-  }
+}

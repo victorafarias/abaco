@@ -23,7 +23,7 @@ public class ProfileInfoResource {
 
     private final JHipsterProperties jHipsterProperties;
 
-    private static String buildVersion = "1.0.53";
+    private static String buildVersion = "1.0.31";
 
     public ProfileInfoResource(Environment env, JHipsterProperties jHipsterProperties) {
         this.env = env;

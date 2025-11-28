@@ -20,13 +20,13 @@ public class VwFuncaoTransacaoResource {
         this.vwFuncaoTransacaoRepository = vwFuncaoTransacaoRepository;
     }
 
-    @GetMapping("/vw-funcao-transacaos/{analiseId}")
+    @GetMapping("/vw-funcaoTransacao/{analiseId}")
     @Timed
     public Set<VwFuncaoTransacao> getFuncaoBySistemaAndModuloAndFuncionalidade(@PathVariable Long analiseId) {
         return vwFuncaoTransacaoRepository.findByAnaliseIdOrderById(analiseId);
     }
 
-    @GetMapping("/vw-funcao-transacaos/id/{id}")
+    @GetMapping("/vw-funcaoTransacao/id/{id}")
     @Timed
     public VwFuncaoTransacao getFuncaoDadosById(@PathVariable Long id){
         return vwFuncaoTransacaoRepository.findOne(id);

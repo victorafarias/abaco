@@ -28,6 +28,8 @@ import net.sf.dynamicreports.report.exception.DRException;
 import net.sf.jasperreports.engine.JRException;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
@@ -42,6 +44,8 @@ import java.util.Set;
 
 @Service
 public class AnaliseFacade {
+    private static final Logger log = LoggerFactory.getLogger(AnaliseFacade.class);
+    
     public final AnaliseRepository analiseRepository;
     public final AnaliseSearchRepository analiseSearchRepository;
     public final FuncoesService funcoesService;
@@ -227,7 +231,76 @@ public class AnaliseFacade {
     }
 
     public Analise converterEditDtoParaEntidade(AnaliseEditDTO analise) {
-        return modelMapper.map(analise, Analise.class);
+        log.info("=== CONVERSÃO DTO → ENTIDADE ===");
+        log.info("Total FD no DTO: {}", analise.getFuncaoDados() != null ? analise.getFuncaoDados().size() : 0);
+        log.info("Total FT no DTO: {}", analise.getFuncaoTransacao() != null ? analise.getFuncaoTransacao().size() : 0);
+        
+        // Verifica se as funções do DTO têm Fator de Ajuste
+        if (analise.getFuncaoDados() != null) {
+            analise.getFuncaoDados().forEach(fd -> {
+                if (fd.getFatorAjuste() != null) {
+                    log.info("DTO FD '{}' tem FA: {} (ID: {})", fd.getName(), fd.getFatorAjuste().getNome(), fd.getFatorAjuste().getId());
+                } else {
+                    log.warn("DTO FD '{}' NÃO tem FA", fd.getName());
+                }
+            });
+        }
+        if (analise.getFuncaoTransacao() != null) {
+            analise.getFuncaoTransacao().forEach(ft -> {
+                if (ft.getFatorAjuste() != null) {
+                    log.info("DTO FT '{}' tem FA: {} (ID: {})", ft.getName(), ft.getFatorAjuste().getNome(), ft.getFatorAjuste().getId());
+                } else {
+                    log.warn("DTO FT '{}' NÃO tem FA", ft.getName());
+                }
+            });
+        }
+        
+        Analise resultado = modelMapper.map(analise, Analise.class);
+        
+        // Verifica se as funções da entidade convertida têm Fator de Ajuste
+        log.info("=== APÓS CONVERSÃO ===");
+        if (resultado.getFuncaoDados() != null) {
+            resultado.getFuncaoDados().forEach(fd -> {
+                if (fd.getFatorAjuste() != null) {
+                    log.info("ENTIDADE FD '{}' tem FA: {}", fd.getName(), fd.getFatorAjuste().getNome());
+                } else {
+                    log.warn("ENTIDADE FD '{}' PERDEU FA!", fd.getName());
+                }
+            });
+        }
+        if (resultado.getFuncaoTransacao() != null) {
+            resultado.getFuncaoTransacao().forEach(ft -> {
+                if (ft.getFatorAjuste() != null) {
+                    log.info("ENTIDADE FT '{}' tem FA: {}", ft.getName(), ft.getFatorAjuste().getNome());
+                } else {
+                    log.warn("ENTIDADE FT '{}' PERDEU FA!", ft.getName());
+                }
+            });
+        }
+        
+        // Debug Modulo/Funcionalidade
+        if (analise.getFuncaoDados() != null) {
+            analise.getFuncaoDados().forEach(fd -> {
+                String modName = (fd.getFuncionalidade() != null && fd.getFuncionalidade().getModulo() != null) ? fd.getFuncionalidade().getModulo().getNome() : "NULL";
+                log.info("DTO FD '{}' - Func: {} - Modulo: {}", fd.getName(), fd.getFuncionalidade() != null ? fd.getFuncionalidade().getNome() : "NULL", modName);
+            });
+        }
+        if (resultado.getFuncaoDados() != null) {
+            resultado.getFuncaoDados().forEach(fd -> {
+                String modName = (fd.getFuncionalidade() != null && fd.getFuncionalidade().getModulo() != null) ? fd.getFuncionalidade().getModulo().getNome() : "NULL";
+                log.info("ENTIDADE FD '{}' - Func: {} - Modulo: {}", fd.getName(), fd.getFuncionalidade() != null ? fd.getFuncionalidade().getNome() : "NULL", modName);
+                log.info("ENTIDADE FD '{}' - DERs: {}, RLRs: {}", fd.getName(), fd.getDers() != null ? fd.getDers().size() : 0, fd.getRlrs() != null ? fd.getRlrs().size() : 0);
+            });
+        }
+        if (resultado.getFuncaoTransacao() != null) {
+            resultado.getFuncaoTransacao().forEach(ft -> {
+                String modName = (ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null) ? ft.getFuncionalidade().getModulo().getNome() : "NULL";
+                log.info("ENTIDADE FT '{}' - Func: {} - Modulo: {}", ft.getName(), ft.getFuncionalidade() != null ? ft.getFuncionalidade().getNome() : "NULL", modName);
+                log.info("ENTIDADE FT '{}' - DERs: {}, ALRs: {}", ft.getName(), ft.getDers() != null ? ft.getDers().size() : 0, ft.getAlrs() != null ? ft.getAlrs().size() : 0);
+            });
+        }
+        
+        return resultado;
     }
 
     public AnaliseJsonDTO converterParaAnaliseJsonDTO(Analise analise) {

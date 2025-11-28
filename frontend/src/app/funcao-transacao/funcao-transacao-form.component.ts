@@ -786,7 +786,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         this.blockUiService.show();
         this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
             funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
-               
+
             console.log('===== DEBUG QUANTIDADE =====');
             console.log('Quantidade logo após copyFromJSON:', funcaoTransacao.quantidade);
             console.log('Objeto recebido:', funcaoTransacao);
@@ -816,8 +816,8 @@ export class FuncaoTransacaoFormComponent implements OnInit {
 
             // ATUALIZADO: Força a restauração da quantidade após todos os carregamentos
             // Isso garante que o valor não seja perdido em nenhuma etapa do processo
-            if (tipoAjusteBackup === 'UNITARIO' && 
-                quantidadeBackup !== undefined && 
+            if (tipoAjusteBackup === 'UNITARIO' &&
+                quantidadeBackup !== undefined &&
                 quantidadeBackup !== null) {
                 this.currentFuncaoTransacao.quantidade = quantidadeBackup;
             }
@@ -828,7 +828,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     }
 
     private carregarDersAlrs() {
-        this.funcaoTransacaoService.getFuncaoTransacaosCompleta(this.currentFuncaoTransacao.id)
+        this.funcaoTransacaoService.getFuncaoTransacaoCompleta(this.currentFuncaoTransacao.id)
             .subscribe(funcaoTransacao => {
                 this.currentFuncaoTransacao = funcaoTransacao;
             });
@@ -1354,7 +1354,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
 
     salvarOrdernacao() {
         this.funcoesTransacoes.forEach((funcaoTransacao, index) => {
-            funcaoTransacao.ordem = index+1;
+            funcaoTransacao.ordem = index + 1;
             this.funcaoTransacaoService.updateOrdem(funcaoTransacao).subscribe();
         })
         this.pageNotificationService.addSuccessMessage("Ordenação salva com sucesso.");
@@ -1431,22 +1431,22 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         }
     }
 
-    abrirDialogModulo(){
+    abrirDialogModulo() {
         this.mostrarDialogAddModulo = true;
     }
-    abrirDialogFuncionalidade(){
+    abrirDialogFuncionalidade() {
         this.mostrarDialogAddFuncionalidade = true;
     }
-    fecharDialogModulo(){
+    fecharDialogModulo() {
         this.mostrarDialogAddModulo = false;
         this.novoModulo = new Modulo();
     }
-    fecharDialogFuncionalidade(){
+    fecharDialogFuncionalidade() {
         this.mostrarDialogAddFuncionalidade = false;
         this.novaFuncionalidade = new Funcionalidade();
     }
 
-    adicionarModulo(){
+    adicionarModulo() {
         if (!this.novoModulo.nome) {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
@@ -1460,7 +1460,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         })
     }
 
-    adicionarFuncionalidade(){
+    adicionarFuncionalidade() {
         if (this.novaFuncionalidade.nome === undefined) {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
@@ -1483,18 +1483,18 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoTransacao){
-        if(this.habilitaEditarOrdem == false && this.isOrderning){
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao) {
+        if (this.habilitaEditarOrdem == false && this.isOrderning) {
             this.habilitaEditarOrdem = true;
         }
 
     }
 
-    trocarOrdem(numero, funcao: FuncaoTransacao){
-        if(numero != null){
-            if(numero < funcao.ordem){
+    trocarOrdem(numero, funcao: FuncaoTransacao) {
+        if (numero != null) {
+            if (numero < funcao.ordem) {
                 funcao.ordem = --numero;
-            }else{
+            } else {
                 funcao.ordem = ++numero;
             }
             this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);

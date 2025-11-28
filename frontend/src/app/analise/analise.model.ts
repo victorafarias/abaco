@@ -62,7 +62,7 @@ export class Analise implements BaseEntity {
         public sistema?: Sistema,
         public enviarBaseline?: boolean,
         public funcaoDados?: FuncaoDados[],
-        public funcaoTransacaos?: FuncaoTransacao[],
+        public funcaoTransacao?: FuncaoTransacao[],
         public organizacao?: Organizacao,
         public contrato?: Contrato,
         public esforcoFases?: EsforcoFase[],
@@ -94,7 +94,7 @@ export class Analise implements BaseEntity {
         public encerrada?: boolean,
         public mapaFatorAjuste?: { [key: string]: number }
     ) {
-        this.inicializaMappables(funcaoDados, funcaoTransacaos);
+        this.inicializaMappables(funcaoDados, funcaoTransacao);
         this.inicializaResumos();
 
         if (!fatorCriticidade) {
@@ -110,14 +110,14 @@ export class Analise implements BaseEntity {
             this.baselineImediatamente = false;
         }
     }
-    private inicializaMappables(funcaoDados: FuncaoDados[], funcaoTransacaos: FuncaoTransacao[]) {
+    private inicializaMappables(funcaoDados: FuncaoDados[], funcaoTransacao: FuncaoTransacao[]) {
         if (funcaoDados) {
             this.mappableFuncaoDados = new MappableEntities<FuncaoDados>(funcaoDados);
         } else {
             this.mappableFuncaoDados = new MappableEntities<FuncaoDados>();
         }
-        if (funcaoTransacaos) {
-            this.mappableFuncaoTransacaos = new MappableEntities<FuncaoTransacao>(funcaoTransacaos);
+        if (funcaoTransacao) {
+            this.mappableFuncaoTransacaos = new MappableEntities<FuncaoTransacao>(funcaoTransacao);
         } else {
             this.mappableFuncaoTransacaos = new MappableEntities<FuncaoTransacao>();
         }
@@ -176,8 +176,8 @@ export class Analise implements BaseEntity {
         if (copy.funcaoDados) {
             copy.funcaoDados = copy.funcaoDados.map(fd => fd.toJSONState());
         }
-        if (copy.funcaoTransacaos) {
-            copy.funcaoTransacaos = copy.funcaoTransacaos.map(fd => fd.toJSONState());
+        if (copy.funcaoTransacao) {
+            copy.funcaoTransacao = copy.funcaoTransacao.map(fd => fd.toJSONState());
         }
         if (copy.users) {
             copy.users = copy.users.map(user => Object.assign({}, user));
@@ -194,13 +194,16 @@ export class Analise implements BaseEntity {
         if (copy.fatorAjuste) {
             copy.valorAjuste = copy.fatorAjuste.fator;
         }
+        if (this.mapaFatorAjuste) {
+            copy.mapaFatorAjuste = this.mapaFatorAjuste;
+        }
         return copy;
     }
 
     // como AnaliseCopyFromJSON chama new() no inicio do processo, construtor não roda como deveria
     copyFromJSON(json: any): Analise {
         const analiseCopiada: Analise = new AnaliseCopyFromJSON(json).copy();
-        analiseCopiada.inicializaMappables(analiseCopiada.funcaoDados, analiseCopiada.funcaoTransacaos);
+        analiseCopiada.inicializaMappables(analiseCopiada.funcaoDados, analiseCopiada.funcaoTransacao);
         analiseCopiada.generateAllResumos();
         return analiseCopiada;
     }
@@ -262,15 +265,15 @@ export class Analise implements BaseEntity {
     }
 
     private atualizarFuncoesTransacao() {
-        this.funcaoTransacaos = this.mappableFuncaoTransacaos.values();
+        this.funcaoTransacao = this.mappableFuncaoTransacaos.values();
         this.generateResumoFuncoesTransacao();
         this.generateResumoTotal();
     }
 
     private generateResumoFuncoesTransacao() {
         const resumo: ResumoFuncoes = new ResumoFuncoes(FuncaoTransacao.tipos());
-        if (this.funcaoTransacaos) {
-            this.funcaoTransacaos.forEach(f => {
+        if (this.funcaoTransacao) {
+            this.funcaoTransacao.forEach(f => {
                 resumo.somaFuncao(f);
             });
         }
@@ -305,7 +308,7 @@ export class Analise implements BaseEntity {
             this.sistema,
             this.enviarBaseline,
             this.funcaoDados,
-            this.funcaoTransacaos,
+            this.funcaoTransacao,
             this.organizacao,
             this.contrato,
             this.esforcoFases,
@@ -422,6 +425,7 @@ class AnaliseCopyFromJSON {
             this._analiseConverted.dtEncerramento = new Date(this._json.dtEncerramento);
         }
         this._analiseConverted.encerrada = this._json.encerrada;
+        this._analiseConverted.mapaFatorAjuste = this._json.mapaFatorAjuste;
 
 
     }
@@ -431,7 +435,7 @@ class AnaliseCopyFromJSON {
         this.inicializaFuncoesFromJSON();
         this.iniciarFatorAjusteFromJSON();
         this.populaModuloDasFuncionalidadesDasFuncoes(this._analiseConverted.funcaoDados, sistema);
-        this.populaModuloDasFuncionalidadesDasFuncoes(this._analiseConverted.funcaoTransacaos, sistema);
+        this.populaModuloDasFuncionalidadesDasFuncoes(this._analiseConverted.funcaoTransacao, sistema);
     }
 
     private inicializaFuncoesFromJSON() {
@@ -439,8 +443,8 @@ class AnaliseCopyFromJSON {
             this._analiseConverted.funcaoDados = this._json.funcaoDados
                 .map(fJSON => new FuncaoDados().copyFromJSON(fJSON));
         }
-        if (this._json.funcaoTransacaos) {
-            this._analiseConverted.funcaoTransacaos = this._json.funcaoTransacaos
+        if (this._json.funcaoTransacao) {
+            this._analiseConverted.funcaoTransacao = this._json.funcaoTransacao
                 .map(fJSON => new FuncaoTransacao().copyFromJSON(fJSON));
         }
     }

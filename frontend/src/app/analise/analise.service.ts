@@ -79,7 +79,7 @@ export class AnaliseService {
                 this.funcaoTransacaoService.getFuncaoTransacaoByAnalise(this.analise.id)
                     .subscribe(response => (
                         response.forEach(value => (
-                            this.analise.funcaoTransacaos.push(FuncaoTransacao.convertTransacaoJsonToObject(value)))
+                            this.analise.funcaoTransacao.push(FuncaoTransacao.convertTransacaoJsonToObject(value)))
                         )
                     )).then(
                         this.funcaoDadosService.getFuncaoDadosByAnalise(this.analise.id)
@@ -459,7 +459,8 @@ export class AnaliseService {
     }
 
     public importarExcel(analise: Analise): Observable<Analise> {
-        return this.http.post<Analise>(this.resourceUrl + "/importar-Excel", analise).pipe(catchError((error: any) => {
+        const copy = this.convert(analise);
+        return this.http.post<Analise>(this.resourceUrl + "/importar-Excel", copy).pipe(catchError((error: any) => {
             // Alterado: Preserva o erro HTTP original para permitir acesso aos headers
             if (error.status === 404) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Esse sistema não pussui modulos cadastrados'));

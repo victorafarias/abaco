@@ -21,7 +21,7 @@ export class FuncionalidadeFormComponent implements OnInit, OnDestroy {
 
   funcaodados: FuncaoDados[];
 
-  funcaotransacaos: FuncaoTransacao[];
+  funcaoTransacao: FuncaoTransacao[];
   funcionalidade: Funcionalidade;
   // modulos: Array<any>;
   // funcaodados: Array<any>;
@@ -35,7 +35,7 @@ export class FuncionalidadeFormComponent implements OnInit, OnDestroy {
     private moduloService: ModuloService,
     private funcaoDadosService: FuncaoDadosService,
     private funcaoTransacaoService: FuncaoTransacaoService,
-  ) {}
+  ) { }
 
   getLabel(label) {
     return label;
@@ -50,7 +50,7 @@ export class FuncionalidadeFormComponent implements OnInit, OnDestroy {
     //   this.funcaodados = res.json;
     // });
     // this.funcaoTransacaoService.query().subscribe((res: ResponseWrapper) => {
-    //   this.funcaotransacaos = res.json;
+    //   this.funcaoTransacao = res.json;
     // });
     this.routeSub = this.route.params.subscribe(params => {
       this.funcionalidade = new Funcionalidade();

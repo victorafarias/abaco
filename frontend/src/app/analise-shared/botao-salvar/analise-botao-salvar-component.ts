@@ -53,7 +53,7 @@ export class AnaliseBotaoSalvarComponent implements OnDestroy {
 
   private nenhumaFuncaoAdicionada() {
     const analise: Analise = this.analise;
-    return _.isEmpty(analise.funcaoDados) && _.isEmpty(analise.funcaoTransacaos);
+    return _.isEmpty(analise.funcaoDados) && _.isEmpty(analise.funcaoTransacao);
   }
 
   public motivosDesabilitar(): string {
@@ -121,6 +121,6 @@ export class AnaliseBotaoSalvarComponent implements OnDestroy {
 
   private definirValorPadrao() {
     this.analise.baselineImediatamente = false;
- }
+  }
 
 }

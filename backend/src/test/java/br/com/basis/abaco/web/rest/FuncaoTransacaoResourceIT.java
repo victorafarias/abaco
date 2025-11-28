@@ -128,7 +128,7 @@ public class FuncaoTransacaoResourceIT {
 
         // Create the FuncaoTransacao
 
-        restFuncaoTransacaoMockMvc.perform(post("/api/funcao-transacaos")
+        restFuncaoTransacaoMockMvc.perform(post("/api/funcaoTransacao")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(funcaoTransacao)))
                 .andExpect(status().isCreated());
@@ -156,7 +156,7 @@ public class FuncaoTransacaoResourceIT {
         existingFuncaoTransacao.setId(1L);
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restFuncaoTransacaoMockMvc.perform(post("/api/funcao-transacaos")
+        restFuncaoTransacaoMockMvc.perform(post("/api/funcaoTransacao")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(existingFuncaoTransacao)))
                 .andExpect(status().isBadRequest());
@@ -173,7 +173,7 @@ public class FuncaoTransacaoResourceIT {
         funcaoTransacaoRepository.saveAndFlush(funcaoTransacao);
 
         // Get all the funcaoTransacaoList
-        restFuncaoTransacaoMockMvc.perform(get("/api/funcao-transacaos?sort=id,desc"))
+        restFuncaoTransacaoMockMvc.perform(get("/api/funcaoTransacao?sort=id,desc"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.[*].id").value(hasItem(funcaoTransacao.getId().intValue())))
@@ -189,7 +189,7 @@ public class FuncaoTransacaoResourceIT {
         funcaoTransacaoRepository.saveAndFlush(funcaoTransacao);
 
         // Get the funcaoTransacao
-        restFuncaoTransacaoMockMvc.perform(get("/api/funcao-transacaos/{id}", funcaoTransacao.getId()))
+        restFuncaoTransacaoMockMvc.perform(get("/api/funcaoTransacao/{id}", funcaoTransacao.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.id").value(funcaoTransacao.getId().intValue()))
@@ -202,7 +202,7 @@ public class FuncaoTransacaoResourceIT {
     @Transactional
     public void getNonExistingFuncaoTransacao() throws Exception {
         // Get the funcaoTransacao
-        restFuncaoTransacaoMockMvc.perform(get("/api/funcao-transacaos/{id}", Long.MAX_VALUE))
+        restFuncaoTransacaoMockMvc.perform(get("/api/funcaoTransacao/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
     }
 
@@ -220,7 +220,7 @@ public class FuncaoTransacaoResourceIT {
         updatedFuncaoTransacao.setComplexidade(UPDATED_COMPLEXIDADE);
         updatedFuncaoTransacao.setPf(UPDATED_PF);
 
-        restFuncaoTransacaoMockMvc.perform(put("/api/funcao-transacaos")
+        restFuncaoTransacaoMockMvc.perform(put("/api/funcaoTransacao")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(updatedFuncaoTransacao)))
                 .andExpect(status().isOk());
@@ -246,7 +246,7 @@ public class FuncaoTransacaoResourceIT {
         // Create the FuncaoTransacao
 
         // If the entity doesn't have an ID, it will be created instead of just being updated
-        restFuncaoTransacaoMockMvc.perform(put("/api/funcao-transacaos")
+        restFuncaoTransacaoMockMvc.perform(put("/api/funcaoTransacao")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(funcaoTransacao)))
                 .andExpect(status().isCreated());
@@ -265,7 +265,7 @@ public class FuncaoTransacaoResourceIT {
         int databaseSizeBeforeDelete = funcaoTransacaoRepository.findAll().size();
 
         // Get the funcaoTransacao
-        restFuncaoTransacaoMockMvc.perform(delete("/api/funcao-transacaos/{id}", funcaoTransacao.getId())
+        restFuncaoTransacaoMockMvc.perform(delete("/api/funcaoTransacao/{id}", funcaoTransacao.getId())
                 .accept(TestUtil.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk());
 
@@ -286,7 +286,7 @@ public class FuncaoTransacaoResourceIT {
         funcaoTransacaoSearchRepository.save(funcaoTransacao);
 
         // Search the funcaoTransacao
-        restFuncaoTransacaoMockMvc.perform(get("/api/_search/funcao-transacaos?query=id:" + funcaoTransacao.getId()))
+        restFuncaoTransacaoMockMvc.perform(get("/api/_search/funcaoTransacao?query=id:" + funcaoTransacao.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.[*].id").value(hasItem(funcaoTransacao.getId().intValue())))

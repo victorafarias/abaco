@@ -56,7 +56,6 @@ public class Modulo implements Serializable, ReportObject {
 
     @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @JsonManagedReference
     private Set<Funcionalidade> funcionalidades = new HashSet<>();
 
     public Long getId() {

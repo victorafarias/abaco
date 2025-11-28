@@ -1290,13 +1290,73 @@ export class AnaliseListComponent implements OnInit {
         this.blockUiService.show();
         this.analiseService.carregarArquivoExcel(this.analiseFileExcel).subscribe(
             analise => {
+                // Alterado: Log completo dos dados extraídos do Excel
+                console.log('===== DADOS EXTRAÍDOS DO EXCEL =====');
+                console.log('Análise:', analise);
+                console.log('Identificador:', analise.identificadorAnalise);
+                console.log('Número OS:', analise.numeroOs);
+                console.log('Método Contagem:', analise.metodoContagem);
+                console.log('Total Funções de Dados:', analise.funcaoDados?.length || 0);
+                console.log('Total Funções de Transação:', analise.funcaoTransacao?.length || 0);
+
+                // Alterado: Log das primeiras 3 funções de dados
+                if (analise.funcaoDados && analise.funcaoDados.length > 0) {
+                    console.log('Primeiras Funções de Dados:');
+                    analise.funcaoDados.slice(0, 3).forEach((fd, index) => {
+                        console.log(`  [${index + 1}] ${fd.name}`, {
+                            modulo: fd.funcionalidade?.modulo?.nome,
+                            funcionalidade: fd.funcionalidade?.nome,
+                            tipo: fd.tipo,
+                            ordem: fd.ordem
+                        });
+                    });
+                }
+
+                // Alterado: Log das primeiras 3 funções de transação
+                if (analise.funcaoTransacao && analise.funcaoTransacao.length > 0) {
+                    console.log('Primeiras Funções de Transação:');
+                    analise.funcaoTransacao.slice(0, 3).forEach((ft, index) => {
+                        console.log(`  [${index + 1}] ${ft.name}`, {
+                            modulo: ft.funcionalidade?.modulo?.nome,
+                            funcionalidade: ft.funcionalidade?.nome,
+                            tipo: ft.tipo,
+                            ordem: ft.ordem
+                        });
+                    });
+                }
+                console.log('=====================================');
+
                 this.analisesImportar.push(analise);
                 this.blockUiService.hide();
             },
             error => {
                 this.blockUiService.hide();
-                this.pageNotificationService.addErrorMessage("Erro ao carregar arquivo Excel.");
+
+                // Alterado: Tratamento específico para erros de validação de Módulo/Funcionalidade
+                let mensagemErro = "Erro ao carregar arquivo Excel.";
+
+                // Verifica se é erro 500 (Internal Server Error) com mensagem do backend
+                if (error.status === 500 && error.error && error.error.message) {
+                    const mensagemBackend = error.error.message;
+
+                    // Verifica se é erro de Módulo ou Funcionalidade vazios
+                    if (mensagemBackend.includes("Módulo não encontrado") ||
+                        mensagemBackend.includes("Funcionalidade não encontrada")) {
+                        mensagemErro = mensagemBackend;
+                    }
+                } else if (error.error && typeof error.error === 'string') {
+                    mensagemErro = error.error;
+                }
+
+                // Alterado: Exibe mensagem de erro amigável
+                this.pageNotificationService.addErrorMessage(mensagemErro);
+
+                // Alterado: Limpa dados temporários da importação
                 this.analiseFileExcel = undefined;
+                this.analisesImportar = [];
+                this.carregadaAnalise = false;
+
+                console.error('Erro na importação:', error);
             }
         );
     }
@@ -1304,7 +1364,8 @@ export class AnaliseListComponent implements OnInit {
     importarAnalise() {
         if (this.analiseFileExcel && this.analiseImportar) {
             // ATUALIZADO: Adicionado tratamento de erro no subscribe
-            this.analiseService.importarExcel(this.analiseImportar).subscribe(
+            const analiseInstance = new Analise().copyFromJSON(this.analiseImportar);
+            this.analiseService.importarExcel(analiseInstance).subscribe(
                 (analise) => {
                     this.pageNotificationService.addCreateMsg("Análise - " + analise.identificadorAnalise + " importada com sucesso!");
                     this.datatable.filter();

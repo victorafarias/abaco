@@ -73,7 +73,7 @@ public class BaselineAnaliseService extends BaseService{
         }
 
         analise.setFuncaoDados(fds.stream().collect(Collectors.toSet()));
-        analise.setFuncaoTransacaos(fts.stream().collect(Collectors.toSet()));
+        analise.setFuncaoTransacao(fts.stream().collect(Collectors.toSet()));
         ByteArrayOutputStream byteArrayOutputStream = planilhaService.selecionarModelo(analise, modelo);
 
         HttpHeaders headers = new HttpHeaders();

@@ -224,8 +224,8 @@ public class RelatorioAnaliseRest {
                         .collect(Collectors.toList()).get(0).getTotal() + funcaoDados.getPf().doubleValue());
             }
         }
-        for (int i = 0; i < analise.getFuncaoTransacaos().size(); i++) {
-            FuncaoTransacao funcaoTransacao = analise.getFuncaoTransacaos().stream().collect(Collectors.toList()).get(i);
+        for (int i = 0; i < analise.getFuncaoTransacao().size(); i++) {
+            FuncaoTransacao funcaoTransacao = analise.getFuncaoTransacao().stream().collect(Collectors.toList()).get(i);
             if(pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoTransacao.getFuncionalidade().getNome()))
                 .collect(Collectors.toList()).isEmpty()){
                 pfFuncionalidadeDTOS.add(new PfFuncionalidadeDTO(i+1, funcaoTransacao.getFuncionalidade().getNome(), funcaoTransacao.getPf().doubleValue()));
@@ -472,9 +472,9 @@ public class RelatorioAnaliseRest {
     private void  countQuantidadeFtrFt(Long id, FuncaoTransacaoDTO funcaoTransacaoDTO ) {
         int total = 0;
         String ftr = "";
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        if (funcaoTransacaos != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
-            for (FuncaoTransacao ft : funcaoTransacaos) {
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        if (funcaotransacao != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
+            for (FuncaoTransacao ft : funcaotransacao) {
                 if (ft.getId().equals(id)) {
                     total = ft.getAlrs().size();
                     if(total == 1 && ft.getAlrs().iterator().next().getValor() != null){
@@ -494,9 +494,9 @@ public class RelatorioAnaliseRest {
     private void countQuantidadeDerFt(Long id, FuncaoTransacaoDTO funcaoTransacaoDTO) {
         int total = 0;
         String der = "";
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        if (funcaoTransacaos != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
-            for (FuncaoTransacao ft : funcaoTransacaos) {
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        if (funcaotransacao != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
+            for (FuncaoTransacao ft : funcaotransacao) {
                 if (ft.getId().equals(id)) {
                     total = ft.getDers().size();
                     if(total == 1 && ft.getDers().iterator().next().getValor() != null){
@@ -535,18 +535,18 @@ public class RelatorioAnaliseRest {
         verificaFuncaodados(listaFd, funcaoDados, identificador);
         verificaFuncaodados(listaFdFt, funcaoDados, 0);
 
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        verificaFuncaoTransacao(listaFt, funcaoTransacaos, identificador);
-        verificaFuncaoTransacao(listaFdFt, funcaoTransacaos, 0);
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        verificaFuncaoTransacao(listaFt, funcaotransacao, identificador);
+        verificaFuncaoTransacao(listaFdFt, funcaotransacao, 0);
 
         parametro.put("LISTAFDFT", listaFdFt);
         parametro.put("LISTAFD", listaFd);
         parametro.put("LISTAFT", listaFt);
     }
 
-    private void verificaFuncaoTransacao(List<ListaFdFtDTO> listaFdFt, Set<FuncaoTransacao> funcaoTransacaos, Integer identificador) {
-        if (funcaoTransacaos != null) {
-            for (FuncaoTransacao ft : funcaoTransacaos) {
+    private void verificaFuncaoTransacao(List<ListaFdFtDTO> listaFdFt, Set<FuncaoTransacao> funcaotransacao, Integer identificador) {
+        if (funcaotransacao != null) {
+            for (FuncaoTransacao ft : funcaotransacao) {
                 String der = "";
                 String alrTr = "";
                 ListaFdFtDTO objeto = new ListaFdFtDTO();

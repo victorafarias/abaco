@@ -280,8 +280,8 @@ public class FuncaoDadosResource {
             if (f.getAnalise().getFuncaoDados() != null) {
                 f.getAnalise().getFuncaoDados().clear();
             }
-            if (f.getAnalise().getFuncaoTransacaos() != null) {
-                f.getAnalise().getFuncaoTransacaos().clear();
+            if (f.getAnalise().getFuncaoTransacao() != null) {
+                f.getAnalise().getFuncaoTransacao().clear();
             }
         });
         return funcaoDados;
@@ -301,8 +301,8 @@ public class FuncaoDadosResource {
         if (funcaoDados.getAnalise().getFuncaoDados() != null) {
             funcaoDados.getAnalise().getFuncaoDados().clear();
         }
-        if (funcaoDados.getAnalise().getFuncaoTransacaos() != null) {
-            funcaoDados.getAnalise().getFuncaoTransacaos().clear();
+        if (funcaoDados.getAnalise().getFuncaoTransacao() != null) {
+            funcaoDados.getAnalise().getFuncaoTransacao().clear();
         }
         FuncaoDadosDTO funcaoDadosDTO = getFuncaoDados(funcaoDados);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));

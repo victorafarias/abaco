@@ -67,7 +67,7 @@ export class Divergencia implements BaseEntity {
         public sistema?: Sistema,
         public enviarBaseline?: boolean,
         public funcaoDados?: FuncaoDados[],
-        public funcaoTransacaos?: FuncaoTransacao[],
+        public funcaoTransacao?: FuncaoTransacao[],
         public organizacao?: Organizacao,
         public contrato?: Contrato,
         public esforcoFases?: EsforcoFase[],
@@ -86,21 +86,21 @@ export class Divergencia implements BaseEntity {
         public status?: Status,
         public analisesComparadas?: Analise[],
     ) {
-        this.inicializaMappables(funcaoDados, funcaoTransacaos);
+        this.inicializaMappables(funcaoDados, funcaoTransacao);
 
         // TODO
         if (!baselineImediatamente) {
             this.baselineImediatamente = false;
         }
     }
-    private inicializaMappables(funcaoDados: FuncaoDados[], funcaoTransacaos: FuncaoTransacao[]) {
+    private inicializaMappables(funcaoDados: FuncaoDados[], funcaoTransacao: FuncaoTransacao[]) {
         if (funcaoDados) {
             this.mappableFuncaoDados = new MappableEntities<FuncaoDados>(funcaoDados);
         } else {
             this.mappableFuncaoDados = new MappableEntities<FuncaoDados>();
         }
-        if (funcaoTransacaos) {
-            this.mappableFuncaoTransacaos = new MappableEntities<FuncaoTransacao>(funcaoTransacaos);
+        if (funcaoTransacao) {
+            this.mappableFuncaoTransacaos = new MappableEntities<FuncaoTransacao>(funcaoTransacao);
         } else {
             this.mappableFuncaoTransacaos = new MappableEntities<FuncaoTransacao>();
         }
@@ -114,8 +114,8 @@ export class Divergencia implements BaseEntity {
         if (copy.funcaoDados) {
             copy.funcaoDados = copy.funcaoDados.map(fd => fd.toJSONState());
         }
-        if (copy.funcaoTransacaos) {
-            copy.funcaoTransacaos = copy.funcaoTransacaos.map(fd => fd.toJSONState());
+        if (copy.funcaoTransacao) {
+            copy.funcaoTransacao = copy.funcaoTransacao.map(fd => fd.toJSONState());
         }
         if (copy.users) {
             copy.users = copy.users.map(user => Object.assign({}, user));
@@ -138,14 +138,14 @@ export class Divergencia implements BaseEntity {
     // como AnaliseCopyFromJSON chama new() no inicio do processo, construtor não roda como deveria
     copyFromJSON(json: any): Divergencia {
         const analiseCopiada: Divergencia = new DivergenciaCopyFromJSON(json).copy();
-        analiseCopiada.inicializaMappables(analiseCopiada.funcaoDados, analiseCopiada.funcaoTransacaos);
+        analiseCopiada.inicializaMappables(analiseCopiada.funcaoDados, analiseCopiada.funcaoTransacao);
         return analiseCopiada;
     }
 
     private generateResumoFuncoesTransacao() {
         const resumo: ResumoFuncoes = new ResumoFuncoes(FuncaoTransacao.tipos());
-        if (this.funcaoTransacaos) {
-            this.funcaoTransacaos.forEach(f => {
+        if (this.funcaoTransacao) {
+            this.funcaoTransacao.forEach(f => {
                 resumo.somaFuncao(f);
             });
         }
@@ -170,7 +170,7 @@ export class Divergencia implements BaseEntity {
             this.sistema,
             this.enviarBaseline,
             this.funcaoDados,
-            this.funcaoTransacaos,
+            this.funcaoTransacao,
             this.organizacao,
             this.contrato,
             this.esforcoFases,
@@ -257,7 +257,7 @@ class DivergenciaCopyFromJSON {
         this.inicializaFuncoesFromJSON();
         this.iniciarFatorAjusteFromJSON();
         this.populaModuloDasFuncionalidadesDasFuncoes(this._analiseConverted.funcaoDados, sistema);
-        this.populaModuloDasFuncionalidadesDasFuncoes(this._analiseConverted.funcaoTransacaos, sistema);
+        this.populaModuloDasFuncionalidadesDasFuncoes(this._analiseConverted.funcaoTransacao, sistema);
     }
 
     private inicializaFuncoesFromJSON() {
@@ -265,8 +265,8 @@ class DivergenciaCopyFromJSON {
             this._analiseConverted.funcaoDados = this._json.funcaoDados
                 .map(fJSON => new FuncaoDados().copyFromJSON(fJSON));
         }
-        if (this._json.funcaoTransacaos) {
-            this._analiseConverted.funcaoTransacaos = this._json.funcaoTransacaos
+        if (this._json.funcaoTransacao) {
+            this._analiseConverted.funcaoTransacao = this._json.funcaoTransacao
                 .map(fJSON => new FuncaoTransacao().copyFromJSON(fJSON));
         }
     }
@@ -280,7 +280,7 @@ class DivergenciaCopyFromJSON {
     private populaModuloDasFuncionalidadesDasFuncoes(funcoes: FuncaoAnalise[], sistema: Sistema) {
         if (funcoes) {
             funcoes.forEach(f => {
-                if (!(f.funcionalidade.modulo && f.funcionalidade.modulo.nome )) {
+                if (!(f.funcionalidade.modulo && f.funcionalidade.modulo.nome)) {
                     const modulo = ModuloDaFuncionalidadeFinder.find(sistema, f.funcionalidade.id);
                     f.funcionalidade.modulo = modulo;
                 }

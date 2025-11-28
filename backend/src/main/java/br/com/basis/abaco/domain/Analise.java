@@ -219,7 +219,7 @@ public class Analise implements Serializable, ReportObject {
     @OneToMany(mappedBy = ANALISE, cascade = CascadeType.ALL)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @OrderBy("ordem DESC")
-    private Set<FuncaoTransacao> funcaoTransacaos = new HashSet<>();
+    private Set<FuncaoTransacao> funcaoTransacao = new HashSet<>();
 
     @Nullable
     @ManyToOne

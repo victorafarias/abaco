@@ -56,7 +56,7 @@ public class Funcionalidade implements Serializable, ReportObject {
     private String nome;
 
     @ManyToOne
-    @JsonBackReference
+    @JsonIgnoreProperties("funcionalidades")
     private Modulo modulo;
 
     @JsonIgnore

@@ -59,7 +59,7 @@ public class DivergenceCommentService {
         return lstDivergenceCommentFuncaoDados.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    public List<DivergenceCommentDTO> convertFuncaoTransacao(List<DivergenceCommentFuncaoTransacao> lstDivergenceCommentFuncaoTransacaos) {
-        return lstDivergenceCommentFuncaoTransacaos.stream().map(this::convertToDto).collect(Collectors.toList());
+    public List<DivergenceCommentDTO> convertFuncaoTransacao(List<DivergenceCommentFuncaoTransacao> lstDivergenceCommentfuncaotransacao) {
+        return lstDivergenceCommentfuncaotransacao.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 }

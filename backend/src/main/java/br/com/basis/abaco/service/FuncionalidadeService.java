@@ -78,18 +78,18 @@ public class FuncionalidadeService {
     public void migrarFuncoes(Long idEdit, Long idMigrar){
         Funcionalidade funcionalidadeMigrar = funcionalidadeRepository.findOne(idMigrar);
         Optional<List<FuncaoDados>> funcaoDados = funcaoDadosRepository.findAllByFuncionalidadeId(idEdit);
-        Optional<List<FuncaoTransacao>> funcaoTransacaos = funcaoTransacaoRepository.findAllByFuncionalidadeId(idEdit);
+        Optional<List<FuncaoTransacao>> funcaotransacao = funcaoTransacaoRepository.findAllByFuncionalidadeId(idEdit);
         if(funcaoDados.isPresent()){
             funcaoDados.get().forEach(funcao -> {
                 funcao.setFuncionalidade(funcionalidadeMigrar);
             });
             funcaoDadosRepository.save(funcaoDados.get());
         }
-        if(funcaoTransacaos.isPresent()){
-            funcaoTransacaos.get().forEach(funcao -> {
+        if(funcaotransacao.isPresent()){
+            funcaotransacao.get().forEach(funcao -> {
                 funcao.setFuncionalidade(funcionalidadeMigrar);
             });
-            funcaoTransacaoRepository.save(funcaoTransacaos.get());
+            funcaoTransacaoRepository.save(funcaotransacao.get());
         }
     }
 

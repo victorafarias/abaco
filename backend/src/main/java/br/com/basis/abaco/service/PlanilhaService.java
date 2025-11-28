@@ -65,7 +65,7 @@ public class PlanilhaService {
 
     public ByteArrayOutputStream selecionarModelo(Analise analise, Long modelo) throws IOException {
         List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
-        List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacaos().stream().collect(Collectors.toList());
+        List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacao().stream().collect(Collectors.toList());
         switch(modelo.intValue()) {
             case 1:
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
@@ -1170,7 +1170,7 @@ public class PlanilhaService {
     public ByteArrayOutputStream selecionarModeloDivergencia(Analise analise, Long modelo) throws IOException {
         if(modelo == 1){
             List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
-            List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacaos().stream().collect(Collectors.toList());
+            List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacao().stream().collect(Collectors.toList());
             return this.modeloPadraoBasisDivergencia(analise, funcaoDadosList, funcaoTransacaoList);
         }
         return new ByteArrayOutputStream();

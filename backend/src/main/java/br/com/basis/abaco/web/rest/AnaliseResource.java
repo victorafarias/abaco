@@ -381,10 +381,12 @@ public class AnaliseResource {
         return analiseService.converterParaAnaliseJsonDTO(analiseRepository.findById(id));
     }
 
+    // Alterado: Retorna AnaliseUploadDTO para incluir módulos na serialização
     @PostMapping("/analises/importar-excel/Xlsx")
-    public ResponseEntity<Analise> carregarArquivoExcel(@RequestParam("file") MultipartFile file) throws IOException {
-        Analise analise = analiseService.uploadExcel(file);
-        return ResponseEntity.status(HttpStatus.OK).body(analise);
+    @Timed
+    public ResponseEntity<br.com.basis.abaco.service.dto.upload.AnaliseUploadDTO> carregarArquivoExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        log.debug("REST carregar arquivo Excel");
+        return ResponseEntity.ok().body(analiseService.uploadExcelComDTO(file));
     }
 
     @PostMapping("/analises/importar-Excel")
