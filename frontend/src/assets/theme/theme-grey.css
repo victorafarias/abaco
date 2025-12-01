@@ -30902,7 +30902,7 @@ body .ui-button,
 body .ui-datepicker-buttonpane>button {
   overflow: hidden;
   background-color: #757575;
-  color: #ffffff !important;
+  color: #ffffff;
   font-size: 1em;
   height: 2.25em;
   padding: 0 1em;
@@ -31061,6 +31061,7 @@ body .ui-button.ui-success-button,
 body .ui-datepicker-buttonpane>button.green-btn,
 body .ui-datepicker-buttonpane>button.ui-success-button {
   background-color: #4CAF50 !Important;
+  color: #ffffff !important;
 }
 
 body .ui-button.green-btn:enabled:not(:focus):hover,

@@ -2144,9 +2144,16 @@ public class AnaliseService extends BaseService {
         funcao.setName(getCellValueAsString(row, 6));
         
         // Alterado: Fator de Ajuste com trim() e validação (consistência com Detalhada)
+        // Alterado: Ler também o valor da coluna C (índice 2) e concatenar ao nome
         String nomeFatorAjuste = getCellValueAsString(row, 1); // Coluna B
+        String valorFatorAjuste = getCellValueAsString(row, 2); // Coluna C
+        
         if (nomeFatorAjuste != null && !nomeFatorAjuste.trim().isEmpty()) {
-            fatorAjuste.setNome(nomeFatorAjuste.trim());
+            String nomeCompletoFA = nomeFatorAjuste.trim();
+            if (valorFatorAjuste != null && !valorFatorAjuste.trim().isEmpty()) {
+                nomeCompletoFA = nomeCompletoFA + " - " + valorFatorAjuste.trim();
+            }
+            fatorAjuste.setNome(nomeCompletoFA);
             funcao.setFatorAjuste(fatorAjuste);
         } else {
             log.warn("Função '{}' não tem Fator de Ajuste na planilha (Coluna B vazia)", funcao.getName());
@@ -2707,10 +2714,19 @@ public class AnaliseService extends BaseService {
         funcao.setName(nomeFuncao != null ? nomeFuncao.trim() : "");
         
         // Alterado: Fator de Ajuste (Coluna B)
+        // Alterado: Ler também o valor da coluna C (índice 2) e concatenar ao nome
         String nomeFatorAjuste = getCellValueAsString(row, 1);
-        log.info("=== LENDO FA: Linha={}, Coluna B='{}', Nome Função='{}'", row.getRowNum() + 1, nomeFatorAjuste, nomeFuncao);
+        String valorFatorAjuste = getCellValueAsString(row, 2); // Coluna C
+        
+        log.info("=== LENDO FA: Linha={}, Coluna B='{}', Coluna C='{}', Nome Função='{}'", row.getRowNum() + 1, nomeFatorAjuste, valorFatorAjuste, nomeFuncao);
+        
         if (nomeFatorAjuste != null && !nomeFatorAjuste.trim().isEmpty()) {
-            fatorAjuste.setNome(nomeFatorAjuste.trim());
+            String nomeCompletoFA = nomeFatorAjuste.trim();
+            if (valorFatorAjuste != null && !valorFatorAjuste.trim().isEmpty()) {
+                nomeCompletoFA = nomeCompletoFA + " - " + valorFatorAjuste.trim();
+            }
+            
+            fatorAjuste.setNome(nomeCompletoFA);
             funcao.setFatorAjuste(fatorAjuste);
             log.info("=== FA SETADO: {} para função '{}'", fatorAjuste.getNome(), funcao.getName());
         } else {
