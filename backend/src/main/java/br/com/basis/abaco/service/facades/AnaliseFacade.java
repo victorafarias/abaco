@@ -293,15 +293,20 @@ public class AnaliseFacade {
             });
         }
         if (resultado.getFuncaoTransacao() != null) {
-            resultado.getFuncaoTransacao().forEach(ft -> {
-                String modName = (ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null) ? ft.getFuncionalidade().getModulo().getNome() : "NULL";
-                log.info("ENTIDADE FT '{}' - Func: {} - Modulo: {}", ft.getName(), ft.getFuncionalidade() != null ? ft.getFuncionalidade().getNome() : "NULL", modName);
-                log.info("ENTIDADE FT '{}' - DERs: {}, ALRs: {}", ft.getName(), ft.getDers() != null ? ft.getDers().size() : 0, ft.getAlrs() != null ? ft.getAlrs().size() : 0);
-            });
-        }
-        
-        return resultado;
+        resultado.getFuncaoTransacao().forEach(ft -> {
+            String modName = (ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null) ? ft.getFuncionalidade().getModulo().getNome() : "NULL";
+            log.info("ENTIDADE FT '{}' - Func: {} - Modulo: {} - Quantidade: {} - Ordem: {}", 
+                ft.getName(), 
+                ft.getFuncionalidade() != null ? ft.getFuncionalidade().getNome() : "NULL", 
+                modName,
+                ft.getQuantidade(),
+                ft.getOrdem());
+            log.info("ENTIDADE FT '{}' - DERs: {}, ALRs: {}", ft.getName(), ft.getDers() != null ? ft.getDers().size() : 0, ft.getAlrs() != null ? ft.getAlrs().size() : 0);
+        });
     }
+    
+    return resultado;
+}
 
     public AnaliseJsonDTO converterParaAnaliseJsonDTO(Analise analise) {
         return modelMapper.map(analise, AnaliseJsonDTO.class);

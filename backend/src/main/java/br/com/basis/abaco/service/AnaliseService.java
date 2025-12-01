@@ -108,6 +108,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
@@ -472,21 +473,32 @@ public class AnaliseService extends BaseService {
 
     public void atualizarPF(Analise analise) {
         VwAnaliseSomaPf vwAnaliseSomaPf = analiseFacade.obterAnaliseSomaPfPorId(analise.getId());
-        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(DECIMAL_PLACE);
+
+        // ATUALIZADO: Adicionado RoundingMode.HALF_UP
+        BigDecimal sumFase = new BigDecimal(BigInteger.ZERO).setScale(DECIMAL_PLACE, RoundingMode.HALF_UP);
+
         if (analise.getEsforcoFases() != null && (!analise.getEsforcoFases().isEmpty())) {
             for (EsforcoFase esforcoFase : analise.getEsforcoFases()) {
-                sumFase = sumFase.add(esforcoFase.getEsforco().setScale(DECIMAL_PLACE));
+                // ATUALIZADO: Adicionado RoundingMode.HALF_UP
+                sumFase = sumFase.add(esforcoFase.getEsforco().setScale(DECIMAL_PLACE, RoundingMode.HALF_UP));
             }
-
         }
-        sumFase = sumFase.divide(percent).setScale(DECIMAL_PLACE);
-        
+
+        // ATUALIZADO: Adicionado RoundingMode.HALF_UP no divide() e no setScale()
+        sumFase = sumFase.divide(percent, DECIMAL_PLACE, RoundingMode.HALF_UP);
+
         // Alterado: Adicionar null check para evitar NullPointerException quando a view não retorna dados
         if (vwAnaliseSomaPf != null) {
-            analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE));
+            // ATUALIZADO: Adicionado RoundingMode.HALF_UP
+            analise.setPfTotal(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE, RoundingMode.HALF_UP));
+
+            // JÁ CORRETO: Já tem RoundingMode.HALF_DOWN
             analise.setAdjustPFTotal(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN));
 
-            analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE).doubleValue());
+            // ATUALIZADO: Adicionado RoundingMode.HALF_UP
+            analise.setPfTotalValor(vwAnaliseSomaPf.getPfGross().setScale(DECIMAL_PLACE, RoundingMode.HALF_UP).doubleValue());
+
+            // JÁ CORRETO: Já tem RoundingMode.HALF_DOWN
             analise.setPfTotalAjustadoValor(vwAnaliseSomaPf.getPfTotal().multiply(sumFase).setScale(DECIMAL_PLACE, RoundingMode.HALF_DOWN).doubleValue());
         } else {
             // Alterado: Log de warning para debug - não deveria acontecer após o flush
@@ -863,12 +875,26 @@ public class AnaliseService extends BaseService {
         java.util.concurrent.atomic.AtomicLong ordemDados = new java.util.concurrent.atomic.AtomicLong(1L);
         java.util.concurrent.atomic.AtomicLong ordemTransacao = new java.util.concurrent.atomic.AtomicLong(1L);
         
+        // Alterado: Validação de integridade - verificar se há funções INM com ordem null
+        long ftInmComOrdemNull = funcaotransacao.stream()
+            .filter(ft -> ft.getTipo() == TipoFuncaoTransacao.INM && ft.getOrdem() == null)
+            .count();
+        
+        if (ftInmComOrdemNull > 0) {
+            log.warn("ATENÇÃO: {} funções INM com ordem NULL detectadas antes da persistência!", ftInmComOrdemNull);
+        }
+        
         salvarFuncaoDadosExcel(funcaoDados, analise, mapaFatorAjuste, ordemDados);
         salvarFuncaoTransacaoExcel(funcaotransacao, analise, mapaFatorAjuste, ordemTransacao);
         
         // Alterado: Flush para garantir que os dados das funções sejam persistidos no banco
         // antes de consultar a view vw_analise_soma_pf em atualizarPF
         entityManager.flush();
+        
+        // Alterado: Log de resumo das ordens após persistência
+        log.info("Persistência concluída - Ordens atribuídas:");
+        log.info("  - Funções de Dados: 1 até {}", ordemDados.get() - 1);
+        log.info("  - Funções de Transação (todas): 1 até {}", ordemTransacao.get() - 1);
         
         atualizarPF(analise);
         salvarAnalise(analise);
@@ -896,11 +922,12 @@ public class AnaliseService extends BaseService {
             });
         }
         if (analiseOrigem.getFuncaoTransacao() != null) {
-            analiseOrigem.getFuncaoTransacao().forEach(ft -> {
-                if (ft.getFatorAjuste() != null) {
-                    log.info("FT '{}' tem FA: {}", ft.getName(), ft.getFatorAjuste().getNome());
-                }
-            });
+        analiseOrigem.getFuncaoTransacao().forEach(ft -> {
+            log.info("FT '{}' - Tipo: {} - Quantidade: {} - Ordem: {}", ft.getName(), ft.getTipo(), ft.getQuantidade(), ft.getOrdem());
+            if (ft.getFatorAjuste() != null) {
+                log.info("FT '{}' tem FA: {}", ft.getName(), ft.getFatorAjuste().getNome());
+            }
+        });
         }
         
         validarFatoresAjuste(
@@ -957,10 +984,37 @@ public class AnaliseService extends BaseService {
             return;
         }
         
+        // Alterado: Logs detalhados para debug
+        log.info("===== DEBUG VALIDAÇÃO DE FATORES DE AJUSTE =====");
+        log.info("Manual: {}", manual != null ? manual.getNome() : "null");
+        
         Set<String> fatoresNaoEncontrados = new HashSet<>();
         Set<String> nomesFatoresManual = manual.getFatoresAjuste().stream()
                 .map(FatorAjuste::getNome)
                 .collect(Collectors.toSet());
+        
+        // Alterado: Log dos fatores do manual
+        log.info("Fatores disponíveis no manual (total: {}): {}", nomesFatoresManual.size(), nomesFatoresManual);
+        log.info("Mapa de de-para fornecido: {}", mapaFatorAjuste);
+        
+        // Alterado: Coletar TODOS os fatores únicos das funções
+        Set<String> todosFatoresDaPlanilha = new HashSet<>();
+        if (funcaoDados != null) {
+            funcaoDados.forEach(fd -> {
+                if (fd.getFatorAjuste() != null && fd.getFatorAjuste().getNome() != null) {
+                    todosFatoresDaPlanilha.add(fd.getFatorAjuste().getNome());
+                }
+            });
+        }
+        if (funcaotransacao != null) {
+            funcaotransacao.forEach(ft -> {
+                if (ft.getFatorAjuste() != null && ft.getFatorAjuste().getNome() != null) {
+                    todosFatoresDaPlanilha.add(ft.getFatorAjuste().getNome());
+                }
+            });
+        }
+        
+        log.info("Fatores ÚNICOS encontrados na planilha (total: {}): {}", todosFatoresDaPlanilha.size(), todosFatoresDaPlanilha);
 
         // Alterado: Validar sobre as coleções recebidas como parâmetro
         if (funcaoDados != null) {
@@ -969,6 +1023,10 @@ public class AnaliseService extends BaseService {
         if (funcaotransacao != null) {
             funcaotransacao.forEach(ft -> verificarFatorAjuste(ft, nomesFatoresManual, mapaFatorAjuste, fatoresNaoEncontrados));
         }
+        
+        // Alterado: Log dos fatores NÃO encontrados
+        log.info("Fatores NÃO ENCONTRADOS (serão exibidos no de-para) (total: {}): {}", fatoresNaoEncontrados.size(), fatoresNaoEncontrados);
+        log.info("==============================================");
 
         if (!fatoresNaoEncontrados.isEmpty()) {
             throw new FatorAjusteException(new ArrayList<>(fatoresNaoEncontrados));
@@ -978,20 +1036,60 @@ public class AnaliseService extends BaseService {
     private void verificarFatorAjuste(FuncaoAnalise funcao, Set<String> nomesFatoresManual, Map<String, Long> mapaFatorAjuste, Set<String> fatoresNaoEncontrados) {
         if (funcao.getFatorAjuste() != null) {
             String nomeFator = funcao.getFatorAjuste().getNome();
-            boolean existeNoManual = nomesFatoresManual.contains(nomeFator);
-            boolean existeNoMapa = mapaFatorAjuste != null && mapaFatorAjuste.containsKey(nomeFator);
-
+            
+            // Alterado: Verificação com trim e validação de null/vazio
+            if (nomeFator == null || nomeFator.trim().isEmpty()) {
+                log.warn("Função '{}' tem FatorAjuste com nome null ou vazio. Ignorando.", funcao.getName());
+                return;
+            }
+            
+            // Alterado: Usar trim para comparação
+            String nomeFatorTrimmed = nomeFator.trim();
+            boolean existeNoManual = nomesFatoresManual.contains(nomeFatorTrimmed);
+            boolean existeNoMapa = mapaFatorAjuste != null && mapaFatorAjuste.containsKey(nomeFatorTrimmed);
+            
+            // Alterado: Log detalhado apenas para fatores não encontrados
             if (!existeNoManual && !existeNoMapa) {
-                fatoresNaoEncontrados.add(nomeFator);
+                log.debug("Fator '{}' (length={}) NÃO encontrado - Manual: {} | Mapa: {}", 
+                    nomeFatorTrimmed, nomeFatorTrimmed.length(), existeNoManual, existeNoMapa);
+                fatoresNaoEncontrados.add(nomeFatorTrimmed);
             }
         }
     }
 
     // Alterado: Recebe contador de ordem para funções de transação
-    private void salvarFuncaoTransacaoExcel(Set<FuncaoTransacao> funcaotransacao, Analise analise, Map<String, Long> mapaFatorAjuste, java.util.concurrent.atomic.AtomicLong ordemTransacao) {
+    private void salvarFuncaoTransacaoExcel(Set<FuncaoTransacao> funcaotransacao,
+                                        Analise analise,
+                                        Map<String, Long> mapaFatorAjuste,
+                                        AtomicLong ordemTransacao) {
+        
+        log.info("=== SALVANDO {} FUNÇÕES DE TRANSAÇÃO ===", funcaotransacao.size());
+        
         funcaotransacao.stream()
             .sorted(Comparator.comparing(FuncaoTransacao::getId, Comparator.nullsFirst(Comparator.naturalOrder())))
             .forEach(funcaoTransacao -> {
+
+                // Alterado: Log específico para funções INM
+                if (funcaoTransacao.getTipo() == TipoFuncaoTransacao.INM) {
+                    log.info("Persistindo FT INM '{}' - Ordem: {} - Quantidade ANTES cópia: {}", 
+                        funcaoTransacao.getName(), 
+                        funcaoTransacao.getOrdem(),
+                        funcaoTransacao.getQuantidade());
+                    
+                    // Alterado: Validação crítica - ordem de INM não pode ser null
+                    if (funcaoTransacao.getOrdem() == null) {
+                        throw new RuntimeException(
+                            String.format("ERRO CRÍTICO: Função INM '%s' com ordem NULL! " +
+                                "Isso indica falha no processamento da extração.", 
+                                funcaoTransacao.getName())
+                        );
+                    }
+                } else {
+                    log.debug("Processando FT normal '{}' - Ordem: {} - Quantidade: {}", 
+                        funcaoTransacao.getName(), 
+                        funcaoTransacao.getOrdem(),
+                        funcaoTransacao.getQuantidade());
+                }
                 // Alterado: Criar nova instância manualmente, copiando apenas campos primitivos
                 FuncaoTransacao novaFuncao = new FuncaoTransacao();
                 novaFuncao.setId(null); // Garantir que é transient
@@ -1001,10 +1099,13 @@ public class AnaliseService extends BaseService {
                 novaFuncao.setTipo(funcaoTransacao.getTipo());
                 novaFuncao.setComplexidade(funcaoTransacao.getComplexidade());
                 novaFuncao.setPf(funcaoTransacao.getPf());
+                
                 novaFuncao.setGrossPF(funcaoTransacao.getGrossPF());
                 novaFuncao.setDetStr(funcaoTransacao.getDetStr());
                 novaFuncao.setStatusFuncao(funcaoTransacao.getStatusFuncao());
+                novaFuncao.setOrdem(funcaoTransacao.getOrdem());
                 novaFuncao.setQuantidade(funcaoTransacao.getQuantidade());
+                log.info("FT '{}' - Quantidade APÓS cópia: {}", funcaoTransacao.getName(), novaFuncao.getQuantidade());
                 novaFuncao.setFtrStr(funcaoTransacao.getFtrStr());
                 
                 // Copiar FatorAjuste
@@ -1018,9 +1119,33 @@ public class AnaliseService extends BaseService {
                 
                 novaFuncao.setAnalise(analise);
                 novaFuncao.setEquipe(null);
-                // Alterado: Setar ordem sequencial para funções de transação
-                novaFuncao.setOrdem(ordemTransacao.getAndIncrement());
+                
+                // Excluído: Linha que sobrescrevia a ordem já copiada da extração (linha 1103)
+                // A ordem já foi corretamente definida durante a extração (uploadExcel)
+                // e copiada na linha 1103. Não deve ser sobrescrita aqui.
+                
                 verificarFuncoes(novaFuncao, analise, mapaFatorAjuste);
+                
+                // Alterado: Cálculo do GrossPF baseado no Fator de Ajuste (APÓS verificarFuncoes)
+                // Para funções INM, grosspf sempre é igual a pf (multiplicação por 1) - não recalcular
+                if (novaFuncao.getTipo() != TipoFuncaoTransacao.INM) {
+                    if (novaFuncao.getFatorAjuste() != null && novaFuncao.getFatorAjuste().getFator() != null) {
+                        BigDecimal fator = novaFuncao.getFatorAjuste().getFator();
+                        // Fator vem como 100, 50, etc.
+                        // Se fator != 100 e != 0
+                        if (fator.compareTo(new BigDecimal("100")) != 0 && fator.compareTo(BigDecimal.ZERO) != 0) {
+                            // Fator Decimal = Fator / 100
+                            BigDecimal fatorDecimal = fator.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+                            // GrossPF = PF / FatorDecimal
+                            BigDecimal grossPFCalculado = novaFuncao.getPf().divide(fatorDecimal, 4, RoundingMode.HALF_UP);
+                            novaFuncao.setGrossPF(grossPFCalculado);
+                            log.info("FT '{}' - Recalculado GrossPF: PF={} / (Fator={}/100) -> GrossPF={}", 
+                                novaFuncao.getName(), novaFuncao.getPf(), fator, grossPFCalculado);
+                        }
+                    }
+                } else {
+                    log.info("FT INM '{}' - GrossPF mantido igual a PF: {}", novaFuncao.getName(), novaFuncao.getPf());
+                }
                 
                 // Alterado: Criar novos Ders/Alrs ANTES de salvar a função
                 Set<Der> novosDers = new HashSet<>();
@@ -1055,6 +1180,10 @@ public class AnaliseService extends BaseService {
 
                 setarFuncionalidadeFuncao(novaFuncao, analise);
                 analiseFacade.salvarFuncaoTransacao(novaFuncao);
+
+                log.debug("FT '{}' salva com ordem: {}", 
+                     novaFuncao.getName(), 
+                     novaFuncao.getOrdem());
             });
     }
 
@@ -1072,6 +1201,7 @@ public class AnaliseService extends BaseService {
                 novaFuncao.setTipo(funcaoDado.getTipo());
                 novaFuncao.setComplexidade(funcaoDado.getComplexidade());
                 novaFuncao.setPf(funcaoDado.getPf());
+                
                 novaFuncao.setGrossPF(funcaoDado.getGrossPF());
                 novaFuncao.setDetStr(funcaoDado.getDetStr());
                 novaFuncao.setStatusFuncao(funcaoDado.getStatusFuncao());
@@ -1091,6 +1221,22 @@ public class AnaliseService extends BaseService {
                 // Alterado: Setar ordem sequencial para funções de dados
                 novaFuncao.setOrdem(ordemDados.getAndIncrement());
                 verificarFuncoes(novaFuncao, analise, mapaFatorAjuste);
+                
+                // Alterado: Cálculo do GrossPF baseado no Fator de Ajuste (APÓS verificarFuncoes)
+                if (novaFuncao.getFatorAjuste() != null && novaFuncao.getFatorAjuste().getFator() != null) {
+                    BigDecimal fator = novaFuncao.getFatorAjuste().getFator();
+                    // Fator vem como 100, 50, etc.
+                    // Se fator != 100 e != 0
+                    if (fator.compareTo(new BigDecimal("100")) != 0 && fator.compareTo(BigDecimal.ZERO) != 0) {
+                        // Fator Decimal = Fator / 100
+                        BigDecimal fatorDecimal = fator.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+                        // GrossPF = PF / FatorDecimal
+                        BigDecimal grossPFCalculado = novaFuncao.getPf().divide(fatorDecimal, 4, RoundingMode.HALF_UP);
+                        novaFuncao.setGrossPF(grossPFCalculado);
+                        log.info("FD '{}' - Recalculado GrossPF: PF={} / (Fator={}/100) -> GrossPF={}", 
+                            novaFuncao.getName(), novaFuncao.getPf(), fator, grossPFCalculado);
+                    }
+                }
                 
                 // Alterado: Criar novos Ders/Rlrs ANTES de salvar a função
                 Set<Der> novosDers = new HashSet<>();
@@ -1730,17 +1876,39 @@ public class AnaliseService extends BaseService {
             log.info("  - Método Contagem: {}", analise.getMetodoContagem());
             log.info("  - Tipo Análise: {}", analise.getTipoAnalise());
             
+            // ATUALIZADO: Processa funções NORMAIS primeiro
+            // ATUALIZADO: Chamadas corrigidas com argumentos corretos
             if (analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)) {
+                // ✅ CORRETO: Indicativa processa apenas funções de dados (4 argumentos)
                 setarIndicativaExcelUpload(workbook, funcaoDados, analise, ordemDados);
-            } else {
-                // INM usa o contador de transação, pois as funções INM continuam a numeração das funções de transação
-                setarInmExcelUpload(workbook, funcaotransacao, funcaoDados, analise, ordemTransacao);
-            }
-            if (analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
+
+            } else if (analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
+                // ✅ CORRETO: Detalhada processa dados e transações (6 argumentos)
                 setarExcelDetalhadaUpload(workbook, funcaoDados, funcaotransacao, analise, ordemDados, ordemTransacao);
+
             } else if (analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)) {
+                // ✅ CORRETO: Estimada processa dados e transações (6 argumentos)
                 setarExcelEstimadaUpload(workbook, funcaoDados, funcaotransacao, analise, ordemDados, ordemTransacao);
             }
+
+            log.info("Funções normais processadas - FD: {}, FT: {}", funcaoDados.size(), funcaotransacao.size());
+            log.info("Última ordem FT: {}", ordemTransacao.get() - 1);
+
+            // ATUALIZADO: Processa funções INM DEPOIS (se não for Indicativa)
+            if (!analise.getMetodoContagem().equals(MetodoContagem.INDICATIVA)) {
+                log.info("=== INICIANDO PROCESSAMENTO INM ===");
+                
+                // Alterado: Criar contador separado para INM que começa do último valor de FT + 1
+                java.util.concurrent.atomic.AtomicLong ordemInm = new java.util.concurrent.atomic.AtomicLong(ordemTransacao.get());
+                log.info("Contador INM criado iniciando em: {}", ordemInm.get());
+
+                setarInmExcelUpload(workbook, funcaotransacao, funcaoDados, analise, ordemInm);
+
+                log.info("INM processado. Total FT (com INM): {}", funcaotransacao.size());
+                log.info("Última ordem após INM: {}", ordemInm.get() - 1);
+            }
+
+            // Atribui funções à análise
             analise.setFuncaoDados(funcaoDados);
             analise.setFuncaoTransacao(funcaotransacao);
             
@@ -1765,14 +1933,16 @@ public class AnaliseService extends BaseService {
             // Alterado: Log detalhes das primeiras 3 funções de transação (para debug)
             if (!funcaotransacao.isEmpty()) {
                 log.info("Primeiras Funções de Transação:");
-                funcaotransacao.stream().limit(3).forEach(ft -> {
-                    String nomeModulo = ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null 
-                        ? ft.getFuncionalidade().getModulo().getNome() : "null";
-                    String nomeFuncionalidade = ft.getFuncionalidade() != null 
-                        ? ft.getFuncionalidade().getNome() : "null";
-                    log.info("    FT: {} | Módulo: {} | Funcionalidade: {} | Tipo: {} | Ordem: {}", 
-                        ft.getName(), nomeModulo, nomeFuncionalidade, ft.getTipo(), ft.getOrdem());
-                });
+                funcaotransacao.stream()
+                    .limit(3)
+                    .forEach(ft -> {
+                        String nomeModulo = ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null 
+                            ? ft.getFuncionalidade().getModulo().getNome() : "NULL";
+                        String nomeFuncionalidade = ft.getFuncionalidade() != null 
+                            ? ft.getFuncionalidade().getNome() : "NULL";
+                        log.info("    FT: {} | Módulo: {} | Funcionalidade: {} | Tipo: {} | Ordem: {} | Quantidade: {}",
+                            ft.getName(), nomeModulo, nomeFuncionalidade, ft.getTipo(), ft.getOrdem(), ft.getQuantidade());
+                    });
             }
             
             log.info("===== FIM UPLOAD EXCEL =====");
@@ -1916,6 +2086,11 @@ public class AnaliseService extends BaseService {
         
         setarDerAlrFuncaoTransacao(funcaoTransacao, row);
         setarSustentacaoStatus(funcaoTransacao, row);
+        
+        // Alterado: Coluna J (índice 9) - Quantidade
+        double quantidade = getCellValueAsNumber(row, 9);
+        funcaoTransacao.setQuantidade((int) quantidade);
+        
         funcaoTransacao.setOrdem(ordem.getAndIncrement());
         return funcaoTransacao;
     }
@@ -1938,7 +2113,8 @@ public class AnaliseService extends BaseService {
         for (int i = 10; i < 1081; i++) {
             XSSFRow row = excelSheetEstimada.getRow(i);
             if (row != null && getCellValueAsNumber(row, 0) > 0) {
-                String tipo = getCellValueAsString(row, 6); // Coluna G
+                // Alterado: Coluna H (índice 7) - Tipo da função (antes coluna G)
+                String tipo = getCellValueAsString(row, 7);
                 if (tipoFuncaoDados().contains(tipo)) {
                     funcaoDados.add(setarFuncaoDadosEstimada(row, analise, ordemDados));
                 } else if (tipoFuncaoTransacao().contains(tipo)) {
@@ -1948,20 +2124,36 @@ public class AnaliseService extends BaseService {
         }
     }
 
+    // Alterado: Novo mapeamento de colunas para análise Estimada
     private void setarModuloFuncionalidadeEstimada(FuncaoAnalise funcao, XSSFRow row) {
         Funcionalidade funcionalidade = new Funcionalidade();
         Modulo modulo = new Modulo();
         FatorAjuste fatorAjuste = new FatorAjuste();
+        
         funcao.setId((long) getCellValueAsNumber(row, 0));
-        modulo.setNome(getCellValueAsString(row, 3)); // Coluna D
+        
+        // Alterado: Coluna E (índice 4) - Módulo
+        modulo.setNome(getCellValueAsString(row, 4));
         funcionalidade.setModulo(modulo);
-        funcionalidade.setNome(getCellValueAsString(row, 4)); // Coluna E
+        
+        // Alterado: Coluna F (índice 5) - Funcionalidade
+        funcionalidade.setNome(getCellValueAsString(row, 5));
         funcao.setFuncionalidade(funcionalidade);
-        funcao.setName(getCellValueAsString(row, 5)); // Coluna F
-        fatorAjuste.setNome(getCellValueAsString(row, 1)); // Coluna B
-        funcao.setFatorAjuste(fatorAjuste);
+        
+        // Alterado: Coluna G (índice 6) - Nome da função
+        funcao.setName(getCellValueAsString(row, 6));
+        
+        // Alterado: Fator de Ajuste com trim() e validação (consistência com Detalhada)
+        String nomeFatorAjuste = getCellValueAsString(row, 1); // Coluna B
+        if (nomeFatorAjuste != null && !nomeFatorAjuste.trim().isEmpty()) {
+            fatorAjuste.setNome(nomeFatorAjuste.trim());
+            funcao.setFatorAjuste(fatorAjuste);
+        } else {
+            log.warn("Função '{}' não tem Fator de Ajuste na planilha (Coluna B vazia)", funcao.getName());
+        }
     }
 
+    // Alterado: Novo mapeamento de colunas e complexidade fixa para análise Estimada
     private FuncaoDados setarFuncaoDadosEstimada(XSSFRow row, Analise analise, java.util.concurrent.atomic.AtomicLong ordem) {
         FuncaoDados funcaoDados = new FuncaoDados();
         setarModuloFuncionalidadeEstimada(funcaoDados, row);
@@ -1969,7 +2161,8 @@ public class AnaliseService extends BaseService {
         // Alterado: Persistir/Vincular Funcionalidade e Módulo
         setarFuncionalidadeFuncao(funcaoDados, analise);
         
-        String tipo = getCellValueAsString(row, 6); // Coluna G
+        // Alterado: Coluna H (índice 7) - Tipo da função (antes coluna G)
+        String tipo = getCellValueAsString(row, 7);
         switch (tipo) {
             case METODO_AIE:
                 funcaoDados.setTipo(TipoFuncaoDados.AIE);
@@ -1984,14 +2177,21 @@ public class AnaliseService extends BaseService {
                 break;
         }
         
-        // Alterado: Usar helper para ler Complexidade e PF (Colunas N e Q)
-        setarFuncaoComplexidade(funcaoDados, row);
+        // Alterado: Complexidade FIXA = BAIXA para funções de dados (análise Estimada)
+        funcaoDados.setComplexidade(Complexidade.BAIXA);
         
-        funcaoDados.setSustantation(getCellValueAsString(row, 17)); // Coluna R
+        // Alterado: Coluna I (índice 8) - PF (mantém posição)
+        funcaoDados.setPf(BigDecimal.valueOf(getCellValueAsNumber(row, 8)));
+        funcaoDados.setGrossPF(BigDecimal.valueOf(getCellValueAsNumber(row, 8)));
+        
+        // Alterado: Coluna J (índice 9) - Sustentação (antes coluna R)
+        funcaoDados.setSustantation(getCellValueAsString(row, 9));
+        
         funcaoDados.setOrdem(ordem.getAndIncrement());
         return funcaoDados;
     }
 
+    // Alterado: Novo mapeamento de colunas e complexidade fixa para análise Estimada
     private FuncaoTransacao setarFuncaoTransacaoEstimada(XSSFRow row, Analise analise, java.util.concurrent.atomic.AtomicLong ordem) {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         setarModuloFuncionalidadeEstimada(funcaoTransacao, row);
@@ -1999,16 +2199,26 @@ public class AnaliseService extends BaseService {
         // Alterado: Persistir/Vincular Funcionalidade e Módulo
         setarFuncionalidadeFuncao(funcaoTransacao, analise);
         
-        setarTipoFuncaoTransacao(funcaoTransacao, getCellValueAsString(row, 6)); // Coluna G
+        // Alterado: Coluna H (índice 7) - Tipo da função (antes coluna G)
+        setarTipoFuncaoTransacao(funcaoTransacao, getCellValueAsString(row, 7));
         
-        // Alterado: Usar helper para ler Complexidade e PF (Colunas N e Q)
-        setarFuncaoComplexidade(funcaoTransacao, row);
+        // Alterado: Complexidade FIXA = MEDIA para funções de transação (análise Estimada)
+        funcaoTransacao.setComplexidade(Complexidade.MEDIA);
         
-        funcaoTransacao.setSustantation(getCellValueAsString(row, 17)); // Coluna R
+        // Alterado: Coluna I (índice 8) - PF (mantém posição)
+        funcaoTransacao.setPf(BigDecimal.valueOf(getCellValueAsNumber(row, 8)));
+        funcaoTransacao.setGrossPF(BigDecimal.valueOf(getCellValueAsNumber(row, 8)));
+        
+        // Alterado: Coluna J (índice 9) - Sustentação (antes coluna R)
+        funcaoTransacao.setSustantation(getCellValueAsString(row, 9));
+        
+        // Alterado: Coluna J (índice 9) - Quantidade
+        double quantidade = getCellValueAsNumber(row, 9);
+        funcaoTransacao.setQuantidade((int) quantidade);
+        
         funcaoTransacao.setOrdem(ordem.getAndIncrement());
         return funcaoTransacao;
     }
-
     private void setarTipoFuncaoTransacao(FuncaoTransacao funcaoTransacao,String tipo) {
         switch (tipo) {
             case METODO_CE:
@@ -2129,6 +2339,7 @@ public class AnaliseService extends BaseService {
                 funcaoDTO.setStatusFuncao(ft.getStatusFuncao());
                 funcaoDTO.setImpacto(ft.getImpacto());
                 funcaoDTO.setOrdem(ft.getOrdem());
+                funcaoDTO.setQuantidade(ft.getQuantidade()); // Alterado: Adicionado para preservar quantidade no DTO de upload
                 
                 // Converter funcionalidade e módulo
                 if (ft.getFuncionalidade() != null) {
@@ -2197,7 +2408,11 @@ public class AnaliseService extends BaseService {
     public void setarResumoExcelUpload(XSSFWorkbook excelFile, Analise analise) {
         XSSFSheet sheet = excelFile.getSheet(RESUMO);
         analise.setNumeroOs(sheet.getRow(3).getCell(1).getStringCellValue());
-        analise.setPropositoContagem(sheet.getRow(9).getCell(0).getStringCellValue());
+        
+        // Alterado: Usar helper para tratar células que podem conter fórmulas
+        // Linha 10 (índice 9), Coluna A (índice 0)
+        analise.setPropositoContagem(getCellValueAsString(sheet.getRow(9), 0));
+        
         analise.setEscopo(sheet.getRow(12).getCell(0).getStringCellValue());
         
             // Alterado: Removida a lógica de buscar o Sistema pela planilha.
@@ -2293,12 +2508,21 @@ public class AnaliseService extends BaseService {
     // Planilha INM
     // Alterado: Refatorado completamente - Aba AFP-INM para análises Estimada ou Detalhada
     // Todas as funções INM são do tipo FuncaoTransacao com tipo 'INM'
-    public void setarInmExcelUpload(XSSFWorkbook excelFile, Set<FuncaoTransacao> funcaotransacao, Set<FuncaoDados> funcaoDados, Analise analise, java.util.concurrent.atomic.AtomicLong ordemTransacao) {
-        // Alterado: Nome correto da aba
-        XSSFSheet excelSheetINM = excelFile.getSheet("AFP -INM");
+    public void setarInmExcelUpload(
+        XSSFWorkbook excelFile,
+        Set<FuncaoTransacao> funcaotransacao,
+        Set<FuncaoDados> funcaoDados,
+        Analise analise,
+        AtomicLong ordemInm // Alterado: Contador SEPARADO exclusivo para funções INM
+    ) {
+        
+        log.info("=== PROCESSANDO ABA AFP - INM ===");
+        log.info("Ordem inicial para INM (contador separado): {}", ordemInm.get());
+
+        XSSFSheet excelSheetINM = excelFile.getSheet("AFP - INM");
         
         if (excelSheetINM == null) {
-            log.warn("Aba 'AFP -INM' não encontrada no arquivo Excel");
+            log.warn("Aba 'AFP - INM' não encontrada no arquivo Excel");
             return;
         }
         
@@ -2311,29 +2535,38 @@ public class AnaliseService extends BaseService {
         
         log.info("Processando aba AFP-INM - Funções de Transação tipo INM");
         
+        int countINM = 0;
         // Alterado: Iteração correta - linha 11 (índice 10) até linha 382 (índice 381)
         for (int i = 10; i < 382; i++) {
             XSSFRow row = excelSheetINM.getRow(i);
             
             // Alterado: Valida se linha existe e tem conteúdo na coluna B (Fator de Ajuste)
             if (row != null && !getCellValueAsString(row, 1).trim().isEmpty()) {
-                FuncaoTransacao funcaoINM = setarFuncaoTransacaoInm(row, analise, ordemTransacao);
+                FuncaoTransacao funcaoINM = setarFuncaoTransacaoInm(row, analise, ordemInm);
                 if (funcaoINM != null) {
                     funcaotransacao.add(funcaoINM);
+                    countINM++;
+                    log.debug("INM '{}' - Ordem: {}", funcaoINM.getName(), funcaoINM.getOrdem());
                 }
             }
         }
         
-        log.info("Funções INM importadas. Total de funções de transação agora: {}", funcaotransacao.size());
+        log.info("Total de funções INM processadas: {}", countINM);
+        log.info("Ordem final após INM: {}", ordemInm.get() - 1);
+        log.info("=== FIM PROCESSAMENTO INM ===");
     }
 
     // Alterado: Novo método para criar Função de Transação INM com mapeamento correto
-    private FuncaoTransacao setarFuncaoTransacaoInm(XSSFRow row, Analise analise, java.util.concurrent.atomic.AtomicLong ordemTransacao) {
+    private FuncaoTransacao setarFuncaoTransacaoInm(XSSFRow row, Analise analise, java.util.concurrent.atomic.AtomicLong ordemInm) {
         FuncaoTransacao funcaoTransacao = new FuncaoTransacao();
         
         try {
             // Alterado: Tipo fixo para todas as funções INM
             funcaoTransacao.setTipo(TipoFuncaoTransacao.INM);
+            
+            // Alterado: Atribuir ordem PRIMEIRO, antes de qualquer validação que possa causar return
+            // Isso garante que a função sempre terá ordem, mesmo se houver erro posterior
+            funcaoTransacao.setOrdem(ordemInm.getAndIncrement());
             
             // Alterado: Mapeamento correto das colunas
             // Coluna B (1): Fator de Ajuste
@@ -2372,10 +2605,15 @@ public class AnaliseService extends BaseService {
             
             // Alterado: Coluna J (9): Quantidade
             double quantidade = getCellValueAsNumber(row, 9);
+            if (quantidade < 0) {
+                log.warn("INM linha {}: Quantidade negativa ({}) ajustada para 1", row.getRowNum() + 1, quantidade);
+                quantidade = 1;
+            }
             funcaoTransacao.setQuantidade((int) quantidade);
+            log.debug("INM '{}' - Quantidade: {}", funcaoTransacao.getName(), (int)quantidade);
             
             // Alterado: Coluna M (12): Tipo do cálculo (Unidade ou Percentual)
-            String tipoCalculo = getCellValueAsString(row, 12);
+            // String tipoCalculo = getCellValueAsString(row, 12);
             // TODO: Verificar se existe campo específico para armazenar tipo de cálculo
             // Por enquanto, pode ser armazenado em observações ou campo customizado
             
@@ -2403,13 +2641,11 @@ public class AnaliseService extends BaseService {
             String observacao = getCellValueAsString(row, 19);
             funcaoTransacao.setSustantation(observacao != null ? observacao.trim() : "");
             
-            // Alterado: Ordem sequencial - continua a partir da última função de transação
-            funcaoTransacao.setOrdem(ordemTransacao.getAndIncrement());
-            
             // Alterado: Status e Impacto ficam como null (não definidos para funções INM)
             funcaoTransacao.setStatusFuncao(null);
             funcaoTransacao.setImpacto(null);
             
+            log.debug("INM '{}' - Ordem atribuída: {}", funcaoTransacao.getName(), funcaoTransacao.getOrdem());
             log.debug("Função INM criada: {} - Módulo: {} - Funcionalidade: {} - Ordem: {}", 
                 funcaoTransacao.getName(), nomeModulo, nomeFuncionalidade, funcaoTransacao.getOrdem());
             

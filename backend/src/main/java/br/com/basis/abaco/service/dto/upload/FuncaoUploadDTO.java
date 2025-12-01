@@ -32,6 +32,7 @@ public class FuncaoUploadDTO implements Serializable {
     private StatusFuncao statusFuncao;
     private ImpactoFatorAjuste impacto;
     private Long ordem;
+    private Integer quantidade; // Alterado: Campo adicionado para preservar quantidade durante importação Excel
     private FatorAjusteUploadDTO fatorAjuste;
     
     private Set<DerDTO> ders = new HashSet<>();
@@ -127,6 +128,14 @@ public class FuncaoUploadDTO implements Serializable {
     
     public void setOrdem(Long ordem) {
         this.ordem = ordem;
+    }
+
+    public Integer getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(Integer quantidade) {
+        this.quantidade = quantidade;
     }
 
     public FatorAjusteUploadDTO getFatorAjuste() {
