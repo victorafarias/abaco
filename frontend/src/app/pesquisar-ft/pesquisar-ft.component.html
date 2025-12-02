@@ -72,7 +72,9 @@
                 </div>
                 <div class="ui-g" style="margin-bottom: 05px">
                     <p-table [value]="fn" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
-                        [(selection)]="selections" #table>
+                        [(selection)]="selections" #table (onRowSelect)="onRowSelect($event)"
+                        (onRowUnselect)="onRowUnselect($event)"
+                        (onHeaderCheckboxToggle)="onHeaderCheckboxToggle($event)">
                         <ng-template pTemplate="caption">
                             {{isFuncaoDados? 'Função de dados':'Função de transação'}}
                         </ng-template>
@@ -135,8 +137,8 @@
                         <label>Fundamentação</label>
                         <span class="md-inputfield">
                             <p-editor maxlength="5000" [rows]="3" id="idEvidenciaFormFuncaoDados" [cols]="180"
-                                [formats]="formatsEditor" pInputTextarea
-                                name="funcaoDadosSustentacao" [(ngModel)]="fundamentacao">
+                                [formats]="formatsEditor" pInputTextarea name="funcaoDadosSustentacao"
+                                [(ngModel)]="fundamentacao">
                                 <!-- Inicio configuração toolbar-->
                                 <p-header>
                                     <span class="ql-formats">
@@ -245,8 +247,8 @@
                     {{analise.pfTotal}}
                 </td>
                 <td>
-                    <a target="_blank" [routerLink]="'/analise/'+analise.id+'/view'" style="text-align:left" pButton type="button"
-                        class="blue-btn" icon="ui-icon-arrowstop-1-e"></a>
+                    <a target="_blank" [routerLink]="'/analise/'+analise.id+'/view'" style="text-align:left" pButton
+                        type="button" class="blue-btn" icon="ui-icon-arrowstop-1-e"></a>
                 </td>
             </tr>
         </ng-template>

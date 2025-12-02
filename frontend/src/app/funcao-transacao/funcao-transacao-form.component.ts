@@ -383,6 +383,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(this.analise.metodoContagem,
             this.currentFuncaoTransacao,
             this.analise.contrato.manual);
+        let ordem = this.funcoesTransacoes.length + 1;
         for (const nome of this.parseResult.textos) {
             lstFuncaotransacaoWithExist.push(
                 this.funcaoTransacaoService.existsWithName(
@@ -393,6 +394,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             );
             const funcaoTransacaoMultp: FuncaoTransacao = funcaoTransacaoCalculada.clone();
             funcaoTransacaoMultp.name = nome;
+            funcaoTransacaoMultp.ordem = ordem++;
             lstFuncaotransacao.push(funcaoTransacaoMultp);
         }
         forkJoin(lstFuncaotransacaoWithExist).subscribe(respFind => {

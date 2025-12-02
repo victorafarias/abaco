@@ -389,14 +389,16 @@ public class Analise implements Serializable, ReportObject {
     }
 
     public String getNomeUser(){
-        String ponto = ". ";
-        String nomeUser = "";
+        StringBuilder nomeUser = new StringBuilder();
         if (users != null) {
-            for(User nome : users){
-                nomeUser = nomeUser.concat(nome.getFirstName()).concat(ponto);
+            for(User user : users){
+                if(nomeUser.length() > 0){
+                    nomeUser.append(", ");
+                }
+                nomeUser.append(user.getFirstName()).append(" ").append(user.getLastName());
             }
         }
-        return nomeUser;
+        return nomeUser.toString();
     }
 
 

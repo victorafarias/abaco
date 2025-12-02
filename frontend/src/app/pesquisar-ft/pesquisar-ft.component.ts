@@ -409,8 +409,30 @@ export class PesquisarFtComponent implements OnInit {
     }
 
 
+    selectedFunctionsOrdered: any[] = [];
+
     performSearch() {
         this.recarregarDataTable();
+    }
+
+    onRowSelect(event) {
+        this.selectedFunctionsOrdered.push(event.data);
+    }
+
+    onRowUnselect(event) {
+        const index = this.selectedFunctionsOrdered.indexOf(event.data);
+        if (index > -1) {
+            this.selectedFunctionsOrdered.splice(index, 1);
+        }
+    }
+
+    onHeaderCheckboxToggle(event) {
+        if (event.checked) {
+            this.selectedFunctionsOrdered = [];
+            this.selectedFunctionsOrdered.push(...this.fn);
+        } else {
+            this.selectedFunctionsOrdered = [];
+        }
     }
 
     montarFuncoes() {
@@ -425,7 +447,25 @@ export class PesquisarFtComponent implements OnInit {
             let funcoesFTImportar: FuncaoImportarDTO = new FuncaoImportarDTO();
 
             funcoesFTImportar.idAnalise = this.analise.id;
-            funcoesFTImportar.funcoesParaImportar = this.selections;
+
+            // Ensure selectedFunctionsOrdered contains only currently selected items and handles any edge cases
+            // We filter selectedFunctionsOrdered to ensure it only contains items that are actually in this.selections
+            // This handles cases where selections might be modified externally or via other means, though unlikely here.
+            // Also, if selectedFunctionsOrdered is empty but selections is not (e.g. pre-selection), we fallback or sync.
+            // Given the requirement, we prioritize selectedFunctionsOrdered.
+
+            // Sync check: if selections has items not in selectedFunctionsOrdered, add them at the end.
+            if (this.selections.length !== this.selectedFunctionsOrdered.length) {
+                this.selections.forEach(sel => {
+                    if (!this.selectedFunctionsOrdered.includes(sel)) {
+                        this.selectedFunctionsOrdered.push(sel);
+                    }
+                });
+                // Remove items from ordered list that are no longer in selections
+                this.selectedFunctionsOrdered = this.selectedFunctionsOrdered.filter(item => this.selections.includes(item));
+            }
+
+            funcoesFTImportar.funcoesParaImportar = this.selectedFunctionsOrdered;
             funcoesFTImportar.fundamentacao = this.fundamentacao
             funcoesFTImportar.idDeflator = this.novoDeflator.id;
             funcoesFTImportar.quantidadeINM = this.quantidadeINM;
@@ -447,6 +487,7 @@ export class PesquisarFtComponent implements OnInit {
                     })
 
                     this.selections = [];
+                    this.selectedFunctionsOrdered = [];
                     let funcoesCalculadas: FuncaoTransacao[] = [];
 
                     response?.funcaoTransacao?.forEach(funcao => {
@@ -477,6 +518,7 @@ export class PesquisarFtComponent implements OnInit {
                         }
                     })
                     this.selections = [];
+                    this.selectedFunctionsOrdered = [];
                     let funcoesCalculadas: FuncaoDados[] = [];
                     response?.funcaoDados?.forEach(funcao => {
                         let funcaoCalcular = new FuncaoDados().copyFromJSON(funcao);
@@ -495,6 +537,15 @@ export class PesquisarFtComponent implements OnInit {
         }
     }
 
+    // Alterado: Método adicionado para ordenar a lista por Módulo, Funcionalidade e Nome.
+    private sortList(list: any[]) {
+        return _.sortBy(list, [
+            (item) => item.nomeModulo ? item.nomeModulo.toLowerCase() : '',
+            (item) => item.nomeFuncionalidade ? item.nomeFuncionalidade.toLowerCase() : '',
+            (item) => item.name ? item.name.toLowerCase() : ''
+        ]);
+    }
+
     public recarregarDataTable() {
         this.funcionalidadeAtual.id = this.funcionalidadeAtual && this.funcionalidadeAtual.id ? this.funcionalidadeAtual.id : 0;
         this.moduloSelecionado.id = this.moduloSelecionado && this.moduloSelecionado.id ? this.moduloSelecionado.id : 0;
@@ -504,12 +555,14 @@ export class PesquisarFtComponent implements OnInit {
             if (this.metodoContagem === 1) {
                 this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             } else {
                 this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             }
 
@@ -518,12 +571,14 @@ export class PesquisarFtComponent implements OnInit {
             if (this.metodoContagem === 1) {
                 this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             } else {
                 this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             }
         }

@@ -75,6 +75,7 @@ public class FuncaoTransacaoService {
         AbacoMensagens mensagens = new AbacoMensagens();
         FatorAjuste fator = fatorAjusteRepository.findOne(funcaoImportarDTO.getIdDeflator());
         List<FuncaoTransacao> funcoesAdicionadas = new ArrayList<>();
+        Long ordem = 1L;
         for(PEAnaliticoDTO funcao: funcaoImportarDTO.getFuncoesParaImportar()){
             if(this.verificarSeExisteFuncao(funcao, funcaoImportarDTO)){
                 mensagens.adicionarNovoErro("Já existe uma função com o nome "+funcao.getName()+" na funcionalidade "+funcao.getNomeFuncionalidade());
@@ -88,6 +89,7 @@ public class FuncaoTransacaoService {
             funcaoParaSalvar.setId(null);
             funcaoParaSalvar.setAnalise(analise);
             funcaoParaSalvar.setFatorAjuste(fator);
+            funcaoParaSalvar.setOrdem(ordem++);
 
             funcaoParaSalvar = this.setarFuncaoTransacao(analise, funcaoParaSalvar);
 

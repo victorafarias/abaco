@@ -111,7 +111,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         { label: 'AIE - Arquivo de Interface Externa', value: 'AIE' }
     ];
 
-    crud: string[] = ['Excluir', 'Editar', 'Inserir', 'Pesquisar', 'Consultar'];
+    crud: string[] = ['Pesquisar', 'Cadastrar', 'Editar', 'Visualizar', 'Excluir'];
 
     selectButtonMultiple: boolean = false;
     mostrarDialogEditarEmLote: boolean = false;
@@ -542,6 +542,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         const funcaoDadosCalculada = Calculadora.calcular(this.analise.metodoContagem,
             this.seletedFuncaoDados,
             this.analise.contrato.manual);
+        let ordem = this.funcoesDados.length + 1;
         for (const nome of this.parseResult.textos) {
             lstFuncaoDadosWithExist.push(
                 this.funcaoDadosService.existsWithName(
@@ -552,6 +553,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             );
             const funcaoDadosMultp: FuncaoDados = funcaoDadosCalculada.clone();
             funcaoDadosMultp.name = nome;
+            funcaoDadosMultp.ordem = ordem++;
             lstFuncaoDados.push(funcaoDadosMultp);
         }
         forkJoin(lstFuncaoDadosWithExist).subscribe(listExistWithName => {
@@ -893,9 +895,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         const lstFuncaoTransacaoToVerify: Observable<any>[] = [];
         const lstFuncaoTransacaoToInclud: Observable<any>[] = [];
         this.blockUiService.show();
-        this.funcaoDadosService.getById(funcaoDadosSelecionada.id).subscribe(funcaoDados => {
+        forkJoin([
+            this.funcaoDadosService.getById(funcaoDadosSelecionada.id),
+            this.funcaoTransacaoService.getVwFuncaoTransacaoByIdAnalise(this.analise.id)
+        ]).subscribe(([funcaoDados, currentFTs]) => {
+            let maxOrder = 0;
+            if (currentFTs) {
+                currentFTs.forEach(f => {
+                    if (f.ordem && f.ordem > maxOrder) {
+                        maxOrder = f.ordem;
+                    }
+                });
+            }
+            let nextOrder = maxOrder + 1;
+
             this.crud.forEach(element => {
-                lstFuncaoTransacaoCrud.push(this.gerarFuncaoTransacao(element, funcaoDados));
+                const ft = this.gerarFuncaoTransacao(element, funcaoDados);
+                ft.ordem = nextOrder++;
+                lstFuncaoTransacaoCrud.push(ft);
             });
             lstFuncaoTransacaoCrud.forEach(funcaoTransacaoAtual => {
                 lstFuncaoTransacaoToVerify.push(
@@ -906,9 +923,9 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
                         funcaoTransacaoAtual.funcionalidade.modulo.id)
                 );
             });
-            forkJoin(lstFuncaoTransacaoToVerify).subscribe(lstFuncaoTranscao => {
+            forkJoin(lstFuncaoTransacaoToVerify).subscribe(lstFuncaoTransacao => {
                 let index = 0;
-                for (const existFuncaoTranasacao of lstFuncaoTranscao) {
+                for (const existFuncaoTranasacao of lstFuncaoTransacao) {
                     if (!existFuncaoTranasacao) {
                         lstFuncaoTransacaoToInclud.push(
                             this.funcaoTransacaoService.create(lstFuncaoTransacaoCrud[index], this.analise.id)
@@ -918,16 +935,20 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
                     }
                     index++;
                 }
-                forkJoin(lstFuncaoTransacaoToInclud).subscribe(funcoesTransacoes => {
-                    funcoesTransacoes.forEach(
-                        () => {
-                            this.pageNotificationService.addCreateMsg(funcoesTransacoes['name']);
-                            this.resetarEstadoPosSalvar();
-                            this.estadoInicial();
-                            this.analiseService.updateSomaPf(this.analise.id).subscribe();
-                        });
+                if (lstFuncaoTransacaoToInclud.length > 0) {
+                    forkJoin(lstFuncaoTransacaoToInclud).subscribe(funcoesTransacoes => {
+                        funcoesTransacoes.forEach(
+                            () => {
+                                this.pageNotificationService.addCreateMsg(funcoesTransacoes['name']);
+                                this.resetarEstadoPosSalvar();
+                                this.estadoInicial();
+                                this.analiseService.updateSomaPf(this.analise.id).subscribe();
+                            });
+                        this.blockUiService.hide();
+                    });
+                } else {
                     this.blockUiService.hide();
-                });
+                }
             });
         });
     }
@@ -938,7 +959,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         ft.funcionalidade = fdSelecionada.funcionalidade;
         if (tipo === 'Pesquisar') {
             ft.tipo = TipoFuncaoTransacao.CE;
-        } else if (tipo === 'Consultar') {
+        } else if (tipo === 'Visualizar') {
             ft.tipo = TipoFuncaoTransacao.CE;
         } else {
             ft.tipo = TipoFuncaoTransacao.EE;

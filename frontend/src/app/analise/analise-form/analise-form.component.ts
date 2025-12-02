@@ -184,7 +184,17 @@ export class AnaliseFormComponent implements OnInit {
         this.statusService.listActive().subscribe(
             lstStatus => {
                 this.statusCombo = lstStatus;
+                this.setDefaultStatus();
             });
+    }
+
+    private setDefaultStatus() {
+        if (this.analise && !this.analise.id && this.statusCombo && this.statusCombo.length > 0) {
+            const statusEmAnalise = this.statusCombo.find(s => s.nome === 'Em Análise');
+            if (statusEmAnalise) {
+                this.analise.status = statusEmAnalise;
+            }
+        }
     }
 
     checkUserAnaliseEquipes() {
@@ -246,6 +256,7 @@ export class AnaliseFormComponent implements OnInit {
                 this.analise.enviarBaseline = true;
                 this.analise.fatorCriticidade = false;
                 this.canEditMetodo = true;
+                this.setDefaultStatus();
             }
         });
     }
