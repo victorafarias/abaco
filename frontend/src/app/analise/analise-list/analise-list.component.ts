@@ -1278,6 +1278,8 @@ export class AnaliseListComponent implements OnInit {
         this.showDialogImportar = false;
         this.analiseImportar = new Analise();
         this.analiseFileExcel = undefined;
+        // Alterado: Limpa a lista de análises importadas para evitar cache ao reabrir o modal
+        this.analisesImportar = [];
         this.carregadaAnalise = false;
     }
 

@@ -384,16 +384,15 @@ public class FuncaoTransacaoResource {
     }
 
     @PatchMapping("/funcaoTransacao/update-pf")
+    @Timed
     public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
+        log.debug("REST request to update PF de Transação em lote");
+        
         if(funcaoPFDTO != null && !funcaoPFDTO.isEmpty()){
-            for (FuncaoPFDTO funcao : funcaoPFDTO) {
-                FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(funcao.getId());
-                funcaoTransacao.setPf(funcao.getPf());
-                funcaoTransacao.setGrossPF(funcao.getGrossPF());
-                funcaoTransacao.setComplexidade(funcao.getComplexidade());
-                funcaoTransacaoRepository.save(funcaoTransacao);
-            }
+            // Delega para o serviço refatorado
+            funcaoTransacaoService.updatePF(funcaoPFDTO);
         }
+        
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

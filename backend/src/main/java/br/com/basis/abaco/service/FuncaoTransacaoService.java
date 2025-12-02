@@ -21,6 +21,10 @@ import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
 import br.com.basis.abaco.service.dto.PEAnaliticoDTO;
 import br.com.basis.abaco.service.dto.novo.AbacoMensagens;
+import br.com.basis.abaco.service.dto.FuncaoPFDTO;
+import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
+import java.util.stream.Collectors;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +58,9 @@ public class FuncaoTransacaoService {
 
     @Autowired
     private VwAlrSearchRepository vwAlrSearchRepository;
+
+    @Autowired
+    private FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository;
 
     @Autowired
     private ConfiguracaoService configuracaoService;
@@ -203,5 +210,45 @@ public class FuncaoTransacaoService {
                 vwDerAllSearchRepository.save(vwDerAlls);
             }
         }
+        }
+
+
+    /**
+     * Atualiza Funções de Transação em lote.
+     * Alterado: Lógica de Bulk Update com reindexação do Elastic.
+     */
+    @Transactional
+    public void updatePF(List<FuncaoPFDTO> funcoesPFDTO) {
+        if (funcoesPFDTO == null || funcoesPFDTO.isEmpty()) {
+            return;
+        }
+
+        // 1. Coleta IDs
+        List<Long> ids = funcoesPFDTO.stream()
+            .map(FuncaoPFDTO::getId)
+            .collect(Collectors.toList());
+
+        // 2. Busca no Banco
+        List<FuncaoTransacao> funcoesNoBanco = funcaoTransacaoRepository.findAll(ids);
+
+        // 3. Atualiza dados
+        for (FuncaoTransacao funcaoTransacao : funcoesNoBanco) {
+            Optional<FuncaoPFDTO> dtoCorrespondente = funcoesPFDTO.stream()
+                .filter(dto -> dto.getId().equals(funcaoTransacao.getId()))
+                .findFirst();
+
+            if (dtoCorrespondente.isPresent()) {
+                FuncaoPFDTO dto = dtoCorrespondente.get();
+                funcaoTransacao.setPf(dto.getPf());
+                funcaoTransacao.setGrossPF(dto.getGrossPF());
+                funcaoTransacao.setComplexidade(dto.getComplexidade());
+            }
+        }
+
+        // 4. Salva no Banco (Lote)
+        funcaoTransacaoRepository.save(funcoesNoBanco);
+
+        // 5. Salva no Elasticsearch (Lote) - Resolve o problema de visualização
+        funcaoTransacaoSearchRepository.save(funcoesNoBanco);
     }
 }

@@ -19,6 +19,10 @@ import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrAllSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrSearchRepository;
 import br.com.basis.abaco.service.dto.DropdownDTO;
+import br.com.basis.abaco.service.dto.FuncaoPFDTO;
+import java.util.stream.Collectors;
+import java.util.Optional;
+import br.com.basis.abaco.repository.search.FuncaoDadosSearchRepository;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.ImportarFDDTO;
 import br.com.basis.abaco.service.dto.PEAnaliticoDTO;
@@ -60,8 +64,12 @@ public class FuncaoDadosService {
 
     @Autowired
     private VwDerSearchRepository vwDerSearchRepository;
+
     @Autowired
     private VwRlrSearchRepository vwRlrSearchRepository;
+
+    @Autowired
+    private FuncaoDadosSearchRepository funcaoDadosSearchRepository;
 
     @Autowired
     private ConfiguracaoService configuracaoService;
@@ -261,5 +269,48 @@ public class FuncaoDadosService {
                 vwDerSearchRepository.save(vwDers);
             }
         }
+    }
+
+    /**
+     * Atualiza o PF, GrossPF e Complexidade de uma lista de funções de dados.
+     * Alterado: Refatorado para processamento em lote e sincronização com Elasticsearch.
+     * @param funcoesPFDTO Lista de objetos com os novos valores.
+     */
+    @Transactional
+    public void updatePF(List<FuncaoPFDTO> funcoesPFDTO) {
+        if (funcoesPFDTO == null || funcoesPFDTO.isEmpty()) {
+            return;
+        }
+
+        // 1. Coleta todos os IDs para fazer uma única consulta ao banco (Performance)
+        List<Long> ids = funcoesPFDTO.stream()
+            .map(FuncaoPFDTO::getId)
+            .collect(Collectors.toList());
+
+        // 2. Busca todas as funções do banco de uma vez
+        List<FuncaoDados> funcoesNoBanco = funcaoDadosRepository.findAll(ids);
+
+        // 3. Atualiza os objetos em memória
+        for (FuncaoDados funcaoDados : funcoesNoBanco) {
+            // Encontra o DTO correspondente a esta função
+            Optional<FuncaoPFDTO> dtoCorrespondente = funcoesPFDTO.stream()
+                .filter(dto -> dto.getId().equals(funcaoDados.getId()))
+                .findFirst();
+
+            if (dtoCorrespondente.isPresent()) {
+                FuncaoPFDTO dto = dtoCorrespondente.get();
+                funcaoDados.setPf(dto.getPf());
+                funcaoDados.setGrossPF(dto.getGrossPF());
+                funcaoDados.setComplexidade(dto.getComplexidade());
+                // Caso o DTO tenha outros campos como Fator de Ajuste, atualize aqui também
+            }
+        }
+
+        // 4. Salva todas as alterações no Banco de Dados em lote
+        funcaoDadosRepository.save(funcoesNoBanco);
+
+        // 5. Alterado: Salva todas as alterações no Elasticsearch em lote
+        // Isso resolve o problema de precisar dar F5 na página
+        funcaoDadosSearchRepository.save(funcoesNoBanco);
     }
 }

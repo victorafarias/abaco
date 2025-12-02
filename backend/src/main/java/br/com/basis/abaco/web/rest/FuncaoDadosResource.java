@@ -434,17 +434,20 @@ public class FuncaoDadosResource {
         return new ResponseEntity<>(funcaoDadosService.importarFuncaoAnalise(funcaoImportarDTO), HttpStatus.OK);
     }
 
+    /**
+     * Atualiza o PF das funções em lote.
+     * Alterado: Delega a lógica para o serviço garantir consistência e indexação.
+     */
     @PatchMapping("/funcao-dados/update-pf")
+    @Timed
     public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
-        if(funcaoPFDTO != null && funcaoPFDTO.size() > 0){
-            for (FuncaoPFDTO funcao : funcaoPFDTO) {
-                FuncaoDados funcaoDados = funcaoDadosRepository.findById(funcao.getId());
-                funcaoDados.setPf(funcao.getPf());
-                funcaoDados.setGrossPF(funcao.getGrossPF());
-                funcaoDados.setComplexidade(funcao.getComplexidade());
-                funcaoDadosRepository.save(funcaoDados);
-            }
+        log.debug("REST request to update PF em lote para {} funções", funcaoPFDTO != null ? funcaoPFDTO.size() : 0);
+        
+        if(funcaoPFDTO != null && !funcaoPFDTO.isEmpty()){
+            // Chama o método refatorado no serviço
+            funcaoDadosService.updatePF(funcaoPFDTO);
         }
+        
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
