@@ -75,8 +75,8 @@ export class AnaliseSharedDataService {
   getFuncaoAnaliseDescarregadaSubject() {
     return this.funcaoAnaliseDescarregadaSubject.asObservable();
   }
-  
-  manualSelecionado(): boolean{
+
+  manualSelecionado(): boolean {
     return !_.isUndefined(this.analise.manual);
   }
 

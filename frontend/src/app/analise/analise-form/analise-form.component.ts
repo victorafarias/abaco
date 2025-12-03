@@ -42,6 +42,12 @@ import { Status } from 'src/app/status/status.model';
 })
 export class AnaliseFormComponent implements OnInit {
 
+    // Alterado: Lista de status que impedem a edição do método
+    private readonly STATUS_BLOQUEANTES = [
+        'Aprovado', 'Aprovada', 'Concluído', 'Concluída',
+        'Fechada', 'Fechado', 'Finalizado', 'Finalizada'
+    ];
+
     isEdicao: boolean;
     canEditMetodo: boolean = false;
     disableFuncaoTrasacao = true;
@@ -230,7 +236,9 @@ export class AnaliseFormComponent implements OnInit {
             if (params['id']) {
                 this.isEdicao = true;
                 this.analiseService.find(params['id']).subscribe(analise => {
-                    this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
+                    // Alterado: Define se pode editar o método baseado no status
+                    this.checkIfCanEditMetodo(analise);
+
                     if (analise.pfTotal <= 0) {
                         this.canEditMetodo = true;
                     }
@@ -259,6 +267,15 @@ export class AnaliseFormComponent implements OnInit {
                 this.setDefaultStatus();
             }
         });
+    }
+
+    // Alterado: Novo método auxiliar para verificar status
+    private checkIfCanEditMetodo(analise: Analise) {
+        if (analise.status && this.STATUS_BLOQUEANTES.includes(analise.status.nome)) {
+            this.canEditMetodo = false;
+        } else {
+            this.canEditMetodo = true;
+        }
     }
 
     private verifyCanEditAnalise(analise: Analise): Boolean {
@@ -719,16 +736,35 @@ export class AnaliseFormComponent implements OnInit {
 
     alterarMetodoContagem() {
         if (this.isEdicao) {
-            if (this.analise.metodoContagem !== MetodoContagem.INDICATIVA) {
-                this.analise.funcaoTransacao = [];
+            // Verifica status antes de prosseguir
+            if (this.analise.status && this.STATUS_BLOQUEANTES.includes(this.analise.status.nome)) {
+                this.pageNotificationService.addErrorMessage(
+                    `Não é possível alterar o Método da Contagem em Análises que estão com status ${this.analise.status.nome}`
+                );
+                // Reverter para o valor anterior seria ideal aqui, recarregando a análise
+                this.getAnalise();
+                return;
             }
+
+            // Lógica visual para abas
+            if (this.analise.metodoContagem === MessageUtil.INDICATIVA) {
+                this.disableFuncaoTrasacao = true;
+            } else {
+                this.disableFuncaoTrasacao = false;
+            }
+
+            // Feedback visual de que os valores serão recalculados ao salvar
+            this.pageNotificationService.addInfoMessage(
+                'Os valores de complexidade e PF serão recalculados conforme o novo método ao salvar.'
+            );
+
         } else {
+            // Comportamento para nova análise (sem id)
             if (this.analise.metodoContagem === MetodoContagem.DETALHADA) {
                 this.analise.enviarBaseline = true;
             } else {
                 this.analise.enviarBaseline = false;
             }
-
         }
     }
 

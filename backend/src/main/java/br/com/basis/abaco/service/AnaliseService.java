@@ -163,6 +163,11 @@ public class AnaliseService extends BaseService {
     public static final String APROVADA = "Aprovada";
     private final BigDecimal percent = new BigDecimal("100");
 
+    // Alterado: Lista de status que bloqueiam a edição
+    private static final List<String> STATUS_BLOQUEANTES = Arrays.asList(
+        "Aprovado", "Aprovada", "Concluído", "Concluída",
+        "Fechada", "Fechado", "Finalizado", "Finalizada"
+    );
 
 
     private final Logger log = LoggerFactory.getLogger(AnaliseService.class);
@@ -178,7 +183,7 @@ public class AnaliseService extends BaseService {
     private final ModuloRepository moduloRepository;
     private final FuncionalidadeRepository funcionalidadeRepository;
     private final EntityManager entityManager;
-    
+
     // Alterado: DataFormatter para ler células com fórmulas corretamente
     private final DataFormatter dataFormatter = new DataFormatter();
 
@@ -1458,9 +1463,19 @@ public class AnaliseService extends BaseService {
         return converterParaDto(analise);
     }
 
+    @Transactional
     public AnaliseDTO atualizarAnalise(AnaliseEditDTO analiseDTO) {
         Analise analise = analiseFacade.obterAnalisePorIdLimpo(analiseDTO.getId());
+        MetodoContagem metodoAntigo = analise.getMetodoContagem();
+        
         anexarAnalise(converterEditDtoParaEntidade(analiseDTO), analise);
+        
+        // Alterado: Se o método de contagem mudou, aplicar regras de recálculo
+        if (analise.getMetodoContagem() != null && !analise.getMetodoContagem().equals(metodoAntigo)) {
+            aplicarRegrasMetodoContagem(analise);
+            entityManager.flush(); // Persistir alterações nas funções antes de calcular totais
+        }
+        
         atualizarPF(analise);
         analise.setEditedBy(analiseFacade.obterAnalisePorIdLimpo(analise.getId()).getCreatedBy());
         analise.setAnaliseClonadaParaEquipe(null);
@@ -2874,5 +2889,232 @@ public class AnaliseService extends BaseService {
         valor.add(VALIDADO);
         valor.add(PENDENTE);
         return valor;
+    }
+
+    /**
+     * Alterado: Método para alterar o método de contagem e aplicar as regras de negócio
+     */
+    @Transactional
+    public Analise alterarMetodoContagem(Long idAnalise, MetodoContagem novoMetodo) {
+        Analise analise = recuperarAnalise(idAnalise);
+        
+        if (analise == null) {
+            throw new RuntimeException("Análise não encontrada.");
+        }
+
+        // Validação de Status
+        if (analise.getStatus() != null && STATUS_BLOQUEANTES.contains(analise.getStatus().getNome())) {
+            throw new RuntimeException("Não é possível alterar o Método da Contagem em Análises que estão com status " + analise.getStatus().getNome());
+        }
+
+        analise.setMetodoContagem(novoMetodo);
+
+        // Aplica regras de recálculo nas funções
+        aplicarRegrasMetodoContagem(analise);
+
+        // Alterado: Flush para persistir as alterações de complexidade e PF antes de calcular os totais
+        entityManager.flush();
+
+        // Atualiza totais e salva
+        atualizarPF(analise);
+        return salvar(analise);
+    }
+
+    /**
+     * Alterado: Aplica as regras de complexidade e PF baseadas no método escolhido
+     */
+    private void aplicarRegrasMetodoContagem(Analise analise) {
+        MetodoContagem metodo = analise.getMetodoContagem();
+
+        // Processar Funções de Dados
+        for (FuncaoDados fd : analise.getFuncaoDados()) {
+            if (MetodoContagem.DETALHADA.equals(metodo)) {
+                recalcularDetalhadaFD(fd);
+            } else if (MetodoContagem.ESTIMADA.equals(metodo)) {
+                // Regra Estimada: Complexidade BAIXA
+                fd.setComplexidade(Complexidade.BAIXA);
+                BigDecimal grossPf = getGrossPfFromComplexity(fd.getTipo(), Complexidade.BAIXA);
+                aplicarPfComFatorAjuste(fd, grossPf);
+            } else if (MetodoContagem.INDICATIVA.equals(metodo)) {
+                // Regra Indicativa: Valores fixos
+                fd.setComplexidade(Complexidade.SEM); 
+                if (fd.getTipo() == TipoFuncaoDados.ALI) {
+                    fd.setPf(new BigDecimal(35));
+                    fd.setGrossPF(new BigDecimal(35));
+                } else if (fd.getTipo() == TipoFuncaoDados.AIE) {
+                    fd.setPf(new BigDecimal(15));
+                    fd.setGrossPF(new BigDecimal(15));
+                }
+            }
+        }
+
+        // Processar Funções de Transação
+        for (FuncaoTransacao ft : analise.getFuncaoTransacao()) {
+            // Alterado: Funções INM não devem ter complexidade/PF recalculados ao mudar método
+            if (TipoFuncaoTransacao.INM.equals(ft.getTipo())) {
+                continue;
+            }
+
+            if (MetodoContagem.DETALHADA.equals(metodo)) {
+                recalcularDetalhadaFT(ft);
+            } else if (MetodoContagem.ESTIMADA.equals(metodo)) {
+                // Regra Estimada: Complexidade MÉDIA
+                ft.setComplexidade(Complexidade.MEDIA);
+                BigDecimal grossPf = getGrossPfFromComplexity(ft.getTipo(), Complexidade.MEDIA);
+                aplicarPfComFatorAjuste(ft, grossPf);
+            } else if (MetodoContagem.INDICATIVA.equals(metodo)) {
+                // Regra Indicativa: Funções de transação geralmente não contam ou são zeradas na view
+                // Aqui mantemos os dados, mas pode-se zerar o PF se a regra de negócio exigir
+                ft.setPf(BigDecimal.ZERO);
+                ft.setGrossPF(BigDecimal.ZERO);
+            }
+        }
+    }
+
+    /**
+     * Alterado: Recalcula complexidade de Função de Dados (Matriz IFPUG)
+     */
+    /**
+     * Alterado: Recalcula complexidade de Função de Dados (Matriz IFPUG)
+     */
+    private void recalcularDetalhadaFD(FuncaoDados fd) {
+        int rlr = (fd.getRlrs() != null) ? fd.getRlrs().size() : 0;
+        int der = (fd.getDers() != null) ? fd.getDers().size() : 0;
+
+        // Lógica da matriz IFPUG para ALI/AIE
+        // RLR <= 1 (inclui 0 para garantir cálculo)
+        if (rlr <= 1) {
+            if (der < 20) fd.setComplexidade(Complexidade.BAIXA);
+            else if (der < 51) fd.setComplexidade(Complexidade.BAIXA);
+            else fd.setComplexidade(Complexidade.MEDIA);
+        } else if (rlr >= 2 && rlr <= 5) {
+            if (der < 20) fd.setComplexidade(Complexidade.BAIXA);
+            else if (der < 51) fd.setComplexidade(Complexidade.MEDIA);
+            else fd.setComplexidade(Complexidade.ALTA);
+        } else if (rlr > 5) {
+            if (der < 20) fd.setComplexidade(Complexidade.MEDIA);
+            else if (der < 51) fd.setComplexidade(Complexidade.ALTA);
+            else fd.setComplexidade(Complexidade.ALTA);
+        }
+        // Recalcular PF baseado na nova complexidade
+        BigDecimal grossPf = getGrossPfFromComplexity(fd.getTipo(), fd.getComplexidade());
+        aplicarPfComFatorAjuste(fd, grossPf);
+    }
+
+    /**
+     * Alterado: Recalcula complexidade de Função de Transação (Matriz IFPUG)
+     */
+    private void recalcularDetalhadaFT(FuncaoTransacao ft) {
+        // Alterado: Funções INM não devem ser recalculadas
+        if (TipoFuncaoTransacao.INM.equals(ft.getTipo())) {
+            return;
+        }
+
+        int alr = (ft.getAlrs() != null) ? ft.getAlrs().size() : 0;
+        int der = (ft.getDers() != null) ? ft.getDers().size() : 0;
+
+        if (TipoFuncaoTransacao.EE.equals(ft.getTipo())) {
+            // Matriz EE (External Input)
+            if (alr < 2) { // 0 ou 1
+                if (der < 5) ft.setComplexidade(Complexidade.BAIXA);
+                else if (der < 16) ft.setComplexidade(Complexidade.BAIXA);
+                else ft.setComplexidade(Complexidade.MEDIA);
+            } else if (alr == 2) {
+                if (der < 5) ft.setComplexidade(Complexidade.BAIXA);
+                else if (der < 16) ft.setComplexidade(Complexidade.MEDIA);
+                else ft.setComplexidade(Complexidade.ALTA);
+            } else { // alr > 2
+                if (der < 5) ft.setComplexidade(Complexidade.MEDIA);
+                else if (der < 16) ft.setComplexidade(Complexidade.ALTA);
+                else ft.setComplexidade(Complexidade.ALTA);
+            }
+        } else {
+            // Matriz SE/CE (External Output / External Inquiry)
+            if (alr < 2) { // 0 ou 1
+                if (der < 6) ft.setComplexidade(Complexidade.BAIXA);
+                else if (der < 20) ft.setComplexidade(Complexidade.BAIXA);
+                else ft.setComplexidade(Complexidade.MEDIA);
+            } else if (alr >= 2 && alr <= 3) {
+                if (der < 6) ft.setComplexidade(Complexidade.BAIXA);
+                else if (der < 20) ft.setComplexidade(Complexidade.MEDIA);
+                else ft.setComplexidade(Complexidade.ALTA);
+            } else { // alr > 3
+                if (der < 6) ft.setComplexidade(Complexidade.MEDIA);
+                else if (der < 20) ft.setComplexidade(Complexidade.ALTA);
+                else ft.setComplexidade(Complexidade.ALTA);
+            }
+        }
+
+        // Recalcular PF baseado na nova complexidade
+        BigDecimal grossPf = getGrossPfFromComplexity(ft.getTipo(), ft.getComplexidade());
+        aplicarPfComFatorAjuste(ft, grossPf);
+    }
+
+    /**
+     * Helper: Calcula o PF Bruto (GrossPF) baseado no Tipo de Função de Dados e Complexidade
+     */
+    private BigDecimal getGrossPfFromComplexity(TipoFuncaoDados tipo, Complexidade complexidade) {
+        if (tipo == null || complexidade == null) return BigDecimal.ZERO;
+        
+        if (tipo == TipoFuncaoDados.ALI) {
+            switch (complexidade) {
+                case BAIXA: return new BigDecimal(7);
+                case MEDIA: return new BigDecimal(10);
+                case ALTA: return new BigDecimal(15);
+                default: return BigDecimal.ZERO;
+            }
+        } else if (tipo == TipoFuncaoDados.AIE) {
+            switch (complexidade) {
+                case BAIXA: return new BigDecimal(5);
+                case MEDIA: return new BigDecimal(7);
+                case ALTA: return new BigDecimal(10);
+                default: return BigDecimal.ZERO;
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Helper: Calcula o PF Bruto (GrossPF) baseado no Tipo de Função de Transação e Complexidade
+     */
+    private BigDecimal getGrossPfFromComplexity(TipoFuncaoTransacao tipo, Complexidade complexidade) {
+        if (tipo == null || complexidade == null) return BigDecimal.ZERO;
+        
+        if (tipo == TipoFuncaoTransacao.EE) {
+            switch (complexidade) {
+                case BAIXA: return new BigDecimal(3);
+                case MEDIA: return new BigDecimal(4);
+                case ALTA: return new BigDecimal(6);
+                default: return BigDecimal.ZERO;
+            }
+        } else if (tipo == TipoFuncaoTransacao.SE) {
+            switch (complexidade) {
+                case BAIXA: return new BigDecimal(4);
+                case MEDIA: return new BigDecimal(5);
+                case ALTA: return new BigDecimal(7);
+                default: return BigDecimal.ZERO;
+            }
+        } else if (tipo == TipoFuncaoTransacao.CE) {
+            switch (complexidade) {
+                case BAIXA: return new BigDecimal(3);
+                case MEDIA: return new BigDecimal(4);
+                case ALTA: return new BigDecimal(6);
+                default: return BigDecimal.ZERO;
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Helper: Aplica o PF Bruto e calcula o PF Líquido considerando o Fator de Ajuste
+     */
+    private void aplicarPfComFatorAjuste(FuncaoAnalise funcao, BigDecimal grossPf) {
+        funcao.setGrossPF(grossPf);
+        if (funcao.getFatorAjuste() != null && funcao.getFatorAjuste().getFator() != null) {
+            BigDecimal fator = funcao.getFatorAjuste().getFator().divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
+            funcao.setPf(grossPf.multiply(fator).setScale(2, RoundingMode.HALF_UP));
+        } else {
+            funcao.setPf(grossPf);
+        }
     }
 }

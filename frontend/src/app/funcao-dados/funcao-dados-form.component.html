@@ -21,28 +21,40 @@
                                     [enableButtonsScroll]="true" [disableView]="selectButtonMultiple || isOrderning"
                                     (dblclick)="onRowDblclick($event)" [value]="funcoesDados"
                                     (buttonClick)="datatableClick($event)" (click)="selectFD($event)"
-                                    [paginator]="false" [rows]="numberPages" [selectionMode]="'multiple'" [filterOnColumn]="true"
-                                    [reorderableRows]="isOrderning" (onRowReorder)="updateIndex()"
-                                    [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="true" #tables>
+                                    [paginator]="false" [rows]="numberPages" [selectionMode]="'multiple'"
+                                    [filterOnColumn]="true" [reorderableRows]="isOrderning"
+                                    (onRowReorder)="updateIndex()" [rowsPerPageOptions]="[20,50,100]"
+                                    [showVisibleColumnsControl]="true" #tables>
                                     <p-column header="Ordem" field="ordem">
                                         <ng-template let-col let-funcaoDado="rowData" pTemplate="body">
-                                            <span *ngIf="!habilitaEditarOrdem" (click)="habilitarEdicaoOrdem(funcaoDado)">{{ funcaoDado?.ordem ? funcaoDado?.ordem : funcoesDados?.indexOf(funcaoDado)
-                                            + 1 }}</span>
-                                            <input 
-                                            [ngModelOptions]="{ updateOn: 'blur' }"
-                                            (ngModelChange)="trocarOrdem($event, funcaoDado)" *ngIf="habilitaEditarOrdem" type="number" class="ui-inputtext" min="1"
-                                            [(ngModel)]="funcaoDado.ordem" id="idEditOrdem">
+                                            <span *ngIf="!habilitaEditarOrdem"
+                                                (click)="habilitarEdicaoOrdem(funcaoDado)">{{ funcaoDado?.ordem ?
+                                                funcaoDado?.ordem : funcoesDados?.indexOf(funcaoDado) + 1 }}</span>
+                                            <input [ngModelOptions]="{ updateOn: 'blur' }"
+                                                (ngModelChange)="trocarOrdem($event, funcaoDado)"
+                                                *ngIf="habilitaEditarOrdem" type="number" class="ui-inputtext" min="1"
+                                                [(ngModel)]="funcaoDado.ordem" id="idEditOrdem">
                                         </ng-template>
                                     </p-column>
-                                    <p-column field="nomeModulo" header="Módulo" [filter]="true" [sortable]="true">
-                                    </p-column>
+                                    <p-column field="nomeModulo" header="Módulo" [filter]="true"
+                                        [sortable]="true"></p-column>
                                     <p-column field="nomeFuncionalidade" [filter]="true" header="Funcionalidade"
                                         [sortable]="true"></p-column>
                                     <p-column field="name" header="Nome" [sortable]="true"></p-column>
                                     <p-column field="deflator" header="Deflator" [sortable]="true"></p-column>
                                     <p-column field="tipo" header="Classificação" [sortable]="true"></p-column>
-                                    <p-column field="totalDers" header="DER (TD)" [sortable]="true"></p-column>
-                                    <p-column field="totalRlrs" header="RLR (TR)" [sortable]="true"></p-column>
+                                    <p-column field="totalDers" header="DER (TD)" [sortable]="true">
+                                        <ng-template let-col let-funcao="rowData" pTemplate="body">
+                                            {{ analise && analise.metodoContagem === 'DETALHADA' ? funcao.totalDers :
+                                            '0' }}
+                                        </ng-template>
+                                    </p-column>
+                                    <p-column field="totalRlrs" header="RLR (TR)" [sortable]="true">
+                                        <ng-template let-col let-funcao="rowData" pTemplate="body">
+                                            {{ analise && analise.metodoContagem === 'DETALHADA' ? funcao.totalRlrs :
+                                            '0' }}
+                                        </ng-template>
+                                    </p-column>
                                     <p-column field="complexidade" header="Complexidade" [sortable]="true"></p-column>
                                     <p-column field="grossPF" header="PF Bruto" [sortable]="true"></p-column>
                                     <p-column field="pf" header="PF Líquido" [sortable]="true"></p-column>
@@ -53,10 +65,6 @@
                                             this.getLabel('Não') }}
                                         </ng-template>
                                     </p-column>
-                                    <basis-datatable-button name="add" *ngIf="!isView && !isOrderning"
-                                        (click)="openDialog(false)" bTooltip="Incluir nova função"
-                                        class="ui-button-success" icon="add">
-                                    </basis-datatable-button>
                                     <basis-datatable-button name="crud" [allowMultipleSelection]="false"
                                         *ngIf="!isView && !(analise && analise.metodoContagem && analise.metodoContagem === 'INDICATIVA')  && !isOrderning && !selectButtonMultiple"
                                         (click)="createCrud(this.funcaoDadosEditar[0])"
@@ -136,8 +144,7 @@
                                                 (onChange)="moduloSelected($event.value)">
                                             </p-dropdown>
                                             <span class="md-inputfield">
-                                                <div *ngIf="erroModulo"
-                                                    class="ui-message ui-messages-error">
+                                                <div *ngIf="erroModulo" class="ui-message ui-messages-error">
                                                     Campo Obrigatório.
                                                 </div>
                                             </span>
@@ -162,8 +169,7 @@
                                                 [disabled]="!isModuloSelected()">
                                             </p-dropdown>
                                             <span class="md-inputfield">
-                                                <div *ngIf="erroModulo"
-                                                    class="ui-message ui-messages-error">
+                                                <div *ngIf="erroModulo" class="ui-message ui-messages-error">
                                                     Campo Obrigatório.
                                                 </div>
                                             </span>
@@ -683,7 +689,8 @@
 </p-dialog>
 
 <div class="ui-g">
-    <p-dialog [header]="this.getLabel('Módulo')" [(visible)]="mostrarDialogAddModulo" [style]="{width: '50vw'}" [appendTo]="dialogFuncao">
+    <p-dialog [header]="this.getLabel('Módulo')" [(visible)]="mostrarDialogAddModulo" [style]="{width: '50vw'}"
+        [appendTo]="dialogFuncao">
         <div class="ui-g">
             <div class="ui-g-12" style="margin-bottom: 05px">
                 <span class="md-inputfield">
@@ -709,8 +716,8 @@
     </p-dialog>
 
     <!-- Dialog Funcionalidade -->
-    <p-dialog [header]="this.getLabel('Funcionalidade')" [(visible)]="mostrarDialogAddFuncionalidade" [appendTo]="dialogFuncao"
-        [style]="{width: '50vw'}">
+    <p-dialog [header]="this.getLabel('Funcionalidade')" [(visible)]="mostrarDialogAddFuncionalidade"
+        [appendTo]="dialogFuncao" [style]="{width: '50vw'}">
 
         <div class="ui-g">
             <div class="ui-g-12" style="margin-bottom: 05px">
