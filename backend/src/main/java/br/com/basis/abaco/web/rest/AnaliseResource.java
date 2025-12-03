@@ -9,6 +9,13 @@ import br.com.basis.abaco.reports.rest.RelatorioAnaliseRest;
 import br.com.basis.abaco.reports.util.RelatorioUtil;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.CompartilhadaRepository;
+import br.com.basis.abaco.repository.FuncaoDadosRepository;
+import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
+import br.com.basis.abaco.repository.StatusRepository;
+import br.com.basis.abaco.repository.TipoEquipeRepository;
+import br.com.basis.abaco.repository.UploadedFilesRepository;
+import br.com.basis.abaco.repository.UserRepository;
+import br.com.basis.abaco.repository.search.AnaliseSearchRepository;
 import br.com.basis.abaco.service.AnaliseService;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
@@ -80,6 +87,9 @@ public class AnaliseResource {
     private HttpServletResponse response;
     private HttpServletRequest request;
 
+    private final FuncaoDadosRepository funcaoDadosRepository;
+    private final FuncaoTransacaoRepository funcaoTransacaoRepository;
+
     @PostConstruct
     private void init() {
         relatorioAnaliseRest = new RelatorioAnaliseRest(response, request);
@@ -87,10 +97,14 @@ public class AnaliseResource {
 
     public AnaliseResource(AnaliseRepository analiseRepository,
                            CompartilhadaRepository compartilhadaRepository,
-                           AnaliseService analiseService) {
+                           AnaliseService analiseService,
+                           FuncaoDadosRepository funcaoDadosRepository,
+                           FuncaoTransacaoRepository funcaoTransacaoRepository) {        
         this.analiseRepository = analiseRepository;
         this.compartilhadaRepository = compartilhadaRepository;
         this.analiseService = analiseService;
+        this.funcaoDadosRepository = funcaoDadosRepository;
+        this.funcaoTransacaoRepository = funcaoTransacaoRepository;
     }
 
     @PostMapping("/analises")
@@ -251,8 +265,12 @@ public class AnaliseResource {
     @Timed
     @Secured("ROLE_ABACO_ANALISE_EXPORTAR_RELATORIO_DETALHADO")
     public @ResponseBody
-    ResponseEntity<byte[]> downloadPdfDetalhadoBrowser(@PathVariable Long id) throws IOException, JRException {
-        return relatorioAnaliseRest.downloadPdfBrowser(analiseService.obterAnaliseSetarFuncoes(id), TipoRelatorio.ANALISE);
+    ResponseEntity<byte[]> downloadPdfDetalhadoBrowser(@PathVariable Long id) throws URISyntaxException, IOException, JRException {
+        Analise analise = analiseRepository.findOneByIdClean(id);
+        analise.setFuncaoDados(funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(id));
+        analise.setFuncaoTransacao(funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(id));
+        relatorioAnaliseRest = new RelatorioAnaliseRest(this.response, this.request);
+        return relatorioAnaliseRest.downloadPdfBrowser(analise, TipoRelatorio.ANALISE_DETALHADA);
     }
 
     @GetMapping("/downloadRelatorioExcel/{id}")

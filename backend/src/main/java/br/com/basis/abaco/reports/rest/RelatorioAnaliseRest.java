@@ -354,11 +354,13 @@ public class RelatorioAnaliseRest {
      * Método responsável por popular as informações do resumo da análise.
      */
     private void popularResumo() {
-        parametro.put("PFTOTAL", analise.getPfTotal());
+        // ADAPTAÇÃO: Converte BigDecimal para String para evitar o erro
+        parametro.put("PFTOTAL", analise.getPfTotal() != null ? analise.getPfTotal().toString() : "0");
+
         if(!analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             String scopeCreep = "";
             if(analise.getFatorCriticidade() != null){
-                scopeCreep = Boolean.FALSE.equals(analise.getFatorCriticidade()) ?
+                scopeCreep = !analise.getFatorCriticidade() ?
                     " III. Total c/ Scope Creep (II +" :
                     " IV. Total c/ Scope Creep (III +";
             }else{
@@ -366,17 +368,36 @@ public class RelatorioAnaliseRest {
             }
 
             if (analise.getScopeCreep() != null) {
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getScopeCreep()/100+1));
+                // ADAPTAÇÃO: Converte o primeiro parâmetro para String
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(
+                    analise.getAdjustPFTotal() != null ? analise.getAdjustPFTotal().toString() : "0", 
+                    Double.valueOf(analise.getScopeCreep())/100+1
+                ));
                 scopeCreep += analise.getScopeCreep().intValue()+"%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }else{
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa));
+                // ADAPTAÇÃO: Converte o primeiro parâmetro para String
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(
+                    analise.getAdjustPFTotal() != null ? analise.getAdjustPFTotal().toString() : "0", 
+                    analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa
+                ));
                 scopeCreep += "35%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }
         }
-        parametro.put("AJUSTESPF", calcularPFsAjustado(analise.getPfTotal().toString(), analise.getAdjustPFTotal().toString()));
-        parametro.put("PFAJUSTADO", analise.getAdjustPFTotal());
+        
+        // ADAPTAÇÃO: Converte ambos para String
+        parametro.put("AJUSTESPF", calcularPFsAjustado(
+            analise.getPfTotal() != null ? analise.getPfTotal().toString() : "0", 
+            analise.getAdjustPFTotal() != null ? analise.getAdjustPFTotal().toString() : "0"
+        ));
+        
+        // ADAPTAÇÃO: Converte BigDecimal para Double (usando .doubleValue()) para o formatador funcionar
+        if (analise.getAdjustPFTotal() != null) {
+            parametro.put("PFAJUSTADO", transformarBigDecimal(analise.getAdjustPFTotal().doubleValue()));
+        } else {
+            parametro.put("PFAJUSTADO", "0,00");
+        }
     }
 
     /**
