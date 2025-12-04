@@ -68,9 +68,13 @@ public class RlrResource {
     @Timed
     public ResponseEntity<Rlr> createRlr(@Valid @RequestBody Rlr rlr) throws URISyntaxException {
         log.debug("REST request to save Rlr : {}", rlr);
-        if (rlr.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new rlr cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        rlr.setId(null);
+
+        // if (rlr.getId() != null) {
+        //     return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new rlr cannot already have an ID")).body(null);
+        // }
         Rlr result = rlrRepository.save(rlr);
         rlrSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/rlrs/" + result.getId()))

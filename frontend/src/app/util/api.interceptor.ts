@@ -8,11 +8,11 @@ import { environment } from "../../environments/environment";
 
 
 @Injectable()
-export class APIInterceptor implements HttpInterceptor{
+export class APIInterceptor implements HttpInterceptor {
 
 	private readonly url = environment.auth.loginUrl;
 
-	constructor(private pageNotification: PageNotificationService){
+	constructor(private pageNotification: PageNotificationService) {
 	}
 
 	intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -22,24 +22,29 @@ export class APIInterceptor implements HttpInterceptor{
 		);
 	}
 
-	handleResponse(data: any){
-		if(!data || !data.body) return
-		const abacoMensagens  = data?.body?.mensagens;
-		if(abacoMensagens){
-			if(abacoMensagens?.mensagens?.length > 0){
+	handleResponse(data: any) {
+		if (!data || !data.body) return
+		const abacoMensagens = data?.body?.mensagens;
+		if (abacoMensagens) {
+			if (abacoMensagens?.mensagens?.length > 0) {
 				this.ajustarMensagens(abacoMensagens?.mensagens);
-			}else{
+			} else {
 				this.ajustarMensagens(abacoMensagens);
 			}
 		}
 	}
 
-	handleError(err: HttpErrorResponse): Observable<any>{
+	handleError(err: HttpErrorResponse): Observable<any> {
 		if (err.status === 401) {
 			this.redirect();
 		}
 
-		if(err?.error?.mensagens){
+		// Alterado: Ignorar erro se tiver o header customizado de importação
+		if (err.headers && err.headers.get('x-abacoapp-error-import')) {
+			return throwError(err);
+		}
+
+		if (err?.error?.mensagens) {
 			const abacoMensagens = new AbacoMensagens();
 			const erros = err?.error?.mensagens instanceof Object ? err?.error?.mensagens : JSON.parse(err?.error?.mensagem);
 
@@ -53,7 +58,7 @@ export class APIInterceptor implements HttpInterceptor{
 			return throwError(err);
 		}
 
-		this.pageNotification.addErrorMessage("Erro "+err.status+": "+err.statusText);
+		this.pageNotification.addErrorMessage("Erro " + err.status + ": " + err.statusText);
 		return throwError(err);
 	}
 
@@ -61,15 +66,15 @@ export class APIInterceptor implements HttpInterceptor{
 		window.location.href = this.url;
 	}
 
-	ajustarMensagens(mensagens: Mensagem[]){
+	ajustarMensagens(mensagens: Mensagem[]) {
 		mensagens.forEach(mensagem => {
-			if(mensagem.tipo == TipoMensagem.SUCESSO){
+			if (mensagem.tipo == TipoMensagem.SUCESSO) {
 				this.pageNotification.addSuccessMessage(mensagem.mensagem);
 			}
-			if(mensagem.tipo == TipoMensagem.ERRO){
+			if (mensagem.tipo == TipoMensagem.ERRO) {
 				this.pageNotification.addErrorMessage(mensagem.mensagem);
 			}
-			if(mensagem.tipo == TipoMensagem.AVISO){
+			if (mensagem.tipo == TipoMensagem.AVISO) {
 				this.pageNotification.addInfoMessage(mensagem.mensagem);
 			}
 		})

@@ -31,7 +31,7 @@ public class AnaliseBaseDTO {
     protected Double valorCriticidade;
     protected Double scopeCreep;
     private Set<FuncaoDadosDTO> funcaoDados = new HashSet<>();
-    private Set<FuncaoTransacaoDTO> funcaoTransacaos = new HashSet<>();
+    private Set<FuncaoTransacaoDTO> funcaoTransacao = new HashSet<>();
 
     public void setDataCriacaoOrdemServico(Timestamp dataCriacaoOrdemServico) {
         this.dataCriacaoOrdemServico = dataCriacaoOrdemServico == null ? null : new Timestamp(dataCriacaoOrdemServico.getTime());

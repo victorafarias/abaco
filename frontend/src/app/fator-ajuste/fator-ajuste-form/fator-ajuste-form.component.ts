@@ -5,7 +5,8 @@ import { SelectItem } from 'primeng';
 
 import { FatorAjuste } from '../fator-ajuste.model';
 import { FatorAjusteService } from '../fator-ajuste.service';
-import { Manual, ManualService } from '../../manual';
+import { Manual } from '../../manual/manual.model';
+import { ManualService } from '../../manual/manual.service';
 import { ResponseWrapper } from '../../shared';
 
 @Component({

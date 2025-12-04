@@ -21,7 +21,7 @@ public class AnaliseMapper implements EntityMapper<AnaliseDTO, Analise> {
                 @Override
                 protected void configure() {
                     skip(destination.getFuncaoDados());
-                    skip(destination.getFuncaoTransacaos());
+                    skip(destination.getFuncaoTransacao());
                 }
             });
     }

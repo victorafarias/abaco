@@ -4,7 +4,7 @@ import { DatatableClickEvent, DatatableComponent, PageNotificationService } from
 import { ConfirmationService } from 'primeng';
 import { ElasticQuery } from 'src/app/shared/elastic-query';
 import { AdminGuard } from 'src/app/util/admin.guard';
-import { SearchGroup } from '..';
+import { SearchGroup } from '../tipo-equipe.model';
 import { AuthService } from 'src/app/util/auth.service';
 import { TipoEquipe } from '../tipo-equipe.model';
 import { TipoEquipeService } from '../tipo-equipe.service';

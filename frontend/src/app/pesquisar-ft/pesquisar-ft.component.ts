@@ -227,7 +227,7 @@ export class PesquisarFtComponent implements OnInit {
         if (this.analises !== undefined) {
             this.analises.forEach(a => {
                 if (a.sistema.id === this.analise.sistema.id) {
-                    a.funcaoTransacaos.forEach(b => {
+                    a.funcaoTransacao.forEach(b => {
                         this.funcaoTransacaoFuncionalidade.push(b);
                     });
                 }
@@ -255,7 +255,7 @@ export class PesquisarFtComponent implements OnInit {
 
         this.analises.forEach(a => {
             if (a.sistema.id === this.analise.sistema.id) {
-                a.funcaoTransacaos.forEach(b => {
+                a.funcaoTransacao.forEach(b => {
                     this.funcaoTransacaoFuncionalidade.push(b);
                 });
             }
@@ -279,7 +279,7 @@ export class PesquisarFtComponent implements OnInit {
 
         this.analises.forEach(a => {
             if (a.sistema.id === this.analise.sistema.id) {
-                a.funcaoTransacaos.forEach(b => {
+                a.funcaoTransacao.forEach(b => {
                     this.funcaoTransacaoFuncionalidade.push(b);
                 });
             }
@@ -409,8 +409,30 @@ export class PesquisarFtComponent implements OnInit {
     }
 
 
+    selectedFunctionsOrdered: any[] = [];
+
     performSearch() {
         this.recarregarDataTable();
+    }
+
+    onRowSelect(event) {
+        this.selectedFunctionsOrdered.push(event.data);
+    }
+
+    onRowUnselect(event) {
+        const index = this.selectedFunctionsOrdered.indexOf(event.data);
+        if (index > -1) {
+            this.selectedFunctionsOrdered.splice(index, 1);
+        }
+    }
+
+    onHeaderCheckboxToggle(event) {
+        if (event.checked) {
+            this.selectedFunctionsOrdered = [];
+            this.selectedFunctionsOrdered.push(...this.fn);
+        } else {
+            this.selectedFunctionsOrdered = [];
+        }
     }
 
     montarFuncoes() {
@@ -422,77 +444,106 @@ export class PesquisarFtComponent implements OnInit {
         } else if (!(this.selections) || this.selections.length <= 0) {
             this.pageNotificationService.addErrorMessage('É obrigatório selecionar uma Função.');
         } else {
-			let funcoesFTImportar: FuncaoImportarDTO = new FuncaoImportarDTO();
+            let funcoesFTImportar: FuncaoImportarDTO = new FuncaoImportarDTO();
 
-			funcoesFTImportar.idAnalise = this.analise.id;
-			funcoesFTImportar.funcoesParaImportar = this.selections;
-			funcoesFTImportar.fundamentacao = this.fundamentacao
-			funcoesFTImportar.idDeflator = this.novoDeflator.id;
-			funcoesFTImportar.quantidadeINM = this.quantidadeINM;
+            funcoesFTImportar.idAnalise = this.analise.id;
 
-			this.erroUnitario = false;
-			this.deflaPesquisa = true;
+            // Ensure selectedFunctionsOrdered contains only currently selected items and handles any edge cases
+            // We filter selectedFunctionsOrdered to ensure it only contains items that are actually in this.selections
+            // This handles cases where selections might be modified externally or via other means, though unlikely here.
+            // Also, if selectedFunctionsOrdered is empty but selections is not (e.g. pre-selection), we fallback or sync.
+            // Given the requirement, we prioritize selectedFunctionsOrdered.
+
+            // Sync check: if selections has items not in selectedFunctionsOrdered, add them at the end.
+            if (this.selections.length !== this.selectedFunctionsOrdered.length) {
+                this.selections.forEach(sel => {
+                    if (!this.selectedFunctionsOrdered.includes(sel)) {
+                        this.selectedFunctionsOrdered.push(sel);
+                    }
+                });
+                // Remove items from ordered list that are no longer in selections
+                this.selectedFunctionsOrdered = this.selectedFunctionsOrdered.filter(item => this.selections.includes(item));
+            }
+
+            funcoesFTImportar.funcoesParaImportar = this.selectedFunctionsOrdered;
+            funcoesFTImportar.fundamentacao = this.fundamentacao
+            funcoesFTImportar.idDeflator = this.novoDeflator.id;
+            funcoesFTImportar.quantidadeINM = this.quantidadeINM;
+
+            this.erroUnitario = false;
+            this.deflaPesquisa = true;
             if (!(this.isFuncaoDados)) {
-				this.funcaoTransacaoService.importarFuncoesAnalise(funcoesFTImportar).subscribe(response => {
-					response?.abacoMensagens?.mensagens?.forEach(mensagem => {
-						if(mensagem.tipo === TipoMensagem.SUCESSO){
-							this.pageNotificationService.addSuccessMessage(mensagem.mensagem);
-						}
-						if(mensagem.tipo === TipoMensagem.AVISO){
-							this.pageNotificationService.addInfoMessage(mensagem.mensagem);
-						}
-						if(mensagem.tipo === TipoMensagem.ERRO){
-							this.pageNotificationService.addErrorMessage(mensagem.mensagem);
-						}
-					})
+                this.funcaoTransacaoService.importarFuncoesAnalise(funcoesFTImportar).subscribe(response => {
+                    response?.abacoMensagens?.mensagens?.forEach(mensagem => {
+                        if (mensagem.tipo === TipoMensagem.SUCESSO) {
+                            this.pageNotificationService.addSuccessMessage(mensagem.mensagem);
+                        }
+                        if (mensagem.tipo === TipoMensagem.AVISO) {
+                            this.pageNotificationService.addInfoMessage(mensagem.mensagem);
+                        }
+                        if (mensagem.tipo === TipoMensagem.ERRO) {
+                            this.pageNotificationService.addErrorMessage(mensagem.mensagem);
+                        }
+                    })
 
-					this.selections = [];
-					let funcoesCalculadas: FuncaoTransacao[] = [];
+                    this.selections = [];
+                    this.selectedFunctionsOrdered = [];
+                    let funcoesCalculadas: FuncaoTransacao[] = [];
 
-					response?.funcaoTransacao?.forEach(funcao => {
-						let funcaoCalcular = new FuncaoTransacao().copyFromJSON(funcao);
+                    response?.funcaoTransacao?.forEach(funcao => {
+                        let funcaoCalcular = new FuncaoTransacao().copyFromJSON(funcao);
                         funcaoCalcular = CalculadoraTransacao.calcular(
-                                    this.analise.metodoContagem,
-                                    funcaoCalcular,
-                                    this.analise.manual);
-						funcoesCalculadas.push(funcaoCalcular);
-					})
+                            this.analise.metodoContagem,
+                            funcaoCalcular,
+                            this.analise.manual);
+                        funcoesCalculadas.push(funcaoCalcular);
+                    })
 
-					this.funcaoTransacaoService.updatePF(funcoesCalculadas).subscribe(() => {
-						this.analiseService.updateSomaPf(this.analise.id).subscribe();
-					});
-				});
+                    this.funcaoTransacaoService.updatePF(funcoesCalculadas).subscribe(() => {
+                        this.analiseService.updateSomaPf(this.analise.id).subscribe();
+                    });
+                });
 
             } else {
-				this.funcaoDadosService.importarFuncoesAnalise(funcoesFTImportar).subscribe(response => {
-					response?.abacoMensagens?.mensagens?.forEach(mensagem => {
-						if(mensagem.tipo === TipoMensagem.SUCESSO){
-							this.pageNotificationService.addSuccessMessage(mensagem.mensagem);
-						}
-						if(mensagem.tipo === TipoMensagem.AVISO){
-							this.pageNotificationService.addInfoMessage(mensagem.mensagem);
-						}
-						if(mensagem.tipo === TipoMensagem.ERRO){
-							this.pageNotificationService.addErrorMessage(mensagem.mensagem);
-						}
-					})
-					this.selections = [];
-					let funcoesCalculadas: FuncaoDados[] = [];
-					response?.funcaoDados?.forEach(funcao => {
-						let funcaoCalcular = new FuncaoDados().copyFromJSON(funcao);
+                this.funcaoDadosService.importarFuncoesAnalise(funcoesFTImportar).subscribe(response => {
+                    response?.abacoMensagens?.mensagens?.forEach(mensagem => {
+                        if (mensagem.tipo === TipoMensagem.SUCESSO) {
+                            this.pageNotificationService.addSuccessMessage(mensagem.mensagem);
+                        }
+                        if (mensagem.tipo === TipoMensagem.AVISO) {
+                            this.pageNotificationService.addInfoMessage(mensagem.mensagem);
+                        }
+                        if (mensagem.tipo === TipoMensagem.ERRO) {
+                            this.pageNotificationService.addErrorMessage(mensagem.mensagem);
+                        }
+                    })
+                    this.selections = [];
+                    this.selectedFunctionsOrdered = [];
+                    let funcoesCalculadas: FuncaoDados[] = [];
+                    response?.funcaoDados?.forEach(funcao => {
+                        let funcaoCalcular = new FuncaoDados().copyFromJSON(funcao);
                         funcaoCalcular = Calculadora.calcular(
-                                    this.analise.metodoContagem,
-                                    funcaoCalcular,
-                                    this.analise.manual);
-						funcoesCalculadas.push(funcaoCalcular);
-					})
+                            this.analise.metodoContagem,
+                            funcaoCalcular,
+                            this.analise.manual);
+                        funcoesCalculadas.push(funcaoCalcular);
+                    })
 
-					this.funcaoDadosService.updatePF(funcoesCalculadas).subscribe(() => {
-						this.analiseService.updateSomaPf(this.analise.id).subscribe();
-					});
-				});
+                    this.funcaoDadosService.updatePF(funcoesCalculadas).subscribe(() => {
+                        this.analiseService.updateSomaPf(this.analise.id).subscribe();
+                    });
+                });
             }
         }
+    }
+
+    // Alterado: Método adicionado para ordenar a lista por Módulo, Funcionalidade e Nome.
+    private sortList(list: any[]) {
+        return _.sortBy(list, [
+            (item) => item.nomeModulo ? item.nomeModulo.toLowerCase() : '',
+            (item) => item.nomeFuncionalidade ? item.nomeFuncionalidade.toLowerCase() : '',
+            (item) => item.name ? item.name.toLowerCase() : ''
+        ]);
     }
 
     public recarregarDataTable() {
@@ -504,12 +555,14 @@ export class PesquisarFtComponent implements OnInit {
             if (this.metodoContagem === 1) {
                 this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             } else {
                 this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             }
 
@@ -518,12 +571,14 @@ export class PesquisarFtComponent implements OnInit {
             if (this.metodoContagem === 1) {
                 this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             } else {
                 this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    this.fn = value;
+                    // Alterado: Ordenando a lista antes de atribuir
+                    this.fn = this.sortList(value);
                 });
             }
         }

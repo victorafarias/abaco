@@ -72,9 +72,13 @@ public class ContratoResource {
     @Timed
     public ResponseEntity<Contrato> createContrato(@RequestBody Contrato contrato) throws URISyntaxException {
         log.debug("REST request to save Contrato : {}", contrato);
-        if (contrato.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new contrato cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        contrato.setId(null);
+        
+        //if (contrato.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new contrato cannot already have an ID")).body(null);
+        //}
 
         /* Verifing field "Inicio Vigência" and "Final Vigência" */
         if (contrato.getDataInicioVigencia().isAfter(contrato.getDataFimVigencia())){

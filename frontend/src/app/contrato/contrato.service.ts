@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 
 import { Contrato } from './contrato.model';
 import { ResponseWrapper, createRequestOption, JhiDateUtils } from '../shared';
-import { Organizacao } from '../organizacao';
+import { Organizacao } from '../organizacao/organizacao.model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable()

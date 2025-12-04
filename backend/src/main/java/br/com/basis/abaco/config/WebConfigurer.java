@@ -163,6 +163,9 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
         CorsConfiguration config = jHipsterProperties.getCors();
         if (config.getAllowedOrigins() != null && !config.getAllowedOrigins().isEmpty()) {
             log.debug("Registering CORS filter");
+            config.addExposedHeader("X-abacoApp-error");
+            config.addExposedHeader("X-abacoApp-params");
+            config.addExposedHeader("X-abacoApp-alert");
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/v2/api-docs", config);
         }

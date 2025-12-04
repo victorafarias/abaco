@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { AuthenticationService } from "@nuvem/angular-base";
 import { PageNotificationService } from "@nuvem/primeng-components";
 import { environment } from "src/environments/environment";
-import { Perfil } from "../perfil";
+import { Perfil } from "../perfil/perfil.model";
 import { User } from "../user/user.model";
 
 

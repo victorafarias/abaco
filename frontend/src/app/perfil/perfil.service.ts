@@ -4,7 +4,7 @@ import { PageNotificationService } from '@nuvem/primeng-components';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Analise } from '../analise';
+import { Analise } from '../analise/analise.model';
 import { Organizacao } from '../organizacao/organizacao.model';
 import { Sistema } from '../sistema/sistema.model';
 import { PerfilOrganizacao } from './perfil-organizacao.model';

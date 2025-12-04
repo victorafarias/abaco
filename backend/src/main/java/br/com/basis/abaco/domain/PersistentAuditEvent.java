@@ -29,7 +29,8 @@ public class PersistentAuditEvent implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    // Alterado: Ajustado allocationSize para 50 para alinhar com increment da sequência no PostgreSQL
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 50)
     @Column(name = "event_id")
     private Long id;
 

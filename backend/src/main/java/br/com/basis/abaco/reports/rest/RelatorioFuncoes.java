@@ -44,9 +44,9 @@ public class RelatorioFuncoes {
      */
     public List<FuncoesDTO> prepararListaFuncoes(Analise analise) {
         List<FuncoesDTO> list = new ArrayList<>();
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        if (funcaoTransacaos != null) {
-            for(FuncaoTransacao f : funcaoTransacaos) {
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        if (funcaotransacao != null) {
+            for(FuncaoTransacao f : funcaotransacao) {
                 this.popularFuncaoTransacao(f);
                 list.add(funcoes);
             }
@@ -157,9 +157,9 @@ public class RelatorioFuncoes {
      * @param analise
      */
     public FuncoesDTO recuperarCountsFt(Analise analise) {
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        if (funcaoTransacaos != null) {
-            for (FuncaoTransacao f : funcaoTransacaos) {
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        if (funcaotransacao != null) {
+            for (FuncaoTransacao f : funcaotransacao) {
                 this.countEeComplex(f);
                 this.countSeComplex(f);
                 this.countCeComplex(f);

@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Analise } from '../analise/';
+import { Analise } from '../analise/analise.model';
 
 import * as _ from 'lodash';
 import { Subject, Observable } from 'rxjs';
-import { FuncaoDados } from '../funcao-dados';
-import { FuncaoTransacao } from '../funcao-transacao';
+import { FuncaoDados } from '../funcao-dados/funcao-dados.model';
+import { FuncaoTransacao } from '../funcao-transacao/funcao-transacao.model';
 
 @Injectable()
 export class AnaliseSharedDataService {
@@ -75,8 +75,8 @@ export class AnaliseSharedDataService {
   getFuncaoAnaliseDescarregadaSubject() {
     return this.funcaoAnaliseDescarregadaSubject.asObservable();
   }
-  
-  manualSelecionado(): boolean{
+
+  manualSelecionado(): boolean {
     return !_.isUndefined(this.analise.manual);
   }
 

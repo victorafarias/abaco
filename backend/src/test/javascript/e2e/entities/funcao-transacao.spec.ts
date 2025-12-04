@@ -21,7 +21,7 @@ describe('FuncaoTransacao e2e test', () => {
         browser.waitForAngular();
     });
 
-    it('should load FuncaoTransacaos', () => {
+    it('should load funcaotransacao', () => {
         entityMenu.click();
         element.all(by.css('[routerLink="funcao-transacao"]')).first().click().then(() => {
             const expectVal = /abacoApp.funcaoTransacao.home.title/;

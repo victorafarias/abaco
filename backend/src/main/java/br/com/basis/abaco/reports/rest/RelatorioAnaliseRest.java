@@ -224,8 +224,8 @@ public class RelatorioAnaliseRest {
                         .collect(Collectors.toList()).get(0).getTotal() + funcaoDados.getPf().doubleValue());
             }
         }
-        for (int i = 0; i < analise.getFuncaoTransacaos().size(); i++) {
-            FuncaoTransacao funcaoTransacao = analise.getFuncaoTransacaos().stream().collect(Collectors.toList()).get(i);
+        for (int i = 0; i < analise.getFuncaoTransacao().size(); i++) {
+            FuncaoTransacao funcaoTransacao = analise.getFuncaoTransacao().stream().collect(Collectors.toList()).get(i);
             if(pfFuncionalidadeDTOS.stream().filter(pf -> pf.getNomeFuncionalidade().equals(funcaoTransacao.getFuncionalidade().getNome()))
                 .collect(Collectors.toList()).isEmpty()){
                 pfFuncionalidadeDTOS.add(new PfFuncionalidadeDTO(i+1, funcaoTransacao.getFuncionalidade().getNome(), funcaoTransacao.getPf().doubleValue()));
@@ -354,11 +354,13 @@ public class RelatorioAnaliseRest {
      * Método responsável por popular as informações do resumo da análise.
      */
     private void popularResumo() {
-        parametro.put("PFTOTAL", analise.getPfTotal());
+        // ADAPTAÇÃO: Converte BigDecimal para String para evitar o erro
+        parametro.put("PFTOTAL", analise.getPfTotal() != null ? analise.getPfTotal().toString() : "0");
+
         if(!analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
             String scopeCreep = "";
             if(analise.getFatorCriticidade() != null){
-                scopeCreep = Boolean.FALSE.equals(analise.getFatorCriticidade()) ?
+                scopeCreep = !analise.getFatorCriticidade() ?
                     " III. Total c/ Scope Creep (II +" :
                     " IV. Total c/ Scope Creep (III +";
             }else{
@@ -366,17 +368,36 @@ public class RelatorioAnaliseRest {
             }
 
             if (analise.getScopeCreep() != null) {
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getScopeCreep()/100+1));
+                // ADAPTAÇÃO: Converte o primeiro parâmetro para String
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(
+                    analise.getAdjustPFTotal() != null ? analise.getAdjustPFTotal().toString() : "0", 
+                    Double.valueOf(analise.getScopeCreep())/100+1
+                ));
                 scopeCreep += analise.getScopeCreep().intValue()+"%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }else{
-                parametro.put("PFESCOPESCREEP", calcularScopeCreep(analise.getAdjustPFTotal().toString(), analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa));
+                // ADAPTAÇÃO: Converte o primeiro parâmetro para String
+                parametro.put("PFESCOPESCREEP", calcularScopeCreep(
+                    analise.getAdjustPFTotal() != null ? analise.getAdjustPFTotal().toString() : "0", 
+                    analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA) ? fatorEstimado : fatorIndicativa
+                ));
                 scopeCreep += "35%):";
                 parametro.put("SCOPECREEP", scopeCreep);
             }
         }
-        parametro.put("AJUSTESPF", calcularPFsAjustado(analise.getPfTotal().toString(), analise.getAdjustPFTotal().toString()));
-        parametro.put("PFAJUSTADO", analise.getAdjustPFTotal());
+        
+        // ADAPTAÇÃO: Converte ambos para String
+        parametro.put("AJUSTESPF", calcularPFsAjustado(
+            analise.getPfTotal() != null ? analise.getPfTotal().toString() : "0", 
+            analise.getAdjustPFTotal() != null ? analise.getAdjustPFTotal().toString() : "0"
+        ));
+        
+        // ADAPTAÇÃO: Converte BigDecimal para Double (usando .doubleValue()) para o formatador funcionar
+        if (analise.getAdjustPFTotal() != null) {
+            parametro.put("PFAJUSTADO", transformarBigDecimal(analise.getAdjustPFTotal().doubleValue()));
+        } else {
+            parametro.put("PFAJUSTADO", "0,00");
+        }
     }
 
     /**
@@ -472,9 +493,9 @@ public class RelatorioAnaliseRest {
     private void  countQuantidadeFtrFt(Long id, FuncaoTransacaoDTO funcaoTransacaoDTO ) {
         int total = 0;
         String ftr = "";
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        if (funcaoTransacaos != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
-            for (FuncaoTransacao ft : funcaoTransacaos) {
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        if (funcaotransacao != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
+            for (FuncaoTransacao ft : funcaotransacao) {
                 if (ft.getId().equals(id)) {
                     total = ft.getAlrs().size();
                     if(total == 1 && ft.getAlrs().iterator().next().getValor() != null){
@@ -494,9 +515,9 @@ public class RelatorioAnaliseRest {
     private void countQuantidadeDerFt(Long id, FuncaoTransacaoDTO funcaoTransacaoDTO) {
         int total = 0;
         String der = "";
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        if (funcaoTransacaos != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
-            for (FuncaoTransacao ft : funcaoTransacaos) {
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        if (funcaotransacao != null && analise.getMetodoContagem() != MetodoContagem.ESTIMADA) {
+            for (FuncaoTransacao ft : funcaotransacao) {
                 if (ft.getId().equals(id)) {
                     total = ft.getDers().size();
                     if(total == 1 && ft.getDers().iterator().next().getValor() != null){
@@ -535,18 +556,18 @@ public class RelatorioAnaliseRest {
         verificaFuncaodados(listaFd, funcaoDados, identificador);
         verificaFuncaodados(listaFdFt, funcaoDados, 0);
 
-        Set<FuncaoTransacao> funcaoTransacaos = analise.getFuncaoTransacaos();
-        verificaFuncaoTransacao(listaFt, funcaoTransacaos, identificador);
-        verificaFuncaoTransacao(listaFdFt, funcaoTransacaos, 0);
+        Set<FuncaoTransacao> funcaotransacao = analise.getFuncaoTransacao();
+        verificaFuncaoTransacao(listaFt, funcaotransacao, identificador);
+        verificaFuncaoTransacao(listaFdFt, funcaotransacao, 0);
 
         parametro.put("LISTAFDFT", listaFdFt);
         parametro.put("LISTAFD", listaFd);
         parametro.put("LISTAFT", listaFt);
     }
 
-    private void verificaFuncaoTransacao(List<ListaFdFtDTO> listaFdFt, Set<FuncaoTransacao> funcaoTransacaos, Integer identificador) {
-        if (funcaoTransacaos != null) {
-            for (FuncaoTransacao ft : funcaoTransacaos) {
+    private void verificaFuncaoTransacao(List<ListaFdFtDTO> listaFdFt, Set<FuncaoTransacao> funcaotransacao, Integer identificador) {
+        if (funcaotransacao != null) {
+            for (FuncaoTransacao ft : funcaotransacao) {
                 String der = "";
                 String alrTr = "";
                 ListaFdFtDTO objeto = new ListaFdFtDTO();

@@ -52,7 +52,7 @@ public class AnaliseDTO implements ReportObject, Serializable {
     private Set<CompartilhadaDTO> compartilhadas = new HashSet<>();
 
     private Set<FuncaoDadosDTO> funcaoDados = new HashSet<>();
-    private Set<FuncaoTransacaoDTO> funcaoTransacaos = new HashSet<>();
+    private Set<FuncaoTransacaoDTO> funcaoTransacao = new HashSet<>();
 
     public Timestamp getDataCriacaoOrdemServico() {
         return ObjectUtils.clone(dataCriacaoOrdemServico);

@@ -2,13 +2,15 @@ import { Component, ViewChild, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng';
 import { DatatableComponent, PageNotificationService, DatatableClickEvent } from '@nuvem/primeng-components';
-import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
-import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
+import { Organizacao } from 'src/app/organizacao/organizacao.model';
+import { OrganizacaoService } from 'src/app/organizacao/organizacao.service';
+import { TipoEquipe } from 'src/app/tipo-equipe/tipo-equipe.model';
+import { TipoEquipeService } from 'src/app/tipo-equipe/tipo-equipe.service';
 import { UserService } from '../user.service';
 import { User } from '../user.model';
-import { SearchGroup } from '..';
+import { SearchGroup } from '../user.model';
 import { AuthService } from 'src/app/util/auth.service';
-import { PerfilService } from 'src/app/perfil';
+import { PerfilService } from 'src/app/perfil/perfil.service';
 
 @Component({
     selector: 'app-user',

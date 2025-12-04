@@ -30,6 +30,8 @@ public interface SistemaRepository extends JpaRepository<Sistema, Long> {
 
     Optional<Sistema> findBySigla(String sigla);
 
+    Optional<Sistema> findByNomeIgnoreCase(String nome);
+
     Set<Sistema> findAllByOrganizacaoId(Long id);
 
     @Override

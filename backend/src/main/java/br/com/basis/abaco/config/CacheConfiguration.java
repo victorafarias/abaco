@@ -84,6 +84,6 @@ public class CacheConfiguration {
         cm.createCache(br.com.basis.abaco.domain.Funcionalidade.class.getName(), jcacheConfiguration);
         cm.createCache(br.com.basis.abaco.domain.Analise.class.getName(), jcacheConfiguration);
         cm.createCache(br.com.basis.abaco.domain.Analise.class.getName() + ".funcaoDados", jcacheConfiguration);
-        cm.createCache(br.com.basis.abaco.domain.Analise.class.getName() + ".funcaoTransacaos", jcacheConfiguration);
+        cm.createCache(br.com.basis.abaco.domain.Analise.class.getName() + ".funcaotransacao", jcacheConfiguration);
     }
 }

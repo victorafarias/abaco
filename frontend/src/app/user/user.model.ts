@@ -1,6 +1,6 @@
 import { BaseEntity } from '../shared';
-import { TipoEquipe } from '../tipo-equipe';
-import { Organizacao } from '../organizacao';
+import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
+import { Organizacao } from '../organizacao/organizacao.model';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { UserService } from './user.service';
 import { Perfil } from '../perfil/perfil.model';

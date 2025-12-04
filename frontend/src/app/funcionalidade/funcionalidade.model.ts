@@ -18,7 +18,8 @@ export class Funcionalidade implements BaseEntity {
   }
 
   static toNonCircularJson(f: Funcionalidade): Funcionalidade {
-    return new Funcionalidade(f.id, f.nome, undefined);
+    const modulo = f.modulo ? new Modulo(f.modulo.id, f.modulo.nome) : undefined;
+    return new Funcionalidade(f.id, f.nome, modulo);
   }
 
   // XXX extrair interface?

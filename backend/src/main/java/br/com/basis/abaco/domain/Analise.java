@@ -76,7 +76,8 @@ public class Analise implements Serializable, ReportObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    // Alterado: Ajustado allocationSize para 50 para alinhar com increment da sequência no PostgreSQL
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 50)
     private Long id;
 
     @Column(name = "numero_os")
@@ -219,7 +220,7 @@ public class Analise implements Serializable, ReportObject {
     @OneToMany(mappedBy = ANALISE, cascade = CascadeType.ALL)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @OrderBy("ordem DESC")
-    private Set<FuncaoTransacao> funcaoTransacaos = new HashSet<>();
+    private Set<FuncaoTransacao> funcaoTransacao = new HashSet<>();
 
     @Nullable
     @ManyToOne
@@ -389,14 +390,16 @@ public class Analise implements Serializable, ReportObject {
     }
 
     public String getNomeUser(){
-        String ponto = ". ";
-        String nomeUser = "";
+        StringBuilder nomeUser = new StringBuilder();
         if (users != null) {
-            for(User nome : users){
-                nomeUser = nomeUser.concat(nome.getFirstName()).concat(ponto);
+            for(User user : users){
+                if(nomeUser.length() > 0){
+                    nomeUser.append(", ");
+                }
+                nomeUser.append(user.getFirstName()).append(" ").append(user.getLastName());
             }
         }
-        return nomeUser;
+        return nomeUser.toString();
     }
 
 

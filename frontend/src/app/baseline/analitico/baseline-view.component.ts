@@ -2,7 +2,7 @@ import {Component, OnInit, OnDestroy, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {BaselineService} from '../baseline.service';
 import {Subscription} from '../../../../node_modules/rxjs';
-import { BaselineSintetico } from '..';
+import { BaselineSintetico } from '../baseline-sintetico.model';
 
 
 @Component({

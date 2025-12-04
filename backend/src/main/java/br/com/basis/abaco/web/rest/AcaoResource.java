@@ -54,10 +54,15 @@ public class AcaoResource {
     @PostMapping("/acaos")
     public ResponseEntity<AcaoDTO> createAcao(@Valid @RequestBody AcaoDTO acaoDTO) throws URISyntaxException {
         log.debug("REST request to save Acao : {}", acaoDTO);
-        if (acaoDTO.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                "A new acao cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        acaoDTO.setId(null);
+
+        //if (acaoDTO.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //        "A new acao cannot already have an ID")).body(null);
+        //}
+        
         AcaoDTO result = acaoService.save(acaoDTO);
         return ResponseEntity.created(new URI("/api/acaos/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);

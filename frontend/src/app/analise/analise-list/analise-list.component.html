@@ -52,16 +52,15 @@
 				</div>
 
 				<div class="ui-g-4 ui-md-4 ui-sm-12">
-					<p-dropdown [filter]="true" [options]="lstDatas" id="idStatusAnalise"
-						[(ngModel)]="searchGroup.data" [autoWidth]="false"
-						[placeholder]="this.getLabel('Data')">
+					<p-dropdown [filter]="true" [options]="lstDatas" id="idStatusAnalise" [(ngModel)]="searchGroup.data"
+						[autoWidth]="false" [placeholder]="this.getLabel('Data')">
 					</p-dropdown>
 				</div>
 
 				<div class="ui-g-2 ui-md-2 ui-sm-12">
 					<span class="md-inputfield">
-						<p-calendar required name="dataInicio" [(ngModel)]="searchGroup.dataInicio" placeholder="Periodo de: "
-							 id="dataInicio" dateFormat="dd/mm/yy" showIcon="true">
+						<p-calendar required name="dataInicio" [(ngModel)]="searchGroup.dataInicio"
+							placeholder="Periodo de: " id="dataInicio" dateFormat="dd/mm/yy" showIcon="true">
 						</p-calendar>
 					</span>
 				</div>
@@ -69,7 +68,7 @@
 				<div class="ui-g-2 ui-md-2 ui-sm-12">
 					<span class="md-inputfield">
 						<p-calendar required name="dataFim" [(ngModel)]="searchGroup.dataFim" placeholder="Até: "
-							 id="dataFim" dateFormat="dd/mm/yy" showIcon="true">
+							id="dataFim" dateFormat="dd/mm/yy" showIcon="true">
 						</p-calendar>
 					</span>
 				</div>
@@ -105,22 +104,14 @@
 							</p-multiSelect>
 						</div>
 					</div>
-					<basis-datatable type="server"
-									 [url]="userAnaliseUrl"
-									 (dblclick)="onRowDblclick($event)"
-									 [responsive]="true"
-									 (buttonClick)="datatableClick($event)"
-									 (finishedLoading)="setParamsLoad()"
-									 [rows]="20" id="idTabelaComponentAnalise"
-									 [rowsPerPageOptions]="rowsPerPageOptions"
-									 [disableDelete]="!canDeletar"
-									 [disableEdit]="!canEditar || selectButtonMultiple"
-									 [disableView]="!canConsultar || selectButtonMultiple"
-									 (click)="selectAnalise($event)"
-									 [showPaginationFooter]="true"
-									 [selectionMode]="'multiple'"
-									 [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}', 'autoLayout': true}"
-									 [title]="'Análises'" #datatable>
+					<basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
+						[responsive]="true" (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()"
+						[rows]="20" id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
+						[disableDelete]="!canDeletar" [disableEdit]="!canEditar || selectButtonMultiple"
+						[disableView]="!canConsultar || selectButtonMultiple" (click)="selectAnalise($event)"
+						[showPaginationFooter]="true" [selectionMode]="'multiple'"
+						[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}', 'autoLayout': true}"
+						[title]="'Análises'" #datatable>
 						<p-column header="Organização" field="organizacao.sigla" [sortable]="true" filterType="select"
 							[filter]="true">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
@@ -168,11 +159,12 @@
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'pf-conciliacao'" header="PF Conciliação" field="pfTotalAprovado"
-								  [sortable]="true" filterType="">
+							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
 								<span *ngIf="analise.pfTotalAprovado || analise.analiseDivergence?.pfTotalAprovado">
 									{{
-										((analise.pfTotalAprovado || analise.analiseDivergence?.pfTotalAprovado) | number: '1.2-2')?.replace(".", ",")
+									((analise.pfTotalAprovado || analise.analiseDivergence?.pfTotalAprovado) | number:
+									'1.2-2')?.replace(".", ",")
 									}}
 								</span>
 							</ng-template>
@@ -189,8 +181,8 @@
 								{{ analise.dataHomologacao | date: 'dd/MM/y' }}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'data-encerramento'" header="Data de encerramento" field="dtEncerramento"
-							[sortable]="true" filterType="">
+						<p-column [styleClass]="'data-encerramento'" header="Data de encerramento"
+							field="dtEncerramento" [sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
 								{{ analise.dtEncerramento | date: 'dd/MM/y' }}
 							</ng-template>
@@ -251,21 +243,22 @@
 							[bTooltip]="compartilharTooltip()" icon="share" class="ui-button-info"
 							(click)="compartilharAnalise()" [disabled]="datatable.selectedRow == null">
 						</basis-datatable-button>
-						<basis-datatable-button name="clone" *ngIf="canClonar && !selectButtonMultiple" [bTooltip]="clonarTooltip()"
-							(click)="clonar(analiseSelecionada.id)" icon="content-copy"
+						<basis-datatable-button name="clone" *ngIf="canClonar && !selectButtonMultiple"
+							[bTooltip]="clonarTooltip()" (click)="clonar(analiseSelecionada.id)" icon="content-copy"
 							[disabled]="datatable.selectedRow == null ">
 						</basis-datatable-button>
-						<basis-datatable-button name="relatorioBrowserDetalhado" *ngIf="canRelatorioDetalhado && !selectButtonMultiple"
-							[bTooltip]="relatorioTooltip()" icon="description"
-							(click)="geraRelatorioPdfDetalhadoBrowser(analiseSelecionada)"
+						<basis-datatable-button name="relatorioBrowserDetalhado"
+							*ngIf="canRelatorioDetalhado && !selectButtonMultiple" [bTooltip]="relatorioTooltip()"
+							icon="description" (click)="geraRelatorioPdfDetalhadoBrowser(analiseSelecionada)"
 							[disabled]="datatable.selectedRow == null">
 						</basis-datatable-button>
-						<basis-datatable-button name="relatorioExcelDetalhado" *ngIf="canRelatorioExcel && !selectButtonMultiple"
-							[bTooltip]="relatorioExcelTooltip()" icon="description"
-							(click)="gerarRelatorioExcel(analiseSelecionada)" [disabled]="datatable.selectedRow == null"
-							class="ui-button-success">
+						<basis-datatable-button name="relatorioExcelDetalhado"
+							*ngIf="canRelatorioExcel && !selectButtonMultiple" [bTooltip]="relatorioExcelTooltip()"
+							icon="description" (click)="gerarRelatorioExcel(analiseSelecionada)"
+							[disabled]="datatable.selectedRow == null" class="ui-button-success">
 						</basis-datatable-button>
-						<basis-datatable-button name="relatorioAnaliseContagem" *ngIf="canRelatorioFundamentacao && !selectButtonMultiple"
+						<basis-datatable-button name="relatorioAnaliseContagem"
+							*ngIf="canRelatorioFundamentacao && !selectButtonMultiple"
 							[bTooltip]="relatorioContagemTooltip()" icon="description"
 							(click)="gerarRelatorioContagem(analiseSelecionada)"
 							[disabled]="datatable.selectedRow == null" class="ui-button-danger">
@@ -287,7 +280,8 @@
 							[bTooltip]="'Exportar planilha excel'" (click)="openModalExportarExcel(analiseSelecionada)"
 							icon="file-upload" class="ui-button-success" [disabled]="datatable.selectedRow == null">
 						</basis-datatable-button>
-						<basis-datatable-button *ngIf="!selectButtonMultiple" name="exportJson" [bTooltip]="'Exportar análise'" icon="call-received"
+						<basis-datatable-button *ngIf="!selectButtonMultiple" name="exportJson"
+							[bTooltip]="'Exportar análise'" icon="call-received"
 							(click)="exportarAnalise(analiseSelecionada);" [disabled]="datatable.selectedRow == null"
 							class="ui-button-info">
 						</basis-datatable-button>
@@ -299,7 +293,8 @@
 
 					<div class="ui-g-11 div-btn-exportar">
 						<app-export-button [dataTable]="datatable" resourceName="analise"
-							[columnsVisible]="columnsVisible" [filter]="searchGroup" funcionalidadeName="analise" class="ui-g-12 ui-md-3 btn-exportar">
+							[columnsVisible]="columnsVisible" [filter]="searchGroup" funcionalidadeName="analise"
+							class="ui-g-12 ui-md-3 btn-exportar">
 						</app-export-button>
 					</div>
 				</div>
@@ -316,8 +311,8 @@
 </p-confirmDialog>
 <p-dialog *ngIf="equipeShare" header="Compartilhar Análise" [(visible)]="mostrarDialog" [modal]="true"
 	(onHide)="limparSelecaoCompartilhar()" [style]="{width: '50vw'}">
-	<p-table [(value)]="equipeShare" [headerCheckboxToggleAllPages]="true" [(selection)]="selectedEquipes"
-		dataKey="id" emptyMessage="Nenhuma outra equipe na sua organização pode ter acesso à essa análise">
+	<p-table [(value)]="equipeShare" [headerCheckboxToggleAllPages]="true" [(selection)]="selectedEquipes" dataKey="id"
+		emptyMessage="Nenhuma outra equipe na sua organização pode ter acesso à essa análise">
 
 		<ng-template pTemplate="header">
 			<tr>
@@ -434,7 +429,8 @@
 					(onChange)="mudarEncerramento($event)" [(ngModel)]="analiseSelecionada.encerrada">
 				</p-checkbox>
 			</div>
-			<div class="ui-g-4 ui-md-4 ui-sm-12" *ngIf="analiseSelecionada?.encerrada && analisesSelecionadasEmLote?.length == 1">
+			<div class="ui-g-4 ui-md-4 ui-sm-12"
+				*ngIf="analiseSelecionada?.encerrada && analisesSelecionadasEmLote?.length == 1">
 				<span class="md-inputfield">
 					<p-calendar required name="dtEncerramento" [(ngModel)]="analiseSelecionada.dtEncerramento"
 						[appendTo]="dialogAlterarStatus" id="dtEncerramento" dateFormat="dd/mm/yy" showIcon="true">
@@ -513,7 +509,7 @@
 
 	<p-fileUpload *ngIf="!carregadaAnalise" name="jsonAnalise" [showCancelButton]="false" [showUploadButton]="false"
 		[chooseLabel]="'Escolha o arquivo'" (onRemove)="removeExcelFiles()" (onSelect)="selectExcelAnalise($event)"
-				  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xls">
+		accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xls">
 	</p-fileUpload>
 	<div *ngIf="carregadaAnalise" class="ui-g ui-fluid">
 		<div class="ui-g-12">
@@ -692,7 +688,7 @@
 										<ng-template pTemplate="footer">
 											<tr>
 												<td colspan="3" style="text-align:center">{{this.getLabel('Total')}} {{
-                                                    totalEsforcoFases() }}%</td>
+													totalEsforcoFases() }}%</td>
 											</tr>
 										</ng-template>
 									</p-table>
@@ -723,8 +719,8 @@
 			</div>
 		</div>
 	</div>
-	<app-green-button *ngIf="!carregadaAnalise && analiseFileExcel" buttonLabel="Carregar" (click)="carregarAnalise()"
-		style="float:right; margin: 5px">
+	<app-green-button *ngIf="!carregadaAnalise && analisesImportar && analisesImportar.length > 0"
+		buttonLabel="Carregar" (click)="carregarAnalise()" style="float:right; margin: 5px">
 	</app-green-button>
 	<app-white-button *ngIf="!carregadaAnalise" buttonLabel="Cancelar" (click)="closeModalImportAnalise()"
 		style="float:right; margin: 5px">
@@ -732,15 +728,12 @@
 </p-dialog>
 
 
-
 <p-dialog [header]="headerDialogHistorico" [(visible)]="showDialogHistorico" [style]="{width: '50vw'}"
 	[contentStyle]="{'height': ['windowHeightDialog']}" [modal]="true" #dialogHistorico>
 	<!-- Datatable Permissao -->
 	<basis-datatable type="memory" [value]="listHistoricos" [disableView]="true" [disableEdit]="true"
-		[disableDelete]="true"
-		[appendTo]="dialogHistorico" id="datatableHistorico" [showPaginationFooter]="true"
-		[scrollHeight]="'500px'" [enableButtonsScroll]="true" [rows]="100"
-		#datatableHistorico>
+		[disableDelete]="true" [appendTo]="dialogHistorico" id="datatableHistorico" [showPaginationFooter]="true"
+		[scrollHeight]="'500px'" [enableButtonsScroll]="true" [rows]="100" #datatableHistorico>
 		<p-column header="Data" field="dtAcao" [sortable]="true">
 			<ng-template let-row="rowData" pTemplate="body">
 				{{ row.dtAcao | date: 'dd/MM/yyyy' : 'UTC+offset'}}
@@ -768,7 +761,41 @@
 	</basis-datatable>
 
 	<div class="ui-g-12 ui-md-2">
-		<app-export-button [appendTo]="dialogHistorico" [dataTable]="datatableHistorico" resourceName="historico" funcionalidadeName="analise" [filter]="analiseSelecionada">
+		<app-export-button [appendTo]="dialogHistorico" [dataTable]="datatableHistorico" resourceName="historico"
+			funcionalidadeName="analise" [filter]="analiseSelecionada">
 		</app-export-button>
 	</div>
+
+</p-dialog>
+
+<p-dialog header="Fatores de Ajuste sem Correspondência" [(visible)]="showDialogDePara" [modal]="true"
+	[style]="{'max-width': '80%', 'width': '80%'}"
+	[contentStyle]="{'min-height': '410px','max-height': '70vh', 'overflow': 'auto'}">
+	<div class="ui-g">
+		<div class="ui-g-12">
+			<p>Os seguintes Fatores de Ajuste da planilha não foram encontrados no Manual
+				selecionado. Por favor,
+				realize o mapeamento:</p>
+		</div>
+		<div class="ui-g-12" *ngFor="let fator of fatoresSemCorrespondencia"
+			style="border-bottom: 1px solid #ccc; padding: 5px 0;">
+			<div class="ui-g-6" style="align-self: center;">
+				{{ fator }}
+			</div>
+			<div class="ui-g-6">
+				<p-dropdown [options]="fatoresAjusteManual" [(ngModel)]="mapaFatorAjuste[fator]" [autoWidth]="false"
+					placeholder="Selecione..."></p-dropdown>
+			</div>
+		</div>
+	</div>
+
+	<p-footer>
+		<div class="ui-g ui-md-12" style="justify-content: right; margin-bottom: 05px; margin-top: 05px">
+			<app-green-button *ngIf="carregadaAnalise" buttonLabel="Importar" (click)="confirmarDePara()"
+				style="float:right; margin: 5px;">
+			</app-green-button>
+			<app-white-button buttonLabel="Cancelar" (click)="cancelarDePara()" style="float:right; margin: 5px">
+			</app-white-button>
+		</div>
+	</p-footer>
 </p-dialog>

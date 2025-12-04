@@ -14,6 +14,7 @@ import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -44,6 +45,7 @@ public class AnaliseEditDTO extends AnaliseBaseDTO implements ReportObject {
     private Timestamp dtEncerramento;
     private boolean isEncerrada;
     private MotivoAnalise motivo;
+    private Map<String, Long> mapaFatorAjuste;
 
     public void setDtEncerramento(Timestamp dtEncerramento) {
         this.dtEncerramento = dtEncerramento == null ? null : new Timestamp(dtEncerramento.getTime());

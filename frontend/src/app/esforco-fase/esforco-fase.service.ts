@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ResponseWrapper, createRequestOption, JhiDateUtils } from '../shared';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular//common/http';
-import { EsforcoFase } from '../esforco-fase';
+import { EsforcoFase } from './esforco-fase.model';
 import { Observable } from 'rxjs';
 
 @Injectable()

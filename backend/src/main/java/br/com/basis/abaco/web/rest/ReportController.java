@@ -461,7 +461,7 @@ public class ReportController {
 
     private List<DetailFunctionRecord> convertTranFunctions(Analise analise) {
         List<DetailFunctionRecord> list = new ArrayList<>();
-        for(FuncaoTransacao f:analise.getFuncaoTransacaos()) {
+        for(FuncaoTransacao f:analise.getFuncaoTransacao()) {
             DetailFunctionRecord record = new DetailFunctionRecord();
             setRecord(f, record);
             realizarVerificacoes(list, f, record);

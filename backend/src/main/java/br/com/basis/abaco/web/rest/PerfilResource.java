@@ -95,13 +95,22 @@ public class PerfilResource {
     @Secured("ROLE_ABACO_PERFIL_CADASTRAR")
     public ResponseEntity<Perfil> createPerfil(@Valid @RequestBody PerfilDTO perfilDTO) throws URISyntaxException, InvocationTargetException, IllegalAccessException {
         log.debug("REST request to save Perfil : {}", perfilDTO);
-        if (perfilDTO.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                "A new perfil cannot already have an ID")).body(null);
-        }else if(perfilRepository.findByNome(perfilDTO.getNome()).isPresent()){
+        
+        // Atualizado
+        perfilDTO.setId(null);
+        if (perfilRepository.findByNome(perfilDTO.getNome()).isPresent()) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "nameexists", "Nome do perfil já existe."))
                 .body(null);
         }
+
+        //if (perfilDTO.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //        "A new perfil cannot already have an ID")).body(null);
+        //}else if(perfilRepository.findByNome(perfilDTO.getNome()).isPresent()){
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "nameexists", "Nome do perfil já existe."))
+        //        .body(null);
+        //}
+
         Perfil result = perfilService.save(perfilDTO);
         return ResponseEntity.created(new URI("/api/perfils/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);

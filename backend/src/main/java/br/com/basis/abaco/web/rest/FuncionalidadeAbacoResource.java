@@ -54,10 +54,14 @@ public class FuncionalidadeAbacoResource {
     @PostMapping("/funcionalidade-abacos")
     public ResponseEntity<FuncionalidadeAbacoDTO> createFuncionalidadeAbaco(@Valid @RequestBody FuncionalidadeAbacoDTO funcionalidadeAbacoDTO) throws URISyntaxException {
         log.debug("REST request to save FuncionalidadeAbaco : {}", funcionalidadeAbacoDTO);
-        if (funcionalidadeAbacoDTO.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                "A new funcionalidadeAbaco cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        funcionalidadeAbacoDTO.setId(null);
+        
+        //if (funcionalidadeAbacoDTO.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //        "A new funcionalidadeAbaco cannot already have an ID")).body(null);
+        //}
         FuncionalidadeAbacoDTO result = funcionalidadeAbacoService.save(funcionalidadeAbacoDTO);
         return ResponseEntity.created(new URI("/api/funcionalidade-abacos/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);

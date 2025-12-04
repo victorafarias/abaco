@@ -1,5 +1,5 @@
 import { BaseEntity } from '../shared';
-import { Funcionalidade } from '../funcionalidade';
+import { Funcionalidade } from '../funcionalidade/funcionalidade.model';
 import { MappableEntities } from '../shared/mappable-entities';
 
 export class Modulo implements BaseEntity {

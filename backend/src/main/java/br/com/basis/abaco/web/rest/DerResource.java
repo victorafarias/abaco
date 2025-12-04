@@ -71,9 +71,13 @@ public class DerResource {
     @Timed
     public ResponseEntity<Der> createDer(@Valid @RequestBody Der der) throws URISyntaxException {
         log.debug("REST request to save Der : {}", der);
-        if (der.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new der cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        der.setId(null);
+
+        // if (der.getId() != null) {
+        //     return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new der cannot already have an ID")).body(null);
+        // }
         Der result = derRepository.save(der);
         derSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/ders/" + result.getId()))

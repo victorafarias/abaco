@@ -51,7 +51,8 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    // Alterado: Ajustado allocationSize para 50 para alinhar com increment da sequência no PostgreSQL
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 50)
     private Long id;
 
     @Size(max = 80)
@@ -92,8 +93,8 @@ public class Organizacao implements Serializable, ReportObject, Cloneable {
     @Column(name = "logo_id")
     private Long logoId;
 
-    @NotNull
-    @Column(name = "prazo_aprovacao_divergencia_dias")
+    //@NotNull
+    @Column(name = "prazo_aprovacao_divergencia_dias", nullable = true) 
     private Integer prazoAprovacaoDivergenciaDias;
 
     public Long getId() {
