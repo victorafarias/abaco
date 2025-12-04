@@ -1,40 +1,48 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Column, DatatableClickEvent, DatatableComponent, PageNotificationService} from '@nuvem/primeng-components';
+import { Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
-import {ConfirmationService, FileUpload, SelectItem} from 'primeng';
-import {forkJoin, Observable, Subscription} from 'rxjs';
-import {Alr} from '../alr/alr.model';
-import {Analise, AnaliseService} from '../analise';
-import {AnaliseReferenciavel} from '../analise-shared/analise-referenciavel';
-import {AnaliseSharedUtils} from '../analise-shared/analise-shared-utils';
-import {Calculadora} from '../analise-shared/calculadora';
-import {DerChipConverter} from '../analise-shared/der-chips/der-chip-converter';
-import {DerChipItem} from '../analise-shared/der-chips/der-chip-item';
-import {DerTextParser, ParseResult} from '../analise-shared/der-text/der-text-parser';
-import {ResumoFuncoes} from '../analise-shared/resumo-funcoes';
-import {FatorAjuste} from '../fator-ajuste';
-import {Funcionalidade, FuncionalidadeService} from '../funcionalidade/index';
-import {Manual} from '../manual';
-import {Modulo, ModuloService} from '../modulo';
-import {ResponseWrapper} from '../shared';
-import {AnaliseSharedDataService} from '../shared/analise-shared-data.service';
-import {FatorAjusteLabelGenerator} from '../shared/fator-ajuste-label-generator';
-import {MessageUtil} from '../util/message.util';
-import {FuncaoTransacaoService} from '../funcao-transacao/funcao-transacao.service';
-import {CalculadoraTransacao} from './../analise-shared/calculadora-transacao';
-import {MetodoContagem} from './../analise/analise.model';
-import {BaselineAnalitico} from './../baseline/baseline-analitico.model';
-import {BaselineService} from './../baseline/baseline.service';
-import {Der} from './../der/der.model';
-import {FuncaoTransacao, TipoFuncaoTransacao} from './../funcao-transacao/funcao-transacao.model';
-import {FuncaoDados, TipoFuncaoDados} from './funcao-dados.model';
-import {FuncaoDadosService} from './funcao-dados.service';
-import {BlockUiService} from '@nuvem/angular-base';
-import {Sistema, SistemaService} from '../sistema';
-import {Upload} from '../upload/upload.model';
-import {DomSanitizer} from '@angular/platform-browser';
-import {Utilitarios} from '../util/utilitarios.util';
+import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
+import { forkJoin, Observable, Subscription } from 'rxjs';
+import { Alr } from '../alr/alr.model';
+import { Analise } from '../analise/analise.model';
+import { AnaliseService } from '../analise/analise.service';
+import { AnaliseReferenciavel } from '../analise-shared/analise-referenciavel';
+import { AnaliseSharedUtils } from '../analise-shared/analise-shared-utils';
+import { Calculadora } from '../analise-shared/calculadora';
+import { DerChipConverter } from '../analise-shared/der-chips/der-chip-converter';
+import { DerChipItem } from '../analise-shared/der-chips/der-chip-item';
+import { DerTextParser, ParseResult } from '../analise-shared/der-text/der-text-parser';
+import { ResumoFuncoes } from '../analise-shared/resumo-funcoes';
+import { FatorAjuste } from '../fator-ajuste/fator-ajuste.model';
+import { Funcionalidade } from '../funcionalidade/funcionalidade.model';
+import { FuncionalidadeService } from '../funcionalidade/funcionalidade.service';
+import { Manual } from '../manual/manual.model';
+import { Modulo } from '../modulo/modulo.model';
+import { ModuloService } from '../modulo/modulo.service';
+import { ResponseWrapper } from '../shared';
+import { AnaliseSharedDataService } from '../shared/analise-shared-data.service';
+import { FatorAjusteLabelGenerator } from '../shared/fator-ajuste-label-generator';
+import { MessageUtil } from '../util/message.util';
+import { FuncaoTransacaoService } from '../funcao-transacao/funcao-transacao.service';
+import { CalculadoraTransacao } from './../analise-shared/calculadora-transacao';
+import { MetodoContagem } from './../analise/analise.model';
+import { BaselineAnalitico } from './../baseline/baseline-analitico.model';
+import { BaselineService } from './../baseline/baseline.service';
+import { Der } from './../der/der.model';
+import { FuncaoTransacao, TipoFuncaoTransacao } from './../funcao-transacao/funcao-transacao.model';
+import { FuncaoDados, TipoFuncaoDados } from './funcao-dados.model';
+import { FuncaoDadosService } from './funcao-dados.service';
+import { BlockUiService } from '@nuvem/angular-base';
+import { Sistema } from '../sistema/sistema.model';
+import { SistemaService } from '../sistema/sistema.service';
+import { Upload } from '../upload/upload.model';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Utilitarios } from '../util/utilitarios.util';
+import { catchError, map } from 'rxjs/operators';
+import { of, throwError } from 'rxjs'; // Adiciona throwError para o catchError
+import { MessageService } from 'primeng/api';
+
 
 @Component({
     selector: 'app-analise-funcao-dados',
@@ -103,7 +111,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         { label: 'AIE - Arquivo de Interface Externa', value: 'AIE' }
     ];
 
-    crud: string[] = ['Excluir', 'Editar', 'Inserir', 'Pesquisar', 'Consultar'];
+    crud: string[] = ['Pesquisar', 'Cadastrar', 'Editar', 'Visualizar', 'Excluir'];
 
     selectButtonMultiple: boolean = false;
     mostrarDialogEditarEmLote: boolean = false;
@@ -127,6 +135,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
     public erroUnitario: boolean;
     public erroDeflator: boolean;
     public displayDescriptionDeflator = false;
+    public funcaoDados: FuncaoDados = new FuncaoDados();
+    public baselineAnalitico: BaselineAnalitico = new BaselineAnalitico();
     public funcoesDados: FuncaoDados[];
     public disableAba = false;
     public analise: Analise;
@@ -174,6 +184,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         private funcionalidadeService: FuncionalidadeService,
         private moduloService: ModuloService,
         sanitizer: DomSanitizer,
+        private messageService: MessageService // ATUALIZADO: Injeção do MessageService
     ) {
         this.sanitizer = sanitizer;
         this.lastObjectUrl = "";
@@ -386,10 +397,39 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         });
     }
 
-    public carregarDadosBaseline() {
-        this.baselineService.baselineAnaliticoFD(this.analise.sistema.id).subscribe((res: ResponseWrapper) => {
-            this.dadosBaselineFD = res.json;
-        });
+    carregarDadosBaseline() {
+
+        // ATUALIZADO: Usando a variável de objeto singular 'funcaoDados'
+        // E checando se a propriedade 'id' existe e é maior que zero
+        if (!this.funcaoDados.id || this.funcaoDados.id <= 0) {
+            // Se o ID for inválido, retorna um Observable vazio
+            // Isso encerra a cadeia de forma limpa, resolvendo o TypeError
+            return of(null);
+        }
+
+        // ATUALIZADO: Chamando o método do service com o nome correto
+        this.baselineService.getBaselineFuncaoDados(this.funcaoDados.id).pipe(
+            // Adiciona um tratamento de erro robusto caso a chamada falhe
+            catchError(error => {
+                console.error('Erro ao carregar dados de baseline:', error);
+                // ATUALIZADO: Retorna um Observable de erro válido (throwError)
+                // Isso evita o TypeError: You provided 'undefined' where a stream was expected
+                return throwError(error);
+            })
+        ).subscribe(
+            (baseline: BaselineAnalitico) => {
+                this.baselineAnalitico = baseline;
+            },
+            (error) => {
+                // ATUALIZADO: Usando o MessageService injetado
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Não foi possível carregar o baseline: ' + (error.message || 'Erro de comunicação')
+                });
+                this.baselineAnalitico = new BaselineAnalitico();
+            }
+        );
     }
 
     private atualizaResumo() {
@@ -502,6 +542,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         const funcaoDadosCalculada = Calculadora.calcular(this.analise.metodoContagem,
             this.seletedFuncaoDados,
             this.analise.contrato.manual);
+        let ordem = this.funcoesDados.length + 1;
         for (const nome of this.parseResult.textos) {
             lstFuncaoDadosWithExist.push(
                 this.funcaoDadosService.existsWithName(
@@ -512,6 +553,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             );
             const funcaoDadosMultp: FuncaoDados = funcaoDadosCalculada.clone();
             funcaoDadosMultp.name = nome;
+            funcaoDadosMultp.ordem = ordem++;
             lstFuncaoDados.push(funcaoDadosMultp);
         }
         forkJoin(lstFuncaoDadosWithExist).subscribe(listExistWithName => {
@@ -552,14 +594,14 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
     validarNameFuncaoTransacaos(ft: FuncaoTransacao) {
         const that = this;
         return new Promise(resolve => {
-            if (!(that.analise.funcaoTransacaos) || that.analise.funcaoTransacaos.length === 0) {
+            if (!(that.analise.funcaoTransacao) || that.analise.funcaoTransacao.length === 0) {
                 return resolve(true);
             }
-            that.analise.funcaoTransacaos.forEach((data, index) => {
+            that.analise.funcaoTransacao.forEach((data, index) => {
                 if (data.comparar(ft)) {
                     return resolve(false);
                 }
-                if (!that.analise.funcaoTransacaos[index + 1]) {
+                if (!that.analise.funcaoTransacao[index + 1]) {
                     return resolve(true);
                 }
             });
@@ -853,9 +895,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         const lstFuncaoTransacaoToVerify: Observable<any>[] = [];
         const lstFuncaoTransacaoToInclud: Observable<any>[] = [];
         this.blockUiService.show();
-        this.funcaoDadosService.getById(funcaoDadosSelecionada.id).subscribe(funcaoDados => {
+        forkJoin([
+            this.funcaoDadosService.getById(funcaoDadosSelecionada.id),
+            this.funcaoTransacaoService.getVwFuncaoTransacaoByIdAnalise(this.analise.id)
+        ]).subscribe(([funcaoDados, currentFTs]) => {
+            let maxOrder = 0;
+            if (currentFTs) {
+                currentFTs.forEach(f => {
+                    if (f.ordem && f.ordem > maxOrder) {
+                        maxOrder = f.ordem;
+                    }
+                });
+            }
+            let nextOrder = maxOrder + 1;
+
             this.crud.forEach(element => {
-                lstFuncaoTransacaoCrud.push(this.gerarFuncaoTransacao(element, funcaoDados));
+                const ft = this.gerarFuncaoTransacao(element, funcaoDados);
+                ft.ordem = nextOrder++;
+                lstFuncaoTransacaoCrud.push(ft);
             });
             lstFuncaoTransacaoCrud.forEach(funcaoTransacaoAtual => {
                 lstFuncaoTransacaoToVerify.push(
@@ -866,9 +923,9 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
                         funcaoTransacaoAtual.funcionalidade.modulo.id)
                 );
             });
-            forkJoin(lstFuncaoTransacaoToVerify).subscribe(lstFuncaoTranscao => {
+            forkJoin(lstFuncaoTransacaoToVerify).subscribe(lstFuncaoTransacao => {
                 let index = 0;
-                for (const existFuncaoTranasacao of lstFuncaoTranscao) {
+                for (const existFuncaoTranasacao of lstFuncaoTransacao) {
                     if (!existFuncaoTranasacao) {
                         lstFuncaoTransacaoToInclud.push(
                             this.funcaoTransacaoService.create(lstFuncaoTransacaoCrud[index], this.analise.id)
@@ -878,16 +935,20 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
                     }
                     index++;
                 }
-                forkJoin(lstFuncaoTransacaoToInclud).subscribe(funcoesTransacoes => {
-                    funcoesTransacoes.forEach(
-                        () => {
-                            this.pageNotificationService.addCreateMsg(funcoesTransacoes['name']);
-                            this.resetarEstadoPosSalvar();
-                            this.estadoInicial();
-                            this.analiseService.updateSomaPf(this.analise.id).subscribe();
-                        });
+                if (lstFuncaoTransacaoToInclud.length > 0) {
+                    forkJoin(lstFuncaoTransacaoToInclud).subscribe(funcoesTransacoes => {
+                        funcoesTransacoes.forEach(
+                            () => {
+                                this.pageNotificationService.addCreateMsg(funcoesTransacoes['name']);
+                                this.resetarEstadoPosSalvar();
+                                this.estadoInicial();
+                                this.analiseService.updateSomaPf(this.analise.id).subscribe();
+                            });
+                        this.blockUiService.hide();
+                    });
+                } else {
                     this.blockUiService.hide();
-                });
+                }
             });
         });
     }
@@ -898,7 +959,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         ft.funcionalidade = fdSelecionada.funcionalidade;
         if (tipo === 'Pesquisar') {
             ft.tipo = TipoFuncaoTransacao.CE;
-        } else if (tipo === 'Consultar') {
+        } else if (tipo === 'Visualizar') {
             ft.tipo = TipoFuncaoTransacao.CE;
         } else {
             ft.tipo = TipoFuncaoTransacao.EE;
@@ -1608,18 +1669,18 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoDados){
-        if(this.habilitaEditarOrdem == false && this.isOrderning){
+    habilitarEdicaoOrdem(funcao: FuncaoDados) {
+        if (this.habilitaEditarOrdem == false && this.isOrderning) {
             this.habilitaEditarOrdem = true;
         }
 
     }
 
-    trocarOrdem(numero, funcao: FuncaoDados){
-        if(numero != null){
-            if(numero < funcao.ordem){
+    trocarOrdem(numero, funcao: FuncaoDados) {
+        if (numero != null) {
+            if (numero < funcao.ordem) {
                 funcao.ordem = --numero;
-            }else{
+            } else {
                 funcao.ordem = ++numero;
             }
             this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
@@ -1627,4 +1688,5 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             this.tables.selectedRow = [];
         }
     }
+
 }

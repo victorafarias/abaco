@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { TipoEquipe } from '../tipo-equipe.model';
 import { Subscription, Observable } from 'rxjs';
-import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
+import { Organizacao } from 'src/app/organizacao/organizacao.model';
+import { OrganizacaoService } from 'src/app/organizacao/organizacao.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TipoEquipeService } from '../tipo-equipe.service';
 import { PageNotificationService } from '@nuvem/primeng-components';
-import { UserService } from 'src/app/user';
-import { User } from '../../user';
+import { UserService } from 'src/app/user/user.service';
+import { User } from '../../user/user.model';
 
 
 @Component({

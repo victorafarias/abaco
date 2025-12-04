@@ -70,10 +70,14 @@ public class NomenclaturaResource {
     public ResponseEntity<NomenclaturaDTO> createNomenclatura(@Valid @RequestBody NomenclaturaDTO nomenclaturaDTO)
             throws URISyntaxException {
         log.debug("REST request to save Nomenclatura : {}", nomenclaturaDTO);
-        if (nomenclaturaDTO.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                    "A new Nomenclatura cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        nomenclaturaDTO.setId(null);
+        
+        //if (nomenclaturaDTO.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //            "A new Nomenclatura cannot already have an ID")).body(null);
+        //}
         NomenclaturaDTO result = nomenclaturaService.save(nomenclaturaDTO);
         return ResponseEntity.created(new URI("/api/nomenclatura/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);

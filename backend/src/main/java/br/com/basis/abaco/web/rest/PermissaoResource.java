@@ -57,10 +57,14 @@ public class PermissaoResource {
     @PostMapping("/permissaos")
     public ResponseEntity<Permissao> createPermissao(@RequestBody PermissaoDTO permissaoDTO) throws URISyntaxException {
         log.debug("REST request to save Permissao : {}", permissaoDTO);
-        if (permissaoDTO.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                "A new permissao cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        permissaoDTO.setId(null);
+        
+        //if (permissaoDTO.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //        "A new permissao cannot already have an ID")).body(null);
+        //}
         Permissao result = permissaoService.save(permissaoDTO);
         return ResponseEntity.created(new URI("/api/permissaos/" + result.getId()))
         .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString())).body(result);

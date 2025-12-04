@@ -6,24 +6,30 @@ import { DatatableClickEvent, DatatableComponent, PageNotificationService } from
 import * as _ from 'lodash';
 import { ConfirmationService, SelectItem } from 'primeng';
 import { Subscription } from 'rxjs';
-import { Contrato, ContratoService } from 'src/app/contrato';
-import { DivergenciaService } from 'src/app/divergencia';
-import { EsforcoFase } from 'src/app/esforco-fase';
-import { FatorAjuste } from 'src/app/fator-ajuste';
+import { Contrato } from 'src/app/contrato/contrato.model';
+import { ContratoService } from 'src/app/contrato/contrato.service';
+import { DivergenciaService } from 'src/app/divergencia/divergencia.service';
+import { EsforcoFase } from 'src/app/esforco-fase/esforco-fase.model';
+import { FatorAjuste } from 'src/app/fator-ajuste/fator-ajuste.model';
 import { HistoricoDTO } from 'src/app/historico/historico.dto';
 import { HistoricoService } from 'src/app/historico/historico.service';
-import { Manual, ManualService } from 'src/app/manual';
-import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
+import { Manual } from 'src/app/manual/manual.model';
+import { ManualService } from 'src/app/manual/manual.service';
+import { Organizacao } from 'src/app/organizacao/organizacao.model';
+import { OrganizacaoService } from 'src/app/organizacao/organizacao.service';
 import { ManualContrato } from 'src/app/organizacao/ManualContrato.model';
 import { PerfilOrganizacao } from 'src/app/perfil/perfil-organizacao.model';
 import { PerfilService } from 'src/app/perfil/perfil.service';
 import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
 import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
-import { Sistema, SistemaService } from 'src/app/sistema';
-import { StatusService } from 'src/app/status';
+import { Sistema } from 'src/app/sistema/sistema.model';
+import { SistemaService } from 'src/app/sistema/sistema.service';
+import { StatusService } from 'src/app/status/status.service';
 import { Status } from 'src/app/status/status.model';
-import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
-import { User, UserService } from 'src/app/user';
+import { TipoEquipe } from 'src/app/tipo-equipe/tipo-equipe.model';
+import { TipoEquipeService } from 'src/app/tipo-equipe/tipo-equipe.service';
+import { User } from 'src/app/user/user.model';
+import { UserService } from 'src/app/user/user.service';
 import { AuthService } from 'src/app/util/auth.service';
 import { MessageUtil } from 'src/app/util/message.util';
 import { AnaliseShareEquipe } from '../analise-share-equipe.model';
@@ -31,13 +37,13 @@ import { Analise, MetodoContagem } from '../analise.model';
 import { AnaliseService } from '../analise.service';
 import { SearchGroup } from '../grupo/grupo.model';
 import { GrupoService } from '../grupo/grupo.service';
-import {funcaoDadosRoute} from "../../funcao-dados/funcao-dados.route";
-import {FuncaoDados} from "../../funcao-dados";
+import { funcaoDadosRoute } from "../../funcao-dados/funcao-dados.route";
+import { FuncaoDados } from "../../funcao-dados/funcao-dados.model";
 
 @Component({
     selector: 'app-analise',
     templateUrl: './analise-list.component.html',
-	styleUrls: ['./analise.css'],
+    styleUrls: ['./analise.css'],
     providers: [GrupoService, ConfirmationService],
 })
 export class AnaliseListComponent implements OnInit {
@@ -61,7 +67,7 @@ export class AnaliseListComponent implements OnInit {
         { value: 'bloqueiaAnalise', label: 'Bloqueado' },
         { value: 'clonadaParaEquipe', label: 'Clonada para outra equipe' },
         { value: 'analiseClonadaParaEquipe', label: 'Análise Relacionada' },
-        { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência'},
+        { value: 'analiseDivergence.identificadorAnalise', label: 'Identificador da Divergência' },
         { value: 'users', label: 'Usuários' },
     ];
 
@@ -76,10 +82,10 @@ export class AnaliseListComponent implements OnInit {
         'pfTotalValor',
         'pfTotalAjustadoValor',
         'pfTotalAprovado',
-		'dataCriacaoOrdemServico',
-		'dataHomologacao',
-		'dtEncerramento',
-		'bloqueiaAnalise'];
+        'dataCriacaoOrdemServico',
+        'dataHomologacao',
+        'dtEncerramento',
+        'bloqueiaAnalise'];
     private lastColumn: any[] = [];
 
 
@@ -130,11 +136,11 @@ export class AnaliseListComponent implements OnInit {
         { label: 'Estimada', value: 'ESTIMADA' }
     ];
 
-	lstDatas = [
-		{ label: 'Data de criação', value: "CRIACAO"},
-		{ label: 'Data de conclusão/bloqueio', value: "BLOQUEIO"},
-		{ label: 'Data de encerramento', value: "ENCERRAMENTO"}
-	];
+    lstDatas = [
+        { label: 'Data de criação', value: "CRIACAO" },
+        { label: 'Data de conclusão/bloqueio', value: "BLOQUEIO" },
+        { label: 'Data de encerramento', value: "ENCERRAMENTO" }
+    ];
     blocked;
     inicial: boolean;
     showDialogAnaliseCloneTipoEquipe = false;
@@ -177,8 +183,8 @@ export class AnaliseListComponent implements OnInit {
         { label: "Modelo padrão ANAC", value: 3 },
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
-		{ label: "Modelo padrão MCTI", value: 6},
-		{ label: "Modelo padrão BNB", value: 7}
+        { label: "Modelo padrão MCTI", value: 6 },
+        { label: "Modelo padrão BNB", value: 7 }
     ];
     modeloSelecionado: any;
 
@@ -200,27 +206,31 @@ export class AnaliseListComponent implements OnInit {
     statusCombo: Status[] = [];
     equipeResponsavel: TipoEquipe[] = [];
     hideShowSelectEquipe: boolean;
+    showDialogDePara: boolean = false;
+    fatoresSemCorrespondencia: string[] = [];
+    mapaFatorAjuste: { [key: string]: number } = {};
+    fatoresAjusteManual: SelectItem[] = [];
 
     tiposAnalise: SelectItem[] = [
-        {label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO},
-        {label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA},
-        {label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO}
+        { label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO },
+        { label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA },
+        { label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO }
     ];
 
 
     metodoContagem: SelectItem[] = [
-        {label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG},
-        {label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA},
-        {label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA}
+        { label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG },
+        { label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA },
+        { label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA }
     ];
 
-	offset: any;
+    offset: any;
 
-	showDialogHistorico: boolean = false;
-	listHistoricos: HistoricoDTO[] = [];
-	headerDialogHistorico: string = "";
+    showDialogHistorico: boolean = false;
+    listHistoricos: HistoricoDTO[] = [];
+    headerDialogHistorico: string = "";
 
-	selectButtonMultiple: boolean = false;
+    selectButtonMultiple: boolean = false;
 
     constructor(
         private router: Router,
@@ -242,7 +252,7 @@ export class AnaliseListComponent implements OnInit {
         private analiseSharedDataService: AnaliseSharedDataService,
         private contratoService: ContratoService,
         private manualService: ManualService,
-		private historicoService: HistoricoService
+        private historicoService: HistoricoService
     ) {
 
     }
@@ -251,7 +261,7 @@ export class AnaliseListComponent implements OnInit {
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.estadoInicial();
         this.verificarPermissoes();
-		this.offset = new Date().getTimezoneOffset();
+        this.offset = new Date().getTimezoneOffset();
     }
 
     getLabel(label) {
@@ -464,25 +474,25 @@ export class AnaliseListComponent implements OnInit {
     loadingGroupSearch(): SearchGroup {
         const sessionSearchGroup: SearchGroup = JSON.parse(sessionStorage.getItem('searchGroup'));
         if (sessionSearchGroup) {
-			if(sessionSearchGroup.dataInicio){
-				sessionSearchGroup.dataInicio = new Date(sessionSearchGroup.dataInicio);
-			}
-			if(sessionSearchGroup.dataFim){
-				sessionSearchGroup.dataFim = new Date(sessionSearchGroup.dataFim);
-			}
+            if (sessionSearchGroup.dataInicio) {
+                sessionSearchGroup.dataInicio = new Date(sessionSearchGroup.dataInicio);
+            }
+            if (sessionSearchGroup.dataFim) {
+                sessionSearchGroup.dataFim = new Date(sessionSearchGroup.dataFim);
+            }
             return sessionSearchGroup;
         } else {
             return new SearchGroup();
         }
     }
 
-	loadingColumnsVisible(): string[]{
-		const sessionColumnsVisible: string[] = JSON.parse(sessionStorage.getItem('columnsVisible'));
-		if(sessionColumnsVisible?.length){
-			return sessionColumnsVisible;
-		}
-		return this.columnsVisible;
-	}
+    loadingColumnsVisible(): string[] {
+        const sessionColumnsVisible: string[] = JSON.parse(sessionStorage.getItem('columnsVisible'));
+        if (sessionColumnsVisible?.length) {
+            return sessionColumnsVisible;
+        }
+        return this.columnsVisible;
+    }
 
     clonarEquipe() {
         if (this.analiseSelecionada.clonadaParaEquipe == true) {
@@ -523,7 +533,7 @@ export class AnaliseListComponent implements OnInit {
                     this.pageNotificationService.addErrorMessage('Você não pode editar uma análise bloqueada!');
                     return;
                 }
-				this.inserirHistoricoEditar(event.selection[0]);
+                this.inserirHistoricoEditar(event.selection[0]);
                 this.router.navigate(['/analise', event.selection[0].id, 'edit']);
                 break;
             case 'view':
@@ -535,103 +545,103 @@ export class AnaliseListComponent implements OnInit {
         }
     }
 
-	verificarOrganizacoesDiferentes(analises: Analise[]){
-		let organizacoes = analises.map(analise => analise?.organizacao);
-		let ultimaOrg = null;
-		let contador = 0;
-		for(let org of organizacoes){
-			if(ultimaOrg != null){
-				if(org.id !== ultimaOrg.id){
-					contador++;
-				}
-			}
-			ultimaOrg = org;
-		}
-		if(contador > 0){
-			return true;
-		}else{
-			return false;
-		}
-	}
+    verificarOrganizacoesDiferentes(analises: Analise[]) {
+        let organizacoes = analises.map(analise => analise?.organizacao);
+        let ultimaOrg = null;
+        let contador = 0;
+        for (let org of organizacoes) {
+            if (ultimaOrg != null) {
+                if (org.id !== ultimaOrg.id) {
+                    contador++;
+                }
+            }
+            ultimaOrg = org;
+        }
+        if (contador > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	verificarEquipesDiferentes(analises: Analise[]){
-		let equipes = analises.map(analise => analise?.equipeResponsavel);
-		let ultimaEquipe = null;
-		let contador = 0;
-		for(let eqp of equipes){
-			if(ultimaEquipe != null){
-				if(eqp.id !== ultimaEquipe.id){
-					contador++;
-				}
-			}
-			ultimaEquipe = eqp;
-		}
-		if(contador > 0){
-			return true;
-		}else{
-			return false;
-		}
-	}
+    verificarEquipesDiferentes(analises: Analise[]) {
+        let equipes = analises.map(analise => analise?.equipeResponsavel);
+        let ultimaEquipe = null;
+        let contador = 0;
+        for (let eqp of equipes) {
+            if (ultimaEquipe != null) {
+                if (eqp.id !== ultimaEquipe.id) {
+                    contador++;
+                }
+            }
+            ultimaEquipe = eqp;
+        }
+        if (contador > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	popularEquipesParaCompartilhar(equipes: TipoEquipe[], emLote?: boolean){
-		let contador = 0;
-		this.equipeShare = [];
-		if (equipes) {
-			equipes.forEach((equipe) => {
-				const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(), {
-						id: contador++,
-						equipeId: equipe.id,
-						analisesId: emLote == true ? this.analisesSelecionadasEmLote.map(analise => analise.id) : [this.analiseSelecionada.id],
-						viewOnly: true, nomeEquipe: equipe.nome
-					});
-				this.equipeShare.push(entity);
-			});
-		}
-	}
+    popularEquipesParaCompartilhar(equipes: TipoEquipe[], emLote?: boolean) {
+        let contador = 0;
+        this.equipeShare = [];
+        if (equipes) {
+            equipes.forEach((equipe) => {
+                const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(), {
+                    id: contador++,
+                    equipeId: equipe.id,
+                    analisesId: emLote == true ? this.analisesSelecionadasEmLote.map(analise => analise.id) : [this.analiseSelecionada.id],
+                    viewOnly: true, nomeEquipe: equipe.nome
+                });
+                this.equipeShare.push(entity);
+            });
+        }
+    }
 
     compartilharAnalise() {
         let canShared = false;
-		if(this.analisesSelecionadasEmLote && this.analisesSelecionadasEmLote.length > 1){
-			if(this.verificarOrganizacoesDiferentes(this.analisesSelecionadasEmLote) == false){
-				if(this.verificarEquipesDiferentes(this.analisesSelecionadasEmLote) == false){
-					this.tipoEquipeService.findAllByOrganizacaoId(this.analisesSelecionadasEmLote[0]?.organizacao?.id).subscribe((equipes) => {
-						equipes = equipes.filter(eqp => eqp.id !== this.analisesSelecionadasEmLote[0].equipeResponsavel.id);
-						this.popularEquipesParaCompartilhar(equipes, true);
-						this.mostrarDialog = true;
-					})
-				}else{
-					return this.pageNotificationService.addErrorMessage("Não é permitido compartilhar em lote análises com equipes diferentes.");
-				}
-			}else{
-				return this.pageNotificationService.addErrorMessage("Não é permitido compartilhar em lote análises com organizações diferentes.");
-			}
-		}else{
-			return this.analiseService.find(this.analiseSelecionada.id).subscribe((res) => {
-				this.analiseTemp = new Analise().copyFromJSON(res);
-				if (this.tipoEquipesLoggedUser) {
-					this.tipoEquipesLoggedUser.forEach(equipe => {
-						if (equipe.id === this.analiseTemp.equipeResponsavel.id) {
-							canShared = true;
-						}
-					});
-				}
-				if (canShared) {
-					this.equipeShare = [];
-					this.tipoEquipeService.findAllCompartilhaveis(
-						this.analiseTemp.organizacao.id,
-						this.analiseSelecionada.id,
-						this.analiseTemp.equipeResponsavel.id)
-						.subscribe((equipes) => {
-							this.popularEquipesParaCompartilhar(equipes, false);
-							this.mostrarDialog = true;
-						});
-				} else {
-					this.pageNotificationService.addErrorMessage(
-						this.getLabel('Somente membros da equipe responsável podem compartilhar esta análise!')
-					);
-				}
-			});
-		}
+        if (this.analisesSelecionadasEmLote && this.analisesSelecionadasEmLote.length > 1) {
+            if (this.verificarOrganizacoesDiferentes(this.analisesSelecionadasEmLote) == false) {
+                if (this.verificarEquipesDiferentes(this.analisesSelecionadasEmLote) == false) {
+                    this.tipoEquipeService.findAllByOrganizacaoId(this.analisesSelecionadasEmLote[0]?.organizacao?.id).subscribe((equipes) => {
+                        equipes = equipes.filter(eqp => eqp.id !== this.analisesSelecionadasEmLote[0].equipeResponsavel.id);
+                        this.popularEquipesParaCompartilhar(equipes, true);
+                        this.mostrarDialog = true;
+                    })
+                } else {
+                    return this.pageNotificationService.addErrorMessage("Não é permitido compartilhar em lote análises com equipes diferentes.");
+                }
+            } else {
+                return this.pageNotificationService.addErrorMessage("Não é permitido compartilhar em lote análises com organizações diferentes.");
+            }
+        } else {
+            return this.analiseService.find(this.analiseSelecionada.id).subscribe((res) => {
+                this.analiseTemp = new Analise().copyFromJSON(res);
+                if (this.tipoEquipesLoggedUser) {
+                    this.tipoEquipesLoggedUser.forEach(equipe => {
+                        if (equipe.id === this.analiseTemp.equipeResponsavel.id) {
+                            canShared = true;
+                        }
+                    });
+                }
+                if (canShared) {
+                    this.equipeShare = [];
+                    this.tipoEquipeService.findAllCompartilhaveis(
+                        this.analiseTemp.organizacao.id,
+                        this.analiseSelecionada.id,
+                        this.analiseTemp.equipeResponsavel.id)
+                        .subscribe((equipes) => {
+                            this.popularEquipesParaCompartilhar(equipes, false);
+                            this.mostrarDialog = true;
+                        });
+                } else {
+                    this.pageNotificationService.addErrorMessage(
+                        this.getLabel('Somente membros da equipe responsável podem compartilhar esta análise!')
+                    );
+                }
+            });
+        }
     }
 
     checkIfUserCanEdit() {
@@ -661,7 +671,7 @@ export class AnaliseListComponent implements OnInit {
     }
 
     abrirEditar() {
-        if(this.analiseSelecionada.bloqueiaAnalise === true){
+        if (this.analiseSelecionada.bloqueiaAnalise === true) {
             this.pageNotificationService.addErrorMessage(
                 this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
             );
@@ -670,7 +680,7 @@ export class AnaliseListComponent implements OnInit {
         if (!this.canEditar) {
             return false;
         }
-		this.inserirHistoricoEditar(this.analiseSelecionada);
+        this.inserirHistoricoEditar(this.analiseSelecionada);
         this.router.navigate(['/analise', this.analiseSelecionada.id, 'edit']);
     }
 
@@ -688,31 +698,31 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public confirmDelete(analises: Analise[]) {
-		this.confirmationService.confirm({
-			message: this.getLabel('Tem certeza que deseja excluir o(s) registro(s) ?'),
-			accept: () => {
-				for (let analise of analises) {
-					if (analise.bloqueiaAnalise) {
-						this.pageNotificationService.addErrorMessage("Análise "+analise.identificadorAnalise+" não excluída, pois está bloqueada.");
-						continue;
-					}
-					const canDelete = this.tipoEquipesLoggedUser.find(
-						(tipoEquipeResponsave) => tipoEquipeResponsave.id === analise.equipeResponsavel['id']
-					);
-					if(!canDelete){
-						this.pageNotificationService.addErrorMessage(
-							this.getLabel('Somente membros da equipe responsável podem excluir a análise '+analise.identificadorAnalise));
-						continue;
-					}
+        this.confirmationService.confirm({
+            message: this.getLabel('Tem certeza que deseja excluir o(s) registro(s) ?'),
+            accept: () => {
+                for (let analise of analises) {
+                    if (analise.bloqueiaAnalise) {
+                        this.pageNotificationService.addErrorMessage("Análise " + analise.identificadorAnalise + " não excluída, pois está bloqueada.");
+                        continue;
+                    }
+                    const canDelete = this.tipoEquipesLoggedUser.find(
+                        (tipoEquipeResponsave) => tipoEquipeResponsave.id === analise.equipeResponsavel['id']
+                    );
+                    if (!canDelete) {
+                        this.pageNotificationService.addErrorMessage(
+                            this.getLabel('Somente membros da equipe responsável podem excluir a análise ' + analise.identificadorAnalise));
+                        continue;
+                    }
 
-					this.analiseService.delete(analise.id).subscribe(() => {
-						this.recarregarDataTable();
-						this.datatable.filter();
-						this.pageNotificationService.addDeleteMsg(analise.identificadorAnalise);
-					});
-				}
-			}
-		});
+                    this.analiseService.delete(analise.id).subscribe(() => {
+                        this.recarregarDataTable();
+                        this.datatable.filter();
+                        this.pageNotificationService.addDeleteMsg(analise.identificadorAnalise);
+                    });
+                }
+            }
+        });
     }
 
     public limparPesquisa() {
@@ -723,9 +733,9 @@ export class AnaliseListComponent implements OnInit {
         this.searchGroup.equipe = undefined;
         this.searchGroup.usuario = undefined;
         this.searchGroup.status = undefined;
-		this.searchGroup.data = undefined;
-		this.searchGroup.dataInicio = undefined;
-		this.searchGroup.dataFim = undefined;
+        this.searchGroup.data = undefined;
+        this.searchGroup.dataInicio = undefined;
+        this.searchGroup.dataFim = undefined;
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.enableTable = false;
         this.recarregarDataTable();
@@ -733,7 +743,7 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public selectAnalise(event) {
-		if (event.shiftKey === true) {
+        if (event.shiftKey === true) {
             let fim = this.datatable.value.indexOf(this.datatable.selectedRow[0]);
             let inicio = this.datatable.value.indexOf(this.analisesSelecionadasEmLote[0]);
             this.datatable.selectedRow = [];
@@ -788,14 +798,14 @@ export class AnaliseListComponent implements OnInit {
             if (this.searchGroup && this.searchGroup.status && this.searchGroup.status.id) {
                 this.datatable.filterParams['status'] = this.searchGroup.status.id;
             }
-			if (this.searchGroup && this.searchGroup.metodoContagem) {
+            if (this.searchGroup && this.searchGroup.metodoContagem) {
                 this.datatable.filterParams['metodoContagem'] = this.searchGroup.metodoContagem;
             }
-			if (this.searchGroup && this.searchGroup.data && this.searchGroup.dataInicio) {
+            if (this.searchGroup && this.searchGroup.data && this.searchGroup.dataInicio) {
                 this.datatable.filterParams['data'] = this.searchGroup.data;
                 this.datatable.filterParams['dataInicio'] = this.searchGroup.dataInicio;
             }
-			if (this.searchGroup && this.searchGroup.data && this.searchGroup.dataFim) {
+            if (this.searchGroup && this.searchGroup.data && this.searchGroup.dataFim) {
                 this.datatable.filterParams['data'] = this.searchGroup.data;
                 this.datatable.filterParams['dataFim'] = this.searchGroup.dataFim;
             }
@@ -846,14 +856,14 @@ export class AnaliseListComponent implements OnInit {
             `usuario=${this.searchGroup.usuario.id}&` : '');
 
 
-		querySearch = querySearch.concat((this.searchGroup.data) ?
-        `data=${this.searchGroup.data}&` : '');
+        querySearch = querySearch.concat((this.searchGroup.data) ?
+            `data=${this.searchGroup.data}&` : '');
 
-		querySearch = querySearch.concat((this.searchGroup.dataInicio) ?
-        `dataInicio=${this.searchGroup.dataInicio}&` : '');
+        querySearch = querySearch.concat((this.searchGroup.dataInicio) ?
+            `dataInicio=${this.searchGroup.dataInicio}&` : '');
 
-		querySearch = querySearch.concat((this.searchGroup.dataFim) ?
-        `dataFim=${this.searchGroup.dataFim}&` : '');
+        querySearch = querySearch.concat((this.searchGroup.dataFim) ?
+            `dataFim=${this.searchGroup.dataFim}&` : '');
 
         querySearch = (querySearch === '') ? '' : '&' + querySearch;
 
@@ -862,9 +872,9 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public performSearch() {
-		if(!this.searchGroup.data && this.searchGroup.dataInicio || !this.searchGroup.data && this.searchGroup.dataFim){
-			return this.pageNotificationService.addErrorMessage("Selecione qual data será pesquisado o período")
-		}
+        if (!this.searchGroup.data && this.searchGroup.dataInicio || !this.searchGroup.data && this.searchGroup.dataFim) {
+            return this.pageNotificationService.addErrorMessage("Selecione qual data será pesquisado o período")
+        }
         this.enableTable = true;
         sessionStorage.setItem('searchGroup', JSON.stringify(this.searchGroup));
         this.recarregarDataTable();
@@ -1028,54 +1038,54 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public alterStatusAnalise(analiseSelecionada: Analise) {
-		if(!this.statusToChange){
-			return this.pageNotificationService.addErrorMessage('Selecione um Status para continuar.');
-		}
-		if(this.analisesSelecionadasEmLote?.length > 1){
-			for(let analise of this.analisesSelecionadasEmLote){
-				this.analiseService.changeStatusAnalise(analise.id, this.statusToChange).subscribe(() => {
-					this.recarregarDataTable();
-					this.datatable.filter();
-				});
-			}
+        if (!this.statusToChange) {
+            return this.pageNotificationService.addErrorMessage('Selecione um Status para continuar.');
+        }
+        if (this.analisesSelecionadasEmLote?.length > 1) {
+            for (let analise of this.analisesSelecionadasEmLote) {
+                this.analiseService.changeStatusAnalise(analise.id, this.statusToChange).subscribe(() => {
+                    this.recarregarDataTable();
+                    this.datatable.filter();
+                });
+            }
 
-			this.statusToChange = undefined;
-			this.datatable.selectedRow = null;
-			this.showDialogAnaliseChangeStatus = false;
-		}else{
-			if (this.idAnaliseChangeStatus) {
-				if(analiseSelecionada.encerrada == true && !analiseSelecionada.dtEncerramento){
-					this.pageNotificationService.addErrorMessage('Escolha uma data de encerramento!');
-				}else{
-					this.analiseService.changeStatusAnalise(this.idAnaliseChangeStatus, this.statusToChange).subscribe(data => {
-						this.analiseService.atualizarEncerramento(new Analise().copyFromJSON(analiseSelecionada)).subscribe(r =>{
-							this.recarregarDataTable();
-							this.datatable.filter();
-						});
-						this.statusToChange = undefined;
-						this.idAnaliseChangeStatus = undefined;
-						this.showDialogAnaliseChangeStatus = false;
-					});
-				}
-			} else {
-				return this.pageNotificationService.addErrorMessage('Selecione uma Analise para continuar.');
+            this.statusToChange = undefined;
+            this.datatable.selectedRow = null;
+            this.showDialogAnaliseChangeStatus = false;
+        } else {
+            if (this.idAnaliseChangeStatus) {
+                if (analiseSelecionada.encerrada == true && !analiseSelecionada.dtEncerramento) {
+                    this.pageNotificationService.addErrorMessage('Escolha uma data de encerramento!');
+                } else {
+                    this.analiseService.changeStatusAnalise(this.idAnaliseChangeStatus, this.statusToChange).subscribe(data => {
+                        this.analiseService.atualizarEncerramento(new Analise().copyFromJSON(analiseSelecionada)).subscribe(r => {
+                            this.recarregarDataTable();
+                            this.datatable.filter();
+                        });
+                        this.statusToChange = undefined;
+                        this.idAnaliseChangeStatus = undefined;
+                        this.showDialogAnaliseChangeStatus = false;
+                    });
+                }
+            } else {
+                return this.pageNotificationService.addErrorMessage('Selecione uma Analise para continuar.');
 
-			}
-		}
+            }
+        }
     }
 
-	mudarEncerramento(event){
-		if(event.checked == false){
-			this.analiseSelecionada.dtEncerramento = null;
-		}
-	}
+    mudarEncerramento(event) {
+        if (event.checked == false) {
+            this.analiseSelecionada.dtEncerramento = null;
+        }
+    }
 
     public setParamsLoad() {
         if (this.isLoadFilter) {
 
             this.searchGroup = this.loadingGroupSearch();
             this.searchGroup.usuario = null;
-			this.columnsVisible = this.loadingColumnsVisible();
+            this.columnsVisible = this.loadingColumnsVisible();
             this.recarregarDataTable();
             this.datatable.filter();
             this.isLoadFilter = false;
@@ -1089,7 +1099,7 @@ export class AnaliseListComponent implements OnInit {
         if (this.columnsVisible.length) {
             this.lastColumn = event.value;
             this.updateVisibleColumns(this.columnsVisible);
-			sessionStorage.setItem('columnsVisible', JSON.stringify(event.value));
+            sessionStorage.setItem('columnsVisible', JSON.stringify(event.value));
         } else {
             this.lastColumn.map((item) => this.columnsVisible.push(item));
             this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');
@@ -1268,42 +1278,134 @@ export class AnaliseListComponent implements OnInit {
         this.showDialogImportar = false;
         this.analiseImportar = new Analise();
         this.analiseFileExcel = undefined;
+        // Alterado: Limpa a lista de análises importadas para evitar cache ao reabrir o modal
+        this.analisesImportar = [];
         this.carregadaAnalise = false;
     }
 
-    removeExcelFiles(){
+    removeExcelFiles() {
         this.analiseFileExcel = undefined;
     }
 
-	selectExcelAnalise(event) {
-		this.analiseFileExcel = <FileList> event.files[0];
-		this.analiseService.carregarArquivoExcel(this.analiseFileExcel).subscribe(analise => {
-			this.analisesImportar.push(analise);
-		});
-		console.log(this.analisesImportar);
-	}
+    selectExcelAnalise(event) {
+        this.analiseFileExcel = <FileList>event.files[0];
+        this.blockUiService.show();
+        this.analiseService.carregarArquivoExcel(this.analiseFileExcel).subscribe(
+            analise => {
+                // Alterado: Log completo dos dados extraídos do Excel
+                console.log('===== DADOS EXTRAÍDOS DO EXCEL =====');
+                console.log('Análise:', analise);
+                console.log('Identificador:', analise.identificadorAnalise);
+                console.log('Número OS:', analise.numeroOs);
+                console.log('Método Contagem:', analise.metodoContagem);
+                console.log('Total Funções de Dados:', analise.funcaoDados?.length || 0);
+                console.log('Total Funções de Transação:', analise.funcaoTransacao?.length || 0);
+
+                // Alterado: Log das primeiras 3 funções de dados
+                if (analise.funcaoDados && analise.funcaoDados.length > 0) {
+                    console.log('Primeiras Funções de Dados:');
+                    analise.funcaoDados.slice(0, 3).forEach((fd, index) => {
+                        console.log(`  [${index + 1}] ${fd.name}`, {
+                            modulo: fd.funcionalidade?.modulo?.nome,
+                            funcionalidade: fd.funcionalidade?.nome,
+                            tipo: fd.tipo,
+                            ordem: fd.ordem
+                        });
+                    });
+                }
+
+                // Alterado: Log das primeiras 3 funções de transação
+                if (analise.funcaoTransacao && analise.funcaoTransacao.length > 0) {
+                    console.log('Primeiras Funções de Transação:');
+                    analise.funcaoTransacao.slice(0, 3).forEach((ft, index) => {
+                        console.log(`  [${index + 1}] ${ft.name}`, {
+                            modulo: ft.funcionalidade?.modulo?.nome,
+                            funcionalidade: ft.funcionalidade?.nome,
+                            tipo: ft.tipo,
+                            ordem: ft.ordem
+                        });
+                    });
+                }
+                console.log('=====================================');
+
+                this.analisesImportar.push(analise);
+                this.blockUiService.hide();
+            },
+            error => {
+                this.blockUiService.hide();
+
+                // Alterado: Tratamento específico para erros de validação de Módulo/Funcionalidade
+                let mensagemErro = "Erro ao carregar arquivo Excel.";
+
+                // Verifica se é erro 500 (Internal Server Error) com mensagem do backend
+                if (error.status === 500 && error.error && error.error.message) {
+                    const mensagemBackend = error.error.message;
+
+                    // Verifica se é erro de Módulo ou Funcionalidade vazios
+                    if (mensagemBackend.includes("Módulo não encontrado") ||
+                        mensagemBackend.includes("Funcionalidade não encontrada")) {
+                        mensagemErro = mensagemBackend;
+                    }
+                } else if (error.error && typeof error.error === 'string') {
+                    mensagemErro = error.error;
+                }
+
+                // Alterado: Exibe mensagem de erro amigável
+                this.pageNotificationService.addErrorMessage(mensagemErro);
+
+                // Alterado: Limpa dados temporários da importação
+                this.analiseFileExcel = undefined;
+                this.analisesImportar = [];
+                this.carregadaAnalise = false;
+
+                console.error('Erro na importação:', error);
+            }
+        );
+    }
 
     importarAnalise() {
         if (this.analiseFileExcel && this.analiseImportar) {
-            this.analiseService.importarExcel(this.analiseImportar).subscribe(analise => {
-                this.pageNotificationService.addCreateMsg("Análise - " + analise.identificadorAnalise + " importada com sucesso!");
-                this.datatable.filter();
-                this.closeModalImportAnalise();
-                this.analisesImportar = [];
-            });
+            // ATUALIZADO: Adicionado tratamento de erro no subscribe
+            const analiseInstance = new Analise().copyFromJSON(this.analiseImportar);
+            this.analiseService.importarExcel(analiseInstance).subscribe(
+                (analise) => {
+                    this.pageNotificationService.addCreateMsg("Análise - " + analise.identificadorAnalise + " importada com sucesso!");
+                    this.datatable.filter();
+                    this.closeModalImportAnalise();
+                    this.analisesImportar = [];
+                },
+                (error) => {
+                    // Alterado: Verifica se é erro de FatorAjuste sem correspondência usando o novo header customizado
+                    if (error.status === 400 && error.headers && error.headers.get('x-abacoapp-error-import') === 'error.fatorajuste') {
+                        // Exibe modal De-Para
+                        this.fatoresSemCorrespondencia = error.error;
+                        this.mapaFatorAjuste = {};
+                        this.fatoresSemCorrespondencia.forEach(f => this.mapaFatorAjuste[f] = null);
+                        this.populateFatoresAjusteManual();
+                        this.showDialogDePara = true;
+                    } else {
+                        // Erro genérico
+                        this.pageNotificationService.addErrorMessage("Erro ao importar análise. Verifique se o arquivo está no formato correto.");
+                    }
+                }
+            );
         } else {
             this.pageNotificationService.addErrorMessage("Selecione uma análise válida para importar!")
         }
     }
 
-    carregarAnalise(){
+    carregarAnalise() {
+        if (!this.analisesImportar || this.analisesImportar.length === 0) {
+            this.pageNotificationService.addErrorMessage("Aguarde o carregamento do arquivo.");
+            return;
+        }
         this.carregadaAnalise = true;
-        this.analiseService.carregarAnaliseExcel(this.analisesImportar[0]).subscribe(response =>{
+        this.analiseService.carregarAnaliseExcel(this.analisesImportar[0]).subscribe(response => {
             this.analiseImportar = response;
-			this.getLstStatus();
-			if(this.analiseImportar.organizacao){
-				this.setSistemaOrganizacao(this.analiseImportar.organizacao);
-                if(this.analiseImportar.contrato){
+            this.getLstStatus();
+            if (this.analiseImportar.organizacao) {
+                this.setSistemaOrganizacao(this.analiseImportar.organizacao);
+                if (this.analiseImportar.contrato) {
                     this.contratoSelected(this.analiseImportar.contrato);
                 }
             }
@@ -1311,7 +1413,7 @@ export class AnaliseListComponent implements OnInit {
         this.analiseImportar = this.analisesImportar[0];
     }
 
-    setSistemaOrganizacao(org: Organizacao){
+    setSistemaOrganizacao(org: Organizacao) {
         this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
         });
@@ -1330,7 +1432,7 @@ export class AnaliseListComponent implements OnInit {
         });
     }
 
-    contratoSelected(contrato: Contrato){
+    contratoSelected(contrato: Contrato) {
         if (contrato && contrato.manualContrato) {
             this.setManuais(contrato);
             let manualSelected;
@@ -1426,9 +1528,9 @@ export class AnaliseListComponent implements OnInit {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
-                this.fatoresAjuste.push({label, value: fa});
+                this.fatoresAjuste.push({ label, value: fa });
             });
-            this.fatoresAjuste.unshift({label: this.getLabel('Nenhum'), value: null});
+            this.fatoresAjuste.unshift({ label: this.getLabel('Nenhum'), value: null });
         }
     }
 
@@ -1440,7 +1542,7 @@ export class AnaliseListComponent implements OnInit {
         }
     }
 
-    alterarMetodoContagem(){
+    alterarMetodoContagem() {
         if (this.analiseImportar.metodoContagem === MetodoContagem.DETALHADA) {
             this.analiseImportar.enviarBaseline = true;
         } else {
@@ -1448,7 +1550,7 @@ export class AnaliseListComponent implements OnInit {
         }
     }
 
-    totalEsforcoFases(){
+    totalEsforcoFases() {
         const initialValue = 0;
         if (this.analiseImportar.esforcoFases) {
             return this.analiseImportar.esforcoFases
@@ -1465,50 +1567,81 @@ export class AnaliseListComponent implements OnInit {
 
     getLstStatus() {
         this.statusService.listActive().subscribe(
-        lstStatus => {
-            this.statusCombo = lstStatus;
-        });
+            lstStatus => {
+                this.statusCombo = lstStatus;
+            });
     }
 
-    goToPageDivergencia(divergencia: Analise){
+    goToPageDivergencia(divergencia: Analise) {
         this.divergenceServie.find(divergencia.id).subscribe(div => {
-            if(div.bloqueiaAnalise === true){
-                window.open("#/divergencia/"+divergencia.id+"/view", "_blank");
-            }else{
-                window.open("#/divergencia/"+divergencia.id+"/edit", "_blank");
+            if (div.bloqueiaAnalise === true) {
+                window.open("#/divergencia/" + divergencia.id + "/view", "_blank");
+            } else {
+                window.open("#/divergencia/" + divergencia.id + "/edit", "_blank");
             }
         })
     }
 
-	listarHistorico(analiseSelecionada: Analise){
-		if(analiseSelecionada.id){
-			this.historicoService.findAllByAnaliseId(analiseSelecionada.id).subscribe(historicos => {
-				this.listHistoricos = historicos;
-				if(this.listHistoricos.length === 0){
-					this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
-				}else{
-					let analiseString = analiseSelecionada.numeroOs == null ? analiseSelecionada.identificadorAnalise : analiseSelecionada.numeroOs;
-					this.headerDialogHistorico = "Histórico da Análise " +analiseString;
-					this.showDialogHistorico = true;
-				}
-			}, error => {
-				if(error.status == 404){
-					this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
-				}
-			})
-		}
-	}
+    listarHistorico(analiseSelecionada: Analise) {
+        if (analiseSelecionada.id) {
+            this.historicoService.findAllByAnaliseId(analiseSelecionada.id).subscribe(historicos => {
+                this.listHistoricos = historicos;
+                if (this.listHistoricos.length === 0) {
+                    this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
+                } else {
+                    let analiseString = analiseSelecionada.numeroOs == null ? analiseSelecionada.identificadorAnalise : analiseSelecionada.numeroOs;
+                    this.headerDialogHistorico = "Histórico da Análise " + analiseString;
+                    this.showDialogHistorico = true;
+                }
+            }, error => {
+                if (error.status == 404) {
+                    this.pageNotificationService.addErrorMessage("Nenhum histórico encontrado para essa análise.");
+                }
+            })
+        }
+    }
 
-	fecharDialogHistorico(){
-		this.showDialogHistorico = false;
-		this.headerDialogHistorico = "";
-	}
+    fecharDialogHistorico() {
+        this.showDialogHistorico = false;
+        this.headerDialogHistorico = "";
+    }
 
-	inserirHistoricoEditar(analiseSelecionada: Analise) {
-		this.blockUiService.show();
-		let historico: HistoricoDTO = new HistoricoDTO();
-		historico.acao = "Editou"
-		historico.analise = analiseSelecionada;
-		this.historicoService.inserirHistoricoAnalise(historico).subscribe(response => {this.blockUiService.hide()});
-	}
+    inserirHistoricoEditar(analiseSelecionada: Analise) {
+        this.blockUiService.show();
+        let historico: HistoricoDTO = new HistoricoDTO();
+        historico.acao = "Editou"
+        historico.analise = analiseSelecionada;
+        this.historicoService.inserirHistoricoAnalise(historico).subscribe(response => { this.blockUiService.hide() });
+    }
+
+    // Alterado: Popula dropdown de fatores de ajuste do manual
+    populateFatoresAjusteManual() {
+        this.fatoresAjusteManual = [];
+        if (this.analiseImportar.manual && this.analiseImportar.manual.fatoresAjuste) {
+            this.analiseImportar.manual.fatoresAjuste.forEach(fa => {
+                const label = FatorAjusteLabelGenerator.generate(fa);
+                this.fatoresAjusteManual.push({ label: label, value: fa.id });
+            });
+        }
+    }
+
+    // Alterado: Confirma mapeamento De-Para e reenvia importação
+    confirmarDePara() {
+        for (const fator of this.fatoresSemCorrespondencia) {
+            if (!this.mapaFatorAjuste[fator]) {
+                this.pageNotificationService.addErrorMessage("Por favor, selecione um correspondente para todos os fatores.");
+                return;
+            }
+        }
+        this.analiseImportar.mapaFatorAjuste = this.mapaFatorAjuste;
+        this.showDialogDePara = false;
+        this.importarAnalise();
+    }
+
+    // Alterado: Cancela modal De-Para
+    cancelarDePara() {
+        this.showDialogDePara = false;
+        this.mapaFatorAjuste = {};
+        this.fatoresSemCorrespondencia = [];
+    }
 }

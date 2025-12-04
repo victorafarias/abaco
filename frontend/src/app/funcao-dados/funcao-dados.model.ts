@@ -1,17 +1,17 @@
 import { FuncaoResumivel, Complexidade } from 'src/app/analise-shared';
 import { Impacto } from 'src/app/analise-shared/impacto-enum';
-import { Modulo } from 'src/app/modulo';
+import { Modulo } from 'src/app/modulo/modulo.model';
 import { BaseEntity } from '../shared';
 import { FuncaoAnalise } from '../analise-shared/funcao-analise';
-import { Funcionalidade } from '../funcionalidade';
-import { FatorAjuste } from '../fator-ajuste';
+import { Funcionalidade } from '../funcionalidade/funcionalidade.model';
+import { FatorAjuste } from '../fator-ajuste/fator-ajuste.model';
 import { Der } from '../der/der.model';
 import { Rlr } from '../rlr/rlr.model';
 import { DerTextParser, ParseResult } from '../analise-shared/der-text/der-text-parser';
 import { DerChipConverter } from '../analise-shared/der-chips/der-chip-converter';
 import { CommentFuncaoDados } from './comment-funcado-dados.model';
-import { TipoEquipe } from '../tipo-equipe';
-import { Analise } from '../analise';
+import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
+import { Analise } from '../analise/analise.model';
 
 export enum TipoFuncaoDados {
     'ALI' = 'ALI',

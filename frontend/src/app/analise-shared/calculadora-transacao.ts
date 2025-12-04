@@ -6,7 +6,7 @@ import { CalculadoraFator } from './calculadora/calculadora-fator';
 import { ComplexidadeFuncionalTransacao } from './calculadora/complexidade-funcional-transacao';
 import { FatorAjusteImpactoRetriever } from './calculadora/fator-ajuste-impacto-retriever';
 import { PFPorTiposComplexidades } from './calculadora/pf-por-tipos-complexidades';
-import { FuncaoTransacao } from '../funcao-transacao';
+import { FuncaoTransacao } from '../funcao-transacao/funcao-transacao.model';
 
 export class CalculadoraTransacao {
 

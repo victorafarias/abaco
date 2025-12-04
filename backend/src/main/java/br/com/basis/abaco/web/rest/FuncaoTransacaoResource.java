@@ -19,11 +19,13 @@ import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
-import br.com.basis.abaco.service.dto.DerDTO;
+import br.com.basis.abaco.service.dto.DerFtDTO;
+//import br.com.basis.abaco.service.dto.DerDTO;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoAnaliseDTO;
+import br.com.basis.abaco.service.dto.FuncaoTransacaoApiDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoDTO;
 import br.com.basis.abaco.service.dto.FuncaoTransacaoSaveDTO;
 import br.com.basis.abaco.service.dto.ImportarFTDTO;
@@ -101,13 +103,13 @@ public class FuncaoTransacaoResource {
     }
 
     /**
-     * POST  /funcao-transacaos : Create a new funcaoTransacao.
+     * POST  /funcaoTransacao : Create a new funcaoTransacao.
      *
      * @param funcaoTransacaoSaveDTO the funcaoTransacao to create
      * @return the ResponseEntity with status 201 (Created) and with body the new funcaoTransacao, or with status 400 (Bad Request) if the funcaoTransacao has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PostMapping(path = "/funcao-transacaos/{idAnalise}", consumes = {"multipart/form-data"})
+    @PostMapping(path = "/funcaoTransacao/{idAnalise}", consumes = {"multipart/form-data"})
     @Timed
     public ResponseEntity<FuncaoTransacao> createFuncaoTransacao(@PathVariable Long idAnalise, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoSaveDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException {
 
@@ -118,9 +120,13 @@ public class FuncaoTransacaoResource {
         funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
         funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
         funcaoTransacao.setAnalise(analise);
-        if (funcaoTransacao.getId() != null || analise.getId() == null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
-        }
+        
+        //if (funcaoTransacao.getId() != null || analise.getId() == null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
+        //}
+
+        // Atualizado
+        funcaoTransacao.setId(null);
 
         if(!files.isEmpty()){
             List<UploadedFile> uploadedFiles = funcaoDadosService.uploadFiles(files);
@@ -138,13 +144,13 @@ public class FuncaoTransacaoResource {
             funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
         }
 
-        return ResponseEntity.created(new URI("/api/funcao-transacaos/" + result.getId()))
+        return ResponseEntity.created(new URI("/api/funcaoTransacao/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
     /**
-     * PUT  /funcao-transacaos : Updates an existing funcaoTransacao.
+     * PUT  /funcaoTransacao : Updates an existing funcaoTransacao.
      *
      * @param funcaoTransacaoDTO the funcaoTransacao to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated funcaoTransacao,
@@ -152,7 +158,7 @@ public class FuncaoTransacaoResource {
      * or with status 500 (Internal Server Error) if the funcaoTransacao couldnt be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping(path = "/funcao-transacaos/{id}", consumes = {"multipart/form-data"})
+    @PutMapping(path = "/funcaoTransacao/{id}", consumes = {"multipart/form-data"})
     @Timed
     public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(@PathVariable Long id, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException{
         FuncaoTransacao funcaoTransacao = convertToEntity(funcaoTransacaoDTO);
@@ -189,42 +195,44 @@ public class FuncaoTransacaoResource {
     }
 
     /**
-     * GET  /funcao-transacaos : get all the funcaoTransacaos.
+     * GET  /funcao-transacao : get all the funcaotransacao.
      *
-     * @return the ResponseEntity with status 200 (OK) and the list of funcaoTransacaos in body
+     * @return the ResponseEntity with status 200 (OK) and the list of funcaotransacao in body
      */
-    @GetMapping("/funcao-transacaos")
+    @GetMapping("/funcao-transacao")
     @Timed
     public List<FuncaoTransacao> getAllFuncaoTransacaos() {
-        log.debug("REST request to get all FuncaoTransacaos");
-        List<FuncaoTransacao> funcaoTransacaos = funcaoTransacaoRepository.findAll();
-        funcaoTransacaos.stream().filter(f -> f.getAnalise() != null).forEach(f -> {
+        log.debug("REST request to get all funcaotransacao");
+        List<FuncaoTransacao> funcaoTransacao = funcaoTransacaoRepository.findAll();
+        funcaoTransacao.stream().filter(f -> f.getAnalise() != null).forEach(f -> {
             if (f.getAnalise().getFuncaoDados() != null) {
                 f.getAnalise().getFuncaoDados().clear();
             }
-            if (f.getAnalise().getFuncaoTransacaos() != null) {
-                f.getAnalise().getFuncaoTransacaos().clear();
+            if (f.getAnalise().getFuncaoTransacao() != null) {
+                f.getAnalise().getFuncaoTransacao().clear();
             }
         });
-        return funcaoTransacaos;
+        return funcaoTransacao;
     }
 
     /**
-     * GET  /funcao-transacaos/:id : get the "id" funcaoTransacao.
+     * GET  /funcaoTransacao/:id : get the "id" funcaoTransacao.
      *
      * @param id the id of the funcaoTransacao to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the funcaoTransacao, or with status 404 (Not Found)
      */
-    @GetMapping("/funcao-transacaos/{id}")
+    @GetMapping("/funcaoTransacao/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacao(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
-        FuncaoTransacaoDTO funcaoTransacaoDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
-        Set<DerDTO> ders = new LinkedHashSet<>();
+
+        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
+
+        Set<DerFtDTO> ders = new LinkedHashSet<>();
         Set<AlrDTO> alrs = new LinkedHashSet<>();
         funcaoTransacao.getDers().forEach(der -> {
-            DerDTO derDto = new DerDTO();
+            DerFtDTO derDto = new DerFtDTO();
             derDto.setNome(der.getNome());
             derDto.setValor(der.getValor());
             ders.add(derDto);
@@ -235,18 +243,18 @@ public class FuncaoTransacaoResource {
             alrDto.setValor(alr.getValor());
             alrs.add(alrDto);
         });
-        funcaoTransacaoDTO.setDers(ders);
-        funcaoTransacaoDTO.setAlrs(alrs);
-        return ResponseUtil.wrapOrNotFound(Optional.of(funcaoTransacaoDTO));
+        funcaoDadosDTO.setDers(ders);
+        funcaoDadosDTO.setAlrs(alrs);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
-    @GetMapping("/funcao-transacaos/analise/{id}")
+    @GetMapping("/funcaoTransacao/analise/{id}")
     @Timed
     public Set<FuncaoTransacao> getFuncaoTransacaoAnalise(@PathVariable Long id) {
         return funcaoTransacaoRepository.findAllByAnaliseId(id);
     }
 
-    @GetMapping("/funcao-transacaos-dto/analise/{id}")
+    @GetMapping("/funcaoTransacao-dto/analise/{id}")
     @Timed
     public ResponseEntity<List<FuncaoTransacaoAnaliseDTO>> getFuncaoTransacaoByAnalise(@PathVariable Long id) {
         Set<FuncaoTransacao> lstFuncadoTransacao = funcaoTransacaoRepository.findAllByAnaliseId(id);
@@ -257,27 +265,27 @@ public class FuncaoTransacaoResource {
     }
 
     /**
-     * GET  /funcao-transacaos/completa/:id : get the "id" funcaotransacao.
+     * GET  /funcaoTransacao/completa/:id : get the "id" funcaotransacao.
      *
      * @param id the id of the funcaoTransacao to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the funcaoTransacao, or with status 404 (Not Found)
      */
-    @GetMapping("/funcao-transacaos/completa/{id}")
+    @GetMapping("/funcaoTransacao/completa/{id}")
     @Timed
-    public ResponseEntity<FuncaoTransacaoDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
+    public ResponseEntity<FuncaoTransacaoApiDTO> getFuncaoTransacaoCompleta(@PathVariable Long id) {
         log.debug("REST request to get FuncaoTransacao Completa : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findWithDerAndAlr(id);
-        FuncaoTransacaoDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoDTO.class);
+        FuncaoTransacaoApiDTO funcaoDadosDTO = modelMapper.map(funcaoTransacao, FuncaoTransacaoApiDTO.class);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
     /**
-     * DELETE  /funcao-transacaos/:id : delete the "id" funcaoTransacao.
+     * DELETE  /funcaoTransacao/:id : delete the "id" funcaoTransacao.
      *
      * @param id the id of the funcaoTransacao to delete
      * @return the ResponseEntity with status 200 (OK)
      */
-    @DeleteMapping("/funcao-transacaos/{id}")
+    @DeleteMapping("/funcaoTransacao/{id}")
     @Timed
     public ResponseEntity<Void> deleteFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoTransacao : {}", id);
@@ -292,22 +300,22 @@ public class FuncaoTransacaoResource {
     }
 
     /**
-     * SEARCH  /_search/funcao-transacaos?query=:query : search for the funcaoTransacao corresponding
+     * SEARCH  /_search/funcaoTransacao?query=:query : search for the funcaoTransacao corresponding
      * to the query.
      *
      * @param query the query of the funcaoTransacao search
      * @return the result of the search
      */
-    @GetMapping("/_search/funcao-transacaos")
+    @GetMapping("/_search/funcaoTransacao")
     @Timed
     public List<FuncaoTransacao> searchFuncaoTransacaos(@RequestParam(defaultValue = "*") String query) {
-        log.debug("REST request to search FuncaoTransacaos for query {}", query);
+        log.debug("REST request to search funcaotransacao for query {}", query);
         return StreamSupport
                 .stream(funcaoTransacaoSearchRepository.search(queryStringQuery(query)).spliterator(), false)
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/funcao-transacaos/{idAnalise}/{idfuncionalidade}")
+    @GetMapping("/funcaoTransacao/{idAnalise}/{idfuncionalidade}")
     @Timed
     public ResponseEntity<Boolean> existFuncaoDados(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @RequestParam String name, @RequestParam(required = false) Long id) {
         log.debug("REST request to exist FuncaoDados");
@@ -320,7 +328,7 @@ public class FuncaoTransacaoResource {
         }
         return ResponseEntity.ok(existInAnalise);
     }
-    @GetMapping("/funcao-transacaos/divergencia/{idAnalise}/{idfuncionalidade}")
+    @GetMapping("/funcaoTransacao/divergencia/{idAnalise}/{idfuncionalidade}")
     @Timed
     public ResponseEntity<Boolean> existFuncaoDadosDivergencia(@PathVariable Long idAnalise, @PathVariable Long idfuncionalidade, @RequestParam String name, @RequestParam(required = false) Long id, @RequestParam(required = false)Long idEquipe) {
         log.debug("REST request to exist FuncaoDados");
@@ -341,12 +349,12 @@ public class FuncaoTransacaoResource {
         return ResponseEntity.ok(existInAnalise);
     }
     /**
-     * GET  /funcao-transacaos/:id : get the "id" funcaoTransacao.
+     * GET  /funcaoTransacao/:id : get the "id" funcaoTransacao.
      *
      * @param id the id of the funcaoTransacao to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the funcaoTransacao, or with status 404 (Not Found)
      */
-    @GetMapping("/funcao-transacaos/update-status/{id}/{statusFuncao}")
+    @GetMapping("/funcaoTransacao/update-status/{id}/{statusFuncao}")
     @Timed
     public ResponseEntity<FuncaoTransacaoDTO> updateFuncaoTransacao(@PathVariable Long id, @PathVariable StatusFuncao statusFuncao) {
         log.debug("REST request to get FuncaoTransacao by Status : {}", id);
@@ -358,7 +366,7 @@ public class FuncaoTransacaoResource {
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
     }
 
-    @PatchMapping("/funcao-transacaos/update-ordem")
+    @PatchMapping("/funcaoTransacao/update-ordem")
     public ResponseEntity<Void> updateOrdemFuncao(@RequestBody FuncaoOrdemDTO funcaoOrdemDTO){
         if(funcaoOrdemDTO != null){
             log.debug("REST request to update ordem FUNCAO T: {}", funcaoOrdemDTO.getId());
@@ -369,23 +377,22 @@ public class FuncaoTransacaoResource {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping(path = "/funcao-transacaos/importar-funcoes-analise", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/funcaoTransacao/importar-funcoes-analise", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<ImportarFTDTO> importarFuncaoAnalise(@RequestBody FuncaoImportarDTO funcaoImportarDTO)  {
         return new ResponseEntity<>(funcaoTransacaoService.importarFuncaoAnalise(funcaoImportarDTO), HttpStatus.OK);
     }
 
-    @PatchMapping("/funcao-transacaos/update-pf")
+    @PatchMapping("/funcaoTransacao/update-pf")
+    @Timed
     public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
+        log.debug("REST request to update PF de Transação em lote");
+        
         if(funcaoPFDTO != null && !funcaoPFDTO.isEmpty()){
-            for (FuncaoPFDTO funcao : funcaoPFDTO) {
-                FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(funcao.getId());
-                funcaoTransacao.setPf(funcao.getPf());
-                funcaoTransacao.setGrossPF(funcao.getGrossPF());
-                funcaoTransacao.setComplexidade(funcao.getComplexidade());
-                funcaoTransacaoRepository.save(funcaoTransacao);
-            }
+            // Delega para o serviço refatorado
+            funcaoTransacaoService.updatePF(funcaoPFDTO);
         }
+        
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

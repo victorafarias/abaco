@@ -64,9 +64,13 @@ public class FatorAjusteResource {
     @Timed
     public ResponseEntity<FatorAjuste> createFatorAjuste(@Valid @RequestBody FatorAjuste fatorAjuste) throws URISyntaxException {
         log.debug("REST request to save FatorAjuste : {}", fatorAjuste);
-        if (fatorAjuste.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new fatorAjuste cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        fatorAjuste.setId(null);
+        
+        //if (fatorAjuste.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new fatorAjuste cannot already have an ID")).body(null);
+        //}
         FatorAjuste result = fatorAjusteRepository.save(fatorAjuste);
         fatorAjusteSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/fator-ajustes/" + result.getId()))

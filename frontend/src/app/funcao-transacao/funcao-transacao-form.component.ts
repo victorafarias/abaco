@@ -8,25 +8,29 @@ import * as _ from 'lodash';
 import Quill from 'quill';
 import { ConfirmationService, Editor, FileUpload, SelectItem } from 'primeng';
 import { forkJoin, Observable, Subscription } from 'rxjs';
-import { CalculadoraTransacao, ResumoFuncoes } from 'src/app/analise-shared';
+import { CalculadoraTransacao } from 'src/app/analise-shared/calculadora-transacao';
+import { ResumoFuncoes } from 'src/app/analise-shared/resumo-funcoes';
 import { AnaliseReferenciavel } from 'src/app/analise-shared/analise-referenciavel';
 import { DerChipConverter } from 'src/app/analise-shared/der-chips/der-chip-converter';
 import { DerChipItem } from 'src/app/analise-shared/der-chips/der-chip-item';
 import { DerTextParser, ParseResult } from 'src/app/analise-shared/der-text/der-text-parser';
 import { Der } from 'src/app/der/der.model';
-import { FatorAjuste } from 'src/app/fator-ajuste';
-import { Funcionalidade, FuncionalidadeService } from 'src/app/funcionalidade';
-import { Manual } from 'src/app/manual';
-import { Modulo, ModuloService } from 'src/app/modulo';
+import { FatorAjuste } from 'src/app/fator-ajuste/fator-ajuste.model';
+import { Funcionalidade } from 'src/app/funcionalidade/funcionalidade.model';
+import { FuncionalidadeService } from 'src/app/funcionalidade/funcionalidade.service';
+import { Manual } from 'src/app/manual/manual.model';
+import { Modulo } from 'src/app/modulo/modulo.model';
+import { ModuloService } from 'src/app/modulo/modulo.service';
 import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
 import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
 import { MessageUtil } from 'src/app/util/message.util';
 
-import { FuncaoTransacao, TipoFuncaoTransacao } from '.';
+import { FuncaoTransacao, TipoFuncaoTransacao } from './funcao-transacao.model';
 import { Analise } from '../analise/analise.model';
 import { AnaliseService } from '../analise/analise.service';
 import { FuncaoDadosService } from '../funcao-dados/funcao-dados.service';
-import { Sistema, SistemaService } from '../sistema';
+import { Sistema } from '../sistema/sistema.model';
+import { SistemaService } from '../sistema/sistema.service';
 import { Upload } from '../upload/upload.model';
 import { Utilitarios } from '../util/utilitarios.util';
 import { FuncaoTransacaoService } from './funcao-transacao.service';
@@ -379,6 +383,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(this.analise.metodoContagem,
             this.currentFuncaoTransacao,
             this.analise.contrato.manual);
+        let ordem = this.funcoesTransacoes.length + 1;
         for (const nome of this.parseResult.textos) {
             lstFuncaotransacaoWithExist.push(
                 this.funcaoTransacaoService.existsWithName(
@@ -389,6 +394,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             );
             const funcaoTransacaoMultp: FuncaoTransacao = funcaoTransacaoCalculada.clone();
             funcaoTransacaoMultp.name = nome;
+            funcaoTransacaoMultp.ordem = ordem++;
             lstFuncaotransacao.push(funcaoTransacaoMultp);
         }
         forkJoin(lstFuncaotransacaoWithExist).subscribe(respFind => {
@@ -474,12 +480,21 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     }
 
     contratoSelecionado() {
+        // ATUALIZADO: Guarda o valor atual da quantidade antes de processar mudanças
+        const quantidadeAtual = this.currentFuncaoTransacao.quantidade;
+
         if (this.currentFuncaoTransacao.fatorAjuste && this.currentFuncaoTransacao.fatorAjuste.tipoAjuste === 'UNITARIO') {
-            this.hideShowQuantidade = this.currentFuncaoTransacao.fatorAjuste === undefined;
+            this.hideShowQuantidade = false;
+            // ATUALIZADO: Restaura o valor da quantidade se estiver em modo de edição
+            if (this.isEdit && quantidadeAtual !== undefined && quantidadeAtual !== null) {
+                this.currentFuncaoTransacao.quantidade = quantidadeAtual;
+            }
         } else {
-            this.currentFuncaoTransacao.quantidade = undefined;
             this.hideShowQuantidade = true;
-            this.currentFuncaoTransacao.quantidade = undefined;
+            // ATUALIZADO: Só limpa se não estiver editando ou se não houver valor anterior
+            if (!this.isEdit || quantidadeAtual === undefined || quantidadeAtual === null) {
+                this.currentFuncaoTransacao.quantidade = undefined;
+            }
         }
     }
 
@@ -773,9 +788,24 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         this.blockUiService.show();
         this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
             funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+
+            console.log('===== DEBUG QUANTIDADE =====');
+            console.log('Quantidade logo após copyFromJSON:', funcaoTransacao.quantidade);
+            console.log('Objeto recebido:', funcaoTransacao);
+            console.log('Valor do campo Quantidade:', funcaoTransacao.quantidade);
+            console.log('FatorAjuste:', funcaoTransacao.fatorAjuste);
+            console.log('TipoAjuste:', funcaoTransacao.fatorAjuste?.tipoAjuste);
+
+
             this.disableTRDER();
+
+            // ATUALIZADO: Preserva valores críticos antes de qualquer processamento
+            const quantidadeBackup = funcaoTransacao.quantidade;
+            const tipoAjusteBackup = funcaoTransacao.fatorAjuste?.tipoAjuste;
+
             this.currentFuncaoTransacao = funcaoTransacao;
             this.currentFuncaoTransacao.ordem = funcaoTransacaoSelecionada.ordem;
+
             if (this.currentFuncaoTransacao.fatorAjuste !== undefined) {
                 if (this.currentFuncaoTransacao.fatorAjuste.tipoAjuste === 'UNITARIO' && this.faS[0]) {
                     this.hideShowQuantidade = false;
@@ -783,14 +813,24 @@ export class FuncaoTransacaoFormComponent implements OnInit {
                     this.hideShowQuantidade = true;
                 }
             }
+
             this.carregarValoresNaPaginaParaEdicao(this.currentFuncaoTransacao);
+
+            // ATUALIZADO: Força a restauração da quantidade após todos os carregamentos
+            // Isso garante que o valor não seja perdido em nenhuma etapa do processo
+            if (tipoAjusteBackup === 'UNITARIO' &&
+                quantidadeBackup !== undefined &&
+                quantidadeBackup !== null) {
+                this.currentFuncaoTransacao.quantidade = quantidadeBackup;
+            }
+
             this.configurarDialog();
             this.blockUiService.hide();
         });
     }
 
     private carregarDersAlrs() {
-        this.funcaoTransacaoService.getFuncaoTransacaosCompleta(this.currentFuncaoTransacao.id)
+        this.funcaoTransacaoService.getFuncaoTransacaoCompleta(this.currentFuncaoTransacao.id)
             .subscribe(funcaoTransacao => {
                 this.currentFuncaoTransacao = funcaoTransacao;
             });
@@ -832,16 +872,27 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     }
 
     private carregarFatorDeAjusteNaEdicao(funcaoSelecionada: FuncaoTransacao) {
+        // ATUALIZADO: Guarda os valores críticos antes de processar
+        const quantidadeOriginal = funcaoSelecionada.quantidade;
+        const fatorAjusteOriginalId = funcaoSelecionada.fatorAjuste?.id;
+
         this.inicializaFatoresAjuste(this.manual);
+
         if (funcaoSelecionada.fatorAjuste !== undefined) {
             const item: SelectItem = this.fatoresAjuste.find(selectItem => {
                 return selectItem.value && funcaoSelecionada.fatorAjuste.id === selectItem.value['id'];
             });
+
             if (item && item.value) {
                 funcaoSelecionada.fatorAjuste = item.value;
+
+                // ATUALIZADO: Restaura a quantidade após trocar a referência do fatorAjuste
+                // Isso previne que eventos onChange limpem o valor
+                if (quantidadeOriginal !== undefined && quantidadeOriginal !== null) {
+                    funcaoSelecionada.quantidade = quantidadeOriginal;
+                }
             }
         }
-
     }
 
     private carregarDerEAlr(ft: FuncaoTransacao) {
@@ -1158,8 +1209,11 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     selecionarDeflatorEmLote(deflator: FatorAjuste) {
         if (deflator.tipoAjuste === 'UNITARIO') {
             this.hideShowQuantidade = false;
+            // ATUALIZADO: Não limpa quantidade ao selecionar deflator UNITARIO
         } else {
             this.hideShowQuantidade = true;
+            // ATUALIZADO: Limpa quantidade apenas se deflator não for UNITARIO
+            this.quantidadeEmLote = undefined;
         }
     }
 
@@ -1302,7 +1356,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
 
     salvarOrdernacao() {
         this.funcoesTransacoes.forEach((funcaoTransacao, index) => {
-            funcaoTransacao.ordem = index+1;
+            funcaoTransacao.ordem = index + 1;
             this.funcaoTransacaoService.updateOrdem(funcaoTransacao).subscribe();
         })
         this.pageNotificationService.addSuccessMessage("Ordenação salva com sucesso.");
@@ -1379,22 +1433,22 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         }
     }
 
-    abrirDialogModulo(){
+    abrirDialogModulo() {
         this.mostrarDialogAddModulo = true;
     }
-    abrirDialogFuncionalidade(){
+    abrirDialogFuncionalidade() {
         this.mostrarDialogAddFuncionalidade = true;
     }
-    fecharDialogModulo(){
+    fecharDialogModulo() {
         this.mostrarDialogAddModulo = false;
         this.novoModulo = new Modulo();
     }
-    fecharDialogFuncionalidade(){
+    fecharDialogFuncionalidade() {
         this.mostrarDialogAddFuncionalidade = false;
         this.novaFuncionalidade = new Funcionalidade();
     }
 
-    adicionarModulo(){
+    adicionarModulo() {
         if (!this.novoModulo.nome) {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
@@ -1408,7 +1462,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         })
     }
 
-    adicionarFuncionalidade(){
+    adicionarFuncionalidade() {
         if (this.novaFuncionalidade.nome === undefined) {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
@@ -1431,18 +1485,18 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoTransacao){
-        if(this.habilitaEditarOrdem == false && this.isOrderning){
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao) {
+        if (this.habilitaEditarOrdem == false && this.isOrderning) {
             this.habilitaEditarOrdem = true;
         }
 
     }
 
-    trocarOrdem(numero, funcao: FuncaoTransacao){
-        if(numero != null){
-            if(numero < funcao.ordem){
+    trocarOrdem(numero, funcao: FuncaoTransacao) {
+        if (numero != null) {
+            if (numero < funcao.ordem) {
                 funcao.ordem = --numero;
-            }else{
+            } else {
                 funcao.ordem = ++numero;
             }
             this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);

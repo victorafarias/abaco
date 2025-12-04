@@ -1,4 +1,3 @@
-version: '2'
 services:
     abaco-elasticsearch:
         image: elasticsearch:2.4.1

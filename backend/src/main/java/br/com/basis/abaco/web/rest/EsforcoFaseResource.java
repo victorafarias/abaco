@@ -71,10 +71,14 @@ public class EsforcoFaseResource {
     public ResponseEntity<EsforcoFase> createEsforcoFase(@RequestBody EsforcoFase esforcoFase)
             throws URISyntaxException {
         log.debug("REST request to save EsforcoFase : {}", esforcoFase);
-        if (esforcoFase.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                    "A new esforcoFase cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        esforcoFase.setId(null);
+        
+        //if (esforcoFase.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //            "A new esforcoFase cannot already have an ID")).body(null);
+        //}
         EsforcoFase result = esforcoFaseRepository.save(esforcoFase);
         esforcoFaseSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/esforco-fases/" + result.getId()))

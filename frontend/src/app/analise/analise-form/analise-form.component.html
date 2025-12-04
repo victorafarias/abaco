@@ -169,7 +169,7 @@
                                             name="metodoContagem"
                                             [options]="metodosContagem"
                                             [(ngModel)]="analise.metodoContagem"
-                                            [disabled]="disabledTipoContagemEdit()"
+                                            [disabled]="!canEditMetodo"
                                             (onChange)="alterarMetodoContagem()">
                                     </p-dropdown>
                                 </div>

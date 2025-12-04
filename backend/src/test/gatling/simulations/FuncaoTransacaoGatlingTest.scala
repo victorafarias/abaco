@@ -60,13 +60,13 @@ class FuncaoTransacaoGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all funcaoTransacaos")
-            .get("/api/funcao-transacaos")
+            exec(http("Get all funcaotransacao")
+            .get("/api/funcaoTransacao")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
             .exec(http("Create new funcaoTransacao")
-            .post("/api/funcao-transacaos")
+            .post("/api/funcaoTransacao")
             .headers(headers_http_authenticated)
             .body(StringBody("""{"id":null, "tipo":null, "complexidade":null, "pf":null}""")).asJSON
             .check(status.is(201))

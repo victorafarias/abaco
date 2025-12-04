@@ -1,30 +1,37 @@
-import {ActivatedRoute, Router} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import * as _ from 'lodash';
 import { OnInit, Component } from '@angular/core';
 import { AnaliseShareEquipe } from '../analise-share-equipe.model';
-import { User, UserService } from '../../user';
-import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
-import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
-import { Contrato, ContratoService } from 'src/app/contrato';
-import { Sistema, SistemaService } from 'src/app/sistema';
-import { EsforcoFase } from 'src/app/esforco-fase';
+import { User } from '../../user/user.model';
+import { UserService } from '../../user/user.service';
+import { TipoEquipe } from 'src/app/tipo-equipe/tipo-equipe.model';
+import { TipoEquipeService } from 'src/app/tipo-equipe/tipo-equipe.service';
+import { Organizacao } from 'src/app/organizacao/organizacao.model';
+import { OrganizacaoService } from 'src/app/organizacao/organizacao.service';
+import { Contrato } from 'src/app/contrato/contrato.model';
+import { ContratoService } from 'src/app/contrato/contrato.service';
+import { Sistema } from 'src/app/sistema/sistema.model';
+import { SistemaService } from 'src/app/sistema/sistema.service';
+import { EsforcoFase } from 'src/app/esforco-fase/esforco-fase.model';
 import { SelectItem, ConfirmationService } from 'primeng';
-import { Manual, ManualService } from 'src/app/manual';
+import { Manual } from 'src/app/manual/manual.model';
+import { ManualService } from 'src/app/manual/manual.service';
 import { MessageUtil } from 'src/app/util/message.util';
 import { Subscription, Observable } from 'rxjs';
 import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
 import { PageNotificationService } from '@nuvem/primeng-components';
-import { Analise, MetodoContagem } from '..';
+import { Analise } from '../analise.model';
+import { MetodoContagem } from '../analise.model';
 import { ManualContrato } from 'src/app/organizacao/ManualContrato.model';
-import { FatorAjuste } from 'src/app/fator-ajuste';
+import { FatorAjuste } from 'src/app/fator-ajuste/fator-ajuste.model';
 import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
-import { FuncaoDados } from '../../funcao-dados';
+import { FuncaoDados } from '../../funcao-dados/funcao-dados.model';
 import { AnaliseService } from '../analise.service';
 import { FuncaoDadosService } from '../../funcao-dados/funcao-dados.service';
 import { FuncaoTransacaoService } from '../../funcao-transacao/funcao-transacao.service';
 import { element } from 'protractor';
-import { StatusService } from 'src/app/status';
+import { StatusService } from 'src/app/status/status.service';
 import { Status } from 'src/app/status/status.model';
 
 
@@ -35,8 +42,15 @@ import { Status } from 'src/app/status/status.model';
 })
 export class AnaliseFormComponent implements OnInit {
 
+    // Alterado: Lista de status que impedem a edição do método
+    private readonly STATUS_BLOQUEANTES = [
+        'Aprovado', 'Aprovada', 'Concluído', 'Concluída',
+        'Fechada', 'Fechado', 'Finalizado', 'Finalizada'
+    ];
+
     isEdicao: boolean;
-    canEditMetodo: boolean = false ;
+    isClone: boolean = false;
+    canEditMetodo: boolean = false;
     disableFuncaoTrasacao = true;
     disableAba: boolean;
     equipeShare = [];
@@ -75,17 +89,17 @@ export class AnaliseFormComponent implements OnInit {
 
 
     tiposAnalise: SelectItem[] = [
-		{label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO},
-        {label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO},
-        {label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA}
+        { label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO },
+        { label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO },
+        { label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA }
 
     ];
 
 
     metodoContagem: SelectItem[] = [
-        {label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG},
-        {label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA},
-        {label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA}
+        { label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG },
+        { label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA },
+        { label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA }
     ];
 
     private routeSub: Subscription;
@@ -175,9 +189,19 @@ export class AnaliseFormComponent implements OnInit {
     }
     getLstStatus() {
         this.statusService.listActive().subscribe(
-        lstStatus => {
-            this.statusCombo = lstStatus;
-        });
+            lstStatus => {
+                this.statusCombo = lstStatus;
+                this.setDefaultStatus();
+            });
+    }
+
+    private setDefaultStatus() {
+        if ((!this.analise.id || this.isClone) && this.statusCombo && this.statusCombo.length > 0) {
+            const statusEmAnalise = this.statusCombo.find(s => s.nome === 'Em Análise');
+            if (statusEmAnalise) {
+                this.analise.status = statusEmAnalise;
+            }
+        }
     }
 
     checkUserAnaliseEquipes() {
@@ -212,19 +236,29 @@ export class AnaliseFormComponent implements OnInit {
         this.routeSub = this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEdicao = true;
+                // Alterado: Verifica se é uma clonagem
+                if (params['clone']) {
+                    this.isClone = true;
+                }
                 this.analiseService.find(params['id']).subscribe(analise => {
-                    this.canEditMetodo = !(this.isEdicao) || (this.route.snapshot.paramMap.get('clone')) && this.analise.metodoContagem === MetodoContagem.ESTIMADA;
-                    if(analise.pfTotal <= 0){
+                    // Alterado: Define se pode editar o método baseado no status
+                    this.checkIfCanEditMetodo(analise);
+
+                    if (analise.pfTotal <= 0) {
                         this.canEditMetodo = true;
                     }
-                    analise = new  Analise().copyFromJSON(analise);
+                    analise = new Analise().copyFromJSON(analise);
                     this.loadDataAnalise(analise);
                     if (!(this.verifyCanEditAnalise(analise))) {
                         this.pageNotificationService.addErrorMessage('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...');
                         this.router.navigate(['/analise', analise.id, 'view']);
                     }
                     this.disableFuncaoTrasacao = analise.metodoContagem === MessageUtil.INDICATIVA;
-                    },
+                    // Alterado: Define status padrão se for clonagem
+                    if (this.isClone) {
+                        this.setDefaultStatus();
+                    }
+                },
                     err => {
                         this.pageNotificationService.addErrorMessage(
                             this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
@@ -239,15 +273,25 @@ export class AnaliseFormComponent implements OnInit {
                 this.analise.enviarBaseline = true;
                 this.analise.fatorCriticidade = false;
                 this.canEditMetodo = true;
+                this.setDefaultStatus();
             }
         });
+    }
+
+    // Alterado: Novo método auxiliar para verificar status
+    private checkIfCanEditMetodo(analise: Analise) {
+        if (analise.status && this.STATUS_BLOQUEANTES.includes(analise.status.nome)) {
+            this.canEditMetodo = false;
+        } else {
+            this.canEditMetodo = true;
+        }
     }
 
     private verifyCanEditAnalise(analise: Analise): Boolean {
         let canEditAnalise: Boolean = false;
         this.tipoEquipesLoggedUser.forEach(equip => {
             if (equip.id === analise.equipeResponsavel.id) {
-                canEditAnalise =  true;
+                canEditAnalise = true;
             }
         });
         analise.compartilhadas.forEach(comp => {
@@ -291,6 +335,7 @@ export class AnaliseFormComponent implements OnInit {
             this.analise.manual = new Manual();
             this.analise.organizacao = org;
             this.analise.dataCriacaoOrdemServico = new Date();
+            this.setDefaultStatus();
         }
         this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
@@ -330,9 +375,9 @@ export class AnaliseFormComponent implements OnInit {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
-                this.fatoresAjuste.push({label, value: fa});
+                this.fatoresAjuste.push({ label, value: fa });
             });
-            this.fatoresAjuste.unshift({label: this.getLabel('Nenhum'), value: null});
+            this.fatoresAjuste.unshift({ label: this.getLabel('Nenhum'), value: null });
         }
     }
 
@@ -362,16 +407,16 @@ export class AnaliseFormComponent implements OnInit {
                 label: this.getLabel('Detalhada (IFPUG)')
             },
             {
-				value: MessageUtil.ESTIMADA,
-				label: this.getLabelValorVariacao(
-					this.getLabel('Estimada (NESMA)'),
-					manual.valorVariacaoEstimada)
+                value: MessageUtil.ESTIMADA,
+                label: this.getLabelValorVariacao(
+                    this.getLabel('Estimada (NESMA)'),
+                    manual.valorVariacaoEstimada)
             },
             {
-				value: MessageUtil.INDICATIVA,
-				label: this.getLabelValorVariacao(
-					this.getLabel('Indicativa (NESMA)'),
-					manual.valorVariacaoIndicativa)
+                value: MessageUtil.INDICATIVA,
+                label: this.getLabelValorVariacao(
+                    this.getLabel('Indicativa (NESMA)'),
+                    manual.valorVariacaoIndicativa)
             }
         ];
     }
@@ -608,20 +653,20 @@ export class AnaliseFormComponent implements OnInit {
             this.equipeService.findAllCompartilhaveis(this.analise.organizacao.id,
                 this.analise.id,
                 this.analise.equipeResponsavel.id).subscribe((equipes) => {
-                if (equipes) {
-                    equipes.forEach((equipe) => {
-                        const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(),
-                            {
-                                id: undefined,
-                                equipeId: equipe.id,
-                                analisesId: [this.analise.id],
-                                viewOnly: true,
-                                nomeEquipe: equipe.nome
-                            });
-                        this.equipeShare.push(entity);
-                    });
-                }
-            });
+                    if (equipes) {
+                        equipes.forEach((equipe) => {
+                            const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(),
+                                {
+                                    id: undefined,
+                                    equipeId: equipe.id,
+                                    analisesId: [this.analise.id],
+                                    viewOnly: true,
+                                    nomeEquipe: equipe.nome
+                                });
+                            this.equipeShare.push(entity);
+                        });
+                    }
+                });
             this.analiseService.findAllCompartilhadaByAnalise(this.analise.id).subscribe((shared) => {
                 this.analiseShared = shared;
             });
@@ -684,7 +729,7 @@ export class AnaliseFormComponent implements OnInit {
                     this.users = this.usersDropDown;
                 }
                 if (this.analise.users && this.analise.users.length === 0) {
-                    const user = _.find(this.users, {id: this.loggedUser});
+                    const user = _.find(this.users, { id: this.loggedUser });
                     this.analise.users.push(user);
                 }
             });
@@ -701,16 +746,35 @@ export class AnaliseFormComponent implements OnInit {
 
     alterarMetodoContagem() {
         if (this.isEdicao) {
-            if (this.analise.metodoContagem !== MetodoContagem.INDICATIVA) {
-                this.analise.funcaoTransacaos = [];
+            // Verifica status antes de prosseguir
+            if (this.analise.status && this.STATUS_BLOQUEANTES.includes(this.analise.status.nome)) {
+                this.pageNotificationService.addErrorMessage(
+                    `Não é possível alterar o Método da Contagem em Análises que estão com status ${this.analise.status.nome}`
+                );
+                // Reverter para o valor anterior seria ideal aqui, recarregando a análise
+                this.getAnalise();
+                return;
             }
+
+            // Lógica visual para abas
+            if (this.analise.metodoContagem === MessageUtil.INDICATIVA) {
+                this.disableFuncaoTrasacao = true;
+            } else {
+                this.disableFuncaoTrasacao = false;
+            }
+
+            // Feedback visual de que os valores serão recalculados ao salvar
+            this.pageNotificationService.addInfoMessage(
+                'Os valores de complexidade e PF serão recalculados conforme o novo método ao salvar.'
+            );
+
         } else {
+            // Comportamento para nova análise (sem id)
             if (this.analise.metodoContagem === MetodoContagem.DETALHADA) {
                 this.analise.enviarBaseline = true;
             } else {
                 this.analise.enviarBaseline = false;
             }
-
         }
     }
 
@@ -747,15 +811,15 @@ export class AnaliseFormComponent implements OnInit {
         this.router.navigate(link);
     }
 
-    getIdentificadorAnalise(){
+    getIdentificadorAnalise() {
         return this.analise.analiseDivergence.identificadorAnalise;
     }
 
-    goToDivergencia(divergencia){
-        if(divergencia.bloqueiaAnalise === true){
-            window.open("#/divergencia/"+divergencia.id+"/view", "_blank");
-        }else{
-            window.open("#/divergencia/"+divergencia.id+"/edit", "_blank");
+    goToDivergencia(divergencia) {
+        if (divergencia.bloqueiaAnalise === true) {
+            window.open("#/divergencia/" + divergencia.id + "/view", "_blank");
+        } else {
+            window.open("#/divergencia/" + divergencia.id + "/edit", "_blank");
         }
     }
 }

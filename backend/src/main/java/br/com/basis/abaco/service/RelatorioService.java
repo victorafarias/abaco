@@ -94,8 +94,21 @@ public class RelatorioService {
 
 public void bindFilterSearchDivergence(String identificador, Set<Long> sistema, Set<Long> organizacoes,Set<Long> status,Boolean bloqueado, BoolQueryBuilder qb) {
         if (!StringUtils.isEmptyString((identificador))) {
-            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery().must(nestedQuery("analisesComparadas", boolQuery().must(QueryBuilders.wildcardQuery("analisesComparadas.identificadorAnalise", "*" + identificador + "*"))));
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(queryBuilderIdentificador).should(QueryBuilders.wildcardQuery("numeroOs", "*" + identificador + "*")).should(QueryBuilders.wildcardQuery("identificadorAnalise", "*" + identificador + "*"));
+            String query = "*" + identificador + "*";
+            BoolQueryBuilder queryBuilderIdentificador = QueryBuilders.boolQuery().must(nestedQuery("analisesComparadas", 
+                QueryBuilders.queryStringQuery(query)
+                    .field("analisesComparadas.identificadorAnalise")
+                    .field("analisesComparadas.numeroOs")
+                    .analyzeWildcard(true)
+            ));
+            
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
+                .should(queryBuilderIdentificador)
+                .should(QueryBuilders.queryStringQuery(query)
+                    .field("numeroOs")
+                    .field("identificadorAnalise")
+                    .analyzeWildcard(true)
+                );
             qb.must(boolQueryBuilder);
         }
         bindFilterEquipeAndOrganizacaoDivergence(organizacoes, qb);

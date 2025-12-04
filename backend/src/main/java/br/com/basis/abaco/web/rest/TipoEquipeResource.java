@@ -105,10 +105,14 @@ public class TipoEquipeResource {
     public ResponseEntity<TipoEquipe> createTipoEquipe(@Valid @RequestBody TipoEquipe tipoEquipe)
             throws URISyntaxException {
         log.debug("REST request to save TipoEquipe : {}", tipoEquipe);
-        if (tipoEquipe.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
-                    "A new TipoEquipe cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        tipoEquipe.setId(null);
+        
+        //if (tipoEquipe.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+        //            "A new TipoEquipe cannot already have an ID")).body(null);
+        //}
         TipoEquipe result = tipoEquipeRepository.save(tipoEquipe);
         tipoEquipeSearchRepository.save(tipoEquipeService.setEntityToElatischSearch(result));
         return ResponseEntity.created(new URI("/api/tipo-equipes/" + result.getId()))

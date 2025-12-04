@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Funcionalidade } from '..';
+import { Funcionalidade } from '../funcionalidade.model';
 import { Subscription, Observable } from 'rxjs';
 import { FuncionalidadeService } from '../funcionalidade.service';
 import { ResponseWrapper } from 'src/app/shared';
-import { Modulo, ModuloService } from 'src/app/modulo';
-import { FuncaoDados } from 'src/app/funcao-dados';
-import { FuncaoTransacao } from 'src/app/funcao-transacao';
+import { Modulo } from 'src/app/modulo/modulo.model';
+import { ModuloService } from 'src/app/modulo/modulo.service';
+import { FuncaoDados } from 'src/app/funcao-dados/funcao-dados.model';
+import { FuncaoTransacao } from 'src/app/funcao-transacao/funcao-transacao.model';
 import { FuncaoTransacaoService } from 'src/app/funcao-transacao/funcao-transacao.service';
 import { FuncaoDadosService } from 'src/app/funcao-dados/funcao-dados.service';
 
@@ -20,7 +21,7 @@ export class FuncionalidadeFormComponent implements OnInit, OnDestroy {
 
   funcaodados: FuncaoDados[];
 
-  funcaotransacaos: FuncaoTransacao[];
+  funcaoTransacao: FuncaoTransacao[];
   funcionalidade: Funcionalidade;
   // modulos: Array<any>;
   // funcaodados: Array<any>;
@@ -34,7 +35,7 @@ export class FuncionalidadeFormComponent implements OnInit, OnDestroy {
     private moduloService: ModuloService,
     private funcaoDadosService: FuncaoDadosService,
     private funcaoTransacaoService: FuncaoTransacaoService,
-  ) {}
+  ) { }
 
   getLabel(label) {
     return label;
@@ -49,7 +50,7 @@ export class FuncionalidadeFormComponent implements OnInit, OnDestroy {
     //   this.funcaodados = res.json;
     // });
     // this.funcaoTransacaoService.query().subscribe((res: ResponseWrapper) => {
-    //   this.funcaotransacaos = res.json;
+    //   this.funcaoTransacao = res.json;
     // });
     this.routeSub = this.route.params.subscribe(params => {
       this.funcionalidade = new Funcionalidade();

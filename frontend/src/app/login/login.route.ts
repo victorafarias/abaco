@@ -9,5 +9,9 @@ export const loginRoute: Routes = [
         data: {
             breadcrumb: "Login"
         }
+    },
+    {
+        path: 'login/:token',
+        component: LoginComponent
     }
 ];

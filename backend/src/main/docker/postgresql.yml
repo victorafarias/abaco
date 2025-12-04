@@ -1,6 +1,6 @@
 services:
     abaco-postgresql:
-        image: bitnami/postgresql:11.7.0-debian-10-r9
+        image: postgres:11-alpine
         volumes:
             #     - ~/volumes/jhipster/abaco/postgresql/:/var/lib/postgresql/
             - ./postgresql/:/docker-entrypoint-initdb.d/

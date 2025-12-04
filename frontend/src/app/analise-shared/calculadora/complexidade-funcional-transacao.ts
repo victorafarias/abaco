@@ -1,6 +1,6 @@
 import { Complexidade } from '../complexidade-enum';
 import { ComplexidadeFuncionalEE, ComplexidadeFuncionalSEeCE } from './complexidade-funcional';
-import { TipoFuncaoTransacao } from 'src/app/funcao-transacao';
+import { TipoFuncaoTransacao } from 'src/app/funcao-transacao/funcao-transacao.model';
 
 export class ComplexidadeFuncionalTransacao {
 

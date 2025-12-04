@@ -8,7 +8,7 @@ import { AnaliseService } from '../analise.service';
 @Component({
   selector: 'jhi-analise-detail',
   templateUrl: './analise-detail.component.html'
-  })
+})
 export class AnaliseDetailComponent implements OnInit, OnDestroy {
 
   analise: Analise;
@@ -18,7 +18,7 @@ export class AnaliseDetailComponent implements OnInit, OnDestroy {
   constructor(
     private analiseService: AnaliseService,
     private route: ActivatedRoute,
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.subscription = this.route.params.subscribe((params) => {
@@ -30,7 +30,7 @@ export class AnaliseDetailComponent implements OnInit, OnDestroy {
     this.analiseService.findWithFuncaos(id).subscribe((analise) => {
       const jsonResponse = analise[0].json();
       jsonResponse['funcaoDados'] = analise[1];
-      jsonResponse['funcaoTransacaos'] = analise[2];
+      jsonResponse['funcaoTransacao'] = analise[2];
       analise = this.analiseService.convertItemFromServer(jsonResponse);
       analise.createdBy = jsonResponse.createdBy;
       this.analise = analise;

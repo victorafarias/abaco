@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 /**
  * @author eduardo.andrade
  * @since 28/06/2018
@@ -39,6 +40,8 @@ public class FuncaoTransacaoDTO implements Serializable {
     private String modulo;
     private String submodulo;
     private Integer identificador;
+    private Integer quantidade; // Atualizado
+    private Long ordem; // Alterado: Campo adicionado para preservar ordem durante importação Excel
     private String sustantation;
     private String der;
     private String ftr;

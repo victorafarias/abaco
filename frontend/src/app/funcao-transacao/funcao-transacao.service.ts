@@ -14,9 +14,9 @@ import { AbacoMensagens } from '../shared/mensagens.dto';
 @Injectable()
 export class FuncaoTransacaoService {
 
-    vwFuncaoTransacaoResourceUrl = environment.apiUrl + '/vw-funcao-transacaos';
+    vwFuncaoTransacaoResourceUrl = environment.apiUrl + '/vw-funcaoTransacao';
     resourceUrlComment = environment.apiUrl + '/comment/funcao-transacao';
-    funcaoTransacaoResourceUrl = environment.apiUrl + '/funcao-transacaos';
+    funcaoTransacaoResourceUrl = environment.apiUrl + '/funcaoTransacao';
     resourceUrlPEAnalitico = environment.apiUrl + '/peanalitico/';
     allFuncaoTransacaosUrl = this.funcaoTransacaoResourceUrl + '/completa';
 
@@ -26,12 +26,12 @@ export class FuncaoTransacaoService {
     constructor(private http: HttpClient, private pageNotificationService: PageNotificationService) {
     }
 
-    autoCompletePEAnalitico(name: String, idFuncionalidade : number, idEquipeResponsavel: number): Observable<any> {
+    autoCompletePEAnalitico(name: String, idFuncionalidade: number, idEquipeResponsavel: number): Observable<any> {
         const url = `${this.resourceUrlPEAnalitico}ft?name=${name}&idFuncionalidade=${idFuncionalidade}&idEquipeResponsavel=${idEquipeResponsavel}`;
         return this.http.get(url);
     }
 
-    getFuncaoTransacaosCompleta(analiseId: number): Observable<FuncaoTransacao> {
+    getFuncaoTransacaoCompleta(analiseId: number): Observable<FuncaoTransacao> {
         return this.http.get<FuncaoTransacao>(`${this.allFuncaoTransacaosUrl}/${analiseId}`);
     }
 
@@ -130,11 +130,11 @@ export class FuncaoTransacaoService {
         return this.http.post<CommentFuncaoTransacao>(`${this.resourceUrlComment}/${idStatus}`, comment);
     }
 
-    updateComment(id: number, comment: string){
+    updateComment(id: number, comment: string) {
         return this.http.put<CommentFuncaoTransacao>(`${this.resourceUrlComment}/${id}`, comment);
     }
 
-    deleteComment(id: number){
+    deleteComment(id: number) {
         return this.http.delete<void>(`${this.resourceUrlComment}/${id}`);
     }
 
@@ -167,20 +167,20 @@ export class FuncaoTransacaoService {
         const url = `${this.vwFuncaoTransacaoResourceUrl}/${id}`;
         return this.http.get<[]>(url);
     }
-    updateOrdem(funcaoTransacao: FuncaoTransacao) :Observable<void>{
-        return this.http.patch<void>(this.funcaoTransacaoResourceUrl+"/update-ordem", funcaoTransacao);
+    updateOrdem(funcaoTransacao: FuncaoTransacao): Observable<void> {
+        return this.http.patch<void>(this.funcaoTransacaoResourceUrl + "/update-ordem", funcaoTransacao);
     }
 
-    findByID(id: number): Observable<any>{
-        return this.http.get<any>(this.vwFuncaoTransacaoResourceUrl+"/id/"+id);
+    findByID(id: number): Observable<any> {
+        return this.http.get<any>(this.vwFuncaoTransacaoResourceUrl + "/id/" + id);
     }
 
-	importarFuncoesAnalise(funcoesFTImportar: FuncaoImportarDTO): Observable<ImportarFTDTO> {
-		const headers = new HttpHeaders({'content-type': 'application/json'})
-		return this.http.post<ImportarFTDTO>(`${this.funcaoTransacaoResourceUrl}/importar-funcoes-analise`, funcoesFTImportar, {headers: headers});
-	}
-	updatePF(funcaoTransacao: FuncaoTransacao[]) :Observable<void>{
-        return this.http.patch<void>(this.funcaoTransacaoResourceUrl+"/update-pf", funcaoTransacao);
+    importarFuncoesAnalise(funcoesFTImportar: FuncaoImportarDTO): Observable<ImportarFTDTO> {
+        const headers = new HttpHeaders({ 'content-type': 'application/json' })
+        return this.http.post<ImportarFTDTO>(`${this.funcaoTransacaoResourceUrl}/importar-funcoes-analise`, funcoesFTImportar, { headers: headers });
+    }
+    updatePF(funcaoTransacao: FuncaoTransacao[]): Observable<void> {
+        return this.http.patch<void>(this.funcaoTransacaoResourceUrl + "/update-pf", funcaoTransacao);
     }
 }
 

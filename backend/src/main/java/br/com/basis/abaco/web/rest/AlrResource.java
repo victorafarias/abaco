@@ -67,9 +67,13 @@ public class AlrResource {
     @Timed
     public ResponseEntity<Alr> createAlr(@RequestBody Alr alr) throws URISyntaxException {
         log.debug("REST request to save Alr : {}", alr);
-        if (alr.getId() != null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new alr cannot already have an ID")).body(null);
-        }
+
+        // Atualizado
+        alr.setId(null);
+
+        //if (alr.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new alr cannot already have an ID")).body(null);
+        //}
         Alr result = alrRepository.save(alr);
         alrRepository.save(result);
         alrSearchRepository.save(result);

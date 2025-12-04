@@ -58,7 +58,7 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
         },
     ];
 
-    
+
     readonly edit = 'edit';
     readonly delete = 'delete';
 
@@ -229,7 +229,7 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
         this.mostrarDialogModulo = false;
         this.novoModulo = new Modulo();
     }
-    
+
 
     adicionarModulo() {
         if (this.novoModulo.nome === undefined) {
@@ -476,8 +476,18 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
     private subscribeToSaveResponse(result: Observable<Sistema>) {
         result.subscribe((res: Sistema) => {
             this.isSaving = false;
-            this.isEdit ? this.pageNotificationService.addUpdateMsg() : this.pageNotificationService.addCreateMsg('Sistema cadastrado com sucesso!');
-            this.router.navigate(['/sistema']);
+
+            // Alterado: Diferenciar comportamento entre criação e edição
+            if (this.isEdit) {
+                // Modo edição: atualizar dados locais e permanecer na página
+                this.sistema = Sistema.fromJSON(res);
+                this.listModulos = this.sistema.modulos;
+                this.pageNotificationService.addUpdateMsg();
+            } else {
+                // Modo criação: navegar para tela de edição com novo ID
+                this.pageNotificationService.addCreateMsg('Sistema cadastrado com sucesso!');
+                this.router.navigate(['/sistema', res.id, 'edit']);
+            }
         }, (error: Response) => {
             this.isSaving = false;
 
@@ -532,31 +542,31 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
 
     exportar(tipoRelatorio: string, resourceName: string) {
         let funcs: any[] = [];
-        if(resourceName == "modulos"){
+        if (resourceName == "modulos") {
             this.sistema.modulos.forEach(modulo => {
                 funcs.push(new Modulo(modulo.id, modulo.nome));
             });
-        }else if(resourceName == "funcionalidades"){
+        } else if (resourceName == "funcionalidades") {
             this.sistema.funcionalidades.forEach(fnc => {
                 funcs.push(new Funcionalidade(fnc.id, fnc.nome, new Modulo(fnc.modulo.id, fnc.modulo.nome)));
             });
         }
         this.sistemaService.exportar(tipoRelatorio, funcs, resourceName);
-        
+
     }
 
     imprimir(tipoRelatorio: string, resourceName: string) {
         let funcs: any[] = [];
-        if(resourceName == "modulos"){
+        if (resourceName == "modulos") {
             this.sistema.modulos.forEach(modulo => {
                 funcs.push(new Modulo(modulo.id, modulo.nome));
             });
-        }else if(resourceName == "funcionalidades"){
+        } else if (resourceName == "funcionalidades") {
             this.sistema.funcionalidades.forEach(fnc => {
                 funcs.push(new Funcionalidade(fnc.id, fnc.nome, new Modulo(fnc.modulo.id, fnc.modulo.nome)));
             });
         }
         this.sistemaService.imprimir(funcs, resourceName);
-        
+
     }
 }

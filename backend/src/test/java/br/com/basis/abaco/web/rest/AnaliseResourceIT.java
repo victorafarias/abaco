@@ -145,7 +145,9 @@ public class AnaliseResourceIT {
         AnaliseResource analiseResource = new AnaliseResource(
             analiseRepository,
             compartilhadaRepository,
-            analiseService);
+            analiseService,
+            funcaoDadosRepository,
+            funcaoTransacaoRepository);
         this.restAnaliseMockMvc = MockMvcBuilders.standaloneSetup(analiseResource)
             .setCustomArgumentResolvers(pageableArgumentResolver).setControllerAdvice(exceptionTranslator)
             .setMessageConverters(jacksonMessageConverter).build();

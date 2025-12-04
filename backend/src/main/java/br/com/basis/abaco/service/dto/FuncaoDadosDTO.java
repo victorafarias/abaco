@@ -39,6 +39,7 @@ public class FuncaoDadosDTO implements Serializable {
     private String modulo;
     private String submodulo;
     private Integer identificador;
+    private Long ordem; // Alterado: Campo adicionado para preservar ordem durante importação Excel
     private String sustantation;
     private String der;
     private String rlr;

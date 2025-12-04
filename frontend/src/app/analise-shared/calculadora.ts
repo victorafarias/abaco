@@ -1,11 +1,11 @@
-import {Complexidade} from '../analise-shared/complexidade-enum';
-import {MetodoContagem} from '../analise/index';
-import {TipoFatorAjuste, FatorAjuste} from '../fator-ajuste/fator-ajuste.model';
-import {ComplexidadeFuncionalDados} from './calculadora/complexidade-funcional-dados';
-import {PFPorTiposComplexidades} from './calculadora/pf-por-tipos-complexidades';
-import {CalculadoraFator} from './calculadora/calculadora-fator';
-import {Manual} from '../manual/manual.model';
-import {FatorAjusteImpactoRetriever} from './calculadora/fator-ajuste-impacto-retriever';
+import { Complexidade } from '../analise-shared/complexidade-enum';
+import { MetodoContagem } from '../analise/index';
+import { TipoFatorAjuste, FatorAjuste } from '../fator-ajuste/fator-ajuste.model';
+import { ComplexidadeFuncionalDados } from './calculadora/complexidade-funcional-dados';
+import { PFPorTiposComplexidades } from './calculadora/pf-por-tipos-complexidades';
+import { CalculadoraFator } from './calculadora/calculadora-fator';
+import { Manual } from '../manual/manual.model';
+import { FatorAjusteImpactoRetriever } from './calculadora/fator-ajuste-impacto-retriever';
 import { FuncaoDados } from '../funcao-dados';
 
 export class Calculadora {

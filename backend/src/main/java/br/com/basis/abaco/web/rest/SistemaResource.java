@@ -4,6 +4,7 @@ import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.FuncaoDados;
 import br.com.basis.abaco.domain.FuncaoDadosVersionavel;
 import br.com.basis.abaco.domain.Modulo;
+import org.hibernate.Hibernate;
 import br.com.basis.abaco.domain.Organizacao;
 import br.com.basis.abaco.domain.Sistema;
 import br.com.basis.abaco.repository.AnaliseRepository;
@@ -101,11 +102,15 @@ public class SistemaResource {
     @Secured("ROLE_ABACO_SISTEMA_CADASTRAR")
     public ResponseEntity<Sistema> createSistema(@Valid @RequestBody Sistema sistema) throws URISyntaxException {
         log.debug("REST request to save Sistema : {}", sistema);
-        if (sistema.getId() != null) {
-            return ResponseEntity.badRequest().headers(
-                HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new sistema cannot already have an ID"))
-                .body(null);
-        }
+        
+        // Atualizado
+        sistema.setId(null);
+        
+        //if (sistema.getId() != null) {
+        //    return ResponseEntity.badRequest().headers(
+        //        HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new sistema cannot already have an ID"))
+        //        .body(null);
+        //}
         Sistema linkedSistema = linkSistemaToModuleToFunctionalities(sistema);
         Sistema result = sistemaService.saveSistema(linkedSistema);
         return ResponseEntity.created(new URI("/api/sistemas/" + result.getId()))
@@ -176,10 +181,15 @@ public class SistemaResource {
 
     @GetMapping("/sistemas/{id}")
     @Timed
+    @Transactional
     @Secured({"ROLE_ABACO_SISTEMA_CONSULTAR", "ROLE_ABACO_SISTEMA_EDITAR"})
     public ResponseEntity<Sistema> getSistema(@PathVariable Long id) {
         log.debug("REST request to get Sistema : {}", id);
         Sistema sistema = sistemaRepository.findOne(id);
+        if (sistema != null) {
+            Hibernate.initialize(sistema.getModulos());
+            sistema.getModulos().forEach(m -> Hibernate.initialize(m.getFuncionalidades()));
+        }
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(sistema));
     }
 

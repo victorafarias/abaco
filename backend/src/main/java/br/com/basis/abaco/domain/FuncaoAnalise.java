@@ -35,7 +35,8 @@ public abstract class FuncaoAnalise implements AbacoAuditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    // Alterado: Ajustado allocationSize para 50 para alinhar com increment da sequência no PostgreSQL
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 50)
     private Long id;
 
     @Enumerated(EnumType.STRING)

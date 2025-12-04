@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { LoginService } from './login.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { User } from '../user';
+import { User } from '../user/user.model';
 import { Subscription, Observable } from 'rxjs';
 import { AuthenticationService } from '@nuvem/angular-base';
 import { HttpClient } from '@angular/common/http';

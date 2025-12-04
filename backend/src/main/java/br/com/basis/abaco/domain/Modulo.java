@@ -42,7 +42,8 @@ public class Modulo implements Serializable, ReportObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    // Alterado: Ajustado allocationSize para 50 para alinhar com increment da sequência no PostgreSQL
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 50)
     private Long id;
 
     @NotNull
@@ -56,7 +57,6 @@ public class Modulo implements Serializable, ReportObject {
 
     @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @JsonIgnore
     private Set<Funcionalidade> funcionalidades = new HashSet<>();
 
     public Long getId() {

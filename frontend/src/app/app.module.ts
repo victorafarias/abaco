@@ -66,7 +66,7 @@ import {AdministracaoModule} from "./administracao/administracao.module";
         AppInlineProfileComponent,
         DiarioErrosComponent,
         Dashboard2Component,
-        AdministracaoComponent
+        AdministracaoComponent		
     ],
 	imports: [
 		BrowserModule,

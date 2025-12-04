@@ -117,6 +117,7 @@ public class FuncaoDadosResource {
     @Timed
     public ResponseEntity<FuncaoDadosEditDTO> createFuncaoDados(@PathVariable Long idAnalise, @RequestPart("funcaoDados") FuncaoDadosSaveDTO funcaoDadosSaveDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException {
         log.debug("REST request to save FuncaoDados : {}", funcaoDadosSaveDTO);
+        
         Analise analise = analiseRepository.findOneByIdClean(idAnalise);
 
         FuncaoDados funcaoDados = convertToEntity(funcaoDadosSaveDTO);
@@ -125,9 +126,14 @@ public class FuncaoDadosResource {
         funcaoDados.getRlrs().forEach(rlr -> { rlr.setFuncaoDados(funcaoDados);});
 
         funcaoDados.setAnalise(analise);
-        if (funcaoDados.getId() != null || funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoDados cannot already have an ID")).body(null);
-        }
+        
+        // Atualizado
+        funcaoDados.setId(null);
+        if (funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
+            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists",
+                "A new funcaoDados must be associated with an Analise")).body(null);
+        }    
+
         for(Der der : funcaoDados.getDers()){
             der.setFuncaoTransacao(null);
         }
@@ -152,44 +158,112 @@ public class FuncaoDadosResource {
     }
 
     /**
-     * PUT  /funcao-dados : Updates an existing funcaoDados.
+     * PUT  /funcao-dados/{id} : Updates an existing funcaoDados.
      *
-     * @param funcaoDadosSaveDTO the funcaoDados to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated funcaoDados,
-     * or with status 400 (Bad Request) if the funcaoDados is not valid,
-     * or with status 500 (Internal Server Error) if the funcaoDados couldnt be updated
+     * @param id the id of the funcaoDados to update (from path)
+     * @param funcaoDadosSaveDTO the funcaoDados data to update
+     * @param files list of files to upload
+     * @return the ResponseEntity with status 200 (OK) or 400 (Bad Request)
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+    // ATUALIZADO - Adicionado tratamento de null e validação de IDs
     @PutMapping(value = "/funcao-dados/{id}", consumes = {"multipart/form-data"})
-    public ResponseEntity<FuncaoDadosEditDTO> updateFuncaoDados(@PathVariable Long id, @RequestPart("funcaoDados")FuncaoDadosSaveDTO funcaoDadosSaveDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException {
-        log.debug("REST request to update FuncaoDados : {}", funcaoDadosSaveDTO);
-        FuncaoDados funcaoDadosOld = funcaoDadosRepository.findById(id);
-        FuncaoDados funcaoDados = convertToEntity(funcaoDadosSaveDTO);
+    public ResponseEntity<FuncaoDadosEditDTO> updateFuncaoDados(
+        @PathVariable Long id, 
+        @RequestPart("funcaoDados") FuncaoDadosSaveDTO funcaoDadosSaveDTO,
+        @RequestPart(value = "files", required = false) List<MultipartFile> files) throws URISyntaxException {
 
-        if (funcaoDados.getId() == null) {
-            return createFuncaoDados(funcaoDados.getAnalise().getId(), funcaoDadosSaveDTO, files);
+        log.debug("REST request to update FuncaoDados : {}", funcaoDadosSaveDTO);
+
+        // VALIDAÇÃO: Verificar se o ID é válido
+        if (id == null || id <= 0) {
+            log.error("ID inválido fornecido: {}", id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idInvalido", "ID da Função de Dados inválido"))
+                .body(null);
         }
 
+        // VALIDAÇÃO: Verificar se o DTO tem ID
+        if (funcaoDadosSaveDTO.getId() == null) {
+            log.error("DTO sem ID fornecido");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "dtoSemId", "DTO sem ID"))
+                .body(null);
+        }
+
+        // VALIDAÇÃO: Verificar se os IDs coincidem
+        if (!id.equals(funcaoDadosSaveDTO.getId())) {
+            log.error("ID do path ({}) não coincide com ID do DTO ({})", id, funcaoDadosSaveDTO.getId());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idMismatch", "IDs não coincidem"))
+                .body(null);
+        }
+
+        // Buscar a função existente
+        FuncaoDados funcaoDadosOld = funcaoDadosRepository.findById(id);
+        if (funcaoDadosOld == null) {
+            log.error("Função de Dados não encontrada com ID: {}", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "naoEncontrado", "Função de Dados não encontrada"))
+                .body(null);
+        }
+
+        // VALIDAÇÃO: Verificar se a análise existe
+        if (funcaoDadosOld.getAnalise() == null || funcaoDadosOld.getAnalise().getId() == null) {
+            log.error("Análise não encontrada para a função de dados ID: {}", id);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "analiseNaoEncontrada", "Análise não encontrada"))
+                .body(null);
+        }
+
+        // Buscar a análise completa
         Analise analise = analiseRepository.findOneByIdClean(funcaoDadosOld.getAnalise().getId());
+        if (analise == null) {
+            log.error("Análise não encontrada no banco: {}", funcaoDadosOld.getAnalise().getId());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "analiseInvalida", "Análise inválida"))
+                .body(null);
+        }
+
+        // Converter DTO para entidade
+        FuncaoDados funcaoDados = convertToEntity(funcaoDadosSaveDTO);
         funcaoDados.setAnalise(analise);
 
-        if (funcaoDados.getAnalise() == null || funcaoDados.getAnalise().getId() == null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoDados cannot already have an ID")).body(null);
-        }
-        if(!files.isEmpty()){
-            List<UploadedFile> uploadedFiles = funcaoDadosService.uploadFiles(files);
-            funcaoDadosOld.setFiles(uploadedFiles);
+        // Processar arquivos se fornecidos
+        if (files != null && !files.isEmpty()) {
+            try {
+                List<UploadedFile> uploadedFiles = funcaoDadosService.uploadFiles(files);
+                funcaoDadosOld.setFiles(uploadedFiles);
+            } catch (Exception e) {
+                log.error("Erro ao processar arquivos", e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "erroArquivos", "Erro ao processar arquivos"))
+                    .body(null);
+            }
         }
 
+        // Atualizar a função
         FuncaoDados funcaoDadosUpdate = updateFuncaoDados(funcaoDadosOld, funcaoDados);
-
         FuncaoDados result = funcaoDadosRepository.save(funcaoDadosUpdate);
         FuncaoDadosEditDTO funcaoDadosEditDTO = convertFuncaoDadoAEditDTO(result);
 
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && MetodoContagem.DETALHADA.equals(analise.getMetodoContagem())) {
-            funcaoDadosService.saveVwDersAndVwRlrs(result.getDers(), result.getRlrs(), analise.getSistema().getId(), result.getId());
+        // Atualizar índices se necessário
+        if (configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() != null && 
+            configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true && 
+            analise.getMetodoContagem() != null && 
+            analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
+
+            funcaoDadosService.saveVwDersAndVwRlrs(
+                result.getDers(), 
+                result.getRlrs(), 
+                analise.getSistema().getId(), 
+                result.getId()
+            );
         }
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoDados.getId().toString())).body(funcaoDadosEditDTO);
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoDados.getId().toString()))
+            .body(funcaoDadosEditDTO);
     }
 
     /**
@@ -206,8 +280,8 @@ public class FuncaoDadosResource {
             if (f.getAnalise().getFuncaoDados() != null) {
                 f.getAnalise().getFuncaoDados().clear();
             }
-            if (f.getAnalise().getFuncaoTransacaos() != null) {
-                f.getAnalise().getFuncaoTransacaos().clear();
+            if (f.getAnalise().getFuncaoTransacao() != null) {
+                f.getAnalise().getFuncaoTransacao().clear();
             }
         });
         return funcaoDados;
@@ -227,8 +301,8 @@ public class FuncaoDadosResource {
         if (funcaoDados.getAnalise().getFuncaoDados() != null) {
             funcaoDados.getAnalise().getFuncaoDados().clear();
         }
-        if (funcaoDados.getAnalise().getFuncaoTransacaos() != null) {
-            funcaoDados.getAnalise().getFuncaoTransacaos().clear();
+        if (funcaoDados.getAnalise().getFuncaoTransacao() != null) {
+            funcaoDados.getAnalise().getFuncaoTransacao().clear();
         }
         FuncaoDadosDTO funcaoDadosDTO = getFuncaoDados(funcaoDados);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(funcaoDadosDTO));
@@ -360,17 +434,20 @@ public class FuncaoDadosResource {
         return new ResponseEntity<>(funcaoDadosService.importarFuncaoAnalise(funcaoImportarDTO), HttpStatus.OK);
     }
 
+    /**
+     * Atualiza o PF das funções em lote.
+     * Alterado: Delega a lógica para o serviço garantir consistência e indexação.
+     */
     @PatchMapping("/funcao-dados/update-pf")
+    @Timed
     public ResponseEntity<Void> updatePF(@RequestBody List<FuncaoPFDTO> funcaoPFDTO){
-        if(funcaoPFDTO != null && funcaoPFDTO.size() > 0){
-            for (FuncaoPFDTO funcao : funcaoPFDTO) {
-                FuncaoDados funcaoDados = funcaoDadosRepository.findById(funcao.getId());
-                funcaoDados.setPf(funcao.getPf());
-                funcaoDados.setGrossPF(funcao.getGrossPF());
-                funcaoDados.setComplexidade(funcao.getComplexidade());
-                funcaoDadosRepository.save(funcaoDados);
-            }
+        log.debug("REST request to update PF em lote para {} funções", funcaoPFDTO != null ? funcaoPFDTO.size() : 0);
+        
+        if(funcaoPFDTO != null && !funcaoPFDTO.isEmpty()){
+            // Chama o método refatorado no serviço
+            funcaoDadosService.updatePF(funcaoPFDTO);
         }
+        
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

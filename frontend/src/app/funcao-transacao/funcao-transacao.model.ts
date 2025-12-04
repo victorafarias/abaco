@@ -1,6 +1,6 @@
 import {BaseEntity} from '../shared';
-import {FatorAjuste} from '../fator-ajuste/index';
-import {Funcionalidade} from '../funcionalidade/index';
+import {FatorAjuste} from '../fator-ajuste/fator-ajuste.model';
+import {Funcionalidade} from '../funcionalidade/funcionalidade.model';
 import {Complexidade} from '../analise-shared/complexidade-enum';
 import {DerTextParser, ParseResult} from '../analise-shared/der-text/der-text-parser';
 import {FuncaoAnalise} from '../analise-shared/funcao-analise';
@@ -11,8 +11,8 @@ import {Impacto} from '../analise-shared/impacto-enum';
 import {FuncaoResumivel} from '../analise-shared';
 import { CommentFuncaoTransacao } from './comment.model';
 import { Status } from '../status/status.model';
-import { Modulo } from '../modulo';
-import { TipoEquipe } from '../tipo-equipe';
+import { Modulo } from '../modulo/modulo.model';
+import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
 
 export enum TipoFuncaoTransacao {
   'EE' = 'EE',

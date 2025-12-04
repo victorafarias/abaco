@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BaselineService } from '../..';
+import { BaselineService } from '../../baseline.service';
 import { DatatableComponent } from '@nuvem/primeng-components';
 
 
