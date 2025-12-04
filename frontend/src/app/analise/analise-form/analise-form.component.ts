@@ -49,6 +49,7 @@ export class AnaliseFormComponent implements OnInit {
     ];
 
     isEdicao: boolean;
+    isClone: boolean = false;
     canEditMetodo: boolean = false;
     disableFuncaoTrasacao = true;
     disableAba: boolean;
@@ -195,7 +196,7 @@ export class AnaliseFormComponent implements OnInit {
     }
 
     private setDefaultStatus() {
-        if (this.analise && !this.analise.id && this.statusCombo && this.statusCombo.length > 0) {
+        if ((!this.analise.id || this.isClone) && this.statusCombo && this.statusCombo.length > 0) {
             const statusEmAnalise = this.statusCombo.find(s => s.nome === 'Em Análise');
             if (statusEmAnalise) {
                 this.analise.status = statusEmAnalise;
@@ -235,6 +236,10 @@ export class AnaliseFormComponent implements OnInit {
         this.routeSub = this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEdicao = true;
+                // Alterado: Verifica se é uma clonagem
+                if (params['clone']) {
+                    this.isClone = true;
+                }
                 this.analiseService.find(params['id']).subscribe(analise => {
                     // Alterado: Define se pode editar o método baseado no status
                     this.checkIfCanEditMetodo(analise);
@@ -249,6 +254,10 @@ export class AnaliseFormComponent implements OnInit {
                         this.router.navigate(['/analise', analise.id, 'view']);
                     }
                     this.disableFuncaoTrasacao = analise.metodoContagem === MessageUtil.INDICATIVA;
+                    // Alterado: Define status padrão se for clonagem
+                    if (this.isClone) {
+                        this.setDefaultStatus();
+                    }
                 },
                     err => {
                         this.pageNotificationService.addErrorMessage(
@@ -326,6 +335,7 @@ export class AnaliseFormComponent implements OnInit {
             this.analise.manual = new Manual();
             this.analise.organizacao = org;
             this.analise.dataCriacaoOrdemServico = new Date();
+            this.setDefaultStatus();
         }
         this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
