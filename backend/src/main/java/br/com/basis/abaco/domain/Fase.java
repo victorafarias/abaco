@@ -33,7 +33,8 @@ public class Fase implements Serializable, ReportObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 1)
+    // Alterado: Ajustado allocationSize para 50 para alinhar com increment da sequência no PostgreSQL
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "hibernate_sequence", allocationSize = 50)
     private Long id;
 
     @Column(name = "nome", unique=true)
