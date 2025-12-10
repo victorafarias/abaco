@@ -71,4 +71,8 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
     FuncaoDados findByIdOrderByDersIdAscRlrsIdAsc(Long id);
 
     Optional<List<FuncaoDados>> findAllByFuncionalidadeId(Long id);
+
+    // Alterado: Método para buscar a maior ordem de funções de dados de uma análise
+    @Query("SELECT COALESCE(MAX(fd.ordem), 0) FROM FuncaoDados fd WHERE fd.analise.id = :analiseId")
+    Long findMaxOrdemByAnaliseId(@Param("analiseId") Long analiseId);
 }
