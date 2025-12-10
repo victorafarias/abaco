@@ -64,8 +64,21 @@ public class PlanilhaService {
     private static final Integer QUANTIDADE_SISTEMAS_BNB = 121;
 
     public ByteArrayOutputStream selecionarModelo(Analise analise, Long modelo) throws IOException {
-        List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream().collect(Collectors.toList());
-        List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacao().stream().collect(Collectors.toList());
+        // Alterado: Ordenação pelo campo 'ordem' para exportar funções na ordem correta
+        List<FuncaoDados> funcaoDadosList = analise.getFuncaoDados().stream()
+            .sorted((a, b) -> {
+                Long ordemA = a.getOrdem() != null ? a.getOrdem() : Long.MAX_VALUE;
+                Long ordemB = b.getOrdem() != null ? b.getOrdem() : Long.MAX_VALUE;
+                return ordemA.compareTo(ordemB);
+            })
+            .collect(Collectors.toList());
+        List<FuncaoTransacao> funcaoTransacaoList = analise.getFuncaoTransacao().stream()
+            .sorted((a, b) -> {
+                Long ordemA = a.getOrdem() != null ? a.getOrdem() : Long.MAX_VALUE;
+                Long ordemB = b.getOrdem() != null ? b.getOrdem() : Long.MAX_VALUE;
+                return ordemA.compareTo(ordemB);
+            })
+            .collect(Collectors.toList());
         switch(modelo.intValue()) {
             case 1:
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
