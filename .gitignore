@@ -5,6 +5,3 @@ requirements.lock
 charts/charts/
 charts/abaco*.tgz
 .idea/
-backend/pom.xml
-frontend/Dockerfile
-backend/Dockerfile
