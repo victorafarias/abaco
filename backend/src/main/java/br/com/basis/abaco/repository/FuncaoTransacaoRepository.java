@@ -62,4 +62,8 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
     Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndIdNotAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long id, Long idEquipe);
 
     Boolean existsByNameAndAnaliseIdAndFuncionalidadeIdAndEquipeId(String name, Long idAnalise, Long idfuncionalidade, Long idEquipe);
+
+    // Alterado: Método para buscar a maior ordem de funções de transação de uma análise
+    @Query("SELECT COALESCE(MAX(ft.ordem), 0) FROM FuncaoTransacao ft WHERE ft.analise.id = :analiseId")
+    Long findMaxOrdemByAnaliseId(@Param("analiseId") Long analiseId);
 }
