@@ -65,6 +65,11 @@
                                             this.getLabel('Não') }}
                                         </ng-template>
                                     </p-column>
+                                    <!-- Alterado: Adicionado botão de incluir nova função de dados -->
+                                    <basis-datatable-button name="add" *ngIf="!isView && !isOrderning"
+                                        (click)="openDialog(false)" bTooltip="Incluir nova função"
+                                        class="ui-button-success" icon="add">
+                                    </basis-datatable-button>
                                     <basis-datatable-button name="crud" [allowMultipleSelection]="false"
                                         *ngIf="!isView && !(analise && analise.metodoContagem && analise.metodoContagem === 'INDICATIVA')  && !isOrderning && !selectButtonMultiple"
                                         (click)="createCrud(this.funcaoDadosEditar[0])"

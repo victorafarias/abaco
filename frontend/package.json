@@ -1,6 +1,6 @@
 {
     "name": "abaco",
-    "version": "3.0.4",
+    "version": "3.1.0",
     "license": "COMMERCIAL",
     "angular-cli": {},
     "engines": {
@@ -25,7 +25,7 @@
         "@angular/platform-browser": "9.1.0",
         "@angular/platform-browser-dynamic": "9.1.0",
         "@angular/router": "9.1.0",
-        "@fullcalendar/core": "^5.5.1",
+        "@fullcalendar/core": "^5.11.5",
         "@nuvem/angular-base": "^9.1.9",
         "@nuvem/primeng-components": "^9.1.10",
         "chart.js": "2.7.1",
