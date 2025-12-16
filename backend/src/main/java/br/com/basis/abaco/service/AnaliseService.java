@@ -213,16 +213,28 @@ public class AnaliseService extends BaseService {
         if (row == null || row.getCell(columnIndex) == null) {
             return 0.0;
         }
+        
+        XSSFCell cell = row.getCell(columnIndex);
         try {
-            // Se for fórmula, getNumericCellValue() retorna o resultado avaliado
-            return row.getCell(columnIndex).getNumericCellValue();
-        } catch (Exception e) {
-            // Se falhar, tenta converter o valor string
-            String value = getCellValueAsString(row, columnIndex);
-            try {
+            // Alterado: Usar FormulaEvaluator para avaliar fórmulas
+            FormulaEvaluator evaluator = row.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+            // Verifica o tipo da célula antes de tentar ler
+            if (cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_FORMULA) {
+                // Avalia a fórmula
+                return evaluator.evaluate(cell).getNumberValue();
+            } else if (cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC) {
+                return cell.getNumericCellValue();
+            } else {
+                // Tenta converter string para número se não for numérico puro
+                String value = getCellValueAsString(row, columnIndex);
                 return Double.parseDouble(value.replace(",", "."));
-            } catch (NumberFormatException nfe) {
-                return 0.0;
+            }
+        } catch (Exception e) {
+            // Fallback para comportamento original em caso de erro
+            try {
+                 return row.getCell(columnIndex).getNumericCellValue();
+            } catch (Exception ex) {
+                 return 0.0;
             }
         }
     }
