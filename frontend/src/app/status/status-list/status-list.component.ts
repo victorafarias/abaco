@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { StatusService } from '../status.service';
 import { ConfirmationService } from 'primeng';
 import { AuthService } from 'src/app/util/auth.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-status-list',
@@ -24,6 +25,7 @@ export class StatusListComponent implements OnInit {
 
     elasticQuery: ElasticQuery = new ElasticQuery();
 
+    rows = 20;
     rowsPerPageOptions: number[] = [5, 10, 20];
 
     valueFiltroCampo;
@@ -41,7 +43,8 @@ export class StatusListComponent implements OnInit {
         private statusService: StatusService,
         private confirmationService: ConfirmationService,
         private pageNotificationService: PageNotificationService,
-        private authService: AuthService
+        private authService: AuthService,
+        private pageConfigService: PageConfigService
     ) { }
 
     getLabel(label) {
@@ -49,10 +52,19 @@ export class StatusListComponent implements OnInit {
     }
 
     valueFiltro() {
+        this.pageConfigService.saveConfig('status_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('status_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedFilter = this.pageConfigService.getConfig('status_filter');
+        if (savedFilter) {
+            this.elasticQuery.value = savedFilter;
+        }
         if (this.datatable) {
             this.datatable.pDatatableComponent.onRowSelect.subscribe((event) => {
                 this.statusSelecionada = event.data;
@@ -65,7 +77,7 @@ export class StatusListComponent implements OnInit {
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
+    verificarPermissoes() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "STATUS_EDITAR") == true) {
             this.canEditar = true;
         }
@@ -137,10 +149,12 @@ export class StatusListComponent implements OnInit {
 
     public limparPesquisa() {
         this.elasticQuery.reset();
+        this.pageConfigService.saveConfig('status_filter', '');
         this.recarregarDataTable();
     }
 
     public recarregarDataTable() {
+        this.pageConfigService.saveConfig('status_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
         this.statusFiltro.nome = this.elasticQuery.query;
     }
@@ -157,4 +171,8 @@ export class StatusListComponent implements OnInit {
         this.router.navigate(["/status/new"]);
     }
 
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('status_rows', this.rows);
+    }
 }

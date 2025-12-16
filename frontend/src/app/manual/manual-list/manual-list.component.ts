@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
@@ -10,13 +10,14 @@ import { FatorAjuste } from 'src/app/fator-ajuste';
 import { EsforcoFase } from 'src/app/esforco-fase';
 import { MessageUtil } from 'src/app/util/message.util';
 import { AuthService } from 'src/app/util/auth.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-manual',
     templateUrl: './manual-list.component.html',
     providers: [ManualService, ConfirmationService]
 })
-export class ManualListComponent implements OnInit {
+export class ManualListComponent implements OnInit, AfterViewInit {
 
     @ViewChild(DatatableComponent) datatable: DatatableComponent;
 
@@ -25,6 +26,7 @@ export class ManualListComponent implements OnInit {
     manualSelecionado: Manual = new Manual();
     nomeDoManualClonado: string;
     mostrarDialogClonar: boolean;
+    rows = 20;
     rowsPerPageOptions: number[] = [5, 10, 20];
     myform: FormGroup;
     nomeValido = false;
@@ -32,14 +34,14 @@ export class ManualListComponent implements OnInit {
     idManual: Number;
 
     allColumnsTable = [
-        {value: 'nome',  label: 'Nome'},
-        {value: 'valorVariacaoEstimada',  label: 'Estimada'},
-        {value: 'valorVariacaoIndicativa',  label: 'Indicativa'},
-        {value: 'parametroInclusao',  label: 'Inclusão'},
-        {value: 'parametroAlteracao',  label: 'Alteração'},
-        {value: 'parametroExclusao',  label: 'Exclusão'},
-        {value: 'parametroConversao',  label: 'Conversão'},
-        {value: 'observacao',  label: 'Observação'},
+        { value: 'nome', label: 'Nome' },
+        { value: 'valorVariacaoEstimada', label: 'Estimada' },
+        { value: 'valorVariacaoIndicativa', label: 'Indicativa' },
+        { value: 'parametroInclusao', label: 'Inclusão' },
+        { value: 'parametroAlteracao', label: 'Alteração' },
+        { value: 'parametroExclusao', label: 'Exclusão' },
+        { value: 'parametroConversao', label: 'Conversão' },
+        { value: 'observacao', label: 'Observação' },
     ];
 
     columnsVisible = [
@@ -51,9 +53,9 @@ export class ManualListComponent implements OnInit {
         'parametroExclusao',
         'parametroConversao',
         'observacao'];
-      private lastColumn: any[] = [];
+    private lastColumn: any[] = [];
 
-      manualFiltro : SearchGroup = new SearchGroup();
+    manualFiltro: SearchGroup = new SearchGroup();
 
     canPesquisar: boolean = false;
     canCadastrar: boolean = false;
@@ -68,12 +70,27 @@ export class ManualListComponent implements OnInit {
         private manualService: ManualService,
         private confirmationService: ConfirmationService,
         private pageNotificationService: PageNotificationService,
-        private authService: AuthService
+        private authService: AuthService,
+        private pageConfigService: PageConfigService
     ) {
     }
 
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('manual_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedCols = this.pageConfigService.getConfig('manual_columnsVisible');
+        if (savedCols) {
+            this.columnsVisible = savedCols;
+        } else {
+            this.columnsVisible = this.allColumnsTable.map(c => c.value);
+        }
+        const savedFilter = this.pageConfigService.getConfig('manual_filter');
+        if (savedFilter) {
+            this.elasticQuery.value = savedFilter;
+        }
         this.mostrarDialogClonar = false;
         if (this.datatable) {
             this.datatable.pDatatableComponent.onRowSelect.subscribe((event) => {
@@ -86,7 +103,11 @@ export class ManualListComponent implements OnInit {
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
+    ngAfterViewInit() {
+        this.updateVisibleColumns(this.columnsVisible);
+    }
+
+    verificarPermissoes() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "MANUAL_EDITAR") == true) {
             this.canEditar = true;
         }
@@ -174,6 +195,7 @@ export class ManualListComponent implements OnInit {
 
     public limparPesquisa() {
         this.elasticQuery.reset();
+        this.pageConfigService.saveConfig('manual_filter', '');
         this.recarregarDataTable();
     }
 
@@ -194,11 +216,13 @@ export class ManualListComponent implements OnInit {
     }
 
     public recarregarDataTable() {
+        this.pageConfigService.saveConfig('manual_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
         this.manualFiltro.nome = this.elasticQuery.query;
     }
 
     public search() {
+        this.pageConfigService.saveConfig('manual_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
     }
 
@@ -262,6 +286,7 @@ export class ManualListComponent implements OnInit {
         if (this.columnsVisible.length) {
             this.lastColumn = event.value;
             this.updateVisibleColumns(this.columnsVisible);
+            this.pageConfigService.saveConfig('manual_columnsVisible', this.columnsVisible);
         } else {
             this.lastColumn.map((item) => this.columnsVisible.push(item));
             this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');
@@ -285,7 +310,12 @@ export class ManualListComponent implements OnInit {
     }
 
 
-    criarManual(){
+    criarManual() {
         this.router.navigate(["/manual/new"])
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('manual_rows', this.rows);
     }
 }

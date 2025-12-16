@@ -17,6 +17,18 @@
                         </div> -->
                             <!-- Inicio da tabela -->
                             <div class="ui-g">
+                                <div class="ui-g-12 ui-g-nopad">
+                                    <div class="ui-g-3 ui-md-offset-6">
+                                        <div class="text-right">Visibilidade das Colunas:</div>
+                                    </div>
+                                    <div class="ui-g-3">
+                                        <p-multiSelect defaultLabel="Selecione as colunas a serem exibidas"
+                                            [displaySelectedLabel]="false" [ngModelOptions]="{ standalone: true }"
+                                            (onChange)="mostrarColunas($event)" [options]="allColumnsTable"
+                                            [(ngModel)]="columnsVisible" [style]="{ width: '100%' }">
+                                        </p-multiSelect>
+                                    </div>
+                                </div>
                                 <basis-datatable type="memory" [disableDelete]="this.isView || isOrderning"
                                     [disableEdit]="this.isView || selectButtonMultiple || isOrderning"
                                     [disableView]="selectButtonMultiple || isOrderning"
@@ -25,8 +37,9 @@
                                     (dblclick)="onRowDblclick($event)" (click)="selectFT($event)" [paginator]="false"
                                     [reorderableRows]="isOrderning" (onRowReorder)="updateIndex()" [rows]="numberPages"
                                     [selectionMode]="'multiple'" [filterOnColumn]="true"
-                                    [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="true" #tables>
-                                    <p-column header="Ordem" field="ordem">
+                                    [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="false" #tables>
+                                    <p-column header="Ordem" field="ordem"
+                                        [style]="{'display': tables.visibleColumns['ordem']}">
                                         <ng-template let-col let-funcaoTransacao="rowData" pTemplate="body">
                                             <span *ngIf="!habilitaEditarOrdem"
                                                 (click)="habilitarEdicaoOrdem(funcaoTransacao)">{{
@@ -38,37 +51,53 @@
                                                 [(ngModel)]="funcaoTransacao.ordem" id="idEditOrdem">
                                         </ng-template>
                                     </p-column>
-                                    <p-column field="nomeModulo" header="Módulo" sortable="true"></p-column>
-                                    <p-column field="nomeFuncionalidade" header="Funcionalidade"
-                                        sortable="true"></p-column>
-                                    <p-column field="name" header=" Nome" sortable="true"></p-column>
-                                    <p-column field="deflator" header=" Deflator" sortable="true"></p-column>
-                                    <p-column field="tipo" header=" Classificação" sortable="true"></p-column>
-                                    <p-column field="totalDers" header=" DER(TD)" sortable="true">
+                                    <p-column field="nomeModulo" header="Módulo" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['nomeModulo']}"></p-column>
+                                    <p-column field="nomeFuncionalidade" header="Funcionalidade" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['nomeFuncionalidade']}"></p-column>
+                                    <p-column field="name" header=" Nome" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['name']}"></p-column>
+                                    <p-column field="deflator" header=" Deflator" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['deflator']}"></p-column>
+                                    <p-column field="tipo" header=" Classificação" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['tipo']}"></p-column>
+                                    <p-column field="totalDers" header=" DER(TD)" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['totalDers']}">
                                         <ng-template let-col let-funcao="rowData" pTemplate="body">
                                             {{ analise && analise.metodoContagem === 'DETALHADA' ? funcao.totalDers :
                                             '0' }}
                                         </ng-template>
                                     </p-column>
-                                    <p-column field="totalAlrs" header=" FTR (AR)" sortable="true">
+                                    <p-column field="totalAlrs" header=" FTR (AR)" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['totalAlrs']}">
                                         <ng-template let-col let-funcao="rowData" pTemplate="body">
                                             {{ analise && analise.metodoContagem === 'DETALHADA' ? funcao.totalAlrs :
                                             '0' }}
                                         </ng-template>
                                     </p-column>
-                                    <p-column field="complexidade" header=" Complexidade" sortable="true"></p-column>
-                                    <p-column header=" PF Bruto" field="grossPf" filter="true">
+                                    <p-column field="complexidade" header=" Complexidade" sortable="true"
+                                        [style]="{'display': tables.visibleColumns['complexidade']}"></p-column>
+                                    <p-column header=" PF Bruto" field="grossPf" filter="true"
+                                        [style]="{'display': tables.visibleColumns['grossPf']}">
                                         <ng-template let-grossPF="rowData.grossPF" pTemplate="body"> {{ grossPF | number
                                             }}</ng-template>
                                     </p-column>
-                                    <p-column header=" PF Liquído" field="pf">
+                                    <p-column header=" PF Liquído" field="pf"
+                                        [style]="{'display': tables.visibleColumns['pf']}">
                                         <ng-template let-pf="rowData.pf" pTemplate="body"> {{ pf | number }}
                                         </ng-template>
                                     </p-column>
-                                    <p-column header=" Possui Fundamentação ?" field="sustantation">
+                                    <p-column header=" Possui Fundamentação ?" field="sustantation"
+                                        [style]="{'display': tables.visibleColumns['sustantation']}">
                                         <ng-template let-sustantation="rowData.sustantation" pTemplate="body"> {{
                                             sustantation && sustantation !== emptySustantion ? this.getLabel('Sim') :
                                             this.getLabel('Não') }}</ng-template>
+                                    </p-column>
+                                    <p-column header="Evidência" field="evidencia" [sortable]="true"
+                                        [style]="{'display': tables.visibleColumns['evidencia']}">
+                                        <ng-template let-row="rowData" pTemplate="body">
+                                            <span [innerHTML]="row.sustantation"></span>
+                                        </ng-template>
                                     </p-column>
                                     <basis-datatable-button name="add" *ngIf="!isView && !isOrderning"
                                         (click)="openDialog(false)" bTooltip="Incluir nova função"

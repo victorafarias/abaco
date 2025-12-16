@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng';
 import { DatatableComponent, PageNotificationService, DatatableClickEvent } from '@nuvem/primeng-components';
@@ -9,18 +9,20 @@ import { SistemaService } from '../sistema.service';
 import { AuthService } from 'src/app/util/auth.service';
 import { PerfilOrganizacao } from 'src/app/perfil/perfil-organizacao.model';
 import { PerfilService } from 'src/app/perfil/perfil.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-sistema',
     templateUrl: './sistema-list.component.html',
     providers: [ConfirmationService]
 })
-export class SistemaListComponent {
+export class SistemaListComponent implements OnInit {
 
     @ViewChild(DatatableComponent) datatable: DatatableComponent;
     searchUrl: string = this.sistemaService.searchUrl;
     sistemaSelecionado: Sistema;
     rowsPerPageOptions: number[] = [5, 10, 20];
+    rows = 20;
     paginationParams = { contentIndex: null };
     elasticQuery: ElasticQuery = new ElasticQuery();
     organizations: Organizacao[] = [];
@@ -50,7 +52,8 @@ export class SistemaListComponent {
         private organizacaoService: OrganizacaoService,
         private pageNotificationService: PageNotificationService,
         private authService: AuthService,
-        private perfilService: PerfilService
+        private perfilService: PerfilService,
+        private pageConfigService: PageConfigService
     ) {
     }
 
@@ -59,6 +62,14 @@ export class SistemaListComponent {
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('sistema_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedSearch = this.pageConfigService.getConfig('sistema_searchParams');
+        if (savedSearch) {
+            this.searchParams = savedSearch;
+        }
         if (this.datatable) {
             this.datatable.pDatatableComponent.onRowSelect.subscribe((event) => {
                 this.sistemaSelecionado = event.data;
@@ -166,6 +177,7 @@ export class SistemaListComponent {
     }
 
     public performSearch() {
+        this.pageConfigService.saveConfig('sistema_searchParams', this.searchParams);
         this.checkUndefinedParams();
         this.elasticQuery.value = this.concatResults(this.createStringParamsArray());
         this.recarregarDataTable();
@@ -210,6 +222,7 @@ export class SistemaListComponent {
         this.searchParams.nomeSistema = '';
         this.elasticQuery.reset();
         this.searchUrl = this.sistemaService.searchUrl;
+        this.pageConfigService.saveConfig('sistema_searchParams', this.searchParams);
         this.recarregarDataTable();
     }
 
@@ -253,5 +266,10 @@ export class SistemaListComponent {
 
     criarSistema() {
         this.router.navigate(["/sistema/new"]);
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('sistema_rows', this.rows);
     }
 }

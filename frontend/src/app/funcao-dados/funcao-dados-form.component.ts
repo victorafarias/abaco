@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
@@ -24,6 +24,7 @@ import { ResponseWrapper } from '../shared';
 import { AnaliseSharedDataService } from '../shared/analise-shared-data.service';
 import { FatorAjusteLabelGenerator } from '../shared/fator-ajuste-label-generator';
 import { MessageUtil } from '../util/message.util';
+import { PageConfigService } from '../shared/page-config.service';
 import { FuncaoTransacaoService } from '../funcao-transacao/funcao-transacao.service';
 import { CalculadoraTransacao } from './../analise-shared/calculadora-transacao';
 import { MetodoContagem } from './../analise/analise.model';
@@ -52,7 +53,7 @@ import { MessageService } from 'primeng/api';
     templateUrl: './funcao-dados-form.component.html',
     providers: [ConfirmationService]
 })
-export class FuncaoDadosFormComponent implements OnInit, OnChanges {
+export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewInit {
     emptySustantion = '<p><br></p>';
     @Output()
     valueChange: EventEmitter<string> = new EventEmitter<string>();
@@ -124,6 +125,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
     quantidadeEmLote: number;
     funcaoDadosEmLote: FuncaoDados[] = []
 
+    allColumnsTable = [
+        { value: 'ordem', label: 'Ordem' },
+        { value: 'nomeModulo', label: 'Módulo' },
+        { value: 'nomeFuncionalidade', label: 'Funcionalidade' },
+        { value: 'name', label: 'Nome' },
+        { value: 'deflator', label: 'Deflator' },
+        { value: 'tipo', label: 'Classificação' },
+        { value: 'totalDers', label: 'DER (TD)' },
+        { value: 'totalRlrs', label: 'RLR (TR)' },
+        { value: 'complexidade', label: 'Complexidade' },
+        { value: 'grossPF', label: 'PF Bruto' },
+        { value: 'pf', label: 'PF Líquido' },
+        { value: 'sustantation', label: 'Possui Fundamentação ?' },
+        { value: 'evidencia', label: 'Evidência' },
+    ];
+    columnsVisible = this.allColumnsTable.map(c => c.value);
+    private lastColumn: any[] = [];
+
     idAnalise: number;
     private fatorAjusteNenhumSelectItem = { label: 'Nenhum', value: undefined };
     private analiseCarregadaSubscription: Subscription;
@@ -184,7 +203,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         private funcionalidadeService: FuncionalidadeService,
         private moduloService: ModuloService,
         sanitizer: DomSanitizer,
-        private messageService: MessageService // ATUALIZADO: Injeção do MessageService
+        private messageService: MessageService,
+        private pageConfigService: PageConfigService
     ) {
         this.sanitizer = sanitizer;
         this.lastObjectUrl = "";
@@ -204,6 +224,9 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             this.isView = params['view'] !== undefined;
             this.funcaoDadosService.getVWFuncaoDadosByIdAnalise(this.idAnalise).subscribe(value => {
                 this.funcoesDados = value;
+                this.funcoesDados.forEach(f => {
+                    Object.defineProperty(f, 'evidencia', { value: f.sustantation, writable: true, enumerable: true });
+                });
                 let temp = 1
                 for (let i = 0; i < this.funcoesDados.length; i++) {
                     if (this.funcoesDados[i].ordem === null) {
@@ -229,6 +252,14 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
                 }
             });
         });
+    }
+
+    ngAfterViewInit() {
+        const savedCols = this.pageConfigService.getConfig('funcaoDados_columnsVisible');
+        if (savedCols) {
+            this.columnsVisible = savedCols;
+        }
+        this.updateVisibleColumns(this.columnsVisible);
     }
 
     estadoInicial() {
@@ -300,11 +331,13 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
                 return 'complexidade';
             case 'Possui Fundamentação':
                 return 'sustantation';
+            case 'Evidência':
+                return 'evidencia';
         }
     }
 
     exceptions(column: Column, field: string) {
-        if (field === 'der' || field === 'rlr' || field === 'sustantation') {
+        if (field === 'der' || field === 'rlr' || field === 'sustantation' || field === 'evidencia') {
             column.filterField = undefined;
             column.filter = false;
         }
@@ -490,7 +523,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
             'deflator': { value: this.formataFatorAjuste(fd.fatorAjuste), writable: true },
             'impactoFilter': { value: this.updateNameImpacto(fd.impacto), writable: true },
             'nomeFuncionalidade': { value: fd.funcionalidade.nome, writable: true },
-            'nomeModulo': { value: fd.funcionalidade.modulo.nome, writable: true }
+            'nomeModulo': { value: fd.funcionalidade.modulo.nome, writable: true },
+            'evidencia': { value: fd.sustantation, writable: true }
         });
     }
 
@@ -1689,4 +1723,32 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges {
         }
     }
 
+
+
+    mostrarColunas(event) {
+        if (this.columnsVisible.length) {
+            this.lastColumn = event.value;
+            this.updateVisibleColumns(this.columnsVisible);
+            this.pageConfigService.saveConfig('funcaoDados_columnsVisible', this.columnsVisible);
+        } else {
+            this.lastColumn.map((item) => this.columnsVisible.push(item));
+            this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');
+        }
+    }
+
+    updateVisibleColumns(columns) {
+        this.allColumnsTable.forEach(col => {
+            if (this.visibleColumnCheck(col.value, columns)) {
+                this.tables.visibleColumns[col.value] = 'table-cell';
+            } else {
+                this.tables.visibleColumns[col.value] = 'none';
+            }
+        });
+    }
+
+    visibleColumnCheck(column: string, visibleColumns: any[]) {
+        return visibleColumns.some((item: any) => {
+            return (item) ? item === column : true;
+        });
+    }
 }

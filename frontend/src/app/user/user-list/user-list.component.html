@@ -1,4 +1,3 @@
-
 <div class="ui-g ui-fluid">
 
     <div class="ui-g-12 ui-md-12 ui-sm-12">
@@ -10,12 +9,8 @@
                     <h1>Usuários</h1>
                 </div>
                 <div class="ui-g ui-md-6" style="justify-content: flex-end;">
-                    <app-green-button
-                        buttonLabel="Novo"
-                        id="idBtnNovoComponentAnalise"
-                        buttonIcon="ui-icon-add"
-                        *ngIf="canCadastrar"
-                        (click)="criarUsuario()">
+                    <app-green-button buttonLabel="Novo" id="idBtnNovoComponentAnalise" buttonIcon="ui-icon-add"
+                        *ngIf="canCadastrar" (click)="criarUsuario()">
                     </app-green-button>
                 </div>
                 <div class="ui-g-12 ui-g-nopad">
@@ -25,53 +20,45 @@
                     <div class="ui-g-3">
                         <p-multiSelect defaultLabel="Selecione as colunas a serem exibidas"
                             [displaySelectedLabel]="false" [ngModelOptions]="{ standalone: true }"
-                            (onChange)="mostrarColunas($event)" [options]="allColumnsTable"
-                            [(ngModel)]="columnsVisible" [style]="{ width: '100%' }">
+                            (onChange)="mostrarColunas($event)" [options]="allColumnsTable" [(ngModel)]="columnsVisible"
+                            [style]="{ width: '100%' }">
                         </p-multiSelect>
                     </div>
-                  </div>
-            <div>
-                    <basis-datatable
-                            [url]="searchUrl"
-                            (dblclick)="onRowDblclick($event)"
-                            (buttonClick)="datatableClick($event)"
-                            (finishedLoading)="setParamsLoad()"
-                            [rows]="20"
-                            [rowsPerPageOptions]="rowsPerPageOptions"
-                            [showPaginationFooter]="true"
-                            [customFilterOptions]="customOptions"
-                            [filterOnColumn]="canPesquisar"
-                            [disableDelete]="!canDeletar"
-                            [disableEdit]="!canEditar"
-                            [disableView]="!canConsultar"
-							[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
-							[title]="'Usuarios'"
-                            #datatable>
+                </div>
+                <div>
+                    <basis-datatable [url]="searchUrl" (dblclick)="onRowDblclick($event)"
+                        (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()" [rows]="rows"
+                        (onPage)="onPageChange($event)" [rowsPerPageOptions]="rowsPerPageOptions"
+                        [showPaginationFooter]="true" [customFilterOptions]="customOptions"
+                        [filterOnColumn]="canPesquisar" [disableDelete]="!canDeletar" [disableEdit]="!canEditar"
+                        [disableView]="!canConsultar"
+                        [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+                        [title]="'Usuarios'" #datatable>
 
-                        <p-column header="Nome" field="nome" [style]="{width:'15%'}" [sortable]="true">
+                        <p-column header="Nome" field="nome"
+                            [style]="{width:'15%', 'display': datatable.visibleColumns.nome}" [sortable]="true">
                             <ng-template let-user="rowData" pTemplate="body">
                                 {{ user.firstName }} {{ user.lastName }}
                             </ng-template>
                         </p-column>
 
-                        <p-column header="Login" field="login" [editable]="false" [sortable]="true" ></p-column>
+                        <p-column header="Login" field="login" [editable]="false" [sortable]="true"
+                            [style]="{'display': datatable.visibleColumns.login}"></p-column>
 
-                        <p-column
-                                header="E-mail"
-                                field="email"
-                                [style]="{'word-wrap':'break-word'}"
-                                [sortable]="true">
+                        <p-column header="E-mail" field="email" [style]="{'word-wrap':'break-word'}" [sortable]="true">
                         </p-column>
 
-                        <p-column header="Organização" field="organizacao" [sortable]="false" filterType="select">
-                            <ng-template let-col let-row="rowData" pTemplate="body" >
+                        <p-column header="Organização" field="organizacao" [sortable]="false" filterType="select"
+                            [style]="{'display': datatable.visibleColumns.organizacao}">
+                            <ng-template let-col let-row="rowData" pTemplate="body">
                                 <li *ngFor="let org of row.organizacoes">
                                     {{ org.nome }}
                                 </li>
                             </ng-template>
                         </p-column>
 
-                        <p-column header="Perfil" field="perfil" [sortable]="false" filterType="select">
+                        <p-column header="Perfil" field="perfil" [sortable]="false" filterType="select"
+                            [style]="{'display': datatable.visibleColumns.perfil}">
                             <ng-template let-col let-row="rowData" pTemplate="body">
                                 <li *ngFor="let perfil of row.perfils">
                                     {{ perfil.nome }}
@@ -79,7 +66,9 @@
                             </ng-template>
                         </p-column>
 
-                        <p-column header="Equipe" field="equipe" [style]="{width:'15%'}" [sortable]="false" filterType="select">
+                        <p-column header="Equipe" field="equipe"
+                            [style]="{width:'15%', 'display': datatable.visibleColumns.equipe}" [sortable]="false"
+                            filterType="select">
                             <ng-template let-col let-row="rowData" pTemplate="body">
                                 <li *ngFor="let equipe of row.tipoEquipes">
                                     {{ equipe.nome }}
@@ -87,7 +76,9 @@
                             </ng-template>
                         </p-column>
 
-                        <p-column header="Ativo" field="activated" [style]="{width:'6.5%'}" [sortable]="true" filterType="">
+                        <p-column header="Ativo" field="activated"
+                            [style]="{width:'6.5%', 'display': datatable.visibleColumns.activated}" [sortable]="true"
+                            filterType="">
                             <ng-template let-col let-user="rowData" pTemplate="body">
                                 {{ user.activated ? 'Sim' : (user.activated != null ? 'Não' : null ) }}
                             </ng-template>
@@ -96,7 +87,9 @@
                     </basis-datatable>
 
                     <div class="ui-g-12 ui-md-2">
-                        <app-export-button [dataTable]="datatable" resourceName="users" funcionalidadeName="usuario" [filter]="userFiltro" [columnsVisible]="columnsVisible" class="ui-g-12 ui-md-3 btn-exportar">
+                        <app-export-button [dataTable]="datatable" resourceName="users" funcionalidadeName="usuario"
+                            [filter]="userFiltro" [columnsVisible]="columnsVisible"
+                            class="ui-g-12 ui-md-3 btn-exportar">
                         </app-export-button>
                     </div>
 
@@ -113,7 +106,9 @@
 
     <p-confirmDialog [header]="this.getLabel('Confirmação')" #dialog>
         <p-footer>
-            <button type="button" pButton icon="fa-close" [label]="this.getLabel('Não')" (click)="dialog.reject()"></button>
-            <button type="button" pButton icon="fa-check" [label]="this.getLabel('Sim')" (click)="dialog.accept()"></button>
+            <button type="button" pButton icon="fa-close" [label]="this.getLabel('Não')"
+                (click)="dialog.reject()"></button>
+            <button type="button" pButton icon="fa-check" [label]="this.getLabel('Sim')"
+                (click)="dialog.accept()"></button>
         </p-footer>
     </p-confirmDialog>

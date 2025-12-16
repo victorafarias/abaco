@@ -39,6 +39,7 @@ import { SearchGroup } from '../grupo/grupo.model';
 import { GrupoService } from '../grupo/grupo.service';
 import { funcaoDadosRoute } from "../../funcao-dados/funcao-dados.route";
 import { FuncaoDados } from "../../funcao-dados/funcao-dados.model";
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-analise',
@@ -141,6 +142,7 @@ export class AnaliseListComponent implements OnInit {
         { label: 'Data de conclusão/bloqueio', value: "BLOQUEIO" },
         { label: 'Data de encerramento', value: "ENCERRAMENTO" }
     ];
+    rows = 20;
     blocked;
     inicial: boolean;
     showDialogAnaliseCloneTipoEquipe = false;
@@ -252,12 +254,17 @@ export class AnaliseListComponent implements OnInit {
         private analiseSharedDataService: AnaliseSharedDataService,
         private contratoService: ContratoService,
         private manualService: ManualService,
-        private historicoService: HistoricoService
+        private historicoService: HistoricoService,
+        private pageConfigService: PageConfigService
     ) {
 
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('analise_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.estadoInicial();
         this.verificarPermissoes();
@@ -472,7 +479,7 @@ export class AnaliseListComponent implements OnInit {
     }
 
     loadingGroupSearch(): SearchGroup {
-        const sessionSearchGroup: SearchGroup = JSON.parse(sessionStorage.getItem('searchGroup'));
+        const sessionSearchGroup: SearchGroup = this.pageConfigService.getConfig('analise_searchGroup');
         if (sessionSearchGroup) {
             if (sessionSearchGroup.dataInicio) {
                 sessionSearchGroup.dataInicio = new Date(sessionSearchGroup.dataInicio);
@@ -487,7 +494,7 @@ export class AnaliseListComponent implements OnInit {
     }
 
     loadingColumnsVisible(): string[] {
-        const sessionColumnsVisible: string[] = JSON.parse(sessionStorage.getItem('columnsVisible'));
+        const sessionColumnsVisible: string[] = this.pageConfigService.getConfig('analise_columnsVisible');
         if (sessionColumnsVisible?.length) {
             return sessionColumnsVisible;
         }
@@ -876,7 +883,8 @@ export class AnaliseListComponent implements OnInit {
             return this.pageNotificationService.addErrorMessage("Selecione qual data será pesquisado o período")
         }
         this.enableTable = true;
-        sessionStorage.setItem('searchGroup', JSON.stringify(this.searchGroup));
+        this.enableTable = true;
+        this.pageConfigService.saveConfig('analise_searchGroup', this.searchGroup);
         this.recarregarDataTable();
         this.datatable.selectedRow = undefined;
         this.datatable.filter();
@@ -1111,7 +1119,7 @@ export class AnaliseListComponent implements OnInit {
         if (this.columnsVisible.length) {
             this.lastColumn = event.value;
             this.updateVisibleColumns(this.columnsVisible);
-            sessionStorage.setItem('columnsVisible', JSON.stringify(event.value));
+            this.pageConfigService.saveConfig('analise_columnsVisible', event.value);
         } else {
             this.lastColumn.map((item) => this.columnsVisible.push(item));
             this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');

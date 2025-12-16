@@ -1,56 +1,50 @@
 <div class="ui-g ui-fluid">
     <div class="ui-g-12 ui-md-12 ui-sm-12">
         <div class="card card-w-title">
-            <h1 >Tipo de Fase</h1>
+            <h1>Tipo de Fase</h1>
             <div class="ui-g">
 
-            <div class="ui-g">
-                <div class="ui-g ui-md-12 form-buttons-container" style="display: inline-block;">
+                <div class="ui-g">
+                    <div class="ui-g ui-md-12 form-buttons-container" style="display: inline-block;">
 
-                    <div class="ui-g-2 ui-md-2 ui-sm-12" style="float:right;">
-                        <app-green-button
-                                *ngIf="canCadastrar"
-                                buttonLabel="Novo"
-                                (click)="criarFase()"
+                        <div class="ui-g-2 ui-md-2 ui-sm-12" style="float:right;">
+                            <app-green-button *ngIf="canCadastrar" buttonLabel="Novo" (click)="criarFase()"
                                 buttonIcon="ui-icon-add">
-                        </app-green-button>
+                            </app-green-button>
+                        </div>
+
                     </div>
 
-                </div>
-
-                <div class="dynamic-table-container">
-                    <div class="table-container">
-                        <basis-datatable
-                            type="server"
-                            [rows]="20"
-                            [url]="urlFaseService"
-                            (dblclick)="onRowDblclick($event)"
-                            (click) = "selectFase()"
-                            (buttonClick)="onClick($event)"
-                            [filterOnColumn]="true"
-                            [disableDelete]="!canDeletar"
-                            [disableEdit]="!canEditar"
-                            [disableView]="!canConsultar"
-							[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
-							[title]="'Tipos de Fase'"
-                            #dataTable >
-                            <p-column header="Nome" field="nome" [sortable]="true"></p-column>
-                        </basis-datatable>
+                    <div class="dynamic-table-container">
+                        <div class="table-container">
+                            <basis-datatable type="server" [rows]="rows" [rowsPerPageOptions]="rowsPerPageOptions"
+                                (onPage)="onPageChange($event)" [url]="urlFaseService"
+                                (dblclick)="onRowDblclick($event)" (click)="selectFase()"
+                                (buttonClick)="onClick($event)" [filterOnColumn]="true" [disableDelete]="!canDeletar"
+                                [disableEdit]="!canEditar" [disableView]="!canConsultar"
+                                [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+                                [title]="'Tipos de Fase'" #dataTable>
+                                <p-column header="Nome" field="nome" [sortable]="true"></p-column>
+                            </basis-datatable>
+                        </div>
                     </div>
-                </div>
 
-                <div class="ui-g-11 div-btn-exportar">
-                    <app-export-button [dataTable]="dataTable" resourceName="fases" [filter]="dataTable.filterParams" funcionalidadeName="fase" class="ui-g-12 ui-md-3 btn-exportar">
-                    </app-export-button>
-                </div>
+                    <div class="ui-g-11 div-btn-exportar">
+                        <app-export-button [dataTable]="dataTable" resourceName="fases"
+                            [filter]="dataTable.filterParams" funcionalidadeName="fase"
+                            class="ui-g-12 ui-md-3 btn-exportar">
+                        </app-export-button>
+                    </div>
 
-                <p-confirmDialog #dialog header="Confirmação" icon="pi pi-exclamation-triangle">
-                    <p-footer>
-                        <button type="button" pButton icon="pi pi-times" label="Não" (click)="dialog.reject()"></button>
-                        <button type="button" pButton icon="pi pi-check" label="Sim" (click)="dialog.accept()"></button>
-                    </p-footer>
-                </p-confirmDialog>
+                    <p-confirmDialog #dialog header="Confirmação" icon="pi pi-exclamation-triangle">
+                        <p-footer>
+                            <button type="button" pButton icon="pi pi-times" label="Não"
+                                (click)="dialog.reject()"></button>
+                            <button type="button" pButton icon="pi pi-check" label="Sim"
+                                (click)="dialog.accept()"></button>
+                        </p-footer>
+                    </p-confirmDialog>
+                </div>
             </div>
         </div>
     </div>
-</div>
