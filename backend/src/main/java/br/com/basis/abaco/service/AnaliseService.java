@@ -974,6 +974,15 @@ public class AnaliseService extends BaseService {
         throw new RuntimeException("É necessário selecionar um Sistema para importar a análise.");
     }
     analise.setSistema(sistemaRepository.findOne(analise.getSistema().getId()));
+
+    // Correção: Recarregar Organização e Equipe para garantir indexação correta no ElasticSearch
+    if (analise.getOrganizacao() != null && analise.getOrganizacao().getId() != null) {
+        analise.setOrganizacao(organizacaoRepository.findOne(analise.getOrganizacao().getId()));
+    }
+    if (analise.getEquipeResponsavel() != null && analise.getEquipeResponsavel().getId() != null) {
+        analise.setEquipeResponsavel(tipoEquipeRepository.findOne(analise.getEquipeResponsavel().getId()));
+    }
+
         // Usar as funções da origem (convertida do DTO)
         Set<FuncaoDados> funcaoDados = analiseOrigem.getFuncaoDados();
         Set<FuncaoTransacao> funcaotransacao = analiseOrigem.getFuncaoTransacao();

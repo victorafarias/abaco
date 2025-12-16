@@ -5,7 +5,7 @@ import { BlockUiService } from '@nuvem/angular-base';
 import { DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
 import { ConfirmationService, SelectItem } from 'primeng';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, Observable } from 'rxjs';
 import { Contrato } from 'src/app/contrato/contrato.model';
 import { ContratoService } from 'src/app/contrato/contrato.service';
 import { DivergenciaService } from 'src/app/divergencia/divergencia.service';
@@ -886,17 +886,26 @@ export class AnaliseListComponent implements OnInit {
         return !this.datatable;
     }
 
-    public async bloqueiaAnalise(bloquear: boolean) {
+    public bloqueiaAnalise(bloquear: boolean) {
+        this.analisesBlocks = [];
         let analisesBloq: Analise[] = [];
+
         this.analisesSelecionadasEmLote.forEach(analise => {
             if (PerfilService.consultarPerfilAnalise("ANALISE", "BLOQUEAR_DESBLOQUEAR", this.perfisOrganizacao, analise)) {
                 analisesBloq.push(analise);
             }
-        })
-        for (let i = 0; i < analisesBloq.length; i++) {
-            const analise = analisesBloq[i];
-            this.analiseService.find(analise.id).subscribe((res) => {
-                let analiseTemp = new Analise().copyFromJSON(res);
+        });
+
+        if (analisesBloq.length === 0) {
+            this.pageNotificationService.addErrorMessage(this.getLabel('Nenhuma análise selecionada é permitida para essa ação.'));
+            return;
+        }
+
+        const observables: Observable<Analise>[] = analisesBloq.map(analise => this.analiseService.find(analise.id));
+
+        forkJoin(observables).subscribe((res: Analise[]) => {
+            res.forEach(analiseRes => {
+                let analiseTemp = new Analise().copyFromJSON(analiseRes);
                 if (this.tipoEquipesLoggedUser) {
                     for (let j = 0; j < this.tipoEquipesLoggedUser.length; j++) {
                         const equipe = this.tipoEquipesLoggedUser[j];
@@ -905,14 +914,17 @@ export class AnaliseListComponent implements OnInit {
                         }
                     }
                 }
-
             });
 
-        }
-        this.confirmationService.confirm({
-            message: this.mensagemDialogBloquear(bloquear),
-            accept: () => {
-                this.finalizarBlock(bloquear);
+            if (this.analisesBlocks.length > 0) {
+                this.confirmationService.confirm({
+                    message: this.mensagemDialogBloquear(bloquear),
+                    accept: () => {
+                        this.finalizarBlock(bloquear);
+                    }
+                });
+            } else {
+                this.pageNotificationService.addErrorMessage(this.getLabel('Nenhuma análise selecionada é permitida para essa ação.'));
             }
         });
     }
