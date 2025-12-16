@@ -566,11 +566,7 @@ public class AnaliseService extends BaseService {
             lstUsers.add(user);
             analiseClone.setIdentificadorAnalise(analise.getIdentificadorAnalise() + " - CÓPIA");
             analiseClone.setUsers(lstUsers);
-            analiseClone.setDocumentacao(EMPTY_STRING);
-            analiseClone.setFronteiras(EMPTY_STRING);
-            analiseClone.setPropositoContagem(EMPTY_STRING);
             analise.setClonadaParaEquipe(false);
-            analiseClone.setEscopo(EMPTY_STRING);
             analiseClone.setFuncaoDados(bindCloneFuncaoDados(analise, analiseClone));
             analiseClone.setFuncaoTransacao(bindCloneFuncaoTransacao(analise, analiseClone));
             analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));

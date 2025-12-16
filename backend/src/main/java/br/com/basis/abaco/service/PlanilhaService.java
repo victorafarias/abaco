@@ -814,7 +814,7 @@ public class PlanilhaService {
     private void setarFuncoesTransacaoEstimadaExcelPadraoBNDES(List<FuncaoTransacao> funcaoTransacaoList, XSSFSheet excelSheet, FormulaEvaluator evaluator, int rowNum) {
         for(int i = 0; i < funcaoTransacaoList.size(); i++){
             FuncaoTransacao funcaoTransacao = funcaoTransacaoList.get(i);
-            String nome = funcaoTransacao.getFuncionalidade().getNome() + " - " + funcaoTransacao.getName();
+            String nome = funcaoTransacao.getFuncionalidade().getModulo().getNome() + " - " + funcaoTransacao.getFuncionalidade().getNome() + " - " + funcaoTransacao.getName();
             XSSFRow row = excelSheet.getRow(rowNum++);
             row.getCell(0).setCellValue(nome);
             row.getCell(9).setCellValue(this.getImpactoFromFatorAjuste(funcaoTransacao.getFatorAjuste()));
@@ -829,7 +829,7 @@ public class PlanilhaService {
     private void setarFuncoesDadosEstimadaExcelPadraoBNDES(List<FuncaoDados> funcaoDadosList, XSSFSheet excelSheet, FormulaEvaluator evaluator, int rowNum) {
         for(int i = 0; i < funcaoDadosList.size(); i++){
             FuncaoDados funcaoDados = funcaoDadosList.get(i);
-            String nome = funcaoDados.getFuncionalidade().getNome() + " - " + funcaoDados.getName();
+            String nome = funcaoDados.getFuncionalidade().getModulo().getNome() + " - " + funcaoDados.getFuncionalidade().getNome() + " - " + funcaoDados.getName();
             XSSFRow row = excelSheet.getRow(rowNum++);
             row.getCell(0).setCellValue(nome);
             row.getCell(8).setCellValue(funcaoDados.getTipo().equals(TipoFuncaoDados.INM) ? "" : funcaoDados.getTipo().toString());
