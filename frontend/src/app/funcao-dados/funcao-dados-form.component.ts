@@ -287,6 +287,33 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         }
     }
 
+    formatEvidence(evidence: string): string {
+        if (evidence) {
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = evidence;
+            const text = tempElement.textContent || tempElement.innerText || '';
+            if (text.length > 50) {
+                return text.substring(0, 50) + '...';
+            }
+            return text;
+        }
+        return '';
+    }
+
+    /**
+     * Remove tags HTML do texto de evidência para exibição limpa no tooltip.
+     * @param html - Texto contendo HTML a ser limpo
+     * @returns Texto puro sem tags HTML
+     */
+    stripHtmlTags(html: string): string {
+        if (!html) {
+            return '';
+        }
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = html;
+        return tempElement.textContent || tempElement.innerText || '';
+    }
+
 
     sortColumn(event: any) {
         this.funcoesDados.sort((a, b) => {

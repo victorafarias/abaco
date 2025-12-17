@@ -800,8 +800,10 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         if (button !== 'filter' && !event.selection) {
             return;
         }
-
         switch (button) {
+            case 'add':
+                this.openDialog(false);
+                break;
             case 'edit':
                 this.isEdit = true;
                 this.prepararParaEdicao(this.funcaoTransacaoEditar[0]);
@@ -810,11 +812,39 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
                 this.confirmDelete(this.funcaoTransacaoEditar);
                 break;
             case 'view':
-                this.viewFuncaoTransacao = true;
-                this.prepararParaVisualizar(this.funcaoTransacaoEditar[0]);
+                this.isView = true;
+                this.openDialog(true);
                 break;
         }
     }
+
+    formatEvidence(evidence: string): string {
+        if (evidence) {
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = evidence;
+            const text = tempElement.textContent || tempElement.innerText || '';
+            if (text.length > 50) {
+                return text.substring(0, 50) + '...';
+            }
+            return text;
+        }
+        return '';
+    }
+
+    /**
+     * Remove tags HTML do texto de evidência para exibição limpa no tooltip.
+     * @param html - Texto contendo HTML a ser limpo
+     * @returns Texto puro sem tags HTML
+     */
+    stripHtmlTags(html: string): string {
+        if (!html) {
+            return '';
+        }
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = html;
+        return tempElement.textContent || tempElement.innerText || '';
+    }
+
 
 
     private prepararParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {

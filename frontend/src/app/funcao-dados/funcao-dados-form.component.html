@@ -49,15 +49,31 @@
                                                 [(ngModel)]="funcaoDado.ordem" id="idEditOrdem">
                                         </ng-template>
                                     </p-column>
-                                    <p-column field="nomeModulo" header="Módulo" [filter]="true" [sortable]="true"
-                                        [style]="{'display': tables.visibleColumns['nomeModulo']}"></p-column>
-                                    <p-column field="nomeFuncionalidade" [filter]="true" header="Funcionalidade"
+                                    <p-column field="nomeModulo" header="{{ getLabel('Módulo') }}" [sortable]="true"
+                                        [style]="{'display': tables.visibleColumns['nomeModulo']}">
+                                        <ng-template let-row="rowData" pTemplate="body">
+                                            <span class="column-word-wrap">{{ row.nomeModulo }}</span>
+                                        </ng-template>
+                                    </p-column>
+                                    <p-column field="nomeFuncionalidade" header="{{ getLabel('Funcionalidade') }}"
                                         [sortable]="true"
-                                        [style]="{'display': tables.visibleColumns['nomeFuncionalidade']}"></p-column>
-                                    <p-column field="name" header="Nome" [sortable]="true"
-                                        [style]="{'display': tables.visibleColumns['name']}"></p-column>
-                                    <p-column field="deflator" header="Deflator" [sortable]="true"
-                                        [style]="{'display': tables.visibleColumns['deflator']}"></p-column>
+                                        [style]="{'display': tables.visibleColumns['nomeFuncionalidade']}">
+                                        <ng-template let-row="rowData" pTemplate="body">
+                                            <span class="column-word-wrap">{{ row.nomeFuncionalidade }}</span>
+                                        </ng-template>
+                                    </p-column>
+                                    <p-column field="name" header="{{ getLabel('Nome') }}" [sortable]="true"
+                                        [style]="{'display': tables.visibleColumns['name']}">
+                                        <ng-template let-row="rowData" pTemplate="body">
+                                            <span class="column-word-wrap">{{ row.name }}</span>
+                                        </ng-template>
+                                    </p-column>
+                                    <p-column field="deflator" header="{{ getLabel('Deflator') }}" [sortable]="true"
+                                        [style]="{'display': tables.visibleColumns['deflator']}">
+                                        <ng-template let-row="rowData" pTemplate="body">
+                                            <span style="word-break: break-all;">{{ row.deflator }}</span>
+                                        </ng-template>
+                                    </p-column>
                                     <p-column field="tipo" header="Classificação" [sortable]="true"
                                         [style]="{'display': tables.visibleColumns['tipo']}"></p-column>
                                     <p-column field="totalDers" header="DER (TD)" [sortable]="true"
@@ -88,12 +104,14 @@
                                         </ng-template>
                                     </p-column>
                                     <p-column field="evidencia" header="Evidência" [sortable]="true"
-                                        [style]="{'display': tables.visibleColumns['evidencia']}">
+                                        [style]="{'word-break': 'break-all', 'display': tables.visibleColumns['evidencia']}">
                                         <ng-template let-row="rowData" pTemplate="body">
-                                            <span [innerHTML]="row.sustantation"></span>
+                                            <span [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
+                                                tooltipStyleClass="evidencia-tooltip">
+                                                {{ formatEvidence(row.sustantation) }}
+                                            </span>
                                         </ng-template>
                                     </p-column>
-                                    <!-- Alterado: Adicionado botão de incluir nova função de dados -->
                                     <basis-datatable-button name="add" *ngIf="!isView && !isOrderning"
                                         (click)="openDialog(false)" bTooltip="Incluir nova função"
                                         class="ui-button-success" icon="add">
