@@ -746,18 +746,57 @@ export class PesquisarFtComponent implements OnInit {
         saveAs(data, fileName + '_export_' + new Date().getTime() + EXCEL_EXTENSION);
     }
 
+    /**
+     * Alterado: Busca análises vinculadas a uma função específica.
+     * Agora exibe loader durante a consulta para feedback visual ao usuário.
+     * 
+     * @param funcao Objeto contendo name, nomeFuncionalidade e nomeModulo da função
+     */
     pesquisarAnalises(funcao) {
         if (funcao.name && funcao.nomeFuncionalidade && funcao.nomeModulo) {
+            // Alterado: Exibe loader enquanto a consulta é processada
+            this.blockUiService.show();
+
             if (this.isFuncaoDados) {
-                this.analiseService.findAnalisesFromFD(funcao.name, funcao.nomeModulo, funcao.nomeFuncionalidade, this.analise.sistema.nome, this.analise.equipeResponsavel.nome).subscribe(r => {
-                    this.analisesFromFuncao = r;
-                    this.abrirDialogPesquisarAnalises(funcao.nomeFuncionalidade + " - " + funcao.name);
-                })
+                this.analiseService.findAnalisesFromFD(
+                    funcao.name,
+                    funcao.nomeModulo,
+                    funcao.nomeFuncionalidade,
+                    this.analise.sistema.nome,
+                    this.analise.equipeResponsavel.nome
+                ).subscribe(
+                    r => {
+                        // Alterado: Oculta loader ao receber resposta
+                        this.blockUiService.hide();
+                        this.analisesFromFuncao = r;
+                        this.abrirDialogPesquisarAnalises(funcao.nomeFuncionalidade + " - " + funcao.name);
+                    },
+                    error => {
+                        // Alterado: Oculta loader em caso de erro
+                        this.blockUiService.hide();
+                        console.error('[PesquisarAnalises] Erro ao consultar análises de FD:', error);
+                    }
+                );
             } else {
-                this.analiseService.findAnalisesFromFT(funcao.name, funcao.nomeModulo, funcao.nomeFuncionalidade, this.analise.sistema.nome, this.analise.equipeResponsavel.nome).subscribe(r => {
-                    this.analisesFromFuncao = r;
-                    this.abrirDialogPesquisarAnalises(funcao.nomeFuncionalidade + " - " + funcao.name);
-                })
+                this.analiseService.findAnalisesFromFT(
+                    funcao.name,
+                    funcao.nomeModulo,
+                    funcao.nomeFuncionalidade,
+                    this.analise.sistema.nome,
+                    this.analise.equipeResponsavel.nome
+                ).subscribe(
+                    r => {
+                        // Alterado: Oculta loader ao receber resposta
+                        this.blockUiService.hide();
+                        this.analisesFromFuncao = r;
+                        this.abrirDialogPesquisarAnalises(funcao.nomeFuncionalidade + " - " + funcao.name);
+                    },
+                    error => {
+                        // Alterado: Oculta loader em caso de erro
+                        this.blockUiService.hide();
+                        console.error('[PesquisarAnalises] Erro ao consultar análises de FT:', error);
+                    }
+                );
             }
         }
     }

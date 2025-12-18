@@ -6,6 +6,7 @@ import { ElasticQuery } from 'src/app/shared/elastic-query';
 import { AuthService } from 'src/app/util/auth.service';
 import { Perfil } from '../perfil.model';
 import { PerfilService } from '../perfil.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-perfil',
@@ -21,6 +22,7 @@ export class PerfilListComponent implements OnInit {
     perfilSelecionado: Perfil;
     perfil: Perfil;
 
+    rows = 20;
     rowsPerPageOptions: number[] = [5, 10, 20];
 
     canPesquisar: boolean = false;
@@ -34,15 +36,24 @@ export class PerfilListComponent implements OnInit {
         private router: Router,
         private confirmationService: ConfirmationService,
         private pageNotificationService: PageNotificationService,
-        public authService: AuthService
+        public authService: AuthService,
+        private pageConfigService: PageConfigService
     ) {
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('perfil_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedFilter = this.pageConfigService.getConfig('perfil_filter');
+        if (savedFilter) {
+            this.elasticQuery.value = savedFilter;
+        }
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
+    verificarPermissoes() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "PERFIL_PESQUISAR") == true) {
             this.canPesquisar = true;
         }
@@ -61,11 +72,13 @@ export class PerfilListComponent implements OnInit {
     }
 
     public recarregarDataTable() {
+        this.pageConfigService.saveConfig('perfil_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
     }
 
     public limparPesquisa() {
         this.elasticQuery.reset();
+        this.pageConfigService.saveConfig('perfil_filter', '');
         this.recarregarDataTable();
     }
 
@@ -134,5 +147,10 @@ export class PerfilListComponent implements OnInit {
                 });
             }
         });
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('perfil_rows', this.rows);
     }
 }

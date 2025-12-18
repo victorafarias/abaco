@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, AfterViewInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BlockUiService } from '@nuvem/angular-base';
@@ -24,6 +24,7 @@ import { ModuloService } from 'src/app/modulo/modulo.service';
 import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
 import { FatorAjusteLabelGenerator } from 'src/app/shared/fator-ajuste-label-generator';
 import { MessageUtil } from 'src/app/util/message.util';
+import { PageConfigService } from '../shared/page-config.service';
 
 import { FuncaoTransacao, TipoFuncaoTransacao } from './funcao-transacao.model';
 import { Analise } from '../analise/analise.model';
@@ -44,7 +45,7 @@ import { FuncaoTransacaoService } from './funcao-transacao.service';
     templateUrl: './funcao-transacao-form.component.html',
     providers: [ConfirmationService]
 })
-export class FuncaoTransacaoFormComponent implements OnInit {
+export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     emptySustantion = '<p><br></p>';
     faS: FatorAjuste[] = [];
     textHeader: string;
@@ -155,7 +156,26 @@ export class FuncaoTransacaoFormComponent implements OnInit {
     evidenciaEmLote: string;
     arquivosEmLote: Upload[] = [];
     quantidadeEmLote: number;
+
     funcaoTransacaoEmLote: FuncaoTransacao[] = [];
+
+    allColumnsTable = [
+        { value: 'ordem', label: 'Ordem' },
+        { value: 'nomeModulo', label: 'Módulo' },
+        { value: 'nomeFuncionalidade', label: 'Funcionalidade' },
+        { value: 'name', label: 'Nome' },
+        { value: 'deflator', label: 'Deflator' },
+        { value: 'tipo', label: 'Classificação' },
+        { value: 'totalDers', label: 'DER (TD)' },
+        { value: 'totalAlrs', label: 'FTR (AR)' },
+        { value: 'complexidade', label: 'Complexidade' },
+        { value: 'grossPf', label: 'PF Bruto' },
+        { value: 'pf', label: 'PF Líquido' },
+        { value: 'sustantation', label: 'Possui Fundamentação ?' },
+        { value: 'evidencia', label: 'Evidência' },
+    ];
+    columnsVisible = this.allColumnsTable.map(c => c.value);
+    private lastColumn: any[] = [];
 
     private sanitizer: DomSanitizer;
     private lastObjectUrl: string;
@@ -195,6 +215,7 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         private funcionalidadeService: FuncionalidadeService,
         private moduloService: ModuloService,
         sanitizer: DomSanitizer,
+        private pageConfigService: PageConfigService
     ) {
         this.sanitizer = sanitizer;
         this.lastObjectUrl = "";
@@ -210,6 +231,9 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             this.isView = params['view'] !== undefined;
             this.funcaoTransacaoService.getVwFuncaoTransacaoByIdAnalise(this.idAnalise).subscribe(value => {
                 this.funcoesTransacoes = value;
+                this.funcoesTransacoes.forEach(f => {
+                    Object.defineProperty(f, 'evidencia', { value: f.sustantation, writable: true, enumerable: true });
+                });
                 let temp = 1
                 for (let i = 0; i < this.funcoesTransacoes.length; i++) {
                     if (this.funcoesTransacoes[i].ordem === null) {
@@ -233,6 +257,14 @@ export class FuncaoTransacaoFormComponent implements OnInit {
                 }
             });
         });
+    }
+
+    ngAfterViewInit() {
+        const savedCols = this.pageConfigService.getConfig('funcaoTransacao_columnsVisible');
+        if (savedCols) {
+            this.columnsVisible = savedCols;
+        }
+        this.updateVisibleColumns(this.columnsVisible);
     }
 
     estadoInicial() {
@@ -456,7 +488,8 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             'totalAlrs': { value: ft.ftrValue(), writable: true },
             'deflator': { value: this.formataFatorAjuste(ft.fatorAjuste), writable: true },
             'nomeFuncionalidade': { value: ft.funcionalidade.nome, writable: true },
-            'nomeModulo': { value: ft.funcionalidade.modulo.nome, writable: true }
+            'nomeModulo': { value: ft.funcionalidade.modulo.nome, writable: true },
+            'evidencia': { value: ft.sustantation, writable: true }
         });
     }
 
@@ -767,8 +800,10 @@ export class FuncaoTransacaoFormComponent implements OnInit {
         if (button !== 'filter' && !event.selection) {
             return;
         }
-
         switch (button) {
+            case 'add':
+                this.openDialog(false);
+                break;
             case 'edit':
                 this.isEdit = true;
                 this.prepararParaEdicao(this.funcaoTransacaoEditar[0]);
@@ -777,11 +812,39 @@ export class FuncaoTransacaoFormComponent implements OnInit {
                 this.confirmDelete(this.funcaoTransacaoEditar);
                 break;
             case 'view':
-                this.viewFuncaoTransacao = true;
-                this.prepararParaVisualizar(this.funcaoTransacaoEditar[0]);
+                this.isView = true;
+                this.openDialog(true);
                 break;
         }
     }
+
+    formatEvidence(evidence: string): string {
+        if (evidence) {
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = evidence;
+            const text = tempElement.textContent || tempElement.innerText || '';
+            if (text.length > 50) {
+                return text.substring(0, 50) + '...';
+            }
+            return text;
+        }
+        return '';
+    }
+
+    /**
+     * Remove tags HTML do texto de evidência para exibição limpa no tooltip.
+     * @param html - Texto contendo HTML a ser limpo
+     * @returns Texto puro sem tags HTML
+     */
+    stripHtmlTags(html: string): string {
+        if (!html) {
+            return '';
+        }
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = html;
+        return tempElement.textContent || tempElement.innerText || '';
+    }
+
 
 
     private prepararParaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
@@ -1504,4 +1567,31 @@ export class FuncaoTransacaoFormComponent implements OnInit {
             this.tables.selectedRow = [];
         }
     }
+    mostrarColunas(event) {
+        if (this.columnsVisible.length) {
+            this.lastColumn = event.value;
+            this.updateVisibleColumns(this.columnsVisible);
+            this.pageConfigService.saveConfig('funcaoTransacao_columnsVisible', this.columnsVisible);
+        } else {
+            this.lastColumn.map((item) => this.columnsVisible.push(item));
+            this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');
+        }
+    }
+
+    updateVisibleColumns(columns) {
+        this.allColumnsTable.forEach(col => {
+            if (this.visibleColumnCheck(col.value, columns)) {
+                this.tables.visibleColumns[col.value] = 'table-cell';
+            } else {
+                this.tables.visibleColumns[col.value] = 'none';
+            }
+        });
+    }
+
+    visibleColumnCheck(column: string, visibleColumns: any[]) {
+        return visibleColumns.some((item: any) => {
+            return (item) ? item === column : true;
+        });
+    }
+
 }

@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng';
 import { DatatableComponent, PageNotificationService, DatatableClickEvent } from '@nuvem/primeng-components';
@@ -11,13 +11,14 @@ import { User } from '../user.model';
 import { SearchGroup } from '../user.model';
 import { AuthService } from 'src/app/util/auth.service';
 import { PerfilService } from 'src/app/perfil/perfil.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-user',
     templateUrl: './user-list.component.html',
     providers: [ConfirmationService]
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, AfterViewInit {
 
     @ViewChild(DatatableComponent) datatable: DatatableComponent;
 
@@ -26,6 +27,7 @@ export class UserListComponent implements OnInit {
     usuarioSelecionado: User;
 
     rowsPerPageOptions: number[] = [5, 10, 20];
+    rows = 20;
 
     customOptions: Object = {};
 
@@ -75,7 +77,8 @@ export class UserListComponent implements OnInit {
         private tipoEquipeService: TipoEquipeService,
         private pageNotificationService: PageNotificationService,
         private authService: AuthService,
-        private perfilService: PerfilService
+        private perfilService: PerfilService,
+        private pageConfigService: PageConfigService
     ) {
     }
 
@@ -84,6 +87,16 @@ export class UserListComponent implements OnInit {
     }
 
     ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('user_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedCols = this.pageConfigService.getConfig('user_columnsVisible');
+        if (savedCols) {
+            this.columnsVisible = savedCols;
+        } else {
+            this.columnsVisible = this.allColumnsTable.map(c => c.value);
+        }
         this.recuperarOrganizacoes();
         this.recuperarEquipe();
         this.recuperarPerfis();
@@ -97,10 +110,18 @@ export class UserListComponent implements OnInit {
                 this.usuarioSelecionado = undefined;
             });
         }
+        const savedSearch = this.pageConfigService.getConfig('user_searchParams');
+        if (savedSearch) {
+            this.searchParams = savedSearch;
+        }
         this.userFiltro = new SearchGroup();
         this.userFiltro.columnsVisible = this.columnsVisible;
 
         this.verificarPermissoes();
+    }
+
+    ngAfterViewInit() {
+        this.updateVisibleColumns(this.columnsVisible);
     }
 
     verificarPermissoes() {
@@ -209,6 +230,7 @@ export class UserListComponent implements OnInit {
         });
     }
     performSearch() {
+        this.pageConfigService.saveConfig('user_searchParams', this.searchParams);
         this.query = this.changeUrl();
         this.recarregarDataTable();
     }
@@ -222,6 +244,7 @@ export class UserListComponent implements OnInit {
             profile: undefined,
             team: undefined,
         };
+        this.pageConfigService.saveConfig('user_searchParams', this.searchParams);
         this.recarregarDataTable();
     }
 
@@ -286,6 +309,7 @@ export class UserListComponent implements OnInit {
         if (this.columnsVisible.length) {
             this.lastColumn = event.value;
             this.updateVisibleColumns(this.columnsVisible);
+            this.pageConfigService.saveConfig('user_columnsVisible', this.columnsVisible);
         } else {
             this.lastColumn.map((item) => this.columnsVisible.push(item));
             this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');
@@ -310,5 +334,10 @@ export class UserListComponent implements OnInit {
 
     criarUsuario() {
         this.router.navigate(["/admin/user/new"])
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('user_rows', this.rows);
     }
 }

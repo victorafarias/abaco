@@ -1,15 +1,20 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatatableClickEvent, DatatableComponent } from '@nuvem/primeng-components';
 import { ConfirmationService } from 'primeng';
 import { FatorAjusteService } from '../fator-ajuste.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 
 @Component({
   selector: 'app-fator-ajuste-list',
   templateUrl: './fator-ajuste-list.component.html'
 })
-export class FatorAjusteListComponent {
+export class FatorAjusteListComponent implements OnInit {
+
+  rows = 20;
+  rowsPerPageOptions: number[] = [5, 10, 20, 50, 100];
+  filter: string;
 
   @ViewChild(DatatableComponent) datatable: DatatableComponent;
 
@@ -19,7 +24,30 @@ export class FatorAjusteListComponent {
     private router: Router,
     private fatorAjusteService: FatorAjusteService,
     private confirmationService: ConfirmationService,
+    private pageConfigService: PageConfigService
   ) { }
+
+  ngOnInit() {
+    const savedRows = this.pageConfigService.getConfig('fator_ajuste_rows');
+    if (savedRows) {
+      this.rows = savedRows;
+    }
+    const savedFilter = this.pageConfigService.getConfig('fator_ajuste_filter');
+    if (savedFilter) {
+      this.filter = savedFilter;
+    }
+  }
+
+  onPageChange(event) {
+    this.rows = event.rows;
+    this.pageConfigService.saveConfig('fator_ajuste_rows', this.rows);
+  }
+
+  performSearch(value: string) {
+    this.filter = value;
+    this.pageConfigService.saveConfig('fator_ajuste_filter', this.filter);
+    this.datatable.refresh(this.filter);
+  }
 
   getLabel(label) {
     return label;

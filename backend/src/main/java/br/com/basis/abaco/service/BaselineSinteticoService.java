@@ -9,6 +9,8 @@ import br.com.basis.abaco.repository.BaseLineSinteticoRepository;
 import br.com.basis.abaco.repository.search.BaseLineAnaliticoFDSearchRepository;
 import br.com.basis.abaco.repository.search.BaseLineAnaliticoFTSearchRepository;
 import br.com.basis.abaco.repository.search.BaseLineSinteticoSearchRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -17,6 +19,9 @@ import java.util.List;
 
 @Service
 public class BaselineSinteticoService {
+
+    // Logger para logs estruturados de debugging
+    private static final Logger log = LoggerFactory.getLogger(BaselineSinteticoService.class);
 
     private static final String SELECT_FUNCTION_FD = "SELECT f.row_number, f.classificacao, f.impacto , f.analise_id, f.data_homologacao_software, f.id_sistema, f.nome, f.sigla, f.name , f.pf, f.id_funcao_dados, f.complexidade, f.nome_equipe, f.equipe_responsavel_id, f.nome_funcionalidade, f.nome_modulo, f.der, f.rlr_alr, f.row_number, f.classificacao, f.impacto , f.analise_id, f.data_homologacao_software, f.id_sistema, f.nome, f.sigla, f.name, f.pf, f.id_funcao_dados, f.complexidade, f.nome_equipe, f.equipe_responsavel_id, f.nome_funcionalidade, f.nome_modulo, f.der, f.rlr_alr from fc_funcao_dados_vw( :id , :idEquipe ) f;";
     private static final String SELECT_FUNCTION_FT = "SELECT f.row_number, f.classificacao, f.impacto , f.analise_id, f.data_homologacao_software, f.id_sistema, f.nome, f.sigla, f.name , f.pf, f.id_funcao_dados, f.complexidade, f.nome_equipe, f.equipe_responsavel_id, f.nome_funcionalidade, f.nome_modulo, f.der, f.rlr_alr, f.row_number, f.classificacao, f.impacto , f.analise_id, f.data_homologacao_software, f.id_sistema, f.nome, f.sigla, f.name, f.pf, f.id_funcao_dados, f.complexidade, f.nome_equipe, f.equipe_responsavel_id, f.nome_funcionalidade, f.nome_modulo, f.der, f.rlr_alr from fc_funcao_transacao_vw( :id , :idEquipe ) f; ";
@@ -43,8 +48,28 @@ public class BaselineSinteticoService {
 
 
     public BaseLineSintetico getBaseLineSintetico(Long id, Long idEquipe) {
-        Query query = entityManager.createNativeQuery(SELECT_SINTETICO, BaseLineSintetico.class).setParameter(ID, id).setParameter(ID_EQUIPE, idEquipe);
-        BaseLineSintetico baseLineSintetico = (BaseLineSintetico) query.getSingleResult();
+        // Log de entrada para debugging
+        log.debug("[BASELINE] Consultando baseline sintético: sistemaId={}, equipeId={}", id, idEquipe);
+        
+        Query query = entityManager.createNativeQuery(SELECT_SINTETICO, BaseLineSintetico.class)
+            .setParameter(ID, id)
+            .setParameter(ID_EQUIPE, idEquipe);
+        
+        // Usando getResultList() para evitar NoResultException quando não há dados
+        List<BaseLineSintetico> resultList = query.getResultList();
+        
+        // Verifica se há resultados
+        if (resultList.isEmpty()) {
+            log.warn("[BASELINE] Nenhum dado encontrado para baseline sintético: sistemaId={}, equipeId={}. "
+                + "Verifique se existem análises bloqueadas e homologadas para este sistema e equipe.", 
+                id, idEquipe);
+            return null;
+        }
+        
+        BaseLineSintetico baseLineSintetico = resultList.get(0);
+        log.debug("[BASELINE] Baseline sintético encontrado: id={}, sistema={}", 
+            baseLineSintetico.getId(), baseLineSintetico.getSigla());
+        
         return baseLineSintetico;
     }
 

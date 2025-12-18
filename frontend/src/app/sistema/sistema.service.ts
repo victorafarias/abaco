@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
-import {environment} from '../../environments/environment';
+import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
 
-import {Sistema} from './sistema.model';
+import { Sistema } from './sistema.model';
 import { HttpClient } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { Observable } from 'rxjs';
@@ -12,7 +12,7 @@ import { ExportacaoUtil } from '../components/abaco-buttons/export-button/export
 
 @Injectable()
 export class SistemaService {
-    
+
 
 
     resourceUrl = environment.apiUrl + '/sistemas';
@@ -114,7 +114,7 @@ export class SistemaService {
         }));
     }
 
-    
+
 
     // private convertResponse(res: Response): ResponseWrapper {
     //     const jsonResponse = res.json();
@@ -142,7 +142,7 @@ export class SistemaService {
     }
 
     exportar(tipoRelatorio: string, lista: any[], resourceName: string) {
-        ExportacaoUtilService.exportReport(tipoRelatorio, this.http, resourceName, null, resourceName == "modulos" ? {modulos: lista} : {funcionalidades: lista})
+        ExportacaoUtilService.exportReport(tipoRelatorio, this.http, resourceName, null, resourceName == "modulos" ? { modulos: lista } : { funcionalidades: lista })
             .subscribe((res: Blob) => {
                 const file = new Blob([res], { type: tipoRelatorio });
                 const url = URL.createObjectURL(file);
@@ -150,8 +150,8 @@ export class SistemaService {
             });
     }
 
-    imprimir(lista: any[], resourceName: string){
-        const obj = resourceName == "modulos" ? {modulos: lista} : {funcionalidades: lista};
+    imprimir(lista: any[], resourceName: string) {
+        const obj = resourceName == "modulos" ? { modulos: lista } : { funcionalidades: lista };
         ExportacaoUtilService.imprimir(this.http, resourceName, null, obj).subscribe(res => {
             var file = new Blob([res], { type: 'application/pdf' });
             var fileURL = URL.createObjectURL(file);
@@ -159,4 +159,68 @@ export class SistemaService {
         })
     }
 
+    /**
+     * Busca todas as funções distintas (combinação única de Módulo, Funcionalidade e Nome)
+     * de todas as análises associadas a um sistema.
+     * 
+     * @param sistemaId ID do sistema
+     * @returns Observable com Set de funções distintas
+     */
+    getFuncoesDistintas(sistemaId: number): Observable<FuncaoDistinta[]> {
+        const url = `${this.resourceUrl}/${sistemaId}/funcoes-distintas`;
+        console.log('[SistemaService] Buscando funções distintas para sistema:', sistemaId);
+        return this.http.get<FuncaoDistinta[]>(url).pipe(catchError((error: any) => {
+            console.error('[SistemaService] Erro ao buscar funções distintas:', error);
+            if (error.status === 403) {
+                this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+            }
+            return Observable.throw(new Error(error.status));
+        }));
+    }
+
+    /**
+     * Renomeia funções em lote. Atualiza todas as ocorrências de funções
+     * que correspondem ao conjunto Módulo-Funcionalidade-NomeAtual.
+     * 
+     * @param sistemaId ID do sistema
+     * @param renomeacoes Lista de renomeações a serem aplicadas
+     * @returns Observable com número de funções atualizadas
+     */
+    renomearFuncoes(sistemaId: number, renomeacoes: RenomearFuncao[]): Observable<number> {
+        const url = `${this.resourceUrl}/${sistemaId}/renomear-funcoes`;
+        console.log('[SistemaService] Renomeando funções para sistema:', sistemaId, renomeacoes);
+        return this.http.put<number>(url, renomeacoes).pipe(catchError((error: any) => {
+            console.error('[SistemaService] Erro ao renomear funções:', error);
+            if (error.status === 403) {
+                this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+            }
+            return Observable.throw(new Error(error.status));
+        }));
+    }
+
 }
+
+/**
+ * Interface para representar uma função distinta.
+ * Combinação única de Módulo, Funcionalidade e Nome da Função.
+ */
+export interface FuncaoDistinta {
+    nomeModulo: string;
+    nomeFuncionalidade: string;
+    nomeFuncao: string;
+    tipo?: string;
+}
+
+/**
+ * Interface para requisição de alteração de função.
+ * Os campos "novo*" são opcionais - se não informados, o campo correspondente não será alterado.
+ */
+export interface RenomearFuncao {
+    nomeModulo: string;
+    nomeFuncionalidade: string;
+    nomeAtual: string;
+    novoNome?: string;
+    novoModulo?: string;
+    novaFuncionalidade?: string;
+}
+

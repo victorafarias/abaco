@@ -18,6 +18,40 @@ body .ui-widget-overlay {
 	margin-right: 0px;
 }
 
+/* Estilo aplicado ao tooltip (hint) do campo Evidência */
+/* Suporte para PrimeNG antigo (ui-tooltip) */
+.evidencia-tooltip.ui-tooltip {
+	max-width: 350px !important;
+}
+
+.evidencia-tooltip .ui-tooltip-text {
+	padding: .7em !important;
+	white-space: normal !important;
+	word-wrap: break-word !important;
+	overflow-wrap: break-word !important;
+}
+
+/* Suporte para PrimeNG novo (p-tooltip) */
+.evidencia-tooltip.p-tooltip {
+	max-width: 350px !important;
+}
+
+.evidencia-tooltip .p-tooltip-text {
+	white-space: normal !important;
+	word-wrap: break-word !important;
+	overflow-wrap: break-word !important;
+}
+
+/* Estilos para colunas Módulo, Funcionalidade e Nome - quebra linha apenas em espaços, traços e barras */
+.column-word-wrap {
+	word-break: normal !important;
+	overflow-wrap: break-word !important;
+	word-wrap: break-word !important;
+	hyphens: none !important;
+	-webkit-hyphens: none !important;
+	-ms-hyphens: none !important;
+}
+
 
 
 #idTabelaComponentAnalise td:nth-child(1) {

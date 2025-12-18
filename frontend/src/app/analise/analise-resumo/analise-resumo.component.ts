@@ -69,8 +69,8 @@ export class AnaliseResumoComponent implements OnInit {
         { label: "Modelo padrão ANAC", value: 3 },
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
-		{ label: "Modelo padrão MCTI", value: 6 },
-		{ label: "Modelo padrão BNB", value: 7}
+        { label: "Modelo padrão MCTI", value: 6 },
+        { label: "Modelo padrão BNB", value: 7 }
     ];
     modeloSelecionado: any;
 
@@ -236,8 +236,8 @@ export class AnaliseResumoComponent implements OnInit {
 
         this.confirmationService.confirm({
             message: this.getLabel('Tem certeza que deseja bloquear o registro ?')
-            .concat(this.analise.identificadorAnalise)
-			.concat('?'),
+                .concat(this.analise.identificadorAnalise)
+                .concat('?'),
             accept: () => {
                 const copy = this.analise.toJSONState();
                 this.analiseService.block(copy).subscribe(() => {
@@ -262,7 +262,7 @@ export class AnaliseResumoComponent implements OnInit {
         });
     }
 
-    editarAnalise(){
+    editarAnalise() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "ANALISE_EDITAR") == false) {
             return false;
         }
@@ -279,7 +279,7 @@ export class AnaliseResumoComponent implements OnInit {
                 .concat('?'),
             accept: () => {
                 this.analiseService.block(this.analise).subscribe(() => {
-                    this.pageNotificationService.addSuccessMessage("Análise: "+this.analise.identificadorAnalise+" desbloqueada com sucesso.");
+                    this.pageNotificationService.addSuccessMessage("Análise: " + this.analise.identificadorAnalise + " desbloqueada com sucesso.");
                     window.location.reload();
                 }, (error: Response) => {
                     switch (error.status) {
@@ -343,7 +343,7 @@ export class AnaliseResumoComponent implements OnInit {
                         });
                 });
                 this.limparSelecaoCompartilhar();
-				window.location.reload();
+                window.location.reload();
             });
         } else {
             this.pageNotificationService.addInfoMessage(this.getLabel('Selecione pelo menos um registro para poder adicionar ou clique no X para sair!'));
@@ -421,9 +421,57 @@ export class AnaliseResumoComponent implements OnInit {
         });
     }
 
+    /**
+     * Abre o modal de exportação de planilha Excel.
+     * Automaticamente busca e pré-seleciona um modelo correspondente
+     * à organização vinculada à análise, se houver.
+     * 
+     * @param analise - A análise que será exportada
+     */
     openModalImportarExcel(analise: Analise) {
         this.showDialogImportarExcel = true;
         this.analiseImportarExcel = analise;
+
+        // Auto-seleção do modelo baseado na organização
+        this.modeloSelecionado = this.buscarModeloPorOrganizacao(analise);
+    }
+
+    /**
+     * Busca um modelo de planilha Excel que corresponda à organização da análise.
+     * A correspondência é feita verificando se a sigla ou nome da organização
+     * está contida no label (título) do modelo.
+     * 
+     * @param analise - A análise com a organização vinculada
+     * @returns O modelo encontrado ou null se não houver correspondência
+     */
+    buscarModeloPorOrganizacao(analise: Analise): any {
+        // Verifica se a análise possui organização
+        if (!analise || !analise.organizacao) {
+            console.log('[ExportarExcel] Análise não possui organização vinculada');
+            return null;
+        }
+
+        // Obtém sigla e nome da organização em maiúsculas para comparação
+        const siglaOrg = analise.organizacao.sigla?.toUpperCase() || '';
+        const nomeOrg = analise.organizacao.nome?.toUpperCase() || '';
+
+        console.log(`[ExportarExcel] Buscando modelo para organização: sigla="${siglaOrg}", nome="${nomeOrg}"`);
+
+        // Busca correspondência no label dos modelos
+        for (const modelo of this.lstModelosExcel) {
+            const labelUpper = modelo.label.toUpperCase();
+
+            // Verifica se a sigla ou nome da organização está contida no label do modelo
+            if ((siglaOrg && labelUpper.includes(siglaOrg)) ||
+                (nomeOrg && labelUpper.includes(nomeOrg))) {
+                console.log(`[ExportarExcel] Modelo encontrado: "${modelo.label}"`);
+                return modelo;
+            }
+        }
+
+        console.log('[ExportarExcel] Nenhum modelo correspondente encontrado, usando modelo BASIS como padrão');
+        // Retorna o modelo BASIS (primeiro da lista) como padrão
+        return this.lstModelosExcel[0];
     }
 
     closeModalExportarExcel() {

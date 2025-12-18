@@ -282,6 +282,7 @@ public class Analise implements Serializable, ReportObject {
     public Analise(Analise analise, User user) {
         this.id = null;
         this.identificadorAnalise = analise.identificadorAnalise;
+        this.numeroOs = analise.numeroOs;
         this.metodoContagem = analise.getMetodoContagem();
         this.valorAjuste = analise.getValorAjuste();
         this.pfTotal = analise.getPfTotal();
@@ -304,6 +305,9 @@ public class Analise implements Serializable, ReportObject {
         this.fatorAjuste = analise.getFatorAjuste();
         this.equipeResponsavel = analise.getEquipeResponsavel();
         this.manual = analise.getManual();
+        this.fatorCriticidade = analise.getFatorCriticidade();
+        this.valorCriticidade = analise.getValorCriticidade();
+        this.scopeCreep = analise.getScopeCreep();
     }
 
 

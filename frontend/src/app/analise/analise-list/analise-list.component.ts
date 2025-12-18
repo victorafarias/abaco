@@ -5,7 +5,7 @@ import { BlockUiService } from '@nuvem/angular-base';
 import { DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
 import { ConfirmationService, SelectItem } from 'primeng';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, Observable } from 'rxjs';
 import { Contrato } from 'src/app/contrato/contrato.model';
 import { ContratoService } from 'src/app/contrato/contrato.service';
 import { DivergenciaService } from 'src/app/divergencia/divergencia.service';
@@ -39,6 +39,7 @@ import { SearchGroup } from '../grupo/grupo.model';
 import { GrupoService } from '../grupo/grupo.service';
 import { funcaoDadosRoute } from "../../funcao-dados/funcao-dados.route";
 import { FuncaoDados } from "../../funcao-dados/funcao-dados.model";
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 @Component({
     selector: 'app-analise',
@@ -141,6 +142,7 @@ export class AnaliseListComponent implements OnInit {
         { label: 'Data de conclusão/bloqueio', value: "BLOQUEIO" },
         { label: 'Data de encerramento', value: "ENCERRAMENTO" }
     ];
+    rows = 20;
     blocked;
     inicial: boolean;
     showDialogAnaliseCloneTipoEquipe = false;
@@ -252,12 +254,17 @@ export class AnaliseListComponent implements OnInit {
         private analiseSharedDataService: AnaliseSharedDataService,
         private contratoService: ContratoService,
         private manualService: ManualService,
-        private historicoService: HistoricoService
+        private historicoService: HistoricoService,
+        private pageConfigService: PageConfigService
     ) {
 
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('analise_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.estadoInicial();
         this.verificarPermissoes();
@@ -472,7 +479,7 @@ export class AnaliseListComponent implements OnInit {
     }
 
     loadingGroupSearch(): SearchGroup {
-        const sessionSearchGroup: SearchGroup = JSON.parse(sessionStorage.getItem('searchGroup'));
+        const sessionSearchGroup: SearchGroup = this.pageConfigService.getConfig('analise_searchGroup');
         if (sessionSearchGroup) {
             if (sessionSearchGroup.dataInicio) {
                 sessionSearchGroup.dataInicio = new Date(sessionSearchGroup.dataInicio);
@@ -487,7 +494,7 @@ export class AnaliseListComponent implements OnInit {
     }
 
     loadingColumnsVisible(): string[] {
-        const sessionColumnsVisible: string[] = JSON.parse(sessionStorage.getItem('columnsVisible'));
+        const sessionColumnsVisible: string[] = this.pageConfigService.getConfig('analise_columnsVisible');
         if (sessionColumnsVisible?.length) {
             return sessionColumnsVisible;
         }
@@ -876,7 +883,8 @@ export class AnaliseListComponent implements OnInit {
             return this.pageNotificationService.addErrorMessage("Selecione qual data será pesquisado o período")
         }
         this.enableTable = true;
-        sessionStorage.setItem('searchGroup', JSON.stringify(this.searchGroup));
+        this.enableTable = true;
+        this.pageConfigService.saveConfig('analise_searchGroup', this.searchGroup);
         this.recarregarDataTable();
         this.datatable.selectedRow = undefined;
         this.datatable.filter();
@@ -886,17 +894,26 @@ export class AnaliseListComponent implements OnInit {
         return !this.datatable;
     }
 
-    public async bloqueiaAnalise(bloquear: boolean) {
+    public bloqueiaAnalise(bloquear: boolean) {
+        this.analisesBlocks = [];
         let analisesBloq: Analise[] = [];
+
         this.analisesSelecionadasEmLote.forEach(analise => {
             if (PerfilService.consultarPerfilAnalise("ANALISE", "BLOQUEAR_DESBLOQUEAR", this.perfisOrganizacao, analise)) {
                 analisesBloq.push(analise);
             }
-        })
-        for (let i = 0; i < analisesBloq.length; i++) {
-            const analise = analisesBloq[i];
-            this.analiseService.find(analise.id).subscribe((res) => {
-                let analiseTemp = new Analise().copyFromJSON(res);
+        });
+
+        if (analisesBloq.length === 0) {
+            this.pageNotificationService.addErrorMessage(this.getLabel('Nenhuma análise selecionada é permitida para essa ação.'));
+            return;
+        }
+
+        const observables: Observable<Analise>[] = analisesBloq.map(analise => this.analiseService.find(analise.id));
+
+        forkJoin(observables).subscribe((res: Analise[]) => {
+            res.forEach(analiseRes => {
+                let analiseTemp = new Analise().copyFromJSON(analiseRes);
                 if (this.tipoEquipesLoggedUser) {
                     for (let j = 0; j < this.tipoEquipesLoggedUser.length; j++) {
                         const equipe = this.tipoEquipesLoggedUser[j];
@@ -905,14 +922,17 @@ export class AnaliseListComponent implements OnInit {
                         }
                     }
                 }
-
             });
 
-        }
-        this.confirmationService.confirm({
-            message: this.mensagemDialogBloquear(bloquear),
-            accept: () => {
-                this.finalizarBlock(bloquear);
+            if (this.analisesBlocks.length > 0) {
+                this.confirmationService.confirm({
+                    message: this.mensagemDialogBloquear(bloquear),
+                    accept: () => {
+                        this.finalizarBlock(bloquear);
+                    }
+                });
+            } else {
+                this.pageNotificationService.addErrorMessage(this.getLabel('Nenhuma análise selecionada é permitida para essa ação.'));
             }
         });
     }
@@ -1099,7 +1119,7 @@ export class AnaliseListComponent implements OnInit {
         if (this.columnsVisible.length) {
             this.lastColumn = event.value;
             this.updateVisibleColumns(this.columnsVisible);
-            sessionStorage.setItem('columnsVisible', JSON.stringify(event.value));
+            this.pageConfigService.saveConfig('analise_columnsVisible', event.value);
         } else {
             this.lastColumn.map((item) => this.columnsVisible.push(item));
             this.pageNotificationService.addErrorMessage('Não é possível exibir menos de uma coluna');
@@ -1222,9 +1242,57 @@ export class AnaliseListComponent implements OnInit {
         this.router.navigate(["/analise/new"])
     }
 
+    /**
+     * Abre o modal de exportação de planilha Excel.
+     * Automaticamente busca e pré-seleciona um modelo correspondente
+     * à organização vinculada à análise, se houver.
+     * 
+     * @param analise - A análise que será exportada
+     */
     openModalExportarExcel(analise: Analise) {
         this.showDialogImportarExcel = true;
         this.analiseImportarExcel = analise;
+
+        // Auto-seleção do modelo baseado na organização
+        this.modeloSelecionado = this.buscarModeloPorOrganizacao(analise);
+    }
+
+    /**
+     * Busca um modelo de planilha Excel que corresponda à organização da análise.
+     * A correspondência é feita verificando se a sigla ou nome da organização
+     * está contida no label (título) do modelo.
+     * 
+     * @param analise - A análise com a organização vinculada
+     * @returns O modelo encontrado ou o modelo BASIS como padrão
+     */
+    buscarModeloPorOrganizacao(analise: Analise): any {
+        // Verifica se a análise possui organização
+        if (!analise || !analise.organizacao) {
+            console.log('[ExportarExcel] Análise não possui organização vinculada, usando modelo BASIS como padrão');
+            return this.lstModelosExcel[0];
+        }
+
+        // Obtém sigla e nome da organização em maiúsculas para comparação
+        const siglaOrg = analise.organizacao.sigla?.toUpperCase() || '';
+        const nomeOrg = analise.organizacao.nome?.toUpperCase() || '';
+
+        console.log(`[ExportarExcel] Buscando modelo para organização: sigla="${siglaOrg}", nome="${nomeOrg}"`);
+
+        // Busca correspondência no label dos modelos
+        for (const modelo of this.lstModelosExcel) {
+            const labelUpper = modelo.label.toUpperCase();
+
+            // Verifica se a sigla ou nome da organização está contida no label do modelo
+            if ((siglaOrg && labelUpper.includes(siglaOrg)) ||
+                (nomeOrg && labelUpper.includes(nomeOrg))) {
+                console.log(`[ExportarExcel] Modelo encontrado: "${modelo.label}"`);
+                return modelo;
+            }
+        }
+
+        console.log('[ExportarExcel] Nenhum modelo correspondente encontrado, usando modelo BASIS como padrão');
+        // Retorna o modelo BASIS (primeiro da lista) como padrão
+        return this.lstModelosExcel[0];
     }
 
     closeModalExportarExcel() {

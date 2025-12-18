@@ -4,19 +4,22 @@
       <h1 translate="Cadastros.FatorAjuste.FatorAjustes">Fator Ajustes</h1>
       <div class="ui-g">
         <div class="ui-g-12 ui-md-4">
-            <span class="md-inputfield">
-              <input type="text" pInputText class="ui-inputtext" #filter/>
-              <label translate="Cadastros.FatorAjuste.Filtro">Filtro</label>
-            </span>
+          <span class="md-inputfield">
+            <input type="text" pInputText class="ui-inputtext" [(ngModel)]="filter"
+              (keyup.enter)="performSearch(filter)" />
+            <label translate="Cadastros.FatorAjuste.Filtro">Filtro</label>
+          </span>
         </div>
         <div class="ui-g-12 ui-md-2">
-          <button pButton [label]="this.getLabel('Pesquisar')" icon="ui-icon-search" (click)="datatable.refresh(filter.value)"></button>
+          <button pButton [label]="this.getLabel('Pesquisar')" icon="ui-icon-search"
+            (click)="performSearch(filter)"></button>
         </div>
         <div class="ui-g-12 ui-md-2">
-          <button pButton type="button" [label]="this.getLabel('Cadastrar')" routerLink="/fatorAjuste/new" icon="ui-icon-add"></button>
+          <button pButton type="button" [label]="this.getLabel('Cadastrar')" routerLink="/fatorAjuste/new"
+            icon="ui-icon-add"></button>
         </div>
-        <basis-datatable [url]="searchUrl" 
-          (buttonClick)="datatableClick($event)" #datatable>
+        <basis-datatable [url]="searchUrl" [rows]="rows" [rowsPerPageOptions]="rowsPerPageOptions"
+          (onPage)="onPageChange($event)" (buttonClick)="datatableClick($event)" #datatable>
           <p-column header="#" field="id"></p-column>
           <p-column [header]="this.getLabel('Cadastros.FatorAJuste.Nome')" field="nome"></p-column>
           <p-column [header]="this.getLabel('Cadastros.FatorAJuste.Fator')" field="fator"></p-column>

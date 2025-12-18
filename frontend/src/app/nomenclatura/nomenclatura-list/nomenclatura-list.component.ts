@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng';
 import { NomenclaturaService } from '../nomenclatura.service';
 import { Nomenclatura, SearchGroup } from '../nomenclatura.model';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 import { AuthService } from 'src/app/util/auth.service';
 
 @Component({
@@ -22,6 +23,7 @@ export class NomenclaturaListComponent implements OnInit {
 
     elasticQuery: ElasticQuery = new ElasticQuery();
 
+    rows = 20;
     rowsPerPageOptions: number[] = [5, 10, 20];
 
     valueFiltroCampo: string;
@@ -41,7 +43,8 @@ export class NomenclaturaListComponent implements OnInit {
         private nomenclaturaService: NomenclaturaService,
         private confirmationService: ConfirmationService,
         private pageNotificationService: PageNotificationService,
-        private authService: AuthService
+        private authService: AuthService,
+        private pageConfigService: PageConfigService
     ) { }
 
     getLabel(label) {
@@ -54,6 +57,14 @@ export class NomenclaturaListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('nomenclatura_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedFilter = this.pageConfigService.getConfig('nomenclatura_filter');
+        if (savedFilter) {
+            this.elasticQuery.value = savedFilter;
+        }
         if (this.datatable) {
             this.datatable.pDatatableComponent.onRowSelect.subscribe((event) => {
                 this.nomenclaturaSelecionada = event.data;
@@ -66,7 +77,7 @@ export class NomenclaturaListComponent implements OnInit {
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
+    verificarPermissoes() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "NOMENCLATURA_EDITAR") == true) {
             this.canEditar = true;
         }
@@ -137,10 +148,12 @@ export class NomenclaturaListComponent implements OnInit {
 
     public limparPesquisa() {
         this.elasticQuery.reset();
+        this.pageConfigService.saveConfig('nomenclatura_filter', '');
         this.recarregarDataTable();
     }
 
     public recarregarDataTable() {
+        this.pageConfigService.saveConfig('nomenclatura_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
         this.nomenclaturaFiltro.nome = this.elasticQuery.query;
     }
@@ -155,5 +168,10 @@ export class NomenclaturaListComponent implements OnInit {
 
     criarNomenclatura() {
         this.router.navigate(["/nomenclatura/new"])
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('nomenclatura_rows', this.rows);
     }
 }
