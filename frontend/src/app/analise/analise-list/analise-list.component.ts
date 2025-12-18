@@ -1242,9 +1242,57 @@ export class AnaliseListComponent implements OnInit {
         this.router.navigate(["/analise/new"])
     }
 
+    /**
+     * Abre o modal de exportação de planilha Excel.
+     * Automaticamente busca e pré-seleciona um modelo correspondente
+     * à organização vinculada à análise, se houver.
+     * 
+     * @param analise - A análise que será exportada
+     */
     openModalExportarExcel(analise: Analise) {
         this.showDialogImportarExcel = true;
         this.analiseImportarExcel = analise;
+
+        // Auto-seleção do modelo baseado na organização
+        this.modeloSelecionado = this.buscarModeloPorOrganizacao(analise);
+    }
+
+    /**
+     * Busca um modelo de planilha Excel que corresponda à organização da análise.
+     * A correspondência é feita verificando se a sigla ou nome da organização
+     * está contida no label (título) do modelo.
+     * 
+     * @param analise - A análise com a organização vinculada
+     * @returns O modelo encontrado ou o modelo BASIS como padrão
+     */
+    buscarModeloPorOrganizacao(analise: Analise): any {
+        // Verifica se a análise possui organização
+        if (!analise || !analise.organizacao) {
+            console.log('[ExportarExcel] Análise não possui organização vinculada, usando modelo BASIS como padrão');
+            return this.lstModelosExcel[0];
+        }
+
+        // Obtém sigla e nome da organização em maiúsculas para comparação
+        const siglaOrg = analise.organizacao.sigla?.toUpperCase() || '';
+        const nomeOrg = analise.organizacao.nome?.toUpperCase() || '';
+
+        console.log(`[ExportarExcel] Buscando modelo para organização: sigla="${siglaOrg}", nome="${nomeOrg}"`);
+
+        // Busca correspondência no label dos modelos
+        for (const modelo of this.lstModelosExcel) {
+            const labelUpper = modelo.label.toUpperCase();
+
+            // Verifica se a sigla ou nome da organização está contida no label do modelo
+            if ((siglaOrg && labelUpper.includes(siglaOrg)) ||
+                (nomeOrg && labelUpper.includes(nomeOrg))) {
+                console.log(`[ExportarExcel] Modelo encontrado: "${modelo.label}"`);
+                return modelo;
+            }
+        }
+
+        console.log('[ExportarExcel] Nenhum modelo correspondente encontrado, usando modelo BASIS como padrão');
+        // Retorna o modelo BASIS (primeiro da lista) como padrão
+        return this.lstModelosExcel[0];
     }
 
     closeModalExportarExcel() {
