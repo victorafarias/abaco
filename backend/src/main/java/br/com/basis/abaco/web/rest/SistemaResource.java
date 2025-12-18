@@ -62,6 +62,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import br.com.basis.abaco.service.dto.FuncaoDistintaDTO;
+import br.com.basis.abaco.service.dto.RenomearFuncaoDTO;
+
 @RestController
 @RequestMapping("/api")
 public class SistemaResource {
@@ -270,4 +273,41 @@ public class SistemaResource {
         ByteArrayOutputStream byteArrayOutputStream = sistemaService.gerarRelatorio(filtro, "pdf");
         return new ResponseEntity<byte[]>(byteArrayOutputStream.toByteArray(), HttpStatus.OK);
     }
+
+    /**
+     * GET /sistemas/{id}/funcoes-distintas : Recupera todas as funções distintas de um sistema.
+     * Retorna a combinação única de Módulo, Funcionalidade e Nome da Função.
+     *
+     * @param id ID do sistema
+     * @return Set de FuncaoDistintaDTO
+     */
+    @GetMapping("/sistemas/{id}/funcoes-distintas")
+    @Timed
+    @Transactional
+    @Secured({"ROLE_ABACO_SISTEMA_CONSULTAR", "ROLE_ABACO_SISTEMA_EDITAR"})
+    public ResponseEntity<Set<FuncaoDistintaDTO>> getFuncoesDistintas(@PathVariable Long id) {
+        log.debug("[SistemaResource] REST request para buscar funções distintas do sistema : {}", id);
+        Set<FuncaoDistintaDTO> funcoesDistintas = sistemaService.getFuncoesDistintas(id);
+        return new ResponseEntity<>(funcoesDistintas, HttpStatus.OK);
+    }
+
+    /**
+     * PUT /sistemas/{id}/renomear-funcoes : Renomeia funções em lote.
+     * Atualiza o nome de todas as ocorrências de funções que correspondem ao conjunto
+     * Módulo-Funcionalidade-NomeAtual.
+     *
+     * @param id ID do sistema
+     * @param renomeacoes Lista de renomeações a serem aplicadas
+     * @return Número de funções atualizadas
+     */
+    @PutMapping("/sistemas/{id}/renomear-funcoes")
+    @Timed
+    @Transactional
+    @Secured("ROLE_ABACO_SISTEMA_EDITAR")
+    public ResponseEntity<Integer> renomearFuncoes(@PathVariable Long id, @RequestBody List<RenomearFuncaoDTO> renomeacoes) {
+        log.debug("[SistemaResource] REST request para renomear {} funções do sistema : {}", renomeacoes.size(), id);
+        int totalAtualizadas = sistemaService.renomearFuncoes(id, renomeacoes);
+        return new ResponseEntity<>(totalAtualizadas, HttpStatus.OK);
+    }
 }
+

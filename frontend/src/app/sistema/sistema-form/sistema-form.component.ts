@@ -4,7 +4,7 @@ import { ConfirmationService, SelectItem } from 'primeng';
 import { Observable, Subscription } from 'rxjs';
 import { OrganizacaoService, Organizacao } from '../../organizacao';
 import { Sistema } from '../sistema.model';
-import { SistemaService } from '../sistema.service';
+import { SistemaService, FuncaoDistinta, RenomearFuncao } from '../sistema.service';
 import { Modulo } from 'src/app/modulo';
 import { Funcionalidade, funcionalidadeRoute, FuncionalidadeService } from 'src/app/funcionalidade';
 import { PageNotificationService, DatatableClickEvent } from '@nuvem/primeng-components';
@@ -93,6 +93,15 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
 
     funcionalidadeMigracao: Funcionalidade = new Funcionalidade();
 
+    // Funções de Dados/Transação
+    funcoesDistintas: FuncaoDistinta[] = [];
+    funcaoSelecionada: FuncaoDistinta = null;
+    novoNomeFuncao: string = '';
+    novoModuloFuncao: Modulo = null;
+    novaFuncionalidadeFuncao: Funcionalidade = null;
+    mostrarDialogEditarFuncao = false;
+    renomeacoesPendentes: RenomearFuncao[] = [];
+
     private routeSub: Subscription;
 
     constructor(
@@ -125,6 +134,8 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
                         this.sistema = Sistema.fromJSON(sistema);
                         this.listModulos = Sistema.fromJSON(sistema).modulos;
                         this.blockUiService.hide();
+                        // Carregar funções distintas para edição
+                        this.carregarFuncoesDistintas();
                     });
             }
         });
@@ -474,22 +485,49 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
     }
 
     private subscribeToSaveResponse(result: Observable<Sistema>) {
+        this.blockUiService.show(); // Mostrar loader
         result.subscribe((res: Sistema) => {
-            this.isSaving = false;
-
             // Alterado: Diferenciar comportamento entre criação e edição
             if (this.isEdit) {
-                // Modo edição: atualizar dados locais e permanecer na página
-                this.sistema = Sistema.fromJSON(res);
-                this.listModulos = this.sistema.modulos;
-                this.pageNotificationService.addUpdateMsg();
+                // Modo edição: Primeiro aplicar renomeações pendentes, se houver
+                if (this.renomeacoesPendentes.length > 0) {
+                    console.log('[SistemaForm] Aplicando renomeações pendentes:', this.renomeacoesPendentes);
+                    this.sistemaService.renomearFuncoes(res.id, this.renomeacoesPendentes).subscribe(
+                        (totalRenomeadas) => {
+                            console.log('[SistemaForm] Funções renomeadas:', totalRenomeadas);
+                            this.renomeacoesPendentes = []; // Limpar lista de pendentes
+                            this.isSaving = false;
+                            this.sistema = Sistema.fromJSON(res);
+                            this.listModulos = this.sistema.modulos;
+                            this.carregarFuncoesDistintas(); // Recarregar funções para refletir as mudanças
+                            this.blockUiService.hide(); // Esconder loader
+                            this.pageNotificationService.addUpdateMsg();
+                        },
+                        (error) => {
+                            console.error('[SistemaForm] Erro ao renomear funções:', error);
+                            this.isSaving = false;
+                            this.blockUiService.hide(); // Esconder loader
+                            this.pageNotificationService.addErrorMessage('Erro ao renomear funções. O sistema foi salvo, mas as renomeações não foram aplicadas.');
+                        }
+                    );
+                } else {
+                    // Sem renomeações pendentes, apenas atualizar dados locais
+                    this.isSaving = false;
+                    this.sistema = Sistema.fromJSON(res);
+                    this.listModulos = this.sistema.modulos;
+                    this.blockUiService.hide(); // Esconder loader
+                    this.pageNotificationService.addUpdateMsg();
+                }
             } else {
                 // Modo criação: navegar para tela de edição com novo ID
+                this.isSaving = false;
+                this.blockUiService.hide(); // Esconder loader
                 this.pageNotificationService.addCreateMsg('Sistema cadastrado com sucesso!');
                 this.router.navigate(['/sistema', res.id, 'edit']);
             }
         }, (error: Response) => {
             this.isSaving = false;
+            this.blockUiService.hide(); // Esconder loader
 
             switch (error.status) {
                 case 404: {
@@ -568,5 +606,172 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
         }
         this.sistemaService.imprimir(funcs, resourceName);
 
+    }
+
+    /**
+     * Carrega todas as funções distintas (combinação única de Módulo, Funcionalidade e Nome)
+     * de todas as análises associadas ao sistema.
+     */
+    carregarFuncoesDistintas() {
+        if (this.sistema && this.sistema.id) {
+            console.log('[SistemaForm] Carregando funções distintas para sistema:', this.sistema.id);
+            this.sistemaService.getFuncoesDistintas(this.sistema.id).subscribe(
+                (funcoes) => {
+                    // Ordena por módulo, funcionalidade e nome e adiciona ID único
+                    this.funcoesDistintas = (funcoes || [])
+                        .sort((a, b) => {
+                            const comp1 = (a.nomeModulo || '').localeCompare(b.nomeModulo || '');
+                            if (comp1 !== 0) return comp1;
+                            const comp2 = (a.nomeFuncionalidade || '').localeCompare(b.nomeFuncionalidade || '');
+                            if (comp2 !== 0) return comp2;
+                            return (a.nomeFuncao || '').localeCompare(b.nomeFuncao || '');
+                        })
+                        .map((f, index) => ({
+                            ...f,
+                            id: `${f.nomeModulo}_${f.nomeFuncionalidade}_${f.nomeFuncao}_${index}`
+                        }));
+                    console.log('[SistemaForm] Funções distintas carregadas:', this.funcoesDistintas.length);
+                },
+                (error) => {
+                    console.error('[SistemaForm] Erro ao carregar funções distintas:', error);
+                }
+            );
+        }
+    }
+
+    /**
+     * Gerencia o clique na tabela de funções distintas.
+     */
+    datatableClickFuncaoDistinta(event: DatatableClickEvent) {
+        if (!event.selection) {
+            return;
+        }
+        switch (event.button) {
+            case this.edit:
+                this.funcaoSelecionada = event.selection;
+                this.abrirDialogEditarFuncao();
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Abre o dialog para editar uma função (nome, módulo ou funcionalidade).
+     */
+    abrirDialogEditarFuncao() {
+        if (this.funcaoSelecionada) {
+            this.novoNomeFuncao = this.funcaoSelecionada.nomeFuncao;
+            // Buscar o módulo atual
+            this.novoModuloFuncao = this.listModulos.find(m => m.nome === this.funcaoSelecionada.nomeModulo) || null;
+            // Buscar a funcionalidade atual
+            if (this.novoModuloFuncao) {
+                this.novaFuncionalidadeFuncao = this.novoModuloFuncao.funcionalidades?.find(
+                    f => f.nome === this.funcaoSelecionada.nomeFuncionalidade
+                ) || null;
+            } else {
+                this.novaFuncionalidadeFuncao = null;
+            }
+            this.mostrarDialogEditarFuncao = true;
+        } else {
+            this.pageNotificationService.addErrorMessage('Selecione uma função para editar.');
+        }
+    }
+
+    /**
+     * Fecha o dialog de edição de função.
+     */
+    fecharDialogEditarFuncao() {
+        this.mostrarDialogEditarFuncao = false;
+        this.funcaoSelecionada = null;
+        this.novoNomeFuncao = '';
+        this.novoModuloFuncao = null;
+        this.novaFuncionalidadeFuncao = null;
+    }
+
+    /**
+     * Retorna as funcionalidades do módulo selecionado no combo de novo módulo.
+     */
+    getFuncionalidadesDoNovoModulo(): Funcionalidade[] {
+        return this.novoModuloFuncao?.funcionalidades || [];
+    }
+
+    /**
+     * Handler para quando o módulo muda no combo de novo módulo.
+     * Atualiza a funcionalidade para a primeira do novo módulo ou null.
+     */
+    onNovoModuloChange() {
+        if (this.novoModuloFuncao && this.novoModuloFuncao.funcionalidades?.length > 0) {
+            // Tentar manter a funcionalidade atual se existir no novo módulo
+            const funcExistente = this.novoModuloFuncao.funcionalidades.find(
+                f => f.nome === this.funcaoSelecionada.nomeFuncionalidade
+            );
+            this.novaFuncionalidadeFuncao = funcExistente || this.novoModuloFuncao.funcionalidades[0];
+        } else {
+            this.novaFuncionalidadeFuncao = null;
+        }
+    }
+
+    /**
+     * Salva a alteração da função.
+     * Adiciona à lista de alterações pendentes e atualiza a tabela local.
+     */
+    salvarRenomeacaoFuncao() {
+        if (!this.funcaoSelecionada) {
+            this.pageNotificationService.addErrorMessage('Nenhuma função selecionada.');
+            return;
+        }
+
+        // Verificar quais campos foram alterados
+        const novoNomeTrimmed = this.novoNomeFuncao?.trim() || '';
+        const nomeAlterado = novoNomeTrimmed !== '' && novoNomeTrimmed !== this.funcaoSelecionada.nomeFuncao;
+        const moduloAlterado = this.novoModuloFuncao && this.novoModuloFuncao.nome !== this.funcaoSelecionada.nomeModulo;
+        const funcionalidadeAlterada = this.novaFuncionalidadeFuncao && this.novaFuncionalidadeFuncao.nome !== this.funcaoSelecionada.nomeFuncionalidade;
+
+        // Se nenhum campo foi alterado, exibir mensagem e manter modal aberta
+        if (!nomeAlterado && !moduloAlterado && !funcionalidadeAlterada) {
+            this.pageNotificationService.addErrorMessage('Nenhum dado da função foi alterado.');
+            return;
+        }
+
+        // Adicionar à lista de alterações pendentes
+        const renomeacao: RenomearFuncao = {
+            nomeModulo: this.funcaoSelecionada.nomeModulo,
+            nomeFuncionalidade: this.funcaoSelecionada.nomeFuncionalidade,
+            nomeAtual: this.funcaoSelecionada.nomeFuncao,
+            novoNome: nomeAlterado ? novoNomeTrimmed : null,
+            novoModulo: moduloAlterado ? this.novoModuloFuncao.nome : null,
+            novaFuncionalidade: funcionalidadeAlterada ? this.novaFuncionalidadeFuncao.nome : null
+        };
+        this.renomeacoesPendentes.push(renomeacao);
+        console.log('[SistemaForm] Alteração pendente adicionada:', renomeacao);
+
+        // Atualizar a tabela local
+        const index = this.funcoesDistintas.findIndex(f =>
+            f.nomeModulo === this.funcaoSelecionada.nomeModulo &&
+            f.nomeFuncionalidade === this.funcaoSelecionada.nomeFuncionalidade &&
+            f.nomeFuncao === this.funcaoSelecionada.nomeFuncao
+        );
+        if (index !== -1) {
+            if (nomeAlterado) {
+                this.funcoesDistintas[index].nomeFuncao = novoNomeTrimmed;
+            }
+            if (moduloAlterado) {
+                this.funcoesDistintas[index].nomeModulo = this.novoModuloFuncao.nome;
+            }
+            if (funcionalidadeAlterada) {
+                this.funcoesDistintas[index].nomeFuncionalidade = this.novaFuncionalidadeFuncao.nome;
+            }
+        }
+
+        this.pageNotificationService.addSuccessMessage('Alteração registrada. Salve o sistema para aplicar.');
+        this.fecharDialogEditarFuncao();
+    }
+
+    /**
+     * Verifica se o botão de editar função deve estar desabilitado.
+     */
+    deveDesabilitarBotaoEditarFuncao(): boolean {
+        return !this.funcaoSelecionada;
     }
 }
