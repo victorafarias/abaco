@@ -51,18 +51,22 @@
                         <p-column header="Organização" field="organizacao" [sortable]="false" filterType="select"
                             [style]="{'display': datatable.visibleColumns.organizacao}">
                             <ng-template let-col let-row="rowData" pTemplate="body">
-                                <li *ngFor="let org of row.organizacoes">
-                                    {{ org.nome }}
-                                </li>
+                                <ul class="list-unstyled-table">
+                                    <li *ngFor="let org of row.organizacoes">
+                                        {{ org.nome }}
+                                    </li>
+                                </ul>
                             </ng-template>
                         </p-column>
 
                         <p-column header="Perfil" field="perfil" [sortable]="false" filterType="select"
                             [style]="{'display': datatable.visibleColumns.perfil}">
                             <ng-template let-col let-row="rowData" pTemplate="body">
-                                <li *ngFor="let perfil of row.perfils">
-                                    {{ perfil.nome }}
-                                </li>
+                                <ul class="list-unstyled-table">
+                                    <li *ngFor="let perfil of row.perfils">
+                                        {{ perfil.nome }}
+                                    </li>
+                                </ul>
                             </ng-template>
                         </p-column>
 
@@ -70,9 +74,11 @@
                             [style]="{width:'15%', 'display': datatable.visibleColumns.equipe}" [sortable]="false"
                             filterType="select">
                             <ng-template let-col let-row="rowData" pTemplate="body">
-                                <li *ngFor="let equipe of row.tipoEquipes">
-                                    {{ equipe.nome }}
-                                </li>
+                                <ul class="list-unstyled-table">
+                                    <li *ngFor="let equipe of row.tipoEquipes">
+                                        {{ equipe.nome }}
+                                    </li>
+                                </ul>
                             </ng-template>
                         </p-column>
 
@@ -86,16 +92,15 @@
 
                     </basis-datatable>
 
-                    <div class="ui-g-12 ui-md-2">
+                    <div class="ui-g-11 div-btn-exportar">
                         <app-export-button [dataTable]="datatable" resourceName="users" funcionalidadeName="usuario"
-                            [filter]="userFiltro" [columnsVisible]="columnsVisible"
-                            class="ui-g-12 ui-md-3 btn-exportar">
+                            [filter]="userFiltro" [columnsVisible]="columnsVisible" class="ui-g-11 div-btn-exportar">
                         </app-export-button>
                     </div>
 
-
-                    <div class="ui-g-12 ui-md-2">
-                        <app-botoes-exportacao [query]="query" resourceName="users" fileName="usuario">
+                    <div class="ui-g-11 div-btn-exportar">
+                        <app-botoes-exportacao [query]="query" resourceName="users" fileName="usuario"
+                            class="ui-g-11 div-btn-exportar">
                         </app-botoes-exportacao>
                     </div>
 

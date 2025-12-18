@@ -108,9 +108,11 @@
                             [scrollHeight]="'500px'" [rowsPerPageOptions]="rowsPerPageOptions" [rows]="20" #tables>
                             <p-column header="Organização" field="organizacoes" [sortable]="true">
                                 <ng-template let-row="rowData" pTemplate="body">
-                                    <li *ngFor="let org of row.organizacoes">
-                                        {{ org.nome }}
-                                    </li>
+                                    <ul class="list-unstyled-table">
+                                        <li *ngFor="let org of row.organizacoes">
+                                            {{ org.nome }}
+                                        </li>
+                                    </ul>
                                 </ng-template>
                             </p-column>
                             <p-column header="Perfil" field="perfil" [sortable]="true">
@@ -197,14 +199,14 @@
     [contentStyle]="{'overflow':'visible'}" #dialogSenha>
     <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
         <span class="md-inputfield">
-            <input type="password" name="novaSenha" maxlength="50" [(ngModel)]="novaSenha" pInputText/>
+            <input type="password" name="novaSenha" maxlength="50" [(ngModel)]="novaSenha" pInputText />
             <label>Senha *</label>
         </span>
 
     </div>
     <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
         <span class="md-inputfield">
-            <input type="password" name="novaSenhaConfirm" maxlength="50" [(ngModel)]="novaSenhaConfirm" pInputText/>
+            <input type="password" name="novaSenhaConfirm" maxlength="50" [(ngModel)]="novaSenhaConfirm" pInputText />
             <label>Senha Confirmação *</label>
         </span>
     </div>
