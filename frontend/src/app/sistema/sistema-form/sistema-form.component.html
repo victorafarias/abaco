@@ -3,46 +3,30 @@
         <div class="card card-w-title">
             <h1>{{ sistema.id ? 'Editar Sistema' : 'Cadastrar Sistema' }}</h1>
             <form name="editForm" role="form" novalidate (ngSubmit)="save(editForm)" #editForm="ngForm"
-                  (keydown.enter)="$event.preventDefault()">
+                (keydown.enter)="$event.preventDefault()">
                 <div class="ui-g">
                     <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
                         <span class="md-inputfield">
-                            <input
-                                id="sigla_sistema"
-                                type="text"
-                                name="siglaSistema"
-                                [(ngModel)]="sistema.sigla"
-                                maxlength="255"
-                                pInputText
-                                required
-                                #siglaSistema='ngModel'/>
+                            <input id="sigla_sistema" type="text" name="siglaSistema" [(ngModel)]="sistema.sigla"
+                                maxlength="255" pInputText required #siglaSistema='ngModel' />
                             <label>Sigla *</label>
                             <div *ngIf="editForm.controls['siglaSistema']
                                 && !editForm.controls['siglaSistema'].valid
                                 && (editForm.controls['siglaSistema'].touched
-                                || editForm.submitted)"
-                                class="ui-message ui-messages-error">
+                                || editForm.submitted)" class="ui-message ui-messages-error">
                                 Campo obrigatório.
                             </div>
                         </span>
                     </div>
                     <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
                         <span class="md-inputfield">
-                            <input
-                                id="nome_sistema"
-                                type="text"
-                                name="nomeSistema"
-                                [(ngModel)]="sistema.nome"
-                                maxlength="100"
-                                pInputText
-                                required
-                                #nomeSistema='ngModel'/>
+                            <input id="nome_sistema" type="text" name="nomeSistema" [(ngModel)]="sistema.nome"
+                                maxlength="100" pInputText required #nomeSistema='ngModel' />
                             <label>Nome do Sistema *</label>
                             <div *ngIf="editForm.controls['nomeSistema']
                                 && !editForm.controls['nomeSistema'].valid
                                 && (editForm.controls['nomeSistema'].touched
-                                || editForm.submitted)"
-                                    class="ui-message ui-messages-error">
+                                || editForm.submitted)" class="ui-message ui-messages-error">
                                 Campo obrigatório.
                             </div>
                         </span>
@@ -50,98 +34,61 @@
                     <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
                         <span>
                             <label>Tipo Sistema</label>
-                                <p-dropdown
-                                        [filter]="true"
-                                        id="tipo_sistema"
-                                        [options]="tipoSistemaOptions"
-                                        placeholder="Selecione"
-                                        name="tipoSistema"
-                                        [(ngModel)]="sistema.tipoSistema"
-                                        required
-                                        #tipoSistema='ngModel'>
-                                </p-dropdown>
-                                <div *ngIf="editForm.controls['tipoSistema']
+                            <p-dropdown [filter]="true" id="tipo_sistema" [options]="tipoSistemaOptions"
+                                placeholder="Selecione" name="tipoSistema" [(ngModel)]="sistema.tipoSistema" required
+                                #tipoSistema='ngModel'>
+                            </p-dropdown>
+                            <div *ngIf="editForm.controls['tipoSistema']
                                     && !editForm.controls['tipoSistema'].valid
                                     && (editForm.controls['tipoSistema'].touched
-                                    || editForm.submitted)"
-                                    class="ui-message-select ui-messages-error-select">
-                                    Campo obrigatório.
+                                    || editForm.submitted)" class="ui-message-select ui-messages-error-select">
+                                Campo obrigatório.
                             </div>
                         </span>
                     </div>
                     <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
                         <span>
-                            <label >Organização</label>
-                            <p-dropdown
-                                    [filter]="true"
-                                    id="organizacao_sistema"
-                                    [options]="organizacoes"
-                                    optionLabel="nome"
-                                    placeholder="Selecione"
-                                    name="Organização"
-                                    [(ngModel)]="sistema.organizacao"
-
-                                    dataKey="id"
-                                    required
-                                    #organizacao='ngModel'>
+                            <label>Organização</label>
+                            <p-dropdown [filter]="true" id="organizacao_sistema" [options]="organizacoes"
+                                optionLabel="nome" placeholder="Selecione" name="Organização"
+                                [(ngModel)]="sistema.organizacao" dataKey="id" required #organizacao='ngModel'>
                             </p-dropdown>
                             <div *ngIf="editForm.controls['organizacao']
                                 && !editForm.controls['organizacao'].valid
                                 && (editForm.controls['organizacao'].touched
-                                || editForm.submitted)"
-                                class="ui-message-select ui-messages-error-select" >
+                                || editForm.submitted)" class="ui-message-select ui-messages-error-select">
                                 Campo obrigatório.
                             </div>
                         </span>
                     </div>
                     <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
                         <span class="md-inputfield">
-                            <input
-                                type="text"
-                                id="idNumeoOcorrenciaFormSistema"
-                                name="numeroOcorrenciaSistema"
-                                maxlength="100"
-                                [(ngModel)]="sistema.numeroOcorrencia"
-                                pInputText/>
+                            <input type="text" id="idNumeoOcorrenciaFormSistema" name="numeroOcorrenciaSistema"
+                                maxlength="100" [(ngModel)]="sistema.numeroOcorrencia" pInputText />
                             <label>Número da Ocorrência</label>
                         </span>
                     </div>
                 </div>
                 <!-- Módulos -->
                 <div class="ui-g">
-                    <h4 style="margin-bottom: 0px; margin-top: 0px;" >Módulos</h4>
+                    <h4 style="margin-bottom: 0px; margin-top: 0px;">Módulos</h4>
                     <div class="ui-g ui-md-12" style="justify-content: flex-end">
                         <div class="ui-g-2 ui-md-2 ui-sm-12">
-                            <app-blue-button
-                                    buttonLabel="Novo Modulo"
-                                    buttonIcon="ui-icon-add"
-                                    id="idBtnNovoModuloFormSistema"
-                                    (click)="abrirDialogModulo()">
+                            <app-blue-button buttonLabel="Novo Modulo" buttonIcon="ui-icon-add"
+                                id="idBtnNovoModuloFormSistema" (click)="abrirDialogModulo()">
                             </app-blue-button>
                         </div>
                     </div>
                     <!-- Datatable modulos -->
-                    <basis-datatable
-                            type="memory"
-                            disableClone="true"
-                            [filterOnColumn]="true"
-                            [value]="sistema.modulos"
-                            disableView="true"
-                            (buttonClick)="datatableClickModulo($event)"
-                            disableClone="true"
-                            [enableScroll]="false"
-                            [rows]="20"
-                            #datatableModulo>
+                    <basis-datatable type="memory" disableClone="true" [filterOnColumn]="true" [value]="sistema.modulos"
+                        disableView="true" (buttonClick)="datatableClickModulo($event)" disableClone="true"
+                        [enableScroll]="false" [rows]="20" #datatableModulo>
 
                         <p-column header="Nome" field="nome"></p-column>
                     </basis-datatable>
                     <div class="ui-g-12 ui-md-2">
-                            <p-splitButton
-                                label="Exportar"
-                                icon="ui-icon-document"
-                                [model]="tiposExportacaoModulo"
-                                >
-                            </p-splitButton>
+                        <p-splitButton label="Exportar" icon="ui-icon-document" [model]="tiposExportacaoModulo">
+                        </p-splitButton>
                     </div>
                 </div>
                 <!-- Funcionalidade -->
@@ -149,31 +96,19 @@
                     <h4 style="margin-bottom: 0px;">Funcionalidade</h4>
                     <div class="ui-g ui-md-12" style="justify-content: flex-end">
                         <div class="ui-g-2 ui-md-2 ui-sm-12">
-                            <app-blue-button
-                                    buttonLabel="Nova Funcionalidade"
-                                    buttonIcon="ui-icon-add"
-                                    id="idBtnNovoSubmoduloFormSistema"
-                                    (click)="abrirDialogFuncionalidade()"
-                                    [isDisabled]="deveDesabilitarBotaoNovaFuncionalidade()">
+                            <app-blue-button buttonLabel="Nova Funcionalidade" buttonIcon="ui-icon-add"
+                                id="idBtnNovoSubmoduloFormSistema" (click)="abrirDialogFuncionalidade()"
+                                [isDisabled]="deveDesabilitarBotaoNovaFuncionalidade()">
                             </app-blue-button>
                         </div>
                     </div>
 
-                    
+
                     <!-- Datatable Funcionalidades -->
-                    <basis-datatable
-                            id="idFuncionalidadeTable"
-                            type="memory"
-                            disableClone="true"
-                            [filterOnColumn]="true"
-                            [value]="sistema.funcionalidades"
-                            (buttonClick)="datatableClickFuncionalidade($event)"
-                            disableView="true"
-                            disableClone="true"
-                            [enableScroll]="false"
-                            [rows]="20"
-                            #datatableFuncionaliadade
-                            >
+                    <basis-datatable id="idFuncionalidadeTable" type="memory" disableClone="true"
+                        [filterOnColumn]="true" [value]="sistema.funcionalidades"
+                        (buttonClick)="datatableClickFuncionalidade($event)" disableView="true" disableClone="true"
+                        [enableScroll]="false" [rows]="20" #datatableFuncionaliadade>
                         <p-column header="Módulo" field="modulo.nome">
                             <ng-template let-funcionalidade="rowData" pTemplate="body">
                                 {{ funcionalidade.modulo.nome }}
@@ -182,53 +117,55 @@
                         <p-column header="Nome" field="nome"></p-column>
                     </basis-datatable>
                     <div class="ui-g-12 ui-md-2">
-                        <p-splitButton
-                            label="Exportar"
-                            icon="ui-icon-document"
-                            [model]="tiposExportacaoFuncionalidade"
-                            >
+                        <p-splitButton label="Exportar" icon="ui-icon-document" [model]="tiposExportacaoFuncionalidade">
                         </p-splitButton>
                     </div>
                 </div>
-                
+
+                <!-- Funções de Dados/Transação -->
+                <div class="ui-g" *ngIf="sistema.id">
+                    <h4 style="margin-bottom: 20px;">Funções de Dados/Transação</h4>
+
+                    <!-- Datatable Funções Distintas -->
+                    <basis-datatable id="idFuncaoDistintaTable" type="memory" [filterOnColumn]="true"
+                        [value]="funcoesDistintas" disableView="true" disableClone="true" disableDelete="true"
+                        [enableScroll]="false" [rows]="20" [(selection)]="funcaoSelecionada"
+                        (buttonClick)="datatableClickFuncaoDistinta($event)" selectionMode="single" dataKey="id"
+                        #datatableFuncaoDistinta>
+                        <p-column header="Módulo" field="nomeModulo" [filter]="true"
+                            filterPlaceholder="Filtro"></p-column>
+                        <p-column header="Funcionalidade" field="nomeFuncionalidade" [filter]="true"
+                            filterPlaceholder="Filtro"></p-column>
+                        <p-column header="Nome da Função" field="nomeFuncao" [filter]="true"
+                            filterPlaceholder="Filtro"></p-column>
+                    </basis-datatable>
+                </div>
+
                 <!-- Botões salvar e cancelar do fim da página -->
                 <div class="ui-g" style="justify-content: center; padding-top: 25px;">
                     <div class="ui-g-4 ui-md-4 ui-sm-12">
-                        <app-white-button
-                                    buttonLabel="Cancelar"
-                                    id="idBtnCancelarFormSistema"
-                                    routerLink="/sistema"></app-white-button>
+                        <app-white-button buttonLabel="Cancelar" id="idBtnCancelarFormSistema"
+                            routerLink="/sistema"></app-white-button>
                     </div>
                     <div class="ui-g-4 ui-md-4 ui-sm-12">
-                        <app-submit-button buttonLabel="Salvar"
-                                            id="idBtnSalvarFormSistema"
-                                            [disabled]="editForm.form.invalid || isSaving"></app-submit-button>
+                        <app-submit-button buttonLabel="Salvar" id="idBtnSalvarFormSistema"
+                            [disabled]="editForm.form.invalid || isSaving"></app-submit-button>
                     </div>
                 </div>
 
                 <!-- Dialog módulo -->
-                <p-dialog header="Módulo"
-                            [(visible)]="mostrarDialogModulo"
-                            [style]="{width: '50vw'}">
+                <p-dialog header="Módulo" [(visible)]="mostrarDialogModulo" [style]="{width: '50vw'}">
                     <div class="ui-g">
                         <div class="ui-g-12 ui-md-12 ui-sm-12" style="padding-top: 25px">
                             <span class="md-inputfield">
-                                <input
-                                    type="text"
-                                    name="nomeModulo"
-                                    maxlength="100"
-                                    [(ngModel)]="novoModulo.nome"
-                                    id="idNomeModuloSaveFormSistema"
-                                    pInputText
-                                    (keydown.enter)="adicionarModulo()"
-                                    #nomeModulo='ngModel'
-                                    required/>
+                                <input type="text" name="nomeModulo" maxlength="100" [(ngModel)]="novoModulo.nome"
+                                    id="idNomeModuloSaveFormSistema" pInputText (keydown.enter)="adicionarModulo()"
+                                    #nomeModulo='ngModel' required />
                                 <label>Nome *</label>
                                 <div *ngIf="editForm.controls['nomeModulo']
                                     && !editForm.controls['nomeModulo'].valid
                                     && (editForm.controls['nomeModulo'].touched
-                                    || editForm.submitted || valido) "
-                                    class="ui-message ui-messages-error" >
+                                    || editForm.submitted || valido) " class="ui-message ui-messages-error">
                                     Campo obrigatório.
                                 </div>
                             </span>
@@ -237,45 +174,32 @@
 
                     <div class="ui-g ui-md-12" style="justify-content: flex-end; padding-top: 25px">
                         <div class="ui-g-4 ui-md-4 ui-sm-12">
-                            <app-white-button
-                                    [buttonLabel]="'Cancelar'"
-                                    id="idBtnCancelarModuloSaveFormSistema"
-                                    (click)="fecharDialogModulo()">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarModuloSaveFormSistema"
+                                (click)="fecharDialogModulo()">
                             </app-white-button>
                         </div>
                         <div class="ui-g-4 ui-md-4 ui-sm-12">
-                            <app-green-button
-                                    [buttonLabel]="'Salvar'"
-                                    id="idBtnSalvarModuloSaveFormSistema"
-                                    (click)="adicionarModulo()">
+                            <app-green-button [buttonLabel]="'Salvar'" id="idBtnSalvarModuloSaveFormSistema"
+                                (click)="adicionarModulo()">
                             </app-green-button>
                         </div>
                     </div>
                 </p-dialog>
 
                 <!-- Dialog Editar módulo -->
-                <p-dialog
-                        header="Editar Módulo"
-                        [(visible)]="mostrarDialogEditarModulo"
-                        [style]="{width: '50vw'}">
+                <p-dialog header="Editar Módulo" [(visible)]="mostrarDialogEditarModulo" [style]="{width: '50vw'}">
                     <div class="ui-g">
                         <div class="ui-g-12 ui-md-12 ui-sm-12" style="padding-top: 25px">
                             <span class="md-inputfield">
-                                <input
-                                    type="text"
-                                    name="EditnomeModulo"
-                                    maxlength="100"
-                                    [(ngModel)]="moduloEmEdicao.nome"
-                                    id="idNomeModuloEditFormSistema"
-                                    pInputText
-                                    (keydown.enter)="editarModulo()"/>
+                                <input type="text" name="EditnomeModulo" maxlength="100"
+                                    [(ngModel)]="moduloEmEdicao.nome" id="idNomeModuloEditFormSistema" pInputText
+                                    (keydown.enter)="editarModulo()" />
                                 <label>Nome do Módulo</label>
                                 <div *ngIf="(editForm.controls['EditnomeModulo']
                                     && !editForm.controls['EditnomeModulo'].valid
                                     && (editForm.controls['EditnomeModulo'].touched
-                                    || editForm.submitted) || valido)"
-                                        class="ui-message ui-messages-error" >
-                                        Campo obrigatório.
+                                    || editForm.submitted) || valido)" class="ui-message ui-messages-error">
+                                    Campo obrigatório.
                                 </div>
                             </span>
                         </div>
@@ -284,18 +208,14 @@
                     <div class="ui-g ui-md-12" style="justify-content: flex-end; padding-top: 25px">
 
                         <div class="ui-g-4 ui-md-4 ui-sm-12">
-                            <app-white-button
-                                    [buttonLabel]="'Cancelar'"
-                                    id="idBtnCancelarModuloEditFormSistema"
-                                    (click)="fecharDialogEditarModulo()">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarModuloEditFormSistema"
+                                (click)="fecharDialogEditarModulo()">
                             </app-white-button>
                         </div>
 
                         <div class="ui-g-4 ui-md-4 ui-sm-12">
-                            <app-green-button
-                                    [buttonLabel]="'Salvar'"
-                                    id="idBtnSalvarModuloEditFormSistema"
-                                    (click)="editarModulo()">
+                            <app-green-button [buttonLabel]="'Salvar'" id="idBtnSalvarModuloEditFormSistema"
+                                (click)="editarModulo()">
                             </app-green-button>
                         </div>
 
@@ -305,59 +225,42 @@
                 <!-- Dialog confirmação deleção -->
                 <p-confirmDialog header="Confirmação" #dialog>
                     <p-footer>
-                        <button type="button" id="idNaoDelteFormSistema" pButton icon="fa-close"
-                                label="Não" (click)="dialog.reject()"></button>
-                        <button type="button" id="idSimDelteFormSistema" pButton icon="fa-check"
-                                label="Sim" (click)="dialog.accept()"></button>
+                        <button type="button" id="idNaoDelteFormSistema" pButton icon="fa-close" label="Não"
+                            (click)="dialog.reject()"></button>
+                        <button type="button" id="idSimDelteFormSistema" pButton icon="fa-check" label="Sim"
+                            (click)="dialog.accept()"></button>
                     </p-footer>
                 </p-confirmDialog>
 
                 <!-- Dialog funcionalidade -->
-                <p-dialog header="Funcionalidade"
-                            [(visible)]="mostrarDialogFuncionalidade"
-                            [style]="{width: '50vw'}">
+                <p-dialog header="Funcionalidade" [(visible)]="mostrarDialogFuncionalidade" [style]="{width: '50vw'}">
                     <div class="ui-g">
                         <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
                             <span class="md-inputfield">
-                                <input
-                                        type="text"
-                                        name="nomeFuncionalidade"
-                                        maxlength="100"
-                                        id="idNomeFuncionalidadeSaveFormSistema"
-                                        [(ngModel)]="novaFuncionalidade.nome"
-                                        pInputText
-                                        required
-                                        #nomeFuncionalidade='ngModel'
-                                        (keydown.enter)="adicionarFuncionalidade()"/>
-                                <label >Nome *</label>
+                                <input type="text" name="nomeFuncionalidade" maxlength="100"
+                                    id="idNomeFuncionalidadeSaveFormSistema" [(ngModel)]="novaFuncionalidade.nome"
+                                    pInputText required #nomeFuncionalidade='ngModel'
+                                    (keydown.enter)="adicionarFuncionalidade()" />
+                                <label>Nome *</label>
                                 <div *ngIf="editForm.controls['nomeFuncionalidade']
                                 && !editForm.controls['nomeFuncionalidade'].valid
                                 && (editForm.controls['nomeFuncionalidade'].touched
-                                || editForm.submitted || valido)"
-                                    class="ui-message ui-messages-error" >
-                                Campo obrigatório.
+                                || editForm.submitted || valido)" class="ui-message ui-messages-error">
+                                    Campo obrigatório.
                                 </div>
                             </span>
                         </div>
                         <div class="ui-g-12 ui-md-12 ui-sm-12" style="padding-top: 25px">
                             <span>
-                                <p-dropdown
-                                        [filter]="true"
-                                        [options]="sistema.modulos"
-                                        optionLabel="nome"
-                                        id="idModuloFuncionalidadeSaveFormSistema"
-                                        placeholder="Modulo*"
-                                        name="funcionalidadeModulo"
-                                        [(ngModel)]="novaFuncionalidade.modulo"
-
-                                        required
-                                        #funcionalidadeModulo='ngModel'>
+                                <p-dropdown [filter]="true" [options]="sistema.modulos" optionLabel="nome"
+                                    id="idModuloFuncionalidadeSaveFormSistema" placeholder="Modulo*"
+                                    name="funcionalidadeModulo" [(ngModel)]="novaFuncionalidade.modulo" required
+                                    #funcionalidadeModulo='ngModel'>
                                 </p-dropdown>
                                 <div *ngIf="editForm.controls['funcionalidadeModulo']
                                     && !editForm.controls['funcionalidadeModulo'].valid
                                     && (editForm.controls['funcionalidadeModulo'].touched
-                                    || editForm.submitted || valido)"
-                                        class="ui-message ui-messages-error" >
+                                    || editForm.submitted || valido)" class="ui-message ui-messages-error">
                                     Campo obrigatório.
                                 </div>
                             </span>
@@ -365,18 +268,14 @@
                     </div>
                     <div class="ui-g ui-md-12" style="justify-content: flex-end; padding-top: 25px">
                         <div class="ui-g-2 ui-md-2 ui-sm-12">
-                            <app-white-button
-                                    [buttonLabel]="'Cancelar'"
-                                    id="idBtnCancelarFuncionalidadeSaveFormSistema"
-                                    (click)="fecharDialogFuncionalidade()">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarFuncionalidadeSaveFormSistema"
+                                (click)="fecharDialogFuncionalidade()">
                             </app-white-button>
                         </div>
 
                         <div class="ui-g-2">
-                            <app-green-button
-                                    [buttonLabel]="'Salvar'"
-                                    id="idSalvarFuncionalidadeSaveFormSistema"
-                                    (click)="adicionarFuncionalidade()">
+                            <app-green-button [buttonLabel]="'Salvar'" id="idSalvarFuncionalidadeSaveFormSistema"
+                                (click)="adicionarFuncionalidade()">
                             </app-green-button>
                         </div>
                     </div>
@@ -384,53 +283,37 @@
                 <!-- Fim dialog funcionalidade -->
 
                 <!-- Dialog editar Funcionalidades -->
-                <p-dialog header="Funcionalidade"
-                            [(visible)]="mostrarDialogEditarFuncionalidade"
-                            [contentStyle]="{'overflow':'visible'}">
+                <p-dialog header="Funcionalidade" [(visible)]="mostrarDialogEditarFuncionalidade"
+                    [contentStyle]="{'overflow':'visible'}">
                     <div class="ui-g">
 
                         <div class="ui-g-12" style="margin-bottom: 25px">
                             <span class="md-inputfield">
-                                <input
-                                        type="text"
-                                        name="nomeFuncionalidade"
-                                        maxlength="100"
-                                        [(ngModel)]="funcionalidadeEmEdicao.nome"
-                                        pInputText
-                                        id="idNomeFuncionalidadeEditFormSistema"
-                                        required
-                                        #nomeFuncionalidade='ngModel'
-                                        (keydown.enter)="editarFuncionalidade()"/>
-                                <label >Nome *</label>
+                                <input type="text" name="nomeFuncionalidade" maxlength="100"
+                                    [(ngModel)]="funcionalidadeEmEdicao.nome" pInputText
+                                    id="idNomeFuncionalidadeEditFormSistema" required #nomeFuncionalidade='ngModel'
+                                    (keydown.enter)="editarFuncionalidade()" />
+                                <label>Nome *</label>
                                 <div *ngIf="editForm.controls['nomeFuncionalidade']
                                 && !editForm.controls['nomeFuncionalidade'].valid
                                 && (editForm.controls['nomeFuncionalidade'].touched
-                                || editForm.submitted || valido)"
-                                    class="ui-message ui-messages-error">
+                                || editForm.submitted || valido)" class="ui-message ui-messages-error">
                                     Campo obrigatório.
                                 </div>
                             </span>
                         </div>
                         <div class="ui-g-12" style="margin-bottom: 25px">
                             <span>
-                                <p-dropdown
-                                        [filter]="true"
-                                        [options]="sistema.modulos"
-                                        optionLabel="nome"
-                                        id="idModuloFuncionalidadeEditFormSistema"
-                                        placeholder="Modulo*"
-                                        name="funcionalidadeModulo"
-                                        [(ngModel)]="funcionalidadeEmEdicao.modulo"
-
-                                        required
-                                        #funcionalidadeModulo='ngModel'>
+                                <p-dropdown [filter]="true" [options]="sistema.modulos" optionLabel="nome"
+                                    id="idModuloFuncionalidadeEditFormSistema" placeholder="Modulo*"
+                                    name="funcionalidadeModulo" [(ngModel)]="funcionalidadeEmEdicao.modulo" required
+                                    #funcionalidadeModulo='ngModel'>
                                 </p-dropdown>
                                 <div *ngIf="editForm.controls['funcionalidadeModulo']
                                 && !editForm.controls['funcionalidadeModulo'].valid
                                 && (editForm.controls['funcionalidadeModulo'].touched
-                                || editForm.submitted || valido)"
-                                    class="ui-message ui-messages-error">
-                                Campo obrigatório.
+                                || editForm.submitted || valido)" class="ui-message ui-messages-error">
+                                    Campo obrigatório.
                                 </div>
                             </span>
                         </div>
@@ -438,60 +321,40 @@
                     <div class="ui-g ui-md-12" style="justify-content: flex-end">
 
                         <div class="ui-g-4">
-                            <app-white-button
-                                    [buttonLabel]="'Cancelar'"
-                                    id="idBtnCancelarFuncionalidadeEditFormSistema"
-                                    (click)="fecharDialogEditarFuncionalidade()">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarFuncionalidadeEditFormSistema"
+                                (click)="fecharDialogEditarFuncionalidade()">
                             </app-white-button>
                         </div>
 
                         <div class="ui-g-4">
-                            <app-green-button
-                                    [buttonLabel]="'Salvar'"
-                                    id="idBtnSalvarFuncionalidadeEditFormSistema"
-                                    (click)="editarFuncionalidade()">
+                            <app-green-button [buttonLabel]="'Salvar'" id="idBtnSalvarFuncionalidadeEditFormSistema"
+                                (click)="editarFuncionalidade()">
                             </app-green-button>
                         </div>
                     </div>
                 </p-dialog>
                 <!-- Fim dialog editar Funcionalidades -->
                 <!-- Dialog migrar funções de funcionalidades -->
-                <p-dialog header="Funcionalidade"
-                            [modal]="true"
-                            [(visible)]="mostrarDialogMigrarFuncionalidade"
-                            [contentStyle]="{'overflow':'visible'}">
+                <p-dialog header="Funcionalidade" [modal]="true" [(visible)]="mostrarDialogMigrarFuncionalidade"
+                    [contentStyle]="{'overflow':'visible'}">
                     <div class="ui-g">
 
                         <div class="ui-g-12" style="margin-bottom: 25px">
                             <span>
-                                <p-dropdown
-                                        [filter]="true"
-                                        [options]="listModulos"
-                                        optionLabel="nome"
-                                        datakey="id"
-                                        id="idModuloFuncionalidadeMigrarFormSistema"
-                                        placeholder="Modulo*"
-                                        name="funcionalidadeModulo"
-                                        [(ngModel)]="moduloMigracao"
-                                        (onChange)="mudarModulo($event)"
-                                        required
-                                        #funcionalidadeModulo='ngModel'>
+                                <p-dropdown [filter]="true" [options]="listModulos" optionLabel="nome" datakey="id"
+                                    id="idModuloFuncionalidadeMigrarFormSistema" placeholder="Modulo*"
+                                    name="funcionalidadeModulo" [(ngModel)]="moduloMigracao"
+                                    (onChange)="mudarModulo($event)" required #funcionalidadeModulo='ngModel'>
                                 </p-dropdown>
                             </span>
                         </div>
                         <div class="ui-g-12" style="margin-bottom: 25px">
                             <span>
-                                <p-dropdown
-                                        [disabled]="!moduloMigracao.id"
-                                        [filter]="true"
-                                        [options]="moduloMigracao.funcionalidades"
-                                        optionLabel="nome"
-                                        id="idModuloFuncionalidadeMigrarFormSistema"
-                                        placeholder="Funcionalidade*"
-                                        name="migrarFuncionalidadeModulo"
-                                        [(ngModel)]="funcionalidadeMigracao"
-                                        required
-                                        #migrarFuncionalidadeModulo='ngModel'>
+                                <p-dropdown [disabled]="!moduloMigracao.id" [filter]="true"
+                                    [options]="moduloMigracao.funcionalidades" optionLabel="nome"
+                                    id="idModuloFuncionalidadeMigrarFormSistema" placeholder="Funcionalidade*"
+                                    name="migrarFuncionalidadeModulo" [(ngModel)]="funcionalidadeMigracao" required
+                                    #migrarFuncionalidadeModulo='ngModel'>
                                 </p-dropdown>
                             </span>
                         </div>
@@ -499,23 +362,83 @@
                     <div class="ui-g ui-md-12" style="justify-content: flex-end">
 
                         <div class="ui-g-4">
-                            <app-white-button
-                                    [buttonLabel]="'Cancelar'"
-                                    id="idBtnCancelarFuncionalidadeEditFormSistema"
-                                    (click)="fecharDialogMigrarFuncionalidade()">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarFuncionalidadeEditFormSistema"
+                                (click)="fecharDialogMigrarFuncionalidade()">
                             </app-white-button>
                         </div>
 
                         <div class="ui-g-4">
-                            <app-green-button
-                                    [buttonLabel]="'Salvar'"
-                                    id="idBtnSalvarFuncionalidadeEditFormSistema"
-                                    (click)="migrarFuncoes()">
+                            <app-green-button [buttonLabel]="'Salvar'" id="idBtnSalvarFuncionalidadeEditFormSistema"
+                                (click)="migrarFuncoes()">
                             </app-green-button>
                         </div>
                     </div>
                 </p-dialog>
                 <!-- Fim dialog migrar funções de funcionalidades -->
+
+                <!-- Dialog editar função de dados/transação -->
+                <p-dialog header="Função de dados/transação" [modal]="true" [(visible)]="mostrarDialogEditarFuncao"
+                    [contentStyle]="{'overflow':'visible'}" [style]="{width: '50vw'}">
+                    <div class="ui-g">
+                        <!-- Exibição de valores atuais -->
+                        <div class="ui-g-4" style="margin-bottom: 10px">
+                            <label><strong>Módulo atual:</strong></label>
+                            <p style="margin-top: 5px">{{ funcaoSelecionada?.nomeModulo }}</p>
+                        </div>
+                        <div class="ui-g-4" style="margin-bottom: 10px">
+                            <label><strong>Funcionalidade atual:</strong></label>
+                            <p style="margin-top: 5px">{{ funcaoSelecionada?.nomeFuncionalidade }}</p>
+                        </div>
+                        <div class="ui-g-4" style="margin-bottom: 10px">
+                            <label><strong>Nome atual:</strong></label>
+                            <p style="margin-top: 5px">{{ funcaoSelecionada?.nomeFuncao }}</p>
+                        </div>
+
+                        <div class="ui-g-12">
+                            <hr style="margin: 10px 0;">
+                        </div>
+
+                        <!-- Novos valores editáveis -->
+                        <div class="ui-g-4" style="margin-bottom: 25px">
+                            <label>Novo módulo</label>
+                            <p-dropdown [filter]="true" [options]="listModulos" optionLabel="nome"
+                                id="idNovoModuloFuncaoFormSistema" placeholder="Selecione..." name="novoModuloFuncao"
+                                [(ngModel)]="novoModuloFuncao" (onChange)="onNovoModuloChange()"
+                                [style]="{'width':'100%'}">
+                            </p-dropdown>
+                        </div>
+                        <div class="ui-g-4" style="margin-bottom: 25px">
+                            <label>Nova funcionalidade</label>
+                            <p-dropdown [filter]="true" [options]="getFuncionalidadesDoNovoModulo()" optionLabel="nome"
+                                id="idNovaFuncionalidadeFuncaoFormSistema" placeholder="Selecione..."
+                                name="novaFuncionalidadeFuncao" [(ngModel)]="novaFuncionalidadeFuncao"
+                                [disabled]="!novoModuloFuncao" [style]="{'width':'100%'}">
+                            </p-dropdown>
+                        </div>
+                        <div class="ui-g-4" style="margin-bottom: 25px">
+                            <span class="md-inputfield">
+                                <input pInputText type="text" id="idNovoNomeFuncaoFormSistema" name="novoNomeFuncao"
+                                    [(ngModel)]="novoNomeFuncao" (keydown.enter)="salvarRenomeacaoFuncao()" />
+                                <label>Novo nome</label>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="ui-g ui-md-12" style="justify-content: flex-end">
+
+                        <div class="ui-g-4">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarFuncaoFormSistema"
+                                (click)="fecharDialogEditarFuncao()">
+                            </app-white-button>
+                        </div>
+
+                        <div class="ui-g-4">
+                            <app-green-button [buttonLabel]="'Salvar'" id="idBtnSalvarFuncaoFormSistema"
+                                (click)="salvarRenomeacaoFuncao()">
+                            </app-green-button>
+                        </div>
+                    </div>
+                </p-dialog>
+                <!-- Fim dialog editar função de dados/transação -->
             </form>
         </div>
     </div>

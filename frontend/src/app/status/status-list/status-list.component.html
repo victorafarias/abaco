@@ -29,28 +29,24 @@
           </div>
 
           <div class="ui-g-2 ui-md-2 ui-sm-12">
-            <app-blue-button [buttonLabel]="'Pesquisar'" buttonIcon="ui-icon-search"
-                *ngIf="canPesquisar"
+            <app-blue-button [buttonLabel]="'Pesquisar'" buttonIcon="ui-icon-search" *ngIf="canPesquisar"
               (click)="valueFiltro()"></app-blue-button>
           </div>
 
           <div class="uui-g-2 ui-md-2 ui-sm-12">
-            <app-green-button *ngIf="canCadastrar"
-            [buttonLabel]="'Novo'" buttonIcon="ui-icon-add" (click)="criarStatus()">
+            <app-green-button *ngIf="canCadastrar" [buttonLabel]="'Novo'" buttonIcon="ui-icon-add"
+              (click)="criarStatus()">
             </app-green-button>
           </div>
 
         </div>
 
         <basis-datatable [url]="searchUrl" (buttonClick)="datatableClick($event)" (dblclick)="onRowDblclick($event)"
-          (click)="selectStatus()" [rows]="20"
-          [disableDelete]="!canDeletar"
-          [disableEdit]="!canEditar"
-          [disableView]="!canConsultar"
-          [rowsPerPageOptions]="rowsPerPageOptions" [showPaginationFooter]="true"
-		  [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
-		  [title]="'Status'"
-          #datatable>
+          (click)="selectStatus()" [rows]="rows" (onPage)="onPageChange($event)" [disableDelete]="!canDeletar"
+          [disableEdit]="!canEditar" [disableView]="!canConsultar" [rowsPerPageOptions]="rowsPerPageOptions"
+          [showPaginationFooter]="true"
+          [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+          [title]="'Status'" #datatable>
 
           <p-column header="Nome" field="nome" [sortable]="true"></p-column>
           <p-column header="Ativo" field="ativo" [sortable]="false">
@@ -66,7 +62,8 @@
 
         </basis-datatable>
         <div class="ui-g-11 div-btn-exportar">
-          <app-export-button [dataTable]="datatable" resourceName="status" [filter]="statusFiltro" funcionalidadeName="status" class="ui-g-12 ui-md-3 btn-exportar">
+          <app-export-button [dataTable]="datatable" resourceName="status" [filter]="statusFiltro"
+            funcionalidadeName="status" class="ui-g-12 ui-md-3 btn-exportar">
           </app-export-button>
         </div>
         <div class="ui-g-12 ui-md-2">

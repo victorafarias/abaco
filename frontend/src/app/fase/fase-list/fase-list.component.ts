@@ -4,6 +4,7 @@ import { DatatableClickEvent, DatatablePaginationParameters, PageNotificationSer
 import { ConfirmationService } from 'primeng/api';
 import { AuthService } from 'src/app/util/auth.service';
 import { FaseService } from '../fase.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 import { FaseFilter } from '../model/fase.filter';
 import { Fase } from '../model/fase.model';
 
@@ -11,9 +12,12 @@ import { Fase } from '../model/fase.model';
 @Component({
     selector: 'app-fase-list',
     templateUrl: './fase-list.component.html',
-    providers: [ConfirmationService,FaseService]
+    providers: [ConfirmationService, FaseService]
 })
 export class FaseListComponent implements OnInit {
+
+    rows = 20;
+    rowsPerPageOptions: number[] = [5, 10, 20, 50, 100];
 
     paginationParameters: DatatablePaginationParameters;
     @ViewChild(DatatableComponent) dataTable: DatatableComponent;
@@ -31,26 +35,31 @@ export class FaseListComponent implements OnInit {
         private tipoFaseService: FaseService,
         private pageNotificationService: PageNotificationService,
         private confirmationService: ConfirmationService,
-        private authService: AuthService
-    ) {}
+        private authService: AuthService,
+        private pageConfigService: PageConfigService
+    ) { }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('fase_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
-        if (this.authService.possuiRole(AuthService.PREFIX_ROLE+"FASE_EDITAR") == true) {
+    verificarPermissoes() {
+        if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "FASE_EDITAR") == true) {
             this.canEditar = true;
         }
 
-        if (this.authService.possuiRole(AuthService.PREFIX_ROLE+"FASE_CONSULTAR") == true) {
+        if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "FASE_CONSULTAR") == true) {
             this.canConsultar = true;
         }
 
-        if (this.authService.possuiRole(AuthService.PREFIX_ROLE+"FASE_EXCLUIR") == true) {
+        if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "FASE_EXCLUIR") == true) {
             this.canDeletar = true;
         }
-        if (this.authService.possuiRole(AuthService.PREFIX_ROLE+"FASE_CADASTRAR") == true) {
+        if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "FASE_CADASTRAR") == true) {
             this.canCadastrar = true;
         }
     }
@@ -63,7 +72,7 @@ export class FaseListComponent implements OnInit {
         this.tipoFaseSelecionada = new Fase();
     }
 
-    editarClickEvent(tipoFaseSelecionada: Fase){
+    editarClickEvent(tipoFaseSelecionada: Fase) {
         this.router.navigate(['/fase', tipoFaseSelecionada.id, 'edit']);
     }
 
@@ -76,15 +85,15 @@ export class FaseListComponent implements OnInit {
     }
 
     confirmDelete(tipoFaseSelecionada: Fase) {
-            this.confirmationService.confirm({
-                message: "Tem certeza que deseja excluir o registro?",
-                accept: () => {
-                        this.tipoFaseService.delete(tipoFaseSelecionada.id).subscribe(() => {
-                        this.pageNotificationService.addDeleteMsg();
-                        this.dataTable.refresh();
-                    });
-                }
-            });
+        this.confirmationService.confirm({
+            message: "Tem certeza que deseja excluir o registro?",
+            accept: () => {
+                this.tipoFaseService.delete(tipoFaseSelecionada.id).subscribe(() => {
+                    this.pageNotificationService.addDeleteMsg();
+                    this.dataTable.refresh();
+                });
+            }
+        });
     }
 
     limparPesquisa() {
@@ -94,7 +103,7 @@ export class FaseListComponent implements OnInit {
         switch (event.button) {
             case 'edit': {
                 this.abrirEditar(event.selection);
-               break;
+                break;
             }
             case 'view': {
                 this.abrirVisualizar(event.selection);
@@ -102,12 +111,12 @@ export class FaseListComponent implements OnInit {
             }
             case 'delete': {
                 this.confirmDelete(event.selection);
-               break;
+                break;
             }
             default: {
-               break;
+                break;
             }
-         }
+        }
     }
 
     public onRowDblclick(event) {
@@ -130,8 +139,13 @@ export class FaseListComponent implements OnInit {
         }
     }
 
-    public criarFase(){
+    public criarFase() {
         this.router.navigate(["/fase/new"]);
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('fase_rows', this.rows);
     }
 }
 

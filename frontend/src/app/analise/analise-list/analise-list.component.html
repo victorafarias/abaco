@@ -106,8 +106,9 @@
 					</div>
 					<basis-datatable type="server" [url]="userAnaliseUrl" (dblclick)="onRowDblclick($event)"
 						[responsive]="true" (buttonClick)="datatableClick($event)" (finishedLoading)="setParamsLoad()"
-						[rows]="20" id="idTabelaComponentAnalise" [rowsPerPageOptions]="rowsPerPageOptions"
-						[disableDelete]="!canDeletar" [disableEdit]="!canEditar || selectButtonMultiple"
+						[rows]="rows" (onPage)="onPageChange($event)" id="idTabelaComponentAnalise"
+						[rowsPerPageOptions]="rowsPerPageOptions" [disableDelete]="!canDeletar"
+						[disableEdit]="!canEditar || selectButtonMultiple"
 						[disableView]="!canConsultar || selectButtonMultiple" (click)="selectAnalise($event)"
 						[showPaginationFooter]="true" [selectionMode]="'multiple'"
 						[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}', 'autoLayout': true}"

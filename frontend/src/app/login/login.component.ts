@@ -38,7 +38,29 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-	 localStorage.clear();
+    // Preservar configurações de páginas do usuário (paginação, colunas visíveis, filtros)
+    // Essas configurações são salvas pelo PageConfigService e devem persistir entre sessões
+    const keysToPreserve = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.endsWith('_rows') ||           // Configuração de linhas por página
+        key.endsWith('_columnsVisible') || // Visibilidade de colunas
+        key.endsWith('_filter') ||         // Filtros salvos
+        key.endsWith('_searchParams') ||   // Parâmetros de busca
+        key.startsWith('numberPages')      // Paginação de funções (FD/FT)
+      )) {
+        keysToPreserve.push({ key, value: localStorage.getItem(key) });
+      }
+    }
+
+    // Limpa todo o localStorage (tokens, dados de sessão, etc.)
+    localStorage.clear();
+
+    // Restaura apenas as configurações de preferências do usuário
+    keysToPreserve.forEach(item => {
+      localStorage.setItem(item.key, item.value);
+    });
   }
 
   ngOnDestroy() {

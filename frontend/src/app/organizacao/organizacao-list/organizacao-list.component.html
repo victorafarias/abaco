@@ -7,76 +7,58 @@
           <span class="md-inputfield">
             <input type="text" pInputText class="ui-inputtext" (input)="elasticQuery.value = $event.target.value"
               #filter maxlength="80" />
-              <label translate="Cadastros.Organizacao.Descricao">Descrição</label>
+            <label translate="Cadastros.Organizacao.Descricao">Descrição</label>
           </span>
         </div>
       </div>
       <div class="ui-g">
 
         <div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 25px; margin-top: 25px">
-              <div class="ui-g-2 ui-md-2 ui-sm-12">
-                <app-white-button
-                  [buttonLabel]="'Limpar Pesquisa'"
-                  id="idBtnLimparPesquisaComponentOrganizacao"
-                  buttonIcon="ui-icon-clear-all"
-                  (click)="limparPesquisa()">
-                </app-white-button>
-              </div>
-              <div class="ui-g-2 ui-md-2 ui-sm-12">
-                <app-blue-button
-                  [buttonLabel]="'Pesquisar' "
-                  *ngIf="canPesquisar"
-                  buttonIcon="ui-icon-search"
-                  id="idBtnPesquisarComponentOrganizacao"
-                  (click)="recarregarDataTable()">
-                </app-blue-button>
-              </div>
-              <div class="ui-g-2 ui-md-2 ui-sm-12">
-                <app-green-button
-                  [buttonLabel]="'Novo'"
-                  *ngIf="canCadastrar"
-                  id="idBtnNovoComponentOrganizacao"
-                  buttonIcon="ui-icon-add"
-                  (click)="criarOrganizacao()"></app-green-button>
-              </div>
+          <div class="ui-g-2 ui-md-2 ui-sm-12">
+            <app-white-button [buttonLabel]="'Limpar Pesquisa'" id="idBtnLimparPesquisaComponentOrganizacao"
+              buttonIcon="ui-icon-clear-all" (click)="limparPesquisa()">
+            </app-white-button>
+          </div>
+          <div class="ui-g-2 ui-md-2 ui-sm-12">
+            <app-blue-button [buttonLabel]="'Pesquisar' " *ngIf="canPesquisar" buttonIcon="ui-icon-search"
+              id="idBtnPesquisarComponentOrganizacao" (click)="recarregarDataTable()">
+            </app-blue-button>
+          </div>
+          <div class="ui-g-2 ui-md-2 ui-sm-12">
+            <app-green-button [buttonLabel]="'Novo'" *ngIf="canCadastrar" id="idBtnNovoComponentOrganizacao"
+              buttonIcon="ui-icon-add" (click)="criarOrganizacao()"></app-green-button>
+          </div>
         </div>
         <div class="ui-g-12 ui-g-nopad">
           <div class="ui-g-3 ui-md-offset-6">
-              <div class="text-right">Visibilidade das Colunas:</div>
+            <div class="text-right">Visibilidade das Colunas:</div>
           </div>
           <div class="ui-g-3">
-              <p-multiSelect defaultLabel="Selecione as colunas a serem exibidas"
-                  [displaySelectedLabel]="false" [ngModelOptions]="{ standalone: true }"
-                  (onChange)="mostrarColunas($event)" [options]="allColumnsTable"
-                  [(ngModel)]="columnsVisible" [style]="{ width: '100%' }">
-              </p-multiSelect>
+            <p-multiSelect defaultLabel="Selecione as colunas a serem exibidas" [displaySelectedLabel]="false"
+              [ngModelOptions]="{ standalone: true }" (onChange)="mostrarColunas($event)" [options]="allColumnsTable"
+              [(ngModel)]="columnsVisible" [style]="{ width: '100%' }">
+            </p-multiSelect>
           </div>
         </div>
-        <basis-datatable
-            type="server"
-            [url]="searchUrl"
-            (dblclick)="onRowDblclick($event)"
-            (click) = "selectOrganizacao()"
-            (buttonClick)="onClick($event)"
-            [rows]="20"
-            [rowsPerPageOptions]="rowsPerPageOptions"
-            [showPaginationFooter]="true"
-            [disableDelete]="!canDeletar"
-            [disableEdit]="!canEditar"
-            [disableView]="!canConsultar"
-            [showVisibleColumnsControl]="false"
-			[extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
-			[title]="'Organizações'"
-            #datatable>
-          <p-column header="Sigla" field="sigla" [sortable]="true" ></p-column>
-          <p-column header="Nome" field="nome" [sortable]="true"></p-column>
-          <p-column header="CNPJ" field="cnpj" [sortable]="true">
-            <ng-template  let-col let-item="rowData" pTemplate="body">
+        <basis-datatable type="server" [url]="searchUrl" (dblclick)="onRowDblclick($event)"
+          (click)="selectOrganizacao()" (buttonClick)="onClick($event)" [rows]="rows" (onPage)="onPageChange($event)"
+          [rowsPerPageOptions]="rowsPerPageOptions" [showPaginationFooter]="true" [disableDelete]="!canDeletar"
+          [disableEdit]="!canEditar" [disableView]="!canConsultar" [showVisibleColumnsControl]="false"
+          [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+          [title]="'Organizações'" #datatable>
+          <p-column header="Sigla" field="sigla" [sortable]="true"
+            [style]="{'display': datatable.visibleColumns.sigla}"></p-column>
+          <p-column header="Nome" field="nome" [sortable]="true"
+            [style]="{'display': datatable.visibleColumns.nome}"></p-column>
+          <p-column header="CNPJ" field="cnpj" [sortable]="true" [style]="{'display': datatable.visibleColumns.cnpj}">
+            <ng-template let-col let-item="rowData" pTemplate="body">
               {{ item.cnpj}}
             </ng-template>
           </p-column>
-          <p-column header="Número da Ocorrência" field="numeroOcorrencia" [sortable]="true"></p-column>
-          <p-column header="Ativo" field="ativo" [sortable]="true">
+          <p-column header="Número da Ocorrência" field="numeroOcorrencia" [sortable]="true"
+            [style]="{'display': datatable.visibleColumns.numeroOcorrencia}"></p-column>
+          <p-column header="Ativo" field="ativo" [sortable]="true"
+            [style]="{'display': datatable.visibleColumns.ativo}">
             <ng-template let-col let-organizacao="rowData" pTemplate="body">
               {{ organizacao.ativo? 'Sim' : (organizacao.ativo != null ? 'Não' : null) }}
             </ng-template>
@@ -84,8 +66,9 @@
 
         </basis-datatable>
         <div class="ui-g-11 div-btn-exportar">
-            <app-export-button [dataTable]="datatable" resourceName="organizacaos" [columnsVisible]="columnsVisible" [filter]="organizacaoFiltro" funcionalidadeName="organizacao" class="ui-g-12 ui-md-3 btn-exportar">
-            </app-export-button>
+          <app-export-button [dataTable]="datatable" resourceName="organizacaos" [columnsVisible]="columnsVisible"
+            [filter]="organizacaoFiltro" funcionalidadeName="organizacao" class="ui-g-12 ui-md-3 btn-exportar">
+          </app-export-button>
         </div>
       </div>
     </div>
@@ -93,7 +76,9 @@
 </div>
 <p-confirmDialog header="Confirmação" #dialog>
   <p-footer>
-    <button type="button" id="idBtnNaoDeleteComponentOrganizacao" pButton icon="fa-close" label="Não" (click)="dialog.reject()"></button>
-    <button type="button" id="idBtnSimDeleteComponentOrganizacao" pButton icon="fa-check" label="Sim" (click)="dialog.accept()"></button>
+    <button type="button" id="idBtnNaoDeleteComponentOrganizacao" pButton icon="fa-close" label="Não"
+      (click)="dialog.reject()"></button>
+    <button type="button" id="idBtnSimDeleteComponentOrganizacao" pButton icon="fa-check" label="Sim"
+      (click)="dialog.accept()"></button>
   </p-footer>
 </p-confirmDialog>

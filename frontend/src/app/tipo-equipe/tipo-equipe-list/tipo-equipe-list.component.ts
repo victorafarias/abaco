@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { Router, ROUTER_CONFIGURATION } from '@angular/router';
 import { DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import { ConfirmationService } from 'primeng';
@@ -8,6 +8,7 @@ import { SearchGroup } from '../tipo-equipe.model';
 import { AuthService } from 'src/app/util/auth.service';
 import { TipoEquipe } from '../tipo-equipe.model';
 import { TipoEquipeService } from '../tipo-equipe.service';
+import { PageConfigService } from 'src/app/shared/page-config.service';
 
 
 @Component({
@@ -16,7 +17,7 @@ import { TipoEquipeService } from '../tipo-equipe.service';
     templateUrl: './tipo-equipe-list.component.html',
     providers: [AdminGuard, ConfirmationService]
 })
-export class TipoEquipeListComponent {
+export class TipoEquipeListComponent implements OnInit {
 
 
     @ViewChild(DatatableComponent) datatable: DatatableComponent;
@@ -30,6 +31,7 @@ export class TipoEquipeListComponent {
     elasticQuery: ElasticQuery = new ElasticQuery();
 
     rowsPerPageOptions: number[] = [5, 10, 20];
+    rows = 20;
 
     valueFiltroCampo: string;
 
@@ -46,7 +48,8 @@ export class TipoEquipeListComponent {
         private tipoEquipeService: TipoEquipeService,
         private confirmationService: ConfirmationService,
         private pageNotificationService: PageNotificationService,
-        private authService: AuthService
+        private authService: AuthService,
+        private pageConfigService: PageConfigService
     ) { }
 
     getLabel(label) {
@@ -59,6 +62,14 @@ export class TipoEquipeListComponent {
     }
 
     public ngOnInit() {
+        const savedRows = this.pageConfigService.getConfig('tipo_equipe_rows');
+        if (savedRows) {
+            this.rows = savedRows;
+        }
+        const savedFilter = this.pageConfigService.getConfig('tipo_equipe_filter');
+        if (savedFilter) {
+            this.elasticQuery.value = savedFilter;
+        }
         if (this.datatable) {
             this.datatable.pDatatableComponent.onRowSelect.subscribe((event) => {
                 this.equipeSelecionada = event.data;
@@ -71,7 +82,7 @@ export class TipoEquipeListComponent {
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
+    verificarPermissoes() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "TIPO_EQUIPE_EDITAR") == true) {
             this.canEditar = true;
         }
@@ -143,10 +154,12 @@ export class TipoEquipeListComponent {
 
     public limparPesquisa() {
         this.elasticQuery.reset();
+        this.pageConfigService.saveConfig('tipo_equipe_filter', '');
         this.recarregarDataTable();
     }
 
     public recarregarDataTable() {
+        this.pageConfigService.saveConfig('tipo_equipe_filter', this.elasticQuery.value);
         this.datatable.refresh(this.elasticQuery.query);
         this.tipoEquipeFiltro.nome = this.elasticQuery.query;
     }
@@ -163,4 +176,8 @@ export class TipoEquipeListComponent {
         this.router.navigate(["/admin/tipoEquipe/new"])
     }
 
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('tipo_equipe_rows', this.rows);
+    }
 }

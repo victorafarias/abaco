@@ -35,6 +35,10 @@ import br.com.basis.abaco.repository.RlrRepository;
 import br.com.basis.abaco.repository.SistemaRepository;
 import br.com.basis.abaco.repository.TipoEquipeRepository;
 import br.com.basis.abaco.repository.UploadedFilesRepository;
+import br.com.basis.abaco.repository.VwAnaliseFDRepository;
+import br.com.basis.abaco.repository.VwAnaliseFTRepository;
+import br.com.basis.abaco.domain.VwAnaliseFD;
+import br.com.basis.abaco.domain.VwAnaliseFT;
 import br.com.basis.abaco.service.dto.AnaliseDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceDTO;
 import br.com.basis.abaco.service.dto.AnaliseDivergenceEditDTO;
@@ -183,6 +187,8 @@ public class AnaliseService extends BaseService {
     private final ModuloRepository moduloRepository;
     private final FuncionalidadeRepository funcionalidadeRepository;
     private final EntityManager entityManager;
+    private final VwAnaliseFDRepository vwAnaliseFDRepository;
+    private final VwAnaliseFTRepository vwAnaliseFTRepository;
 
     // Alterado: DataFormatter para ler células com fórmulas corretamente
     private final DataFormatter dataFormatter = new DataFormatter();
@@ -213,16 +219,28 @@ public class AnaliseService extends BaseService {
         if (row == null || row.getCell(columnIndex) == null) {
             return 0.0;
         }
+        
+        XSSFCell cell = row.getCell(columnIndex);
         try {
-            // Se for fórmula, getNumericCellValue() retorna o resultado avaliado
-            return row.getCell(columnIndex).getNumericCellValue();
-        } catch (Exception e) {
-            // Se falhar, tenta converter o valor string
-            String value = getCellValueAsString(row, columnIndex);
-            try {
+            // Alterado: Usar FormulaEvaluator para avaliar fórmulas
+            FormulaEvaluator evaluator = row.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+            // Verifica o tipo da célula antes de tentar ler
+            if (cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_FORMULA) {
+                // Avalia a fórmula
+                return evaluator.evaluate(cell).getNumberValue();
+            } else if (cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC) {
+                return cell.getNumericCellValue();
+            } else {
+                // Tenta converter string para número se não for numérico puro
+                String value = getCellValueAsString(row, columnIndex);
                 return Double.parseDouble(value.replace(",", "."));
-            } catch (NumberFormatException nfe) {
-                return 0.0;
+            }
+        } catch (Exception e) {
+            // Fallback para comportamento original em caso de erro
+            try {
+                 return row.getCell(columnIndex).getNumericCellValue();
+            } catch (Exception ex) {
+                 return 0.0;
             }
         }
     }
@@ -554,11 +572,7 @@ public class AnaliseService extends BaseService {
             lstUsers.add(user);
             analiseClone.setIdentificadorAnalise(analise.getIdentificadorAnalise() + " - CÓPIA");
             analiseClone.setUsers(lstUsers);
-            analiseClone.setDocumentacao(EMPTY_STRING);
-            analiseClone.setFronteiras(EMPTY_STRING);
-            analiseClone.setPropositoContagem(EMPTY_STRING);
             analise.setClonadaParaEquipe(false);
-            analiseClone.setEscopo(EMPTY_STRING);
             analiseClone.setFuncaoDados(bindCloneFuncaoDados(analise, analiseClone));
             analiseClone.setFuncaoTransacao(bindCloneFuncaoTransacao(analise, analiseClone));
             analiseClone.setEsforcoFases(bindCloneEsforcoFase(analise));
@@ -962,6 +976,15 @@ public class AnaliseService extends BaseService {
         throw new RuntimeException("É necessário selecionar um Sistema para importar a análise.");
     }
     analise.setSistema(sistemaRepository.findOne(analise.getSistema().getId()));
+
+    // Correção: Recarregar Organização e Equipe para garantir indexação correta no ElasticSearch
+    if (analise.getOrganizacao() != null && analise.getOrganizacao().getId() != null) {
+        analise.setOrganizacao(organizacaoRepository.findOne(analise.getOrganizacao().getId()));
+    }
+    if (analise.getEquipeResponsavel() != null && analise.getEquipeResponsavel().getId() != null) {
+        analise.setEquipeResponsavel(tipoEquipeRepository.findOne(analise.getEquipeResponsavel().getId()));
+    }
+
         // Usar as funções da origem (convertida do DTO)
         Set<FuncaoDados> funcaoDados = analiseOrigem.getFuncaoDados();
         Set<FuncaoTransacao> funcaotransacao = analiseOrigem.getFuncaoTransacao();
@@ -1358,14 +1381,80 @@ public class AnaliseService extends BaseService {
         funcao.setFuncionalidade(funcionalidade);
     }
 
+    /**
+     * Alterado: Consulta otimizada usando view materializada VwAnaliseFD.
+     * Esta abordagem elimina os JOINs em 6 tabelas, melhorando a performance.
+     * 
+     * @param nomeFuncao Nome da função de dados
+     * @param nomeModulo Nome do módulo
+     * @param nomeFuncionalidade Nome da funcionalidade
+     * @param nomeSistema Nome do sistema
+     * @param nomeEquipe Nome da equipe
+     * @return Lista de AnaliseDTO com análises vinculadas à função
+     */
     public List<AnaliseDTO> carregarAnalisesFromFuncaoFD(String nomeFuncao, String nomeModulo, String
         nomeFuncionalidade, String nomeSistema, String nomeEquipe) {
-        return analiseFacade.obterPorFuncaoDados(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe).stream().map(this::converterParaDto).collect(Collectors.toList());
+        log.info("[carregarAnalisesFromFuncaoFD] Consultando via view materializada: funcao='{}', modulo='{}', funcionalidade='{}', sistema='{}', equipe='{}'", 
+            nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
+        
+        List<VwAnaliseFD> resultados = vwAnaliseFDRepository.findAllByFuncao(
+            nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
+        
+        log.info("[carregarAnalisesFromFuncaoFD] Encontradas {} análises vinculadas", resultados.size());
+        
+        return resultados.stream()
+            .map(this::converterVwFDParaDto)
+            .collect(Collectors.toList());
     }
 
+    /**
+     * Alterado: Consulta otimizada usando view materializada VwAnaliseFT.
+     * Esta abordagem elimina os JOINs em 6 tabelas, melhorando a performance.
+     * 
+     * @param nomeFuncao Nome da função de transação
+     * @param nomeModulo Nome do módulo
+     * @param nomeFuncionalidade Nome da funcionalidade
+     * @param nomeSistema Nome do sistema
+     * @param nomeEquipe Nome da equipe
+     * @return Lista de AnaliseDTO com análises vinculadas à função
+     */
     public List<AnaliseDTO> carregarAnalisesFromFuncaoFT(String nomeFuncao, String nomeModulo, String
         nomeFuncionalidade, String nomeSistema, String nomeEquipe) {
-        return analiseFacade.obterPorFuncaoTransacao(nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe).stream().map(this::converterParaDto).collect(Collectors.toList());
+        log.info("[carregarAnalisesFromFuncaoFT] Consultando via view materializada: funcao='{}', modulo='{}', funcionalidade='{}', sistema='{}', equipe='{}'", 
+            nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
+        
+        List<VwAnaliseFT> resultados = vwAnaliseFTRepository.findAllByFuncao(
+            nomeFuncao, nomeModulo, nomeFuncionalidade, nomeSistema, nomeEquipe);
+        
+        log.info("[carregarAnalisesFromFuncaoFT] Encontradas {} análises vinculadas", resultados.size());
+        
+        return resultados.stream()
+            .map(this::converterVwFTParaDto)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Alterado: Converte VwAnaliseFD para AnaliseDTO
+     */
+    private AnaliseDTO converterVwFDParaDto(VwAnaliseFD vw) {
+        AnaliseDTO dto = new AnaliseDTO();
+        dto.setId(vw.getId());
+        dto.setIdentificadorAnalise(vw.getIdentificadorAnalise());
+        dto.setNumeroOs(vw.getNumeroOs());
+        dto.setPfTotal(vw.getPfTotal());
+        return dto;
+    }
+
+    /**
+     * Alterado: Converte VwAnaliseFT para AnaliseDTO
+     */
+    private AnaliseDTO converterVwFTParaDto(VwAnaliseFT vw) {
+        AnaliseDTO dto = new AnaliseDTO();
+        dto.setId(vw.getId());
+        dto.setIdentificadorAnalise(vw.getIdentificadorAnalise());
+        dto.setNumeroOs(vw.getNumeroOs());
+        dto.setPfTotal(vw.getPfTotal());
+        return dto;
     }
 
     public void salvarCompartilhadasMultiplas(Set<CompartilhadaDTO> compartilhadaList, AbacoMensagens

@@ -28,7 +28,7 @@ export class BaselineComponent implements OnInit {
     sistemaUpdate?: Sistema = new Sistema();
     equipeUpdate?: TipoEquipe = new TipoEquipe();
     urlBaseline: string;
-    enableTable = false ;
+    enableTable = false;
     lstBasilineSintetico: BaselineSintetico[];
     showUpdateBaseline: boolean = false;
 
@@ -46,8 +46,8 @@ export class BaselineComponent implements OnInit {
         { label: "Modelo padrão ANAC", value: 3 },
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
-		{ label: "Modelo padrão MCTI", value: 6 },
-		{ label: "Modelo padrão BNB", value: 7}
+        { label: "Modelo padrão MCTI", value: 6 },
+        { label: "Modelo padrão BNB", value: 7 }
     ];
     modeloSelecionado: any;
 
@@ -67,11 +67,11 @@ export class BaselineComponent implements OnInit {
 
     ngOnInit(): void {
         this.recuperarSistema();
-        this. recuperarEquipe();
+        this.recuperarEquipe();
         this.verificarPermissoes();
     }
 
-    verificarPermissoes(){
+    verificarPermissoes() {
         if (this.authService.possuiRole(AuthService.PREFIX_ROLE + "BASELINE_CONSULTAR") == true) {
             this.canConsultar = true;
         }
@@ -100,7 +100,7 @@ export class BaselineComponent implements OnInit {
     }
 
     public datatableClick(event: DatatableClickEvent) {
-        if  (!event.selection) {
+        if (!event.selection) {
             return;
         }
         switch (event.button) {
@@ -149,7 +149,7 @@ export class BaselineComponent implements OnInit {
     }
 
     public performSearch() {
-        this.enableTable = true ;
+        this.enableTable = true;
         this.baselineService.allBaselineSintetico(this.sistema).subscribe((res) => {
             this.lstBasilineSintetico = res;
 
@@ -163,7 +163,7 @@ export class BaselineComponent implements OnInit {
         this.enableTable = false;
     }
     public recarregarDataTable() {
-        if  (this.datatable ){
+        if (this.datatable) {
             if (this.sistema && this.sistema.id) {
                 this.datatable.filterParams['sistema'] = this.sistema.id;
             }
@@ -176,26 +176,27 @@ export class BaselineComponent implements OnInit {
     }
 
     public updateBaseline(sistema: Sistema, equipe: TipoEquipe) {
-        if  (!sistema || !sistema.id) {
+        if (!sistema || !sistema.id) {
             this.pageNotificationService.addErrorMessage(
                 this.getLabel('Selecione um Sistema para atualizar!')
             );
             return;
-        } else if  (!equipe || !equipe.id) {
+        } else if (!equipe || !equipe.id) {
             this.pageNotificationService.addErrorMessage(
                 this.getLabel('Selecione uma Equipe para atualizar!')
             );
             return;
         } else {
             this.baselineService.updateBaselineSintetico(sistema, equipe).subscribe((res) => {
-                    this.showUpdateBaseline = false;
-                    this.sistema = sistema;
-                    this.sistemaUpdate =  new Sistema();
-                    this.equipeUpdate = new TipoEquipe();
-                    this.performSearch();
-                }, error => {
-                    this.pageNotificationService.addErrorMessage('Não foi possível localizar Análise para gerar Baseline do sistema informado.');
-                    this.showUpdateBaseline = false;
+                this.showUpdateBaseline = false;
+                this.sistema = sistema;
+                this.sistemaUpdate = new Sistema();
+                this.equipeUpdate = new TipoEquipe();
+                this.performSearch();
+            }, error => {
+                // Mensagem amigável quando não há análises disponíveis para gerar baseline
+                this.pageNotificationService.addErrorMessage('Não há análises bloqueadas e homologadas para atualizar a baseline.');
+                this.showUpdateBaseline = false;
             });
         }
     }

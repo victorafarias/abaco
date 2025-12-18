@@ -29,28 +29,25 @@
           </div>
 
           <div class="ui-g-2 ui-md-2 ui-sm-12">
-            <app-blue-button [buttonLabel]="'Pesquisar'" buttonIcon="ui-icon-search"
-                *ngIf="canPesquisar"
+            <app-blue-button [buttonLabel]="'Pesquisar'" buttonIcon="ui-icon-search" *ngIf="canPesquisar"
               (click)="recarregarDataTable()">
             </app-blue-button>
           </div>
 
           <div class="uui-g-2 ui-md-2 ui-sm-12">
-            <app-green-button *ngIf="canCadastrar"
-            [buttonLabel]="'Novo'" buttonIcon="ui-icon-add" (click)="criarTipoEquipe()">
+            <app-green-button *ngIf="canCadastrar" [buttonLabel]="'Novo'" buttonIcon="ui-icon-add"
+              (click)="criarTipoEquipe()">
             </app-green-button>
           </div>
 
         </div>
 
         <basis-datatable [url]="searchUrl" (buttonClick)="datatableClick($event)" (dblclick)="onRowDblclick($event)"
-          (click)="selectTipoEquipe()" [rows]="20" [rowsPerPageOptions]="rowsPerPageOptions"
-          [disableDelete]="!canDeletar"
-          [disableEdit]="!canEditar"
-          [disableView]="!canConsultar"
-          [showPaginationFooter]="true"
-		  [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
-		  [title]="'Tipos de Equipe'"#datatable>
+          (click)="selectTipoEquipe()" [rows]="rows" (onPage)="onPageChange($event)"
+          [rowsPerPageOptions]="rowsPerPageOptions" [disableDelete]="!canDeletar" [disableEdit]="!canEditar"
+          [disableView]="!canConsultar" [showPaginationFooter]="true"
+          [extraParams]="{'showCurrentPageReport': true, 'currentPageReportTemplate':'Registros {first} a {last} de {totalRecords}'}"
+          [title]="'Tipos de Equipe'" #datatable>
 
           <p-column header="Nome" field="nome" [sortable]="true" [style]="{'word-wrap':'break-word', 'width': '35%'}">
           </p-column>
@@ -77,11 +74,13 @@
           </p-column>
         </basis-datatable>
         <div class="ui-g-11 div-btn-exportar">
-          <app-export-button [dataTable]="datatable" resourceName="tipoEquipe" [filter]="tipoEquipeFiltro" funcionalidadeName="tipo_equipe" class="ui-g-12 ui-md-3 btn-exportar">
+          <app-export-button [dataTable]="datatable" resourceName="tipoEquipe" [filter]="tipoEquipeFiltro"
+            funcionalidadeName="tipo_equipe" class="ui-g-12 ui-md-3 btn-exportar">
           </app-export-button>
         </div>
         <div class="ui-g-11 div-btn-exportar">
-          <app-botoes-exportacao [query]="elasticQuery.value" resourceName="tipoEquipe" fileName="TipoEquipe" class="ui-g-12 ui-md-3 btn-exportar">
+          <app-botoes-exportacao [query]="elasticQuery.value" resourceName="tipoEquipe" fileName="TipoEquipe"
+            class="ui-g-12 ui-md-3 btn-exportar">
           </app-botoes-exportacao>
         </div>
       </div>

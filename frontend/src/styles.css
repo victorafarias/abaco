@@ -1,1 +1,197 @@
 /* You can add global styles to this file, and also import other style files */
+body .ui-widget-overlay {
+    background-color: rgb(88, 87, 92, 0.8) !important;
+    opacity: 1;
+}
+
+.ui-table .ui-table-scrollable-header-box {
+    margin-right: 0px !important;
+}
+
+.table-tools .tools a {
+    display: none;
+}
+
+.table-tools .tools basis-show-column {
+    padding-right: 0px;
+    border-right: 0;
+    margin-right: 0px;
+}
+
+/* Estilo aplicado ao tooltip (hint) do campo Evidência */
+/* Suporte para PrimeNG antigo (ui-tooltip) */
+.evidencia-tooltip.ui-tooltip {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    max-width: 350px !important;
+}
+
+.evidencia-tooltip .ui-tooltip-text {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Suporte para PrimeNG novo (p-tooltip) */
+.evidencia-tooltip.p-tooltip {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    max-width: 350px !important;
+}
+
+.evidencia-tooltip .p-tooltip-text {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Estilos para colunas Módulo, Funcionalidade e Nome - quebra linha apenas em espaços, traços e barras */
+.column-word-wrap {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+}
+
+
+#idTabelaComponentAnalise td:nth-child(1) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(1) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(9) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise td:nth-child(9) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(8) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise td:nth-child(8) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(7) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise td:nth-child(7) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(6) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise td:nth-child(6) {
+    width: 100px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(4) {
+    width: 150px !important;
+}
+
+#idTabelaComponentAnalise td:nth-child(4) {
+    width: 150px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(10) {
+    width: 95px !important;
+    padding: 0px;
+}
+
+#idTabelaComponentAnalise td:nth-child(10) {
+    width: 95px !important;
+}
+
+#idTabelaComponentAnalise th:nth-child(11) {
+    width: 95px !important;
+    padding: 0px;
+}
+
+#idTabelaComponentAnalise td:nth-child(11) {
+    width: 95px !important;
+    text-align: center;
+}
+
+#idTabelaComponentAnalise th:nth-child(12) {
+    width: 105px !important;
+    padding: 0px;
+}
+
+#idTabelaComponentAnalise td:nth-child(12) {
+    width: 105px !important;
+    text-align: center;
+}
+
+#idTabelaComponentAnalise th:nth-child(13) {
+    width: 95px !important;
+    padding: 0px;
+}
+
+#idTabelaComponentAnalise td:nth-child(13) {
+    width: 95px !important;
+    text-align: center;
+}
+
+::ng-deep .p-panelmenu .p-panelmenu-header>a {
+    background-color: lightblue;
+}
+
+::ng-deep .p-panelmenu .p-panelmenu-header.p-highlight>a {
+    background-color: red;
+}
+
+::ng-deep .p-panelmenu ul li:nth-child(1) {
+    color: blue;
+}
+
+
+#datatableHistorico .ui-paginator {
+    display: none;
+}
+
+#datatableHistorico td {
+    text-align: center;
+    border: none !important;
+}
+
+#datatableHistorico th {
+    text-align: center;
+    border: none !important;
+}
+
+
+#datatableHistorico .ui-table-scrollable-footer {
+    display: none;
+}
+
+/* Estilo para listas dentro de células de tabela - remove bullets e adiciona padding */
+.list-unstyled-table {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-left: 5px;
+}
+
+.list-unstyled-table li {
+    padding: 2px 0;
+    padding-left: 10px;
+    position: relative;
+}
+
+.list-unstyled-table li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #666;
+}
