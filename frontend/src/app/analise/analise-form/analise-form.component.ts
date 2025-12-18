@@ -173,6 +173,12 @@ export class AnaliseFormComponent implements OnInit {
     getOrganizationsFromActiveLoggedUser() {
         this.organizacaoService.dropDownActiveLoggedUser().subscribe(res => {
             this.organizacoes = res;
+
+            // Auto-seleciona se houver apenas uma organização disponível
+            if (!this.isEdicao && this.organizacoes && this.organizacoes.length === 1) {
+                this.analise.organizacao = this.organizacoes[0];
+                this.setSistemaOrganizacao(this.organizacoes[0]);
+            }
         });
     }
 
@@ -267,12 +273,18 @@ export class AnaliseFormComponent implements OnInit {
                     });
 
             } else {
+                // Cria uma nova análise com valores padrão
                 this.analise = new Analise();
                 this.analise.status = new Status();
                 this.analise.esforcoFases = [];
                 this.analise.enviarBaseline = true;
                 this.analise.fatorCriticidade = false;
                 this.canEditMetodo = true;
+
+                // Define valores padrão para Propósito e Escopo da Contagem (editáveis pelo usuário)
+                this.analise.propositoContagem = 'Medir o tamanho do projeto de melhoria da OS/Sprint.';
+                this.analise.escopo = 'Funções impactadas conforme os requisitos identificados nos insumos apresentados.';
+
                 this.setDefaultStatus();
             }
         });
@@ -335,13 +347,29 @@ export class AnaliseFormComponent implements OnInit {
             this.analise.manual = new Manual();
             this.analise.organizacao = org;
             this.analise.dataCriacaoOrdemServico = new Date();
+
+            // Define valores padrão para Propósito e Escopo da Contagem (editáveis pelo usuário)
+            this.analise.propositoContagem = 'Medir o tamanho do projeto de melhoria da OS/Sprint.';
+            this.analise.escopo = 'Funções impactadas conforme os requisitos identificados nos insumos apresentados.';
+
             this.setDefaultStatus();
         }
         this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
+
+            // Auto-seleciona contrato se houver apenas um disponível
+            if (!this.isEdicao && this.contratos && this.contratos.length === 1) {
+                this.analise.contrato = this.contratos[0];
+                this.contratoSelected(this.contratos[0]);
+            }
         });
         this.sistemaService.findAllSystemOrg(org.id).subscribe((res: Sistema[]) => {
             this.sistemas = res;
+
+            // Auto-seleciona sistema se houver apenas um disponível
+            if (!this.isEdicao && this.sistemas && this.sistemas.length === 1) {
+                this.analise.sistema = this.sistemas[0];
+            }
         });
         this.setEquipeOrganizacao(org);
     }
@@ -351,6 +379,19 @@ export class AnaliseFormComponent implements OnInit {
             this.equipeResponsavel = res;
             if (this.equipeResponsavel !== null) {
                 this.hideShowSelectEquipe = false;
+
+                // Auto-seleciona equipe baseado nas equipes vinculadas ao usuário logado
+                // Se o usuário está vinculado a exatamente uma equipe, seleciona-a como padrão
+                if (!this.isEdicao && this.tipoEquipesLoggedUser && this.tipoEquipesLoggedUser.length === 1) {
+                    // Verifica se a equipe do usuário está disponível para a organização selecionada
+                    const equipeUsuario = this.equipeResponsavel.find(
+                        eq => eq.id === this.tipoEquipesLoggedUser[0].id
+                    );
+                    if (equipeUsuario) {
+                        this.analise.equipeResponsavel = equipeUsuario;
+                    }
+                }
+                // Se o usuário está vinculado a mais de uma equipe ou nenhuma, não seleciona nenhum valor default
             }
         });
     }
