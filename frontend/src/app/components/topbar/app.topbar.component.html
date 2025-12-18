@@ -1,5 +1,5 @@
 <div class="topbar clearfix">
-<div class="topbar-right divs">
+	<div class="topbar-right divs">
 
 		<div class="ui-g-4 divs">
 			<a id="menu-button" href="#" (click)="app.onMenuButtonClick($event)">
@@ -11,125 +11,139 @@
 			<label class="label titulo" style="margin-left: 5px"> - ÁBACO</label>
 		</div>
 
-	<div class="ui-g-8 divs div-ajuste">
-		<label class="label"> {{ authenticatedUserFullName() }} </label>
+		<div class="ui-g-8 divs div-ajuste">
+			<label class="label"> {{ authenticatedUserFullName() }} </label>
 
 
-        <a id="topbar-menu-button" href="#" (click)="app.onTopbarMenuButtonClick($event)">
-            <i class="material-icons">menu</i>
-        </a>
-		<div class="icons-settings" >
-			<ul class="topbar-items animated fadeInDown" [ngClass]="{'topbar-items-visible': app.topbarMenuActive}">
-				<li #settings [ngClass]="{'active-top-menu':app.activeTopbarItem === settings}">
-					<a href="#" (click)="app.onTopbarItemClick($event,settings)">
-						<i class="topbar-icon material-icons icons-ajuste">settings</i>
-						<span class="topbar-item-name">Settings</span>
-					</a>
-					<ul class="ultima-menu animated fadeInDown">
-						<li role="menuitem">
-							<a routerLink="/configuracao" *ngIf="canEditarConfiguracao">
-								<i class="material-icons">build</i>
-								<span>Configurações</span>
-							</a>
-						</li>
-						<li role="menuitem">
-							<a routerLink="/indexador">
-								<i class="material-icons">refresh</i>
-								<span>Reindexar</span>
-							</a>
-						</li>
-						<li role="menuitem">
-							<a routerLink="/administracao">
-								<i class="material-icons">person</i>
-								<span>Administração</span>
-							</a>
-						</li>
-						<li role="menuitem">
-							<a routerLink="/diario-erros">
-								<i class="material-icons">error</i>
-								<span>Diário de Erros</span>
-							</a>
-						</li>
-						<li role="menuitem">
-							<a routerLink="/configuracao-baseline">
-								<i class="material-icons">list</i>
-								<span>Configuração Baseline</span>
-							</a>
-						</li>
+			<a id="topbar-menu-button" href="#" (click)="app.onTopbarMenuButtonClick($event)">
+				<i class="material-icons">menu</i>
+			</a>
+			<div class="icons-settings">
+				<ul class="topbar-items animated fadeInDown" [ngClass]="{'topbar-items-visible': app.topbarMenuActive}">
+					<li #settings [ngClass]="{'active-top-menu':app.activeTopbarItem === settings}">
+						<a href="#" (click)="app.onTopbarItemClick($event,settings)">
+							<i class="topbar-icon material-icons icons-ajuste">settings</i>
+							<span class="topbar-item-name">Settings</span>
+						</a>
+						<ul class="ultima-menu animated fadeInDown">
+							<li role="menuitem">
+								<a routerLink="/configuracao" *ngIf="canEditarConfiguracao">
+									<i class="material-icons">build</i>
+									<span>Configurações</span>
+								</a>
+							</li>
+							<li role="menuitem">
+								<a routerLink="/indexador">
+									<i class="material-icons">refresh</i>
+									<span>Reindexar</span>
+								</a>
+							</li>
+							<li role="menuitem">
+								<a href="#" (click)="reindexarTodos($event)">
+									<i class="material-icons">sync</i>
+									<span>Reindexar Todos</span>
+								</a>
+							</li>
+							<li role="menuitem">
+								<a routerLink="/administracao">
+									<i class="material-icons">person</i>
+									<span>Administração</span>
+								</a>
+							</li>
+							<li role="menuitem">
+								<a routerLink="/diario-erros">
+									<i class="material-icons">error</i>
+									<span>Diário de Erros</span>
+								</a>
+							</li>
+							<li role="menuitem">
+								<a routerLink="/configuracao-baseline">
+									<i class="material-icons">list</i>
+									<span>Configuração Baseline</span>
+								</a>
+							</li>
 
-						<li role="menuitem">
-							<a (click)="mostrarNovidade()">
-								<i class="material-icons">new_releases</i>
-								<span>Mostrar novidades</span>
-							</a>
-						</li>
+							<li role="menuitem">
+								<a (click)="mostrarNovidade()">
+									<i class="material-icons">new_releases</i>
+									<span>Mostrar novidades</span>
+								</a>
+							</li>
 
-						<li role="menuitem">
-							<a logout >
-								<i class="material-icons">power_settings_new</i>
-								<span>Sair</span>
-							</a>
-						</li>
-					</ul>
-				</li>
-				<li #user [ngClass]="{'active-top-menu':app.activeTopbarItem === user}" *ngIf="isAuthenticated">
-					<a href="#" (click)="app.onTopbarItemClick($event,user)">
-						<i class="topbar-icon material-icons icons-ajuste">person</i>
-						<span class="topbar-item-name">Usuário</span>
-					</a>
-					<ul class="ultima-menu animated fadeInDown">
-						<li role="menuitem">
-							<a>
-								<strong> Usuário: </strong> {{authenticatedUserFirstName()}}
+							<li role="menuitem">
+								<a logout>
+									<i class="material-icons">power_settings_new</i>
+									<span>Sair</span>
+								</a>
+							</li>
+						</ul>
+					</li>
+					<li #user [ngClass]="{'active-top-menu':app.activeTopbarItem === user}" *ngIf="isAuthenticated">
+						<a href="#" (click)="app.onTopbarItemClick($event,user)">
+							<i class="topbar-icon material-icons icons-ajuste">person</i>
+							<span class="topbar-item-name">Usuário</span>
+						</a>
+						<ul class="ultima-menu animated fadeInDown">
+							<li role="menuitem">
+								<a>
+									<strong> Usuário: </strong> {{authenticatedUserFirstName()}}
 
-								<!-- <span user><strong>Usuário: </strong> </span> -->
-							</a>
-						</li>
-						<li role="menuitem">
-							<a routerLink="/senha">
-								<i class="material-icons">security</i>
-								<span>Alterar Senha</span>
+									<!-- <span user><strong>Usuário: </strong> </span> -->
+								</a>
+							</li>
+							<li role="menuitem">
+								<a routerLink="/senha">
+									<i class="material-icons">security</i>
+									<span>Alterar Senha</span>
 
-							</a>
-						</li>
-					</ul>
-				</li>
-			</ul>
-		<div>
-    </div>
-</div>
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<div>
+				</div>
+			</div>
 
-<p-dialog [draggable]="false" (onHide)="verificarOpcaoMostrarNovidades()" [modal]="true" [style]="{width: '50vw'}" [closable]="true" header="Novidades da versão"
-styleClass="test2"
-(onShow)="reinit($event)"
-[(visible)]="mostrarDialogNovidadesVersao" [contentStyle]="{'height': ['windowHeightDialog']}"
-#dialogNovidadesVersao>
-    <div class="ui-g">
-        <div class="ui-g-3">
-            <p-menu id="menu-dialog" #menuNV name="menuNV" styleClass="test"  [model]="items"></p-menu>
-        </div>
+			<p-dialog [draggable]="false" (onHide)="verificarOpcaoMostrarNovidades()" [modal]="true"
+				[style]="{width: '50vw'}" [closable]="true" header="Novidades da versão" styleClass="test2"
+				(onShow)="reinit($event)" [(visible)]="mostrarDialogNovidadesVersao"
+				[contentStyle]="{'height': ['windowHeightDialog']}" #dialogNovidadesVersao>
+				<div class="ui-g">
+					<div class="ui-g-3">
+						<p-menu id="menu-dialog" #menuNV name="menuNV" styleClass="test" [model]="items"></p-menu>
+					</div>
 
-        <div class="ui-g-9">
-            <p-panel [header]="'Versão selecionada: '+novidadeVersao.versao" styleClass="test" >
-                <p-header  style="float: right; position: relative;
+					<div class="ui-g-9">
+						<p-panel [header]="'Versão selecionada: '+novidadeVersao.versao" styleClass="test">
+							<p-header style="float: right; position: relative;
                 color: rgb(0, 0, 0);">
-                Versão mais atual: {{versaoAtual}}
-            </p-header>
-            <div *ngFor="let novidade of novidadeVersao.novidades">
-                <h4 style="margin-bottom: -10px;">{{novidade.ocorrencia}}</h4>
-                <p>{{novidade.novidade}}</p>
-                <hr color="#CECDCD">
-            </div>
-        </p-panel>
-        <br>
-    </div>
-    </div>
-    <div class="ui-g-12">
-        <div class="p-field-checkbox">
-            <p-checkbox name="mostrarNovidades" [(ngModel)]="mostrarNovidades" [binary]="true"
-            inputId="mostrarNovidades"></p-checkbox>
-            <label for="mostrarNovidades">Não mostrar mais as novidades da última versão.</label>
-        </div>
-    </div>
+								Versão mais atual: {{versaoAtual}}
+							</p-header>
+							<div *ngFor="let novidade of novidadeVersao.novidades">
+								<h4 style="margin-bottom: -10px;">{{novidade.ocorrencia}}</h4>
+								<p>{{novidade.novidade}}</p>
+								<hr color="#CECDCD">
+							</div>
+						</p-panel>
+						<br>
+					</div>
+				</div>
+				<div class="ui-g-12">
+					<div class="p-field-checkbox">
+						<p-checkbox name="mostrarNovidades" [(ngModel)]="mostrarNovidades" [binary]="true"
+							inputId="mostrarNovidades"></p-checkbox>
+						<label for="mostrarNovidades">Não mostrar mais as novidades da última versão.</label>
+					</div>
+				</div>
 
-</p-dialog>
+			</p-dialog>
+
+			<!-- Overlay de Loading para Reindexação -->
+			<div *ngIf="isReindexando" class="reindex-loading-overlay">
+				<div class="reindex-loading-content">
+					<i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #fff;"></i>
+					<p style="color: #fff; margin-top: 15px; font-size: 1.2rem;">Reindexando base de dados...</p>
+					<p style="color: #ccc; font-size: 0.9rem;">Por favor, aguarde.</p>
+				</div>
+			</div>
