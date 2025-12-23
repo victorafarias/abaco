@@ -7,13 +7,8 @@ abacoui:
   ingress:
     url: "abaco.basis.com.br"
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
       kubernetes.io/tls-acme: "true"
       nginx.ingress.kubernetes.io/proxy-body-size: 100m
-    tls:
-    - hosts:
-      - abaco.basis.com.br
-      secretName: abaco-cert
   ports:
     port: 80
   imagePullSecrets:

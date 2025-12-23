@@ -1,4 +1,4 @@
 dependencies:
   - name: common
     version: 2.2.9
-    repository: 'https://nexus.basis.com.br/repository/helm/'
+    repository: 'https://nexus.basis.com.br/repository/commons-helm/'
