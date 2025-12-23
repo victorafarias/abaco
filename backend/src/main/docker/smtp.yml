@@ -1,0 +1,7 @@
+services:
+    smtp:
+        image: mailhog/mailhog
+        container_name: abaco-smtp
+        ports:
+            - 1025:1025
+            - 8025:8025
