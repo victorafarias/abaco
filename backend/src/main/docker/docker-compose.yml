@@ -14,3 +14,8 @@ services:
             file: elasticsearch.yml
             service: abaco-elasticsearch
         container_name: abaco-elasticsearch
+    smtp:
+        extends:
+            file: smtp.yml
+            service: smtp
+        container_name: abaco-smtp
