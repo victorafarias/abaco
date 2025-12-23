@@ -59,5 +59,6 @@
     <include file="classpath:config/liquibase/changelog/20230412111000_add_tables_spring_batch.xml" relativeToChangelogFile="false"/>
     <include file="classpath:config/liquibase/changelog/20230830143400_alter_vw_funcao_transacao.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251107120000_fix_organizacao_null_column.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240523100000_update_view_analise_funcoes.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
 
