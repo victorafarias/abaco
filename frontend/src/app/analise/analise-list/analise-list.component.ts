@@ -1715,7 +1715,5 @@ export class AnaliseListComponent implements OnInit {
         this.mapaFatorAjuste = {};
         this.fatoresSemCorrespondencia = [];
     }
-      onPageChange(event: any) {
-    // Método vazio apenas para o build passar
-}
+
 }
