@@ -235,21 +235,23 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
                     temp++
                 }
                 this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
-                if (!this.isView) {
-                    this.analiseService.find(this.idAnalise).subscribe(analise => {
-                        // analise = new Analise().copyFromJSON(analise);
+                // Always fetch the analise to have metodoContagem for grid display
+                this.analiseService.find(this.idAnalise).subscribe(analise => {
+                    this.analise = analise;
+                    this.analiseSharedDataService.analise = analise;
+
+                    if (!this.isView) {
+                        // Edit-specific initialization
                         this.exibeComponenteModuloFuncionalidade();
-                        this.analise = analise;
-                        this.analiseSharedDataService.analise = analise;
                         this.carregarModuloSistema();
                         this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
                         this.hideShowQuantidade = true;
                         this.estadoInicial();
                         this.impactos = AnaliseSharedUtils.impactos;
                         this.disableTRDER();
-                        this.blockUiService.hide();
-                    });
-                }
+                    }
+                    this.blockUiService.hide();
+                });
             });
         });
     }
@@ -280,10 +282,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     public onRowDblclick(event) {
-        if (event.target.nodeName === 'TD') {
-            this.abrirEditar();
-        } else if (event.target.parentNode.nodeName === 'TD') {
-            this.abrirEditar();
+        if (event.target.nodeName === 'TD' || event.target.parentNode.nodeName === 'TD') {
+            // Se está em modo visualização, abre o dialog de visualização
+            if (this.isView) {
+                this.abrirVisualizar();
+            } else {
+                this.abrirEditar();
+            }
+        }
+    }
+
+    /**
+     * Abre o dialog de visualização da função de dados selecionada.
+     * Usado quando a análise está em modo visualização (bloqueada ou acesso somente leitura).
+     */
+    abrirVisualizar() {
+        if (this.funcaoDadosEditar && this.funcaoDadosEditar.length > 0) {
+            this.viewFuncaoDados = true;
+            this.prepararParaVisualizar(this.funcaoDadosEditar[0]);
         }
     }
 
@@ -292,8 +308,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
             const tempElement = document.createElement('div');
             tempElement.innerHTML = evidence;
             const text = tempElement.textContent || tempElement.innerText || '';
-            if (text.length > 50) {
-                return text.substring(0, 50) + '...';
+            if (text.length > 30) {
+                return text.substring(0, 30) + '...';
             }
             return text;
         }

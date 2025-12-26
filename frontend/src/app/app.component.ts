@@ -4,6 +4,9 @@ import { ScrollPanel } from 'primeng';
 import { MenusService, MenuOrientation } from '@nuvem/primeng-components';
 import { AuthService } from './util/auth.service';
 
+// Chave para salvar o estado do menu no localStorage
+const MENU_STATE_KEY = 'menuState_sidebarCollapsed';
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html'
@@ -54,6 +57,14 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit, AfterCont
 
     ngOnInit() {
         this.zone.runOutsideAngular(() => { this.bindRipple(); });
+
+        // Restaurar o estado do menu a partir do localStorage
+        const savedMenuState = localStorage.getItem(MENU_STATE_KEY);
+        if (savedMenuState !== null) {
+            this.menuService.staticMenuDesktopInactive = savedMenuState === 'true';
+            // Também atualiza o estado do botão de rotação para manter sincronizado
+            this.rotateMenuButton = this.menuService.staticMenuDesktopInactive;
+        }
         this.http.get('/api/profile-info').subscribe((data: any) => {
             if (data && data.version) {
                 console.log('Backend Version:', data.version);
@@ -287,6 +298,8 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit, AfterCont
         } else {
             if (this.isDesktop()) {
                 this.menuService.staticMenuDesktopInactive = !this.menuService.staticMenuDesktopInactive;
+                // Salvar o estado do menu no localStorage
+                localStorage.setItem(MENU_STATE_KEY, this.menuService.staticMenuDesktopInactive.toString());
             } else {
                 this.menuService.staticMenuMobileActive = !this.menuService.staticMenuMobileActive;
             }

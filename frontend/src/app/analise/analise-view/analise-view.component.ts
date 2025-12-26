@@ -1,5 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AnaliseShareEquipe } from '../analise-share-equipe.model';
 import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
 import { Organizacao, OrganizacaoService } from 'src/app/organizacao';
@@ -66,15 +66,15 @@ export class AnaliseViewComponent implements OnInit {
 
 
     tiposAnalise: SelectItem[] = [
-        {label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO},
-        {label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA},
-        {label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO}
+        { label: MessageUtil.PROJETO_DESENVOLVIMENTO, value: MessageUtil.DESENVOLVIMENTO },
+        { label: MessageUtil.PROJETO_MELHORIA, value: MessageUtil.MELHORIA },
+        { label: MessageUtil.CONTAGEM_APLICACAO, value: MessageUtil.APLICACAO }
     ];
 
     metodoContagem: SelectItem[] = [
-        {label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG},
-        {label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA},
-        {label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA}
+        { label: MessageUtil.DETALHADA_IFPUG, value: MessageUtil.DETALHADA_IFPUG },
+        { label: MessageUtil.INDICATIVA_NESMA, value: MessageUtil.INDICATIVA_NESMA },
+        { label: MessageUtil.ESTIMADA_NESMA, value: MessageUtil.ESTIMADA_NESMA }
     ];
 
     private routeSub: Subscription;
@@ -306,6 +306,26 @@ export class AnaliseViewComponent implements OnInit {
         return this.isEdicao;
     }
 
+    public getUsuariosNomes(): string {
+        if (this.analise && this.analise.users && this.analise.users.length > 0) {
+            return this.analise.users.map(u => u.nome || u.login).join(', ');
+        }
+        return '';
+    }
+
+    public getIdentificadorAnalise(): string {
+        if (this.analise && this.analise.analiseDivergence) {
+            return this.analise.analiseDivergence.identificadorAnalise || '';
+        }
+        return '';
+    }
+
+    public goToDivergencia(analiseDivergence: any) {
+        if (analiseDivergence && analiseDivergence.id) {
+            this.router.navigate(['/analise', analiseDivergence.id, 'view']);
+        }
+    }
+
     public nomeSistema(): string {
         return this.analise.sistema.sigla +
             ' - ' + this.analise.sistema.nome;
@@ -327,7 +347,7 @@ export class AnaliseViewComponent implements OnInit {
         if (this.checkUserAnaliseEquipes()) {
             this.confirmationService.confirm({
                 message: this.getLabel('Tem certeza que deseja desbloquear o registro ')
-                            .concat(this.analise.identificadorAnalise).concat('?'),
+                    .concat(this.analise.identificadorAnalise).concat('?'),
                 accept: () => {
                     const copy = this.analise.toJSONState();
                     this.analiseService.block(copy).subscribe(() => {
@@ -367,22 +387,22 @@ export class AnaliseViewComponent implements OnInit {
         if (this.checkUserAnaliseEquipes()) {
             this.equipeShare = [];
             this.equipeService.findAllCompartilhaveis(
-                    this.analise.organizacao.id,
-                    this.analise.id,
-                    this.analise.equipeResponsavel.id).subscribe((equipes) => {
-                if (equipes) {
-                    equipes.forEach((equipe) => {
-                        const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(), {
-                            id: undefined,
-                            equipeId: equipe.id,
-                            analiseId: this.analise.id,
-                            viewOnly: false,
-                            nomeEquipe: equipe.nome
+                this.analise.organizacao.id,
+                this.analise.id,
+                this.analise.equipeResponsavel.id).subscribe((equipes) => {
+                    if (equipes) {
+                        equipes.forEach((equipe) => {
+                            const entity: AnaliseShareEquipe = Object.assign(new AnaliseShareEquipe(), {
+                                id: undefined,
+                                equipeId: equipe.id,
+                                analiseId: this.analise.id,
+                                viewOnly: false,
+                                nomeEquipe: equipe.nome
+                            });
+                            this.equipeShare.push(entity);
                         });
-                        this.equipeShare.push(entity);
-                    });
-                }
-            });
+                    }
+                });
             this.analiseService.findAllCompartilhadaByAnalise(this.analise.id).subscribe((shared) => {
                 this.analiseShared = shared;
             });

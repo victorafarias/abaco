@@ -678,10 +678,8 @@ export class AnaliseListComponent implements OnInit {
     }
 
     abrirEditar() {
+        // Se a análise estiver bloqueada, abre em modo visualização silenciosamente
         if (this.analiseSelecionada.bloqueiaAnalise === true) {
-            this.pageNotificationService.addErrorMessage(
-                this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
-            );
             return this.router.navigate(['/analise', this.analiseSelecionada.id, 'view']);
         }
         if (!this.canEditar) {
@@ -1140,6 +1138,11 @@ export class AnaliseListComponent implements OnInit {
         return visibleColumns.some((item: any) => {
             return (item) ? item === column : true;
         });
+    }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('analise_rows', this.rows);
     }
     public openModalDivergence(lstAnalise: Analise[]) {
         this.statusToChange = undefined;
