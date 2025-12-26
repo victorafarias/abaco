@@ -13,3 +13,17 @@
   border-width: thin;
   border-color: #ccc;
 }
+
+::ng-deep basis-datatable .ui-g-11 {
+  width: calc(100% - 60px) !important;
+  flex: 0 0 calc(100% - 60px) !important;
+  max-width: calc(100% - 60px) !important;
+}
+
+::ng-deep basis-datatable .ui-g-1 {
+  width: 60px !important;
+  flex: 0 0 60px !important;
+  max-width: 60px !important;
+  padding: 0 !important;
+  /* Ensure no padding causes overflow */
+}

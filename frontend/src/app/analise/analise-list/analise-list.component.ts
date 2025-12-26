@@ -1139,6 +1139,11 @@ export class AnaliseListComponent implements OnInit {
             return (item) ? item === column : true;
         });
     }
+
+    onPageChange(event) {
+        this.rows = event.rows;
+        this.pageConfigService.saveConfig('analise_rows', this.rows);
+    }
     public openModalDivergence(lstAnalise: Analise[]) {
         this.statusToChange = undefined;
         this.firstAnaliseDivergencia = lstAnalise[0];
