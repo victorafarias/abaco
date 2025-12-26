@@ -414,6 +414,7 @@ export class AnaliseFormComponent implements OnInit {
         this.fatoresAjuste = [];
         if (manual.fatoresAjuste) {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
+            faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
                 this.fatoresAjuste.push({ label, value: fa });

@@ -349,6 +349,7 @@ export class PesquisarFtComponent implements OnInit {
 
     private inicializaFatoresAjuste() {
         const faS: FatorAjuste[] = _.cloneDeep(this.analise.manual.fatoresAjuste);
+        faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
         this.fatoresAjuste =
             faS.map(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);

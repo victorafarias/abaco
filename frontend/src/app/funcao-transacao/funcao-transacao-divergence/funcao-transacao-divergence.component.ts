@@ -262,17 +262,17 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
     carregarEquipes(analise: Analise) {
         this.equipes = [];
-        if(analise.analisesComparadas.length > 1){
-            if(analise.analisesComparadas[0].equipeResponsavel.id !== analise.analisesComparadas[1].equipeResponsavel.id){
-                this.equipes.push({label: analise.analisesComparadas[0].equipeResponsavel.nome, value: analise.analisesComparadas[0].equipeResponsavel});
-                this.equipes.push({label: analise.analisesComparadas[1].equipeResponsavel.nome, value: analise.analisesComparadas[1].equipeResponsavel});
-                return ;
+        if (analise.analisesComparadas.length > 1) {
+            if (analise.analisesComparadas[0].equipeResponsavel.id !== analise.analisesComparadas[1].equipeResponsavel.id) {
+                this.equipes.push({ label: analise.analisesComparadas[0].equipeResponsavel.nome, value: analise.analisesComparadas[0].equipeResponsavel });
+                this.equipes.push({ label: analise.analisesComparadas[1].equipeResponsavel.nome, value: analise.analisesComparadas[1].equipeResponsavel });
+                return;
             }
         }
 
         this.tipoEquipeService.dropDown().subscribe(equipes => {
             equipes.forEach(equipe => {
-                this.equipes.push({label: equipe.nome, value: equipe});
+                this.equipes.push({ label: equipe.nome, value: equipe });
             })
         })
 
@@ -509,7 +509,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             'deflator': { value: this.formataFatorAjuste(ft.fatorAjuste), writable: true },
             'nomeFuncionalidade': { value: ft.funcionalidade.nome, writable: true },
             'nomeModulo': { value: ft.funcionalidade.modulo.nome, writable: true },
-            'nomeEquipe': {value: ft?.equipe?.nome, writable: true}
+            'nomeEquipe': { value: ft?.equipe?.nome, writable: true }
         });
     }
 
@@ -864,9 +864,9 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
     }
 
     carregarEquipeNaEdicao(funcaoTransacaoSelecionada: FuncaoTransacao) {
-        if(funcaoTransacaoSelecionada.equipe != null || funcaoTransacaoSelecionada.equipe != undefined){
+        if (funcaoTransacaoSelecionada.equipe != null || funcaoTransacaoSelecionada.equipe != undefined) {
             this.equipes.forEach(equipe => {
-                if(equipe.value.id === funcaoTransacaoSelecionada.equipe.id){
+                if (equipe.value.id === funcaoTransacaoSelecionada.equipe.id) {
                     funcaoTransacaoSelecionada.equipe = equipe.value;
                 }
             })
@@ -1108,15 +1108,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         if (manual.fatoresAjuste) {
             if (this.analise.manual) {
                 this.faS = _.cloneDeep(this.analise.manual.fatoresAjuste);
-                this.faS.sort((n1, n2) => {
-                    if (n1.fator < n2.fator) {
-                        return 1;
-                    }
-                    if (n1.fator > n2.fator) {
-                        return -1;
-                    }
-                    return 0;
-                });
+                this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
@@ -1248,7 +1240,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos.sort((m1,m2) => m1.nome.localeCompare(m2.nome));
+            this.modulos = sistemaRecarregado.modulos.sort((m1, m2) => m1.nome.localeCompare(m2.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
         });
@@ -1315,7 +1307,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 funcaoTransacao.quantidade = this.quantidadeEmLote;
             })
         }
-        if(this.equipeEmLote){
+        if (this.equipeEmLote) {
             this.funcaoTransacaoEmLote.forEach(funcaoTransacao => {
                 funcaoTransacao.equipe = this.equipeEmLote;
             })
@@ -1342,7 +1334,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         if (this.moduloSelecionadoEmLote) {
             moduloSelecionado = this.moduloSelecionadoEmLote;
         }
-	        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
+        for (let i = 0; i < this.funcaoTransacaoEmLote.length; i++) {
             let funcaoTransacao = this.funcaoTransacaoEmLote[i];
             this.funcaoTransacaoService.existsWithNameAndEquipe(
                 funcaoTransacao.name,
@@ -1351,7 +1343,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                 funcaoTransacao.id,
                 funcaoTransacao.equipe.id)
                 .subscribe(existFuncaoTransacao => {
-                    if(!existFuncaoTransacao){
+                    if (!existFuncaoTransacao) {
                         funcaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
                         const funcaoTransacaoCalculada: FuncaoTransacao = CalculadoraTransacao.calcular(
                             this.analise.metodoContagem, funcaoTransacao, this.analise.contrato.manual);
@@ -1365,14 +1357,14 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
                             this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
                             this.divergenciaService.updateSomaPf(this.analise.id).subscribe();
                             this.resetarEstadoPosSalvar();
-                            this.pageNotificationService.addSuccessMessage("Função "+funcaoTransacao.name+" editada com sucesso!");
+                            this.pageNotificationService.addSuccessMessage("Função " + funcaoTransacao.name + " editada com sucesso!");
                         });
-                    }else{
-                            this.pageNotificationService.addErrorMessage("Função já "+funcaoTransacao.name+" cadastrada.")
-                        }
-                    });
-            }
-            this.fecharDialogEditarEmLote();
+                    } else {
+                        this.pageNotificationService.addErrorMessage("Função já " + funcaoTransacao.name + " cadastrada.")
+                    }
+                });
+        }
+        this.fecharDialogEditarEmLote();
     }
 
     selecionarDeflatorEmLote(deflator: FatorAjuste) {
@@ -1523,7 +1515,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
     salvarOrdernacao() {
         this.funcoesTransacoes.forEach((funcaoTransacao, index) => {
-            funcaoTransacao.ordem = index+1;
+            funcaoTransacao.ordem = index + 1;
             this.funcaoTransacaoService.updateOrdem(funcaoTransacao).subscribe();
         })
         this.pageNotificationService.addSuccessMessage("Ordenação salva com sucesso.");
@@ -1552,7 +1544,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         }
         this.deselecionaFuncionalidadesSeModuloForDiferente();
         this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.currentFuncaoTransacao.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades.sort((f1,f2) => f1.nome.localeCompare(f2.nome));
+            this.funcionalidades = funcionalidades.sort((f1, f2) => f1.nome.localeCompare(f2.nome));
             this.selecionaFuncionalidadeFromCurrentAnalise(this.currentFuncaoTransacao.modulo);
             this.oldModuloId = modulo.id;
         });
@@ -1601,22 +1593,22 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         }
     }
 
-    abrirDialogModulo(){
+    abrirDialogModulo() {
         this.mostrarDialogAddModulo = true;
     }
-    abrirDialogFuncionalidade(){
+    abrirDialogFuncionalidade() {
         this.mostrarDialogAddFuncionalidade = true;
     }
-    fecharDialogModulo(){
+    fecharDialogModulo() {
         this.mostrarDialogAddModulo = false;
         this.novoModulo = new Modulo();
     }
-    fecharDialogFuncionalidade(){
+    fecharDialogFuncionalidade() {
         this.mostrarDialogAddFuncionalidade = false;
         this.novaFuncionalidade = new Funcionalidade();
     }
 
-    adicionarModulo(){
+    adicionarModulo() {
         if (!this.novoModulo.nome) {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
@@ -1630,7 +1622,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         })
     }
 
-    adicionarFuncionalidade(){
+    adicionarFuncionalidade() {
         if (this.novaFuncionalidade.nome === undefined) {
             this.pageNotificationService.addErrorMessage(this.getLabel('Por favor preencher o campo obrigatório!'));
             return;
@@ -1653,13 +1645,13 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
             .addSuccessMessage(`${this.getLabel('Módulo ')} ${nomeModulo} ${this.getLabel(' criado para o Sistema')} ${nomeSistema}`);
     }
 
-    cancelEditComment(){
+    cancelEditComment() {
         this.showEditComment = false;
         this.editDivergenceComment = new CommentFuncaoTransacao();
     }
 
-    abrirDialogComment(divergenceComment: CommentFuncaoTransacao){
-        if(!divergenceComment){
+    abrirDialogComment(divergenceComment: CommentFuncaoTransacao) {
+        if (!divergenceComment) {
             this.pageNotificationService.addErrorMessage('Comentário inválido.');
             return;
         }
@@ -1668,12 +1660,12 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         this.editDivergenceComment = new CommentFuncaoTransacao(divergenceComment.id, divergenceComment.comment, divergenceComment.user, divergenceComment.funcaoDados);
     }
 
-    deletarComment(divergenceComment: CommentFuncaoTransacao){
+    deletarComment(divergenceComment: CommentFuncaoTransacao) {
         this.confirmationService.confirm({
             message: 'Tem certeza que deseja excluir o comentário?',
             accept: () => {
                 if (divergenceComment.id != undefined) {
-                    this.funcaoTransacaoService.deleteComment(divergenceComment.id).subscribe(() =>{
+                    this.funcaoTransacaoService.deleteComment(divergenceComment.id).subscribe(() => {
                         this.currentFuncaoTransacao.lstDivergenceComments.splice(this.currentFuncaoTransacao.lstDivergenceComments.indexOf(divergenceComment), 1);
                         this.pageNotificationService.addSuccessMessage("Comentário excluído com sucesso!");
                     })
@@ -1683,7 +1675,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         });
     }
 
-    editComent(divergenceComment: CommentFuncaoTransacao){
+    editComent(divergenceComment: CommentFuncaoTransacao) {
         if (!divergenceComment.comment) {
             this.pageNotificationService.addErrorMessage('É obrigatório preencher o campo comentário.');
             return;
@@ -1691,7 +1683,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
         this.funcaoTransacaoService.updateComment(divergenceComment.id, divergenceComment.comment).subscribe(r => {
             this.currentFuncaoTransacao.lstDivergenceComments.forEach(lstDComment => {
-                if(lstDComment.id === divergenceComment.id){
+                if (lstDComment.id === divergenceComment.id) {
                     lstDComment.comment = divergenceComment.comment;
                 }
             })
@@ -1700,18 +1692,18 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         })
     }
 
-    habilitarEdicaoOrdem(funcao: FuncaoTransacao){
-        if(this.habilitaEditarOrdem == false && this.isOrderning){
+    habilitarEdicaoOrdem(funcao: FuncaoTransacao) {
+        if (this.habilitaEditarOrdem == false && this.isOrderning) {
             this.habilitaEditarOrdem = true;
         }
 
     }
 
-    trocarOrdem(numero, funcao: FuncaoTransacao){
-        if(numero != null){
-            if(numero < funcao.ordem){
+    trocarOrdem(numero, funcao: FuncaoTransacao) {
+        if (numero != null) {
+            if (numero < funcao.ordem) {
                 funcao.ordem = --numero;
-            }else{
+            } else {
                 funcao.ordem = ++numero;
             }
             this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);

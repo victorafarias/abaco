@@ -262,6 +262,14 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
             this.columnsVisible = savedCols;
         }
         this.updateVisibleColumns(this.columnsVisible);
+        // Load saved pagination setting (applies to both view and edit modes)
+        const savedRows = localStorage.getItem("numberPagesFD");
+        if (savedRows != null) {
+            this.numberPages = Number.parseInt(savedRows);
+            if (this.tables && this.tables.pDatatableComponent) {
+                this.tables.pDatatableComponent._rows = this.numberPages;
+            }
+        }
     }
 
     estadoInicial() {
@@ -1211,15 +1219,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
             if (manual.fatoresAjuste) {
                 this.faS = _.cloneDeep(manual.fatoresAjuste);
                 this.faS = this.faS.filter(value => value.tipoAjuste !== 'UNITARIO');
-                this.faS.sort((n1, n2) => {
-                    if (n1.fator < n2.fator) {
-                        return 1;
-                    }
-                    if (n1.fator > n2.fator) {
-                        return -1;
-                    }
-                    return 0;
-                });
+                this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
@@ -1328,6 +1328,11 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
                 this.selectButtonMultiple = false;
             }
         }
+    }
+
+    onPageChange(event) {
+        this.numberPages = event.rows;
+        localStorage.setItem("numberPagesFD", event.rows.toString());
     }
 
     prepararEditarEmLote() {

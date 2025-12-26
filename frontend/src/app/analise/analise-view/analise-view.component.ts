@@ -7,7 +7,8 @@ import { Contrato, ContratoService } from 'src/app/contrato';
 import { Sistema, SistemaService } from 'src/app/sistema';
 import { EsforcoFase } from 'src/app/esforco-fase';
 import { SelectItem, ConfirmationService } from 'primeng';
-import { Manual } from 'src/app/manual';
+import { Manual, ManualService } from 'src/app/manual';
+import * as _ from 'lodash';
 import { Subscription } from 'rxjs';
 import { AnaliseService } from '../analise.service';
 import { PageNotificationService } from '@nuvem/primeng-components';
@@ -94,6 +95,7 @@ export class AnaliseViewComponent implements OnInit {
         private equipeService: TipoEquipeService,
         private pageNotificationService: PageNotificationService,
         private userService: UserService,
+        private manualService: ManualService,
     ) {
     }
 
@@ -201,11 +203,15 @@ export class AnaliseViewComponent implements OnInit {
     }
 
     setManual(manual: Manual) {
-        if (manual) {
+        if (manual && manual.id) {
+            this.manualService.find(manual.id).subscribe((manualCompleto) => {
+                this.nomeManual = manualCompleto.nome;
+                this.carregarEsforcoFases(manualCompleto);
+                this.carregarMetodosContagem(manualCompleto);
+                this.inicializaFatoresAjuste(manualCompleto);
+            });
+        } else if (manual) {
             this.nomeManual = manual.nome;
-            this.carregarEsforcoFases(manual);
-            this.carregarMetodosContagem(manual);
-            this.inicializaFatoresAjuste(manual);
         }
     }
 
@@ -229,11 +235,12 @@ export class AnaliseViewComponent implements OnInit {
     }
 
     private carregarEsforcoFases(manual: Manual) {
-        // this.esforcoFases = _.cloneDeep(manual.esforcoFases);
-
-        if (!this.isEdicao) {
-            // Traz todos esforcos de fases selecionados
-            // this.analise.esforcoFases = _.cloneDeep(manual.esforcoFases);
+        // Carrega todas as fases do manual para exibir na tabela
+        if (manual && manual.esforcoFases) {
+            this.esforcoFases = [];
+            manual.esforcoFases.forEach(element => {
+                this.esforcoFases.push(new EsforcoFase().copyFromJSON(element));
+            });
         }
     }
 
@@ -308,7 +315,14 @@ export class AnaliseViewComponent implements OnInit {
 
     public getUsuariosNomes(): string {
         if (this.analise && this.analise.users && this.analise.users.length > 0) {
-            return this.analise.users.map(u => u.nome || u.login).join(', ');
+            return this.analise.users.map(u => {
+                // Backend retorna firstName e lastName
+                if (u.firstName || u.lastName) {
+                    return `${u.firstName || ''} ${u.lastName || ''}`.trim();
+                }
+                // Fallback para nome ou login
+                return u.nome || u.login || '';
+            }).filter(n => n).join(', ');
         }
         return '';
     }
@@ -324,6 +338,16 @@ export class AnaliseViewComponent implements OnInit {
         if (analiseDivergence && analiseDivergence.id) {
             this.router.navigate(['/analise', analiseDivergence.id, 'view']);
         }
+    }
+
+    public isFaseSelecionada(esforcoFase: EsforcoFase): boolean {
+        if (this.analise && this.analise.esforcoFases && esforcoFase && esforcoFase.fase) {
+            // Compara pelo ID da fase interna, pois o ID do esforcoFase pode ser diferente
+            return this.analise.esforcoFases.some(ef =>
+                ef.fase && ef.fase.id === esforcoFase.fase.id
+            );
+        }
+        return false;
     }
 
     public nomeSistema(): string {

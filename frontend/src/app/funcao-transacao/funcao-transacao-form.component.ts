@@ -268,6 +268,14 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
             this.columnsVisible = savedCols;
         }
         this.updateVisibleColumns(this.columnsVisible);
+        // Load saved pagination setting (applies to both view and edit modes)
+        const savedRows = localStorage.getItem("numberPagesFT");
+        if (savedRows != null) {
+            this.numberPages = Number.parseInt(savedRows);
+            if (this.tables && this.tables.pDatatableComponent) {
+                this.tables.pDatatableComponent._rows = this.numberPages;
+            }
+        }
     }
 
     estadoInicial() {
@@ -1059,15 +1067,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         if (manual.fatoresAjuste) {
             if (this.analise.manual) {
                 this.faS = _.cloneDeep(this.analise.manual.fatoresAjuste);
-                this.faS.sort((n1, n2) => {
-                    if (n1.fator < n2.fator) {
-                        return 1;
-                    }
-                    if (n1.fator > n2.fator) {
-                        return -1;
-                    }
-                    return 0;
-                });
+                this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
@@ -1166,6 +1166,11 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
                 this.selectButtonMultiple = false;
             }
         }
+    }
+
+    onPageChange(event) {
+        this.numberPages = event.rows;
+        localStorage.setItem("numberPagesFT", event.rows.toString());
     }
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {

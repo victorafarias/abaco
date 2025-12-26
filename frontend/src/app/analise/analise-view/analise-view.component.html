@@ -100,8 +100,7 @@
                                     </p-dropdown>
                                 </div>
 
-                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
-                                    *ngIf="analise.users && analise.users.length > 0">
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
                                     <label>Usuários</label>
                                     <span class="md-inputfield">
                                         <input type="text" id="idUsuariosViewAnalise" name="usuariosNomes"
@@ -199,27 +198,28 @@
                                 <p-fieldset [legend]="this.getLabel('Fases')" [toggleable]="true" [collapsed]="true">
                                     <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
                                         <p-table dataKey="id" [rowHover]="true"
-                                            [emptyMessage]="this.getLabel('Selecione um Contrato para escolher Fases')"
+                                            [emptyMessage]="this.getLabel('Nenhuma fase disponível')"
                                             [value]="esforcoFases" id="idTabelaFasesViewAnalise"
-                                            [resizableColumns]="true" [(selection)]="analise.esforcoFases">
+                                            [resizableColumns]="true">
                                             <ng-template pTemplate="caption">
                                                 Fase
                                             </ng-template>
                                             <ng-template pTemplate="header">
                                                 <tr>
-                                                    <th style="text-align:left">
-                                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                                    <th style="text-align:left; width: 50px;">Sel.</th>
                                                     <th pSortableColumn="fase.nome">Nome <p-sortIcon></p-sortIcon></th>
                                                     <th pSortableColumn="esforco">Esforço <p-sortIcon></p-sortIcon></th>
                                                 </tr>
                                             </ng-template>
                                             <ng-template pTemplate="body" let-esforcoFase>
                                                 <tr class="ui-selectable-row">
-                                                    <td>
-                                                        <p-tableCheckbox [value]="esforcoFase"></p-tableCheckbox>
+                                                    <td style="text-align: center;">
+                                                        <p-checkbox [binary]="true"
+                                                            [ngModel]="isFaseSelecionada(esforcoFase)"
+                                                            [disabled]="true"></p-checkbox>
                                                     </td>
                                                     <td>
-                                                        {{esforcoFase.fase.nome}}
+                                                        {{esforcoFase.fase?.nome}}
                                                     </td>
                                                     <td>
                                                         {{esforcoFase.esforco}}%

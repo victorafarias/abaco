@@ -34,10 +34,11 @@
                                     [disableView]="selectButtonMultiple || isOrderning"
                                     id="idTabelaFuncaoTransacaoFormFuncaoTransacao" [enableButtonsScroll]="true"
                                     [value]="this.funcoesTransacoes" (buttonClick)="datatableClick($event)"
-                                    (dblclick)="onRowDblclick($event)" (click)="selectFT($event)" [paginator]="false"
-                                    [reorderableRows]="isOrderning" (onRowReorder)="updateIndex()" [rows]="numberPages"
-                                    [selectionMode]="'multiple'" [filterOnColumn]="true"
-                                    [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="false" #tables>
+                                    (dblclick)="onRowDblclick($event)" (click)="selectFT($event)" [paginator]="true"
+                                    (onPage)="onPageChange($event)" [reorderableRows]="isOrderning"
+                                    (onRowReorder)="updateIndex()" [rows]="numberPages" [selectionMode]="'multiple'"
+                                    [filterOnColumn]="true" [rowsPerPageOptions]="[20,50,100]"
+                                    [showVisibleColumnsControl]="false" #tables>
                                     <p-column header="Ordem" field="ordem"
                                         [style]="{'display': tables.visibleColumns['ordem']}">
                                         <ng-template let-col let-funcaoTransacao="rowData" pTemplate="body">

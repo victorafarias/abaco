@@ -32,8 +32,8 @@
                                     [disableEdit]="this.isView || selectButtonMultiple || isOrderning"
                                     [enableButtonsScroll]="true" [disableView]="selectButtonMultiple || isOrderning"
                                     (dblclick)="onRowDblclick($event)" [value]="funcoesDados"
-                                    (buttonClick)="datatableClick($event)" (click)="selectFD($event)"
-                                    [paginator]="false" [rows]="numberPages" [selectionMode]="'multiple'"
+                                    (buttonClick)="datatableClick($event)" (click)="selectFD($event)" [paginator]="true"
+                                    [rows]="numberPages" (onPage)="onPageChange($event)" [selectionMode]="'multiple'"
                                     [filterOnColumn]="true" [reorderableRows]="isOrderning"
                                     (onRowReorder)="updateIndex()" [rowsPerPageOptions]="[20,50,100]"
                                     [showVisibleColumnsControl]="false" #tables>
@@ -106,7 +106,8 @@
                                     <p-column field="evidencia" header="Evidência" [sortable]="true"
                                         [style]="{'word-break': 'break-all', 'display': tables.visibleColumns['evidencia']}">
                                         <ng-template let-row="rowData" pTemplate="body">
-                                            <span style="word-break: break-all;" [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
+                                            <span style="word-break: break-all;"
+                                                [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
                                                 tooltipStyleClass="evidencia-tooltip">
                                                 {{ formatEvidence(row.sustantation) }}
                                             </span>
