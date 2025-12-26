@@ -401,7 +401,7 @@
                         <!-- Novos valores editáveis -->
                         <div class="ui-g-4" style="margin-bottom: 25px">
                             <label>Novo módulo</label>
-                            <p-dropdown [filter]="true" [options]="listModulos" optionLabel="nome"
+                            <p-dropdown [filter]="true" [options]="listModulos" optionLabel="nome" dataKey="nome"
                                 id="idNovoModuloFuncaoFormSistema" placeholder="Selecione..." name="novoModuloFuncao"
                                 [(ngModel)]="novoModuloFuncao" (onChange)="onNovoModuloChange()"
                                 [style]="{'width':'100%'}">
@@ -410,17 +410,16 @@
                         <div class="ui-g-4" style="margin-bottom: 25px">
                             <label>Nova funcionalidade</label>
                             <p-dropdown [filter]="true" [options]="getFuncionalidadesDoNovoModulo()" optionLabel="nome"
-                                id="idNovaFuncionalidadeFuncaoFormSistema" placeholder="Selecione..."
+                                dataKey="nome" id="idNovaFuncionalidadeFuncaoFormSistema" placeholder="Selecione..."
                                 name="novaFuncionalidadeFuncao" [(ngModel)]="novaFuncionalidadeFuncao"
                                 [disabled]="!novoModuloFuncao" [style]="{'width':'100%'}">
                             </p-dropdown>
                         </div>
                         <div class="ui-g-4" style="margin-bottom: 25px">
-                            <span class="md-inputfield">
-                                <input pInputText type="text" id="idNovoNomeFuncaoFormSistema" name="novoNomeFuncao"
-                                    [(ngModel)]="novoNomeFuncao" (keydown.enter)="salvarRenomeacaoFuncao()" />
-                                <label>Novo nome</label>
-                            </span>
+                            <label>Novo nome</label>
+                            <input pInputText type="text" id="idNovoNomeFuncaoFormSistema" name="novoNomeFuncao"
+                                [(ngModel)]="novoNomeFuncao" (keydown.enter)="salvarRenomeacaoFuncao()"
+                                [style]="{'width':'100%'}" />
                         </div>
                     </div>
                     <div class="ui-g ui-md-12" style="justify-content: flex-end">

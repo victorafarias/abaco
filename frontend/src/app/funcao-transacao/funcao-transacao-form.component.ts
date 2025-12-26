@@ -242,19 +242,22 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
                     temp++
                 }
                 this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
-                if (!this.isView) {
-                    this.analiseService.find(this.idAnalise).subscribe(analise => {
-                        this.analise = analise;
-                        this.analiseSharedDataService.analise = analise;
+                // Always fetch the analise to have metodoContagem for grid display
+                this.analiseService.find(this.idAnalise).subscribe(analise => {
+                    this.analise = analise;
+                    this.analiseSharedDataService.analise = analise;
+
+                    if (!this.isView) {
+                        // Edit-specific initialization
                         this.carregarModuloSistema();
                         this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
                         this.hideShowQuantidade = true;
                         this.currentFuncaoTransacao = new FuncaoTransacao();
                         this.estadoInicial();
                         this.initClassificacoes();
-                        this.blockUiService.hide();
-                    });
-                }
+                    }
+                    this.blockUiService.hide();
+                });
             });
         });
     }
@@ -343,16 +346,30 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     }
 
     public onRowDblclick(event) {
-        if (event.target.nodeName === 'TD') {
-            this.abrirEditar();
-        } else if (event.target.parentNode.nodeName === 'TD') {
-            this.abrirEditar();
+        if (event.target.nodeName === 'TD' || event.target.parentNode.nodeName === 'TD') {
+            // Se está em modo visualização, abre o dialog de visualização
+            if (this.isView) {
+                this.abrirVisualizar();
+            } else {
+                this.abrirEditar();
+            }
         }
     }
 
     abrirEditar() {
         this.isEdit = true;
         this.prepararParaEdicao(this.funcaoTransacaoEditar[0]);
+    }
+
+    /**
+     * Abre o dialog de visualização da função de transação selecionada.
+     * Usado quando a análise está em modo visualização (bloqueada ou acesso somente leitura).
+     */
+    abrirVisualizar() {
+        if (this.funcaoTransacaoEditar && this.funcaoTransacaoEditar.length > 0) {
+            this.viewFuncaoTransacao = true;
+            this.prepararParaVisualizar(this.funcaoTransacaoEditar[0]);
+        }
     }
 
 
@@ -823,8 +840,8 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
             const tempElement = document.createElement('div');
             tempElement.innerHTML = evidence;
             const text = tempElement.textContent || tempElement.innerText || '';
-            if (text.length > 50) {
-                return text.substring(0, 50) + '...';
+            if (text.length > 30) {
+                return text.substring(0, 30) + '...';
             }
             return text;
         }
