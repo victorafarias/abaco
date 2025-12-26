@@ -235,21 +235,23 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
                     temp++
                 }
                 this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
-                if (!this.isView) {
-                    this.analiseService.find(this.idAnalise).subscribe(analise => {
-                        // analise = new Analise().copyFromJSON(analise);
+                // Always fetch the analise to have metodoContagem for grid display
+                this.analiseService.find(this.idAnalise).subscribe(analise => {
+                    this.analise = analise;
+                    this.analiseSharedDataService.analise = analise;
+
+                    if (!this.isView) {
+                        // Edit-specific initialization
                         this.exibeComponenteModuloFuncionalidade();
-                        this.analise = analise;
-                        this.analiseSharedDataService.analise = analise;
                         this.carregarModuloSistema();
                         this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
                         this.hideShowQuantidade = true;
                         this.estadoInicial();
                         this.impactos = AnaliseSharedUtils.impactos;
                         this.disableTRDER();
-                        this.blockUiService.hide();
-                    });
-                }
+                    }
+                    this.blockUiService.hide();
+                });
             });
         });
     }
@@ -292,8 +294,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
             const tempElement = document.createElement('div');
             tempElement.innerHTML = evidence;
             const text = tempElement.textContent || tempElement.innerText || '';
-            if (text.length > 50) {
-                return text.substring(0, 50) + '...';
+            if (text.length > 30) {
+                return text.substring(0, 30) + '...';
             }
             return text;
         }

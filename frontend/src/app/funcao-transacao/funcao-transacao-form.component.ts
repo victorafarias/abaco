@@ -242,19 +242,22 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
                     temp++
                 }
                 this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
-                if (!this.isView) {
-                    this.analiseService.find(this.idAnalise).subscribe(analise => {
-                        this.analise = analise;
-                        this.analiseSharedDataService.analise = analise;
+                // Always fetch the analise to have metodoContagem for grid display
+                this.analiseService.find(this.idAnalise).subscribe(analise => {
+                    this.analise = analise;
+                    this.analiseSharedDataService.analise = analise;
+
+                    if (!this.isView) {
+                        // Edit-specific initialization
                         this.carregarModuloSistema();
                         this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
                         this.hideShowQuantidade = true;
                         this.currentFuncaoTransacao = new FuncaoTransacao();
                         this.estadoInicial();
                         this.initClassificacoes();
-                        this.blockUiService.hide();
-                    });
-                }
+                    }
+                    this.blockUiService.hide();
+                });
             });
         });
     }
@@ -823,8 +826,8 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
             const tempElement = document.createElement('div');
             tempElement.innerHTML = evidence;
             const text = tempElement.textContent || tempElement.innerText || '';
-            if (text.length > 50) {
-                return text.substring(0, 50) + '...';
+            if (text.length > 30) {
+                return text.substring(0, 30) + '...';
             }
             return text;
         }

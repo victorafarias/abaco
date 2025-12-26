@@ -48,7 +48,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         key.endsWith('_columnsVisible') || // Visibilidade de colunas
         key.endsWith('_filter') ||         // Filtros salvos
         key.endsWith('_searchParams') ||   // Parâmetros de busca
-        key.startsWith('numberPages')      // Paginação de funções (FD/FT)
+        key.startsWith('numberPages') ||   // Paginação de funções (FD/FT)
+        key.startsWith('menuState_')       // Estado do menu lateral (retraído/expandido)
       )) {
         keysToPreserve.push({ key, value: localStorage.getItem(key) });
       }

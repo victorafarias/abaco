@@ -106,7 +106,7 @@
                                     <p-column field="evidencia" header="Evidência" [sortable]="true"
                                         [style]="{'word-break': 'break-all', 'display': tables.visibleColumns['evidencia']}">
                                         <ng-template let-row="rowData" pTemplate="body">
-                                            <span [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
+                                            <span style="word-break: break-all;" [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
                                                 tooltipStyleClass="evidencia-tooltip">
                                                 {{ formatEvidence(row.sustantation) }}
                                             </span>
