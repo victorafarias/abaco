@@ -346,16 +346,30 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     }
 
     public onRowDblclick(event) {
-        if (event.target.nodeName === 'TD') {
-            this.abrirEditar();
-        } else if (event.target.parentNode.nodeName === 'TD') {
-            this.abrirEditar();
+        if (event.target.nodeName === 'TD' || event.target.parentNode.nodeName === 'TD') {
+            // Se está em modo visualização, abre o dialog de visualização
+            if (this.isView) {
+                this.abrirVisualizar();
+            } else {
+                this.abrirEditar();
+            }
         }
     }
 
     abrirEditar() {
         this.isEdit = true;
         this.prepararParaEdicao(this.funcaoTransacaoEditar[0]);
+    }
+
+    /**
+     * Abre o dialog de visualização da função de transação selecionada.
+     * Usado quando a análise está em modo visualização (bloqueada ou acesso somente leitura).
+     */
+    abrirVisualizar() {
+        if (this.funcaoTransacaoEditar && this.funcaoTransacaoEditar.length > 0) {
+            this.viewFuncaoTransacao = true;
+            this.prepararParaVisualizar(this.funcaoTransacaoEditar[0]);
+        }
     }
 
 

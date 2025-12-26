@@ -8,316 +8,313 @@
                             <fieldset class="ui-g-12 ui-md-12 ui-sm-12">
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
                                     <label>Organização</label>
-                                    <p-dropdown
-                                            dataKey="id"
-                                            name="organizacao"
-                                            optionLabel="nome"
-                                            [placeholder]="this.getLabel('Selecione')"
-                                            id="idOrganizacaoViewAnalise"
-                                            [filter]="true"
-                                            [disabled]="this.isEdicao || this.isView"
-                                            [options]="organizacoes"
-                                            [(ngModel)]="analise.organizacao"
-
-                                            (onChange)="setSistamaOrganizacao($event.value)">
+                                    <p-dropdown dataKey="id" name="organizacao" optionLabel="nome"
+                                        [placeholder]="this.getLabel('Selecione')" id="idOrganizacaoViewAnalise"
+                                        [filter]="true" [disabled]="this.isEdicao || this.isView"
+                                        [options]="organizacoes" [(ngModel)]="analise.organizacao"
+                                        (onChange)="setSistamaOrganizacao($event.value)">
                                     </p-dropdown>
                                 </div>
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
-                                    <label >Equipe Responsável</label>
-                                    <p-dropdown
-                                            [filter]="true"
-                                            dataKey="id"
-                                            name="equipeResponsavel"
-                                            id="idEquipeResponsavelViewAnalise"
-                                            optionLabel="nome"
-                                            [placeholder]="this.getLabel('Selecione')"
-                                            [disabled]="this.isEdicao || this.isView"
-                                            [options]="equipeResponsavel"
-                                            [(ngModel)]="analise.equipeResponsavel"
-
-                                            (onChange)="setSistamaOrganizacao($event.value)">
+                                    <label>Equipe Responsável</label>
+                                    <p-dropdown [filter]="true" dataKey="id" name="equipeResponsavel"
+                                        id="idEquipeResponsavelViewAnalise" optionLabel="nome"
+                                        [placeholder]="this.getLabel('Selecione')"
+                                        [disabled]="this.isEdicao || this.isView" [options]="equipeResponsavel"
+                                        [(ngModel)]="analise.equipeResponsavel"
+                                        (onChange)="setSistamaOrganizacao($event.value)">
                                     </p-dropdown>
                                 </div>
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
                                     <label>Sistema</label>
-                                    <p-dropdown
-                                            [filter]="true"
-                                            dataKey="id"
-                                            id="idSistemaViewAnalise"
-                                            optionLabel="sigla"
-                                            [disabled]="this.isEdicao || this.isView"
-                                            placeholder="{{ sistemaDropdownPlaceholder() }}"
-                                            (onChange)="getSistemaSelecionado()"
-                                            name="sistema"
-                                            [options]="sistemas"
-                                            [(ngModel)]="analise.sistema"
-                                            >
+                                    <p-dropdown [filter]="true" dataKey="id" id="idSistemaViewAnalise"
+                                        optionLabel="sigla" [disabled]="this.isEdicao || this.isView"
+                                        placeholder="{{ sistemaDropdownPlaceholder() }}"
+                                        (onChange)="getSistemaSelecionado()" name="sistema" [options]="sistemas"
+                                        [(ngModel)]="analise.sistema">
                                     </p-dropdown>
                                 </div>
                             </fieldset>
                         </div>
-                        <div style="margin-bottom: 105px; margin-top: 25px" *ngIf="isEdicao">
+                        <div style="margin-bottom: 105px; margin-top: 25px" *ngIf="isEdicao || isView">
                             <div class="ui-g">
-                                <div class="ui-g-6 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
-                                    <label >Identificador da Analise*</label>
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Identificador da Analise*</label>
                                     <span class="md-inputfield">
-                                        <input
-                                                required
-                                                type="text"
-                                                maxlength="100"
-                                                id="idIdentificarAnaliseViewAnalise"
-                                                name="identificadorAnalise"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="analise.identificadorAnalise"
-                                                pInputText/>
+                                        <input required type="text" maxlength="100" id="idIdentificarAnaliseViewAnalise"
+                                            name="identificadorAnalise" [disabled]="this.isView"
+                                            [(ngModel)]="analise.identificadorAnalise" pInputText />
                                     </span>
                                 </div>
 
-                                <div class="ui-g-3 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Número O.S.*</label>
+                                    <span class="md-inputfield">
+                                        <input required type="text" maxlength="100" id="idnumeroOsAnaliseViewAnalise"
+                                            name="numeroOsAnalise" [disabled]="this.isView"
+                                            [(ngModel)]="analise.numeroOs" pInputText />
+                                    </span>
+                                </div>
+
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
                                     <label>Contrato *</label>
-                                    <p-dropdown
-                                            [filter]="true"
-                                            required
-                                            dataKey="id"
-                                            id="idContratoViewAnalise"
-                                            optionLabel="numeroContrato"
-                                            [placeholder]="this.getLabel('Selecione')"
-                                            (onChange)="contratoSelected($event.value)"
-                                            name="contrato"
-                                            [disabled]="this.isView"
-                                            [options]="contratos"
-                                            [(ngModel)]="analise.contrato"
-                                            >
+                                    <p-dropdown [filter]="true" required dataKey="id" id="idContratoViewAnalise"
+                                        optionLabel="numeroContrato" [placeholder]="this.getLabel('Selecione')"
+                                        (onChange)="contratoSelected($event.value)" name="contrato"
+                                        [disabled]="this.isView" [options]="contratos" [(ngModel)]="analise.contrato">
                                     </p-dropdown>
                                 </div>
 
-                                <div class="ui-g-3 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
-                                    <label >Método de Contagem *</label>
-                                    <p-dropdown
-                                            [filter]="true"
-                                            required
-                                            id="idMetodoContagemViewAnalise"
-                                            placeholder="{{ needContratoDropdownPlaceholder() }}"
-                                            name="metodoContagem"
-                                            [disabled]="this.isView"
-                                            [options]="metodosContagem"
-                                            [(ngModel)]="analise.metodoContagem"
-                                            >
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Manual</label>
+                                    <span class="md-inputfield">
+                                        <input required type="text" maxlength="100" id="idManualViewAnalise"
+                                            name="manualContrato" [disabled]="this.isView" [(ngModel)]="nomeManual"
+                                            pInputText />
+                                    </span>
+                                </div>
+
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Status</label>
+                                    <span class="md-inputfield">
+                                        <input type="text" id="idStatusViewAnalise" name="statusNome" [disabled]="true"
+                                            [ngModel]="analise.status?.nome" pInputText />
+                                    </span>
+                                </div>
+
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Método de Contagem *</label>
+                                    <p-dropdown [filter]="true" required id="idMetodoContagemViewAnalise"
+                                        placeholder="{{ needContratoDropdownPlaceholder() }}" name="metodoContagem"
+                                        [disabled]="this.isView" [options]="metodosContagem"
+                                        [(ngModel)]="analise.metodoContagem">
                                     </p-dropdown>
                                 </div>
 
-                                <div class="ui-g-3 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px">
                                     <label>Tipo de Contagem *</label>
-                                    <p-dropdown
-                                            [filter]="true"
-                                            required
-                                            name="tiposAnalise"
-                                            id="idTipoContagemViewAnalise"
-                                            [disabled]="this.isView"
-                                            [placeholder]="this.getLabel('Selecione')"
-                                            [options]="tiposAnalise"
-                                            [(ngModel)]="analise.tipoAnalise"
-                                            >
+                                    <p-dropdown [filter]="true" required name="tiposAnalise"
+                                        id="idTipoContagemViewAnalise" [disabled]="this.isView"
+                                        [placeholder]="this.getLabel('Selecione')" [options]="tiposAnalise"
+                                        [(ngModel)]="analise.tipoAnalise">
                                     </p-dropdown>
                                 </div>
 
-                                <div class="ui-g-3 ui-md-4 ui-sm-12" style="margin-bottom: 25px3"
-                                     [hidden]="validacaoCampos">
-                                    <label >Manual</label>
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
+                                    *ngIf="analise.users && analise.users.length > 0">
+                                    <label>Usuários</label>
                                     <span class="md-inputfield">
-                                        <input
-                                                required
-                                                type="text"
-                                                maxlength="100"
-                                                id="idManualViewAnalise"
-                                                name="manualContrato"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="nomeManual"
-                                                pInputText/>
+                                        <input type="text" id="idUsuariosViewAnalise" name="usuariosNomes"
+                                            [disabled]="true" [ngModel]="getUsuariosNomes()" pInputText />
                                     </span>
                                 </div>
 
-                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <label >Propósito da Contagem</label>
+                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Propósito da Contagem</label>
                                     <span class="md-inputfield">
-                                        <textarea
-                                                pInputTextarea
-                                                name="propositoContagem"
-                                                id="idPropositoContagemViewAnalise"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="analise.propositoContagem">
+                                        <textarea pInputTextarea name="propositoContagem"
+                                            id="idPropositoContagemViewAnalise" [disabled]="this.isView"
+                                            [(ngModel)]="analise.propositoContagem">
                                         </textarea>
                                     </span>
                                 </div>
 
-                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <label >Escopo da Contagem</label>
+                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Escopo da Contagem</label>
                                     <span class="md-inputfield">
-                                        <textarea
-                                                pInputTextarea
-                                                name="escopo"
-                                                id="idEscopoViewAnalise"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="analise.escopo">
+                                        <textarea pInputTextarea name="escopo" id="idEscopoViewAnalise"
+                                            [disabled]="this.isView" [(ngModel)]="analise.escopo">
                                         </textarea>
                                     </span>
                                 </div>
 
-                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <label >Fronteira</label>
+                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Fronteira</label>
                                     <span class="md-inputfield">
-                                        <textarea
-                                                pInputTextarea
-                                                name="fronteiras"
-                                                id="idFronteiraViewAnalise"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="analise.fronteiras">
+                                        <textarea pInputTextarea name="fronteiras" id="idFronteiraViewAnalise"
+                                            [disabled]="this.isView" [(ngModel)]="analise.fronteiras">
                                         </textarea>
                                     </span>
                                 </div>
 
-                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <label >Documentação</label>
+                                <div class="ui-g-6 ui-md-6 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Documentação</label>
                                     <span class="md-inputfield">
-                                        <textarea
-                                                required
-                                                pInputTextarea
-                                                id="idDocumentacaoViewAnalise"
-                                                name="documentacao"
-                                                [disabled]="this.isView"
-                                                [(ngModel)]="analise.documentacao">
+                                        <textarea required pInputTextarea id="idDocumentacaoViewAnalise"
+                                            name="documentacao" [disabled]="this.isView"
+                                            [(ngModel)]="analise.documentacao">
                                         </textarea>
                                     </span>
                                 </div>
 
-                                <div class="ui-g-4 ui-md-6 ui-sm-12" [hidden]="validacaoCampos">
+                                <div class="ui-g-4 ui-md-4 ui-sm-10">
 
                                     <div class="ui-g-6 ui-md-6 ui-sm-12">
-                                        {{this.getLabel('Aguardar prazo de garantia')}} {{diasGarantia > 0 ? this.getLabel('De') + diasGarantia + this.getLabel('Dias')
+                                        {{this.getLabel('Aguardar prazo de garantia')}} {{diasGarantia > 0 ?
+                                        this.getLabel('de ') + diasGarantia + this.getLabel(' dias')
                                         : null}}?
                                     </div>
 
                                     <div class="ui-g-3 ui-md-2 ui-sm-12">
-                                        <p-radioButton
-                                                name="baseline_imediatamente"
-                                                [disabled]="this.isView"
-                                                [label]="this.getLabel('Sim')"
-                                                id="idAguardarPrazoGarantiaSimViewAnalise"
-                                                [value]="true"
-                                                [(ngModel)]="analise.baselineImediatamente">
+                                        <p-radioButton name="baseline_imediatamente" [disabled]="this.isView"
+                                            [label]="this.getLabel('Sim')" id="idAguardarPrazoGarantiaSimViewAnalise"
+                                            [value]="true" [(ngModel)]="analise.baselineImediatamente">
                                         </p-radioButton>
                                     </div>
 
                                     <div class="ui-g-3 ui-md-2 ui-sm-12">
-                                        <p-radioButton
-                                                name="baseline_imediatamente"
-                                                [disabled]="this.isView"
-                                                [label]="this.getLabel('Não')"
-                                                id="idAguardarPrazoGarantiaNaoViewAnalise"
-                                                [value]="false"
-                                                [(ngModel)]="analise.baselineImediatamente">
+                                        <p-radioButton name="baseline_imediatamente" [disabled]="this.isView"
+                                            [label]="this.getLabel('Não')" id="idAguardarPrazoGarantiaNaoViewAnalise"
+                                            [value]="false" [(ngModel)]="analise.baselineImediatamente">
                                         </p-radioButton>
                                     </div>
 
                                 </div>
 
-                                <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px"
-                                     [hidden]="validacaoCampos">
-                                    <p-table
-                                            dataKey="id"
-                                            [emptyMessage]="this.getLabel('SelecioneContrato')"
-                                            [value]="esforcoFases"
-                                            id="idTabelaFasesViewAnalise"
-                                            [(selection)]="analise.esforcoFases"
-                                            [headerCheckboxToggleAllPages]="true">
-
-                                        <p-header>Fases</p-header>
-
-                                        <p-column
-                                                [header]="this.getLabel('Analise.Analise.Nome')"
-                                                field="fase.nome">
-                                        </p-column>
-
-                                        <p-column
-                                                [header]="this.getLabel('Analise.Analise.Esforco')"
-                                                field="esforcoFormatado">
-                                        </p-column>
-
-                                        <p-footer
-                                                *ngIf="analise.contrato">
-                                            {{this.getLabel('Total')}} {{ totalEsforcoFases() }}%
-                                        </p-footer>
-                                    </p-table>
-                                </div>
-
-                                <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px"
-                                        [hidden]="validacaoCampos">
-                                        <label>Observações</label>
-                                        <span class="md-inputfield">
-                                            <textarea
-                                                    [rows]="3"
-                                                    [cols]="180"
-                                                    id="idObservacoesViewAnalise"
-                                                    autoResize=true
-                                                    pInputTextarea
-                                                    name="observacoes"
-                                                    [disabled]="this.isView"
-                                                    [(ngModel)]="analise.observacoes"
-                                                    maxlength="4000">
-                                            </textarea>
-                                        </span>
+                                <div class="ui-g-4 ui-md-4 ui-sm-10">
+                                    <div class="ui-g-6 ui-md-6 ui-sm-12">
+                                        Incorporar a Baseline
+                                    </div>
+                                    <div class="ui-g-3 ui-md-2 ui-sm-12">
+                                        <p-radioButton name="baseline_enviar_baseline" [disabled]="this.isView"
+                                            [label]="this.getLabel('Sim')" id="idEnviarBaselineSimViewAnalise"
+                                            [value]="true" [(ngModel)]="analise.enviarBaseline">
+                                        </p-radioButton>
+                                    </div>
+                                    <div class="ui-g-3 ui-md-2 ui-sm-12">
+                                        <p-radioButton name="baseline_enviar_baseline" [disabled]="this.isView"
+                                            [label]="this.getLabel('Não')" id="idEnviarBaselineNaoViewAnalise"
+                                            [value]="false" [(ngModel)]="analise.enviarBaseline">
+                                        </p-radioButton>
                                     </div>
                                 </div>
 
-                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
-                                [hidden]="validacaoCampos">
-                                <label >Data da Criação</label>
+                                <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px"
+                                    *ngIf="analise.analiseDivergence">
+                                    <label>Identificador da Divergência: </label>
+                                    <a style="cursor: pointer; color: blue" class='btn'
+                                        (click)="goToDivergencia(analise.analiseDivergence)">{{this.getIdentificadorAnalise()}}</a>
+                                </div>
+
+                                <p-fieldset [legend]="this.getLabel('Fases')" [toggleable]="true" [collapsed]="true">
+                                    <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
+                                        <p-table dataKey="id" [rowHover]="true"
+                                            [emptyMessage]="this.getLabel('Selecione um Contrato para escolher Fases')"
+                                            [value]="esforcoFases" id="idTabelaFasesViewAnalise"
+                                            [resizableColumns]="true" [(selection)]="analise.esforcoFases">
+                                            <ng-template pTemplate="caption">
+                                                Fase
+                                            </ng-template>
+                                            <ng-template pTemplate="header">
+                                                <tr>
+                                                    <th style="text-align:left">
+                                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                                    <th pSortableColumn="fase.nome">Nome <p-sortIcon></p-sortIcon></th>
+                                                    <th pSortableColumn="esforco">Esforço <p-sortIcon></p-sortIcon></th>
+                                                </tr>
+                                            </ng-template>
+                                            <ng-template pTemplate="body" let-esforcoFase>
+                                                <tr class="ui-selectable-row">
+                                                    <td>
+                                                        <p-tableCheckbox [value]="esforcoFase"></p-tableCheckbox>
+                                                    </td>
+                                                    <td>
+                                                        {{esforcoFase.fase.nome}}
+                                                    </td>
+                                                    <td>
+                                                        {{esforcoFase.esforco}}%
+                                                    </td>
+                                                </tr>
+                                            </ng-template>
+                                            <ng-template pTemplate="footer">
+                                                <tr>
+                                                    <td colspan="3" style="text-align:center">{{this.getLabel('Total')}}
+                                                        {{ totalEsforcoFases() }}%</td>
+                                                </tr>
+                                            </ng-template>
+                                        </p-table>
+                                    </div>
+                                </p-fieldset>
+
+                                <div class="ui-g-4 ui-md-4 ui-sm-10">
+                                    <div class="ui-g-6 ui-md-6 ui-sm-12">
+                                        Fator Criticidade:
+                                    </div>
+                                    <div class="ui-g-3 ui-md-2 ui-sm-12">
+                                        <p-radioButton name="fator_criticidade" [disabled]="this.isView"
+                                            [label]="this.getLabel('Sim')" id="idFatorCriticidadeSimViewAnalise"
+                                            [value]="true" [(ngModel)]="analise.fatorCriticidade">
+                                        </p-radioButton>
+                                    </div>
+                                    <div class="ui-g-3 ui-md-2 ui-sm-12">
+                                        <p-radioButton name="fator_criticidade" [disabled]="this.isView"
+                                            [label]="this.getLabel('Não')" id="idFatorCriticidadeNaoViewAnalise"
+                                            [value]="false" [(ngModel)]="analise.fatorCriticidade">
+                                        </p-radioButton>
+                                    </div>
+                                </div>
+
+                                <div *ngIf="analise.fatorCriticidade === true" class="ui-g-4 ui-md-4 ui-sm-12"
+                                    style="margin-bottom: 25px">
+                                    <label>Valor Criticidade (%) *: </label>
+                                    <span class="md-inputfield">
+                                        <input type="number" id="idvalorCriticidadeAnaliseViewAnalise"
+                                            name="valorCriticidadeAnalise" [disabled]="this.isView"
+                                            [(ngModel)]="analise.valorCriticidade" pInputText />
+                                    </span>
+                                </div>
+
+                                <div *ngIf="analise.metodoContagem != 'DETALHADA'" class="ui-g-4 ui-md-4 ui-sm-12"
+                                    style="margin-bottom: 25px">
+                                    <label>Scope Creep (%): </label>
+                                    <span class="md-inputfield">
+                                        <input type="number" id="idscopeCreepAnaliseViewAnalise"
+                                            name="scopeCreepAnalise" [disabled]="this.isView"
+                                            [(ngModel)]="analise.scopeCreep" pInputText />
+                                    </span>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
+                                    <label>Observações</label>
+                                    <span class="md-inputfield">
+                                        <textarea [rows]="3" [cols]="180" id="idObservacoesViewAnalise" autoResize=true
+                                            pInputTextarea name="observacoes" [disabled]="this.isView"
+                                            [(ngModel)]="analise.observacoes" maxlength="4000">
+                                            </textarea>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px" [hidden]="validacaoCampos">
+                                <label>Data da Criação</label>
                                 <span class="md-inputfield">
-                                    <input type="text"
-                                           name="Data da Criação"                                                
-                                           [disabled]="true"
-                                           pInputText [ngModel]="analise.dataCriacaoOrdemServico|date:'dd/MM/y'"
-                                           readonly/>
+                                    <input type="text" name="Data da Criação" [disabled]="true" pInputText
+                                        [ngModel]="analise.dataCriacaoOrdemServico|date:'dd/MM/y'" readonly />
                                 </span>
                             </div>
 
-                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
-                                    [hidden]="validacaoCampos">
-                                    <label>{{this.getLabel('Data de Conclusão/Bloqueio')}} {{analise.baselineImediatamente ? " *" : null}}</label>
+                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px" [hidden]="validacaoCampos">
+                                <label>{{this.getLabel('Data de Conclusão/Bloqueio')}} {{analise.baselineImediatamente ?
+                                    " *" : null}}</label>
                                 <span class="md-inputfield">
-                                    <p-calendar
-                                        name="dataHomol"                                                
-                                        [disabled]="true"
-                                        id="idDataHomologacaoViewAnalise"
-                                        [(ngModel)]="analise.dataHomologacao"
-                                        dateFormat="dd/mm/yy">
+                                    <p-calendar name="dataHomol" [disabled]="true" id="idDataHomologacaoViewAnalise"
+                                        [(ngModel)]="analise.dataHomologacao" dateFormat="dd/mm/yy">
                                     </p-calendar>
                                 </span>
                             </div>
 
-                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px"
-                                    [hidden]="validacaoCampos">
-                                    <label>Data de Encerramento</label>
+                            <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px" [hidden]="validacaoCampos">
+                                <label>Data de Encerramento</label>
                                 <span class="md-inputfield">
-                                    <p-calendar
-                                        name="dtEncerramento"                                                
-                                        [disabled]="true"
-                                        id="dtEncerramento"
-                                        [(ngModel)]="analise.dtEncerramento"
-                                        dateFormat="dd/mm/yy">
+                                    <p-calendar name="dtEncerramento" [disabled]="true" id="dtEncerramento"
+                                        [(ngModel)]="analise.dtEncerramento" dateFormat="dd/mm/yy">
                                     </p-calendar>
                                 </span>
                             </div>
 
                             <div class="ui-g-2 ui-md-2 ui-sm-12" style="margin-bottom: 25px">
-                                <app-white-button
-                                        [buttonLabel]="this.getLabel('Voltar')"
-                                        id="idBtnVoltarViewAnalise"
-                                        routerLink="/analise">
+                                <app-white-button [buttonLabel]="this.getLabel('Voltar')" id="idBtnVoltarViewAnalise"
+                                    routerLink="/analise">
                                 </app-white-button>
                             </div>
                         </div>
@@ -334,10 +331,9 @@
 <!-- Dialog confirmação deleção -->
 <p-confirmDialog [header]="this.getLabel('Confirmação')" #dialog>
     <p-footer>
-        <button type="button" id="idBtnNaoDeleteViewAnalise" pButton icon="fa-close"
-                [label]="this.getLabel('Não')" (click)="dialog.reject()"></button>
-        <button type="button" id="idBtnSimDeleteViewAnalise" pButton icon="fa-check"
-                [label]="this.getLabel('Sim')" (click)="dialog.accept()"></button>
+        <button type="button" id="idBtnNaoDeleteViewAnalise" pButton icon="fa-close" [label]="this.getLabel('Não')"
+            (click)="dialog.reject()"></button>
+        <button type="button" id="idBtnSimDeleteViewAnalise" pButton icon="fa-check" [label]="this.getLabel('Sim')"
+            (click)="dialog.accept()"></button>
     </p-footer>
 </p-confirmDialog>
-
