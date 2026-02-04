@@ -5,7 +5,7 @@ description: Realiza pesquisas abrangentes na base de código para documentar o 
 
 # Investigador da Base de Código
 
-**Objetivo**: Documentar a base de código como ela é, utilizando o diretório de pensamentos (`thoughts/`) para contexto histórico.
+**Objetivo**: Documentar a base de código como ela é, utilizando o diretório de pensamentos (`reports/`) para contexto histórico.
 
 ## 🚨 Diretrizes Críticas
 

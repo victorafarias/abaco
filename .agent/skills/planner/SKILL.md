@@ -80,7 +80,7 @@ Uma vez alinhado o escopo, proponha a **Estrutura do Plano** antes de detalhar:
 ### 5. Escrita do Plano Detalhado
 
 Após aprovação da estrutura, escreva o plano em:
-`thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-descricao.md`
+`plans/YYYY-MM-DD-ENG-XXXX-descricao.md`
 
 **Use este Template Obrigatório:**
 

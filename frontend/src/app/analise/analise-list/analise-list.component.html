@@ -73,7 +73,7 @@
 					</span>
 				</div>
 			</div>
-			<div class="ui-g">
+			<div class="ui-g custom-style-list-analise">
 				<div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 25px; margin-top: 25px">
 					<div class="ui-g-2 ui-md-2 ui-sm-12">
 						<app-white-button [buttonLabel]="'Limpar pesquisa' " id="idBtnLimparPesquisaComponentAnalise"
@@ -91,7 +91,7 @@
 						</app-green-button>
 					</div>
 				</div>
-				<div>
+				<div class="custom-style-list-analise-2">
 					<div class="ui-g-12 ui-g-nopad">
 						<div class="ui-g-3 ui-md-offset-6">
 							<div class="text-right">Visibilidade das Colunas:</div>
@@ -147,7 +147,7 @@
 								{{ analise.status && analise.status.nome? analise.status.nome : ''}}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'pf-total'" header="PF total" field="pfTotalValor" [sortable]="true"
+						<p-column [styleClass]="'pf-total'" header="PF Total" field="pfTotalValor" [sortable]="true"
 							filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
 								{{ (analise.pfTotalValor | number: '1.2-2')?.replace(".", ",")}}
@@ -170,19 +170,19 @@
 								</span>
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'data-criacao'" header="Data de criação" field="dataCriacaoOrdemServico"
+						<p-column [styleClass]="'data-criacao'" header="Data de Criação" field="dataCriacaoOrdemServico"
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
 								{{ analise.dataCriacaoOrdemServico | date: 'dd/MM/y ' }}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'data-conclusao'" header="Data de conclusão" field="dataHomologacao"
+						<p-column [styleClass]="'data-conclusao'" header="Data de Conclusão" field="dataHomologacao"
 							[sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
 								{{ analise.dataHomologacao | date: 'dd/MM/y' }}
 							</ng-template>
 						</p-column>
-						<p-column [styleClass]="'data-encerramento'" header="Data de encerramento"
+						<p-column [styleClass]="'data-encerramento'" header="Data de Encerramento"
 							field="dtEncerramento" [sortable]="true" filterType="">
 							<ng-template let-col let-analise="rowData" pTemplate="body" filterType="">
 								{{ analise.dtEncerramento | date: 'dd/MM/y' }}
@@ -530,13 +530,16 @@
 							<div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 05px">
 								<label>Sistema</label>
 								<p-dropdown [appendTo]="importarDialog" [filter]="true" dataKey="id"
-									id="idSistemaSaveFormAnalise" [placeholder]="this.getLabel('Selecione')"
-									name="sistema" [options]="sistemas" [(ngModel)]="analiseImportar.sistema">
-									<ng-template let-sistema pTemplate="selectedItem">
-										<span *ngIf="sistema">{{sistema.nome}} - {{sistema.sigla}}</span>
+									id="idSistemaSaveFormAnalise" optionLabel="nome"
+									[placeholder]="this.getLabel('Selecione')" name="sistema" [options]="sistemas"
+									[(ngModel)]="analiseImportar.sistema">
+									<ng-template let-item pTemplate="selectedItem">
+										<span *ngIf="item">{{ item.nome || item.value?.nome }} - {{ item.sigla ||
+											item.value?.sigla }}</span>
 									</ng-template>
-									<ng-template let-sistema pTemplate="item">
-										<span>{{sistema.nome}} - {{sistema.sigla}}</span>
+									<ng-template let-item pTemplate="item">
+										<span>{{ item.nome || item.value?.nome }} - {{ item.sigla || item.value?.sigla
+											}}</span>
 									</ng-template>
 								</p-dropdown>
 							</div>

@@ -956,7 +956,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     }
     carregarModuloFuncionalidade(funcaoTransacaoSelecionada: FuncaoTransacao) {
         //CarregarModulo
-        this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo);
+        this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo as Modulo);
     }
 
     private carregarFatorDeAjusteNaEdicao(funcaoSelecionada: FuncaoTransacao) {
@@ -1174,7 +1174,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     }
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos;
+            this.modulos = sistemaRecarregado.modulos.sort((a, b) => a.nome.localeCompare(b.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
         });
@@ -1469,7 +1469,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         }
         this.deselecionaFuncionalidadesSeModuloForDiferente();
         this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.currentFuncaoTransacao.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades;
+            this.funcionalidades = funcionalidades.sort((a, b) => a.nome.localeCompare(b.nome));
             this.selecionaFuncionalidadeFromCurrentAnalise(this.currentFuncaoTransacao.modulo);
             this.oldModuloId = modulo.id;
         });

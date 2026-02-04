@@ -1,7 +1,7 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {Sistema, SistemaService} from '../sistema/index';
-import {Modulo, ModuloService} from '../modulo';
-import {Funcionalidade, FuncionalidadeService} from '../funcionalidade';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Sistema, SistemaService } from '../sistema/index';
+import { Modulo, ModuloService } from '../modulo';
+import { Funcionalidade, FuncionalidadeService } from '../funcionalidade';
 
 import * as _ from 'lodash';
 import { Subscription } from 'rxjs';
@@ -27,7 +27,7 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
 
     @Input() analise: Analise;
 
-    @Input() funcionalidade : Funcionalidade;
+    @Input() funcionalidade: Funcionalidade;
 
     @Input() modulosSistema: Modulo[];
 
@@ -90,8 +90,8 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
     private subscribeFuncionalideBaseline() {
         this.funcaoDadosService.dataModd$.subscribe(
             (data: Funcionalidade) => {
-                if (data && data.modulo && data.modulo.funcionalidades) {
-                    this.funcionalidades = data.modulo.funcionalidades;
+                if (data && data.modulo && (data.modulo as Modulo).funcionalidades) {
+                    this.funcionalidades = (data.modulo as Modulo).funcionalidades;
                     this.selecionarModuloBaseline(data.modulo.id, data.id);
                 }
             });
@@ -109,7 +109,7 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
         if (!this.sistema) {
             return;
         }
-        if(this.funcionalidade){
+        if (this.funcionalidade) {
             this.selecionarModulo(this.funcionalidade.modulo.id);
         }
 
@@ -154,7 +154,7 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
 
     private getModuloASelecionarDeAcordoComTipoFuncaoDoComponente(): Modulo {
         if (this.currentFuncaoAnalise.funcionalidade) {
-            return this.currentFuncaoAnalise.funcionalidade.modulo;
+            return this.currentFuncaoAnalise.funcionalidade.modulo as Modulo;
         }
     }
 
@@ -171,7 +171,7 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
     private selecionarModulo(moduloId: number) {
         for (let index = 0; index < this.modulos.length; index++) {
             const element = this.modulos[index];
-            if(element.id == moduloId){
+            if (element.id == moduloId) {
                 this.moduloSelecionado = element;
             }
         }
@@ -181,8 +181,8 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
 
     /* Seleciona no dropdown o modulo da Baseline recebido do componente funcao-dados-form-component.ts*/
     private selecionarModuloBaseline(moduloId: number, funcionalideId: number) {
-        this.moduloSelecionado = _.find(this.modulos, {'id': moduloId});
-        this.funcionalidadeSelecionada = _.find(this.funcionalidades, {'id': funcionalideId});
+        this.moduloSelecionado = _.find(this.modulos, { 'id': moduloId });
+        this.funcionalidadeSelecionada = _.find(this.funcionalidades, { 'id': funcionalideId });
     }
 
     private subscribeFuncaoAnaliseCarregada() {
@@ -210,13 +210,13 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
     // TODO avaliar duplicacoes e refatorar
     private doCarregarTudoOnFuncaoAnaliseCarregada() {
         const currentFuncionalidade: Funcionalidade = this.currentFuncaoAnalise.funcionalidade;
-        const currentModulo: Modulo = currentFuncionalidade.modulo;
+        const currentModulo: Modulo = currentFuncionalidade.modulo as Modulo;
 
         this.modulos = this.sistema.modulos;
         this.selecionarModulo(currentModulo.id);
 
         this.funcionalidades = currentModulo.funcionalidades;
-        this.funcionalidadeSelecionada = _.find(this.funcionalidades, {'id': currentFuncionalidade.id});
+        this.funcionalidadeSelecionada = _.find(this.funcionalidades, { 'id': currentFuncionalidade.id });
         this.funcionalidadeSelected(this.funcionalidadeSelecionada);
     }
 
@@ -226,8 +226,8 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
         }
         const currentFuncionalidade: Funcionalidade = this.currentFuncaoAnalise.funcionalidade;
         if (currentFuncionalidade != null) {
-            this.funcionalidadeSelecionada = _.find(this.funcionalidades, {'id': currentFuncionalidade.id});
-            if(this.funcionalidadeSelecionada != undefined){
+            this.funcionalidadeSelecionada = _.find(this.funcionalidades, { 'id': currentFuncionalidade.id });
+            if (this.funcionalidadeSelecionada != undefined) {
 
                 this.funcionalidadeSelecionada.modulo = modulo;
                 this.funcionalidadeSelectedEvent.emit(this.funcionalidadeSelecionada);
@@ -409,10 +409,10 @@ export class ModuloFuncionalidadeComponent implements OnInit, OnDestroy {
     private selecionarFuncionalidadeRecemCriada(funcionalidadeCriada: Funcionalidade) {
         for (let index = 0; index < this.moduloSelecionado.funcionalidades.length; index++) {
             const element = this.moduloSelecionado.funcionalidades[index];
-            if(element.id == funcionalidadeCriada.id){
+            if (element.id == funcionalidadeCriada.id) {
                 this.funcionalidadeSelecionada = element;
                 this.funcionalidadeSelecionada.modulo = this.moduloSelecionado;
-                this.funcionalidadeSelecionada.modulo.funcionalidades = [];
+                (this.funcionalidadeSelecionada.modulo as Modulo).funcionalidades = [];
             }
         }
 

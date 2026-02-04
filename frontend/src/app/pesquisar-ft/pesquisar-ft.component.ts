@@ -376,7 +376,7 @@ export class PesquisarFtComponent implements OnInit {
     private subscribeFuncionalideBaseline() {
         this.funcaoDadosService.dataModd$.subscribe(
             (data: Funcionalidade) => {
-                this.funcionalidades = data.modulo.funcionalidades;
+                this.funcionalidades = (data.modulo as Modulo).funcionalidades;
                 // this.selecionarModuloBaseline(data.modulo.id, data.id); //Seleciona módulo
             });
     }

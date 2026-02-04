@@ -902,7 +902,7 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
 
     carregarModuloFuncionalidade(funcaoTransacaoSelecionada: FuncaoTransacao) {
         //CarregarModulo
-        this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo);
+        this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo as Modulo);
 
     }
 

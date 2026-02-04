@@ -993,7 +993,7 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
 
     carregarModuloFuncionalidade(funcaoDadosSelecionada: FuncaoDados) {
         //CarregarModulo
-        this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo);
+        this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo as Modulo);
 
     }
 

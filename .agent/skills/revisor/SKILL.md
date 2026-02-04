@@ -371,6 +371,8 @@ Document what was fixed and what remains in each iteration.
 
 ## References
 
+Store all reports in `reports/` directory.
+
 Detailed language-specific guidance available in:
 - `references/python-checklist.md` - Python best practices
 - `references/javascript-checklist.md` - JavaScript/TypeScript patterns

@@ -1120,7 +1120,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
     }
     carregarModuloFuncionalidade(funcaoDadosSelecionada: FuncaoDados) {
         //CarregarModulo
-        this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo);
+        this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo as Modulo);
 
     }
 
@@ -1457,9 +1457,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
 
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos;
+            this.modulos = sistemaRecarregado.modulos.sort((a, b) => a.nome.localeCompare(b.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
+        });
+    }
+
+    moduloSelected(modulo: Modulo) {
+        for (let i = 0; i < this.modulos.length; i++) {
+            const moduloFor = this.modulos[i];
+            if (moduloFor.id === modulo.id) {
+                this.seletedFuncaoDados.modulo = moduloFor;
+            }
+        }
+        this.deselecionaFuncionalidadesSeModuloForDiferente();
+        this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.seletedFuncaoDados.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
+            this.funcionalidades = funcionalidades.sort((a, b) => a.nome.localeCompare(b.nome));
+            this.selecionaFuncionalidadeFromCurrentAnalise(this.seletedFuncaoDados.modulo);
+            this.oldModuloId = modulo.id;
         });
     }
 
@@ -1641,20 +1656,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         this.carregarDadosBaseline();
     }
 
-    moduloSelected(modulo: Modulo) {
-        for (let i = 0; i < this.modulos.length; i++) {
-            const moduloFor = this.modulos[i];
-            if (moduloFor.id === modulo.id) {
-                this.seletedFuncaoDados.modulo = moduloFor;
-            }
-        }
-        this.deselecionaFuncionalidadesSeModuloForDiferente();
-        this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.seletedFuncaoDados.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades;
-            this.selecionaFuncionalidadeFromCurrentAnalise(this.seletedFuncaoDados.modulo);
-            this.oldModuloId = modulo.id;
-        });
-    }
+
     selecionaFuncionalidadeFromCurrentAnalise(modulo: any) {
         if (this.seletedFuncaoDados.funcionalidade) {
             this.funcionalidadeSelected(this.seletedFuncaoDados.funcionalidade);

@@ -144,10 +144,12 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
                     sistema => {
                         this.sistema = Sistema.fromJSON(sistema);
                         this.listModulos = Sistema.fromJSON(sistema).modulos;
-                        this.sistema = Sistema.fromJSON(sistema);
-                        this.listModulos = Sistema.fromJSON(sistema).modulos;
-                        // Carregar funções distintas para edição - REMOVIDO: DataTable lazy carrega automaticamente
-                        // e evita timeout.
+
+                        // Forçar lazy load após sistema carregado para corrigir race condition
+                        setTimeout(() => {
+                            this.loadFuncoesDistintasLazy({ first: 0, rows: 20 });
+                        }, 500);
+
                         this.blockUiService.hide();
                     },
                     error => {
@@ -306,7 +308,7 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
             this.pageNotificationService.addErrorMessage('Por favor preencher o campo obrigatório!');
             return;
         }
-        for (let funcionalidade of this.novaFuncionalidade.modulo.funcionalidades) {
+        for (let funcionalidade of (this.novaFuncionalidade.modulo as Modulo).funcionalidades) {
             if (funcionalidade.nome.toLocaleLowerCase() === this.novaFuncionalidade.nome.toLocaleLowerCase()) {
                 this.valido = true;
                 return this.pageNotificationService.addErrorMessage('Nome de funcionalidade já existente!');
