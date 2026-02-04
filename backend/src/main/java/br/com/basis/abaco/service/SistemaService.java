@@ -12,6 +12,8 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
@@ -130,51 +132,112 @@ public class SistemaService extends BaseService {
      * Recupera todas as funções distintas (combinação única de Módulo, Funcionalidade e Nome)
      * de todas as análises associadas a um sistema.
      * 
+     * OTIMIZAÇÃO: Este método foi refatorado para eliminar o problema N+1.
+     * Antes: 201 queries (1 para analises + 100 para FD + 100 para FT)
+     * Agora: 2 queries (1 para FD + 1 para FT) com DISTINCT no banco.
+     * 
      * @param sistemaId ID do sistema
-     * @return Set de funções distintas
+     * @return Set de funções distintas ordenadas
      */
     @Transactional(readOnly = true)
     public Set<FuncaoDistintaDTO> getFuncoesDistintas(Long sistemaId) {
         log.debug("[SistemaService] Buscando funções distintas para o sistema ID: {}", sistemaId);
         
-        Set<FuncaoDistintaDTO> funcoesDistintas = new HashSet<>();
+        // LinkedHashSet para manter a ordem
+        Set<FuncaoDistintaDTO> funcoesDistintas = new java.util.LinkedHashSet<>();
         
-        // Buscar todas as análises do sistema
-        List<Analise> analises = analiseRepository.findAllBySistemaId(sistemaId);
-        log.debug("[SistemaService] Encontradas {} análises para o sistema {}", analises.size(), sistemaId);
+        // Buscar funções de dados (1 query otimizada com DISTINCT)
+        List<Object[]> funcoesDados = funcaoDadosRepository.findFuncoesDistintasDadosBySistemaId(sistemaId);
+        log.debug("[SistemaService] Encontradas {} funções de dados distintas", funcoesDados.size());
         
-        for (Analise analise : analises) {
-            // Buscar funções de dados
-            Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
-            for (FuncaoDados fd : funcoesDados) {
-                if (fd.getFuncionalidade() != null && fd.getFuncionalidade().getModulo() != null) {
-                    FuncaoDistintaDTO dto = new FuncaoDistintaDTO(
-                        fd.getFuncionalidade().getModulo().getNome(),
-                        fd.getFuncionalidade().getNome(),
-                        fd.getName(),
-                        "FD"
-                    );
-                    funcoesDistintas.add(dto);
-                }
-            }
-            
-            // Buscar funções de transação
-            Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
-            for (FuncaoTransacao ft : funcoesTransacao) {
-                if (ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null) {
-                    FuncaoDistintaDTO dto = new FuncaoDistintaDTO(
-                        ft.getFuncionalidade().getModulo().getNome(),
-                        ft.getFuncionalidade().getNome(),
-                        ft.getName(),
-                        "FT"
-                    );
-                    funcoesDistintas.add(dto);
-                }
-            }
+        for (Object[] row : funcoesDados) {
+            FuncaoDistintaDTO dto = new FuncaoDistintaDTO(
+                (String) row[0],  // nomeModulo
+                (String) row[1],  // nomeFuncionalidade
+                (String) row[2],  // nomeFuncao
+                (String) row[3]   // tipo = "FD"
+            );
+            funcoesDistintas.add(dto);
+        }
+        
+        // Buscar funções de transação (1 query otimizada com DISTINCT)
+        List<Object[]> funcoesTransacao = funcaoTransacaoRepository.findFuncoesDistintasTransacaoBySistemaId(sistemaId);
+        log.debug("[SistemaService] Encontradas {} funções de transação distintas", funcoesTransacao.size());
+        
+        for (Object[] row : funcoesTransacao) {
+            FuncaoDistintaDTO dto = new FuncaoDistintaDTO(
+                (String) row[0],  // nomeModulo
+                (String) row[1],  // nomeFuncionalidade
+                (String) row[2],  // nomeFuncao
+                (String) row[3]   // tipo = "FT"
+            );
+            funcoesDistintas.add(dto);
         }
         
         log.debug("[SistemaService] Total de funções distintas encontradas: {}", funcoesDistintas.size());
         return funcoesDistintas;
+    }
+
+    /**
+     * Busca funções distintas com paginação.
+     * 
+     * Este método usa as queries otimizadas da Fase 1 e aplica paginação em memória
+     * para combinar FD + FT mantendo a ordenação correta.
+     * 
+     * @param sistemaId ID do sistema
+     * @param pageable Configuração de paginação
+     * @return Página de FuncaoDistintaDTO
+     */
+    @Transactional(readOnly = true)
+    public Page<FuncaoDistintaDTO> getFuncoesDistintasPaged(Long sistemaId, Pageable pageable) {
+        log.debug("[SistemaService] Buscando funções distintas paginadas para sistema: {}, page: {}, size: {}", 
+            sistemaId, pageable.getPageNumber(), pageable.getPageSize());
+        
+        // Combinar FD + FT em uma única lista usando queries otimizadas
+        List<FuncaoDistintaDTO> todasFuncoes = new java.util.ArrayList<>();
+        
+        // Buscar todas FD (query otimizada da Fase 1)
+        List<Object[]> funcoesDados = funcaoDadosRepository.findFuncoesDistintasDadosBySistemaId(sistemaId);
+        todasFuncoes.addAll(convertToDTO(funcoesDados));
+        
+        // Buscar todas FT (query otimizada da Fase 1)
+        List<Object[]> funcoesTransacao = funcaoTransacaoRepository.findFuncoesDistintasTransacaoBySistemaId(sistemaId);
+        todasFuncoes.addAll(convertToDTO(funcoesTransacao));
+        
+        log.debug("[SistemaService] Total de funções distintas (FD + FT): {}", todasFuncoes.size());
+        
+        // Aplicar paginação em memória (necessário para combinar FD + FT)
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), todasFuncoes.size());
+        
+        // Garantir que start não exceda o tamanho da lista
+        if (start > todasFuncoes.size()) {
+            start = todasFuncoes.size();
+        }
+        
+        List<FuncaoDistintaDTO> paginaAtual = todasFuncoes.subList(start, end);
+        
+        log.debug("[SistemaService] Retornando página {}: {} registros (de {} total)", 
+            pageable.getPageNumber(), paginaAtual.size(), todasFuncoes.size());
+        
+        return new PageImpl<>(paginaAtual, pageable, todasFuncoes.size());
+    }
+
+    /**
+     * Converte array de Object[] retornado pelas queries nativas em DTOs.
+     * 
+     * @param rows Lista de arrays [nomeModulo, nomeFuncionalidade, nomeFuncao, tipo]
+     * @return Lista de FuncaoDistintaDTO
+     */
+    private List<FuncaoDistintaDTO> convertToDTO(List<Object[]> rows) {
+        return rows.stream()
+            .map(row -> new FuncaoDistintaDTO(
+                (String) row[0],  // nomeModulo
+                (String) row[1],  // nomeFuncionalidade
+                (String) row[2],  // nomeFuncao
+                (String) row[3]   // tipo
+            ))
+            .collect(java.util.stream.Collectors.toList());
     }
 
     /**

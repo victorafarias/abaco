@@ -1,0 +1,255 @@
+---
+date: 2026-02-03T21:20:19-03:00
+researcher: Antigravity
+git_commit: 61597999cbd1e6f8f4398b9578b23b51ac0c5f5c
+branch: feature/atualizacoes-victor
+repository: abaco
+topic: "Bug - Funções de dados/transação não listadas na tela de edição de sistemas com grandes quantidades"
+tags: [research, codebase, bug, performance, sistema, funcoes-distintas]
+status: complete
+last_updated: 2026-02-03
+last_updated_by: Antigravity
+---
+
+# Pesquisa: Bug - Funções de dados/transação não listadas na tela de edição de sistemas
+
+**Data**: 2026-02-03  
+**Pesquisador**: Antigravity  
+**Commit**: 61597999cbd1e6f8f4398b23b51ac0c5f5c  
+**Branch**: feature/atualizacoes-victor
+
+## Pergunta de Pesquisa
+
+Investigar o bug que impede a listagem de funções de dados/transação na tela de edição de sistemas quando há muitas funções. Identificar possíveis gargalos de desempenho na busca de funções distintas e documentar a implementação atual.
+
+## Resumo
+
+A funcionalidade de listagem de funções distintas (combinação única de Módulo, Funcionalidade e Nome da Função) na tela de edição de sistemas apresenta problemas de desempenho quando existem grandes quantidades de registros. A investigação identificou **múltiplos gargalos críticos de desempenho** na implementação atual:
+
+### Gargalos Identificados
+
+1. **Loop N+1 no Backend**: Para cada análise do sistema, são executadas consultas separadas para buscar funções de dados e transações
+2. **Falta de Paginação**: Todos os registros são carregados de uma só vez, sem limite ou paginação
+3. **Processamento Ineficiente**: Uso de `HashSet` para deduplicação em memória ao invés de usar `DISTINCT` no banco
+4. **Eager Loading Desnecessário**: EntityGraph carrega relacionamentos completos (`rlrs`, `ders`, `fatorAjuste`) que não são utilizados
+5. **Ordenação no Frontend**: A ordenação de funções distintas é feita no JavaScript após carregar todos os dados
+
+## Descobertas Detalhadas
+
+### 1. Fluxo de Carregamento - Frontend
+
+#### Componente Angular
+
+**Arquivo**: [sistema-form.component.ts](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.ts#L626-655)
+
+O método [carregarFuncoesDistintas()](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.ts#622-656) é chamado durante a edição de um sistema:
+
+- **Linha 144**: Chamado no [ngOnInit()](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.ts#121-155) ao carregar um sistema existente
+- **Linha 514**: Chamado após salvar renomeações de funções para atualizar a lista
+- **Linhas 626-655**: Implementação do método
+
+**Características**:
+- Chama o serviço Angular sem parâmetros de paginação ou filtro
+- Ordena TODOS os registros no frontend usando `Array.sort()` (linhas 632-638)
+- Adiciona ID único concatenando campos (linha 641)
+- Bloqueia UI durante todo o carregamento (linha 644)
+
+#### Serviço Angular
+
+**Arquivo**: [sistema.service.ts](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema.service.ts#L162-179)
+
+Método [getFuncoesDistintas()](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/web/rest/SistemaResource.java#277-293):
+- **Linha 169**: Constrói URL para endpoint REST sem parâmetros
+- **Linhas 171-177**: Tratamento básico de erros
+- Não implementa cache ou otimizações
+
+#### Template HTML
+
+**Arquivo**: [sistema-form.component.html](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.html#L126-142)
+
+DataTable PrimeNG:
+- **Linha 131**: Vinculado ao array `funcoesDistintas` completo
+- **Linha 132**: Configurado para 20 linhas por página, mas carrega tudo na memória
+- **Linhas 135-140**: Três colunas filtráveis (Módulo, Funcionalidade, Nome)
+- Filtros aplicados em memória no frontend
+
+### 2. Fluxo de Carregamento - Backend
+
+#### REST Controller
+
+**Arquivo**: [SistemaResource.java](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/web/rest/SistemaResource.java#L284-292)
+
+Endpoint `GET /api/sistemas/{id}/funcoes-distintas`:
+- **Linha 286**: Anotado com `@Transactional` - mantém sessão aberta
+- **Linha 287**: Requer permissões de consulta ou edição
+- **Linha 290**: Delega para `SistemaService.getFuncoesDistintas()`
+- Não há paginação, cache ou otimizações
+
+#### Serviço (Lógica de Negócio)
+
+**Arquivo**: [SistemaService.java](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/service/SistemaService.java#L137-178)
+
+Método [getFuncoesDistintas()](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/web/rest/SistemaResource.java#277-293) - **PRINCIPAL GARGALO**:
+
+```java
+// Linha 143: Busca TODAS as análises do sistema
+List<Analise> analises = analiseRepository.findAllBySistemaId(sistemaId);
+
+// Linhas 146-173: Loop através de cada análise (PROBLEMA N+1)
+for (Analise analise : analises) {
+    // Linha 148: Consulta separada para funções de dados
+    Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
+    
+    // Linha 162: Consulta separada para funções de transação  
+    Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
+}
+```
+
+**Problemas Críticos**:
+1. Se um sistema tem 100 análises, são executadas **201 consultas** (1 + 100 + 100)
+2. Cada análise resulta em 2 consultas adicionais ao banco
+3. Deduplicação feita em memória via `HashSet` ao invés de `DISTINCT` SQL
+4. Nenhum limite de quantidade de registros retornados
+
+### 3. Camada de Dados - Repositories
+
+#### FuncaoDadosRepository
+
+**Arquivo**: [FuncaoDadosRepository.java](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/FuncaoDadosRepository.java#L49-51)
+
+```java
+@EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
+@Query("SELECT fd FROM FuncaoDados fd WHERE fd.analise.id = :idAnalise Order by fd.funcionalidade.modulo.nome")
+Set<FuncaoDados> findByAnaliseId(@Param("idAnalise") Long idAnalise);
+```
+
+**Problemas**:
+- `@EntityGraph` carrega **todos** os relacionamentos mesmo quando apenas [nome](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema.service.ts#218-226), `funcionalidade` e `modulo` são necessários
+- Isso inclui coleções `rlrs` (Registros Lógicos Referenciados) e `ders` (Dados Elementares Referenciados)
+- Aumenta drasticamente o volume de dados transferidos
+
+#### FuncaoTransacaoRepository
+
+**Arquivo**: [FuncaoTransacaoRepository.java](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/FuncaoTransacaoRepository.java#L37-39)
+
+```java
+@EntityGraph(attributePaths = {"funcionalidade", "alrs", "ders", "fatorAjuste"})
+@Query("SELECT ft FROM FuncaoTransacao ft WHERE ft.analise.id = ?1")
+Set<FuncaoTransacao> findAllByAnaliseId(Long id);
+```
+
+**Mesmo problema**: EntityGraph carrega relacionamentos completos desnecessariamente.
+
+#### AnaliseRepository
+
+**Arquivo**: [AnaliseRepository.java](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/AnaliseRepository.java#L76)
+
+```java
+List<Analise> findAllBySistemaId(Long sistemaId);
+```
+
+Método simples sem otimizações específicas, mas isso resulta no problema N+1 quando usado no loop.
+
+### 4. Modelo de Dados
+
+#### FuncaoDistintaDTO
+
+**Arquivo**: [FuncaoDistintaDTO.java](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/service/dto/FuncaoDistintaDTO.java)
+
+DTO simples contendo:
+- `nomeModulo`: String
+- `nomeFuncionalidade`: String  
+- `nomeFuncao`: String
+- `tipo`: String (FD ou FT)
+
+Implementa `equals()` e `hashCode()` baseado nos três primeiros campos para deduplicação em `HashSet`.
+
+## Análise de Desempenho
+
+### Cenário de Teste
+
+Considerando um sistema com:
+- **100 análises**
+- **50 funções de dados** por análise em média
+- **50 funções de transação** por análise em média
+- Total: **10.000 registros de funções**
+
+### Consultas Executadas
+
+1. **1 consulta** para buscar análises do sistema
+2. **100 consultas** para buscar funções de dados (uma por análise)
+3. **100 consultas** para buscar funções de transação (uma por análise)
+
+**Total: 201 consultas ao banco de dados**
+
+### Volume de Dados
+
+Com `@EntityGraph` carregando relacionamentos completos:
+- Cada [FuncaoDados](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/AnaliseRepository.java#81-98) carrega: funcionalidade + módulo + rlrs[] + ders[] + fatorAjuste
+- Cada [FuncaoTransacao](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/AnaliseRepository.java#99-116) carrega: funcionalidade + módulo + alrs[] + ders[] + fatorAjuste
+
+Se cada função possui em média 10 DERs/ALRs, o volume de dados transferidos pode ser **10-20x maior** que o necessário.
+
+### Processamento Frontend
+
+- **10.000 registros** deduplicados em memória (via `HashSet`)
+- **Todos ordenados** em JavaScript (complexidade O(n log n))
+- **Todos renderizados** na DataTable (mesmo com paginação visual de 20 linhas)
+
+## Referências de Código
+
+### Backend
+
+- [SistemaService.java:137-178](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/service/SistemaService.java#L137-178) - Método com problema N+1
+- [SistemaResource.java:284-292](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/web/rest/SistemaResource.java#L284-292) - Endpoint REST sem paginação
+- [FuncaoDadosRepository.java:49-51](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/FuncaoDadosRepository.java#L49-51) - Query com EntityGraph desnecessário
+- [FuncaoTransacaoRepository.java:37-39](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/FuncaoTransacaoRepository.java#L37-39) - Query com EntityGraph desnecessário
+- [AnaliseRepository.java:76](file:///c:/Users/Administrator/abaco/backend/src/main/java/br/com/basis/abaco/repository/AnaliseRepository.java#L76) - Busca de análises
+
+### Frontend
+
+- [sistema-form.component.ts:626-655](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.ts#L626-655) - Método de carregamento e ordenação
+- [sistema.service.ts:162-179](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema.service.ts#L162-179) - Chamada HTTP
+- [sistema-form.component.html:126-142](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.html#L126-142) - DataTable
+
+## Contexto Histórico
+
+Baseado na conversa anterior (ID: `44b562b0-2309-4149-aadf-84e403d35074`), foi implementado recentemente um loader na tela de edição de sistemas que permanece visível durante todo o carregamento das funções distintas, incluindo a chamada ao método [carregarFuncoesDistintas()](file:///c:/Users/Administrator/abaco/frontend/src/app/sistema/sistema-form/sistema-form.component.ts#622-656) (linha 144 do componente).
+
+Isso indica que o problema de desempenho já era conhecido, mas apenas foi adicionado um indicador visual ao invés de otimizar a consulta.
+
+## Padrões Arquiteturais Observados
+
+### Padrão N+1
+
+O código segue um anti-padrão clássico de N+1:
+
+```java
+// 1 consulta
+List<Analise> analises = analiseRepository.findAllBySistemaId(sistemaId);
+
+// N * 2 consultas (onde N = número de análises)
+for (Analise analise : analises) {
+    Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
+    Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
+}
+```
+
+### Ausência de Paginação
+
+Não há implementação de paginação em nenhuma camada:
+- Backend retorna conjunto completo sem limite
+- Frontend carrega tudo em memória
+- DataTable apenas pagina visualmente
+
+### Eager Loading Excessivo
+
+EntityGraphs carregam relacionamentos complexos quando apenas campos simples são necessários para o DTO.
+
+## Perguntas em Aberto
+
+1. **Qual o limite aceitável** de funções distintas que devem ser exibidas de uma vez?
+2. **É necessário carregar todas** as funções distintas ou poderia haver paginação/lazy loading?
+3. **Há métricas** de quantos sistemas têm mais de 1000, 5000 ou 10000 funções distintas?
+4. **O filtro** na DataTable é usado frequentemente pelos usuários?
+5. **Há necessidade** de manter a ordenação alfabética obrigatória ou poderia ser ordenado por ID (mais rápido)?

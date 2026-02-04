@@ -188,7 +188,12 @@ export class AnaliseViewComponent implements OnInit {
             this.contratos = contracts;
         });
         this.sistemaService.findAllSystemOrg(org.id).subscribe((res: Sistema[]) => {
-            this.sistemas = res;
+            // Ordenar alfabeticamente por nome
+            this.sistemas = res.sort((a, b) => {
+                const nomeA = (a.nome || '').toLowerCase();
+                const nomeB = (b.nome || '').toLowerCase();
+                return nomeA.localeCompare(nomeB, 'pt-BR');
+            });
         });
         this.setEquipeOrganizacao(org);
     }

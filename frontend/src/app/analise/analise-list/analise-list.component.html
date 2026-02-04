@@ -530,9 +530,14 @@
 							<div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 05px">
 								<label>Sistema</label>
 								<p-dropdown [appendTo]="importarDialog" [filter]="true" dataKey="id"
-									id="idSistemaSaveFormAnalise" optionLabel="sigla"
-									[placeholder]="this.getLabel('Selecione')" name="sistema" [options]="sistemas"
-									[(ngModel)]="analiseImportar.sistema">
+									id="idSistemaSaveFormAnalise" [placeholder]="this.getLabel('Selecione')"
+									name="sistema" [options]="sistemas" [(ngModel)]="analiseImportar.sistema">
+									<ng-template let-sistema pTemplate="selectedItem">
+										<span *ngIf="sistema">{{sistema.nome}} - {{sistema.sigla}}</span>
+									</ng-template>
+									<ng-template let-sistema pTemplate="item">
+										<span>{{sistema.nome}} - {{sistema.sigla}}</span>
+									</ng-template>
 								</p-dropdown>
 							</div>
 							<div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 05px">

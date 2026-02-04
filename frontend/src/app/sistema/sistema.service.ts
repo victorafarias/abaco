@@ -179,6 +179,33 @@ export class SistemaService {
     }
 
     /**
+     * Busca funções distintas com paginação (Lazy Loading).
+     * Utiliza o novo endpoint /funcoes-distintas/paged que retorna dados paginados.
+     * 
+     * @param sistemaId ID do sistema
+     * @param page Número da página (0-indexed)
+     * @param size Tamanho da página
+     * @returns Observable com HttpResponse incluindo body (dados) e headers (paginação)
+     */
+    getFuncoesDistintasPaged(sistemaId: number, page: number, size: number): Observable<any> {
+        const url = `${this.resourceUrl}/${sistemaId}/funcoes-distintas/paged`;
+        const params = { page: page.toString(), size: size.toString() };
+        console.log('[SistemaService] Buscando funções distintas paginadas:', { sistemaId, page, size });
+
+        return this.http.get<FuncaoDistinta[]>(url, { params, observe: 'response' }).pipe(
+            catchError((error: any) => {
+                console.error('[SistemaService] Erro ao buscar funções distintas paginadas:', error);
+                if (error.status === 403) {
+                    this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+                } else if (error.status === 504) {
+                    this.pageNotificationService.addErrorMessage(this.getLabel('Timeout ao carregar funções. Tente novamente.'));
+                }
+                return Observable.throw(new Error(error.status));
+            })
+        );
+    }
+
+    /**
      * Renomeia funções em lote. Atualiza todas as ocorrências de funções
      * que correspondem ao conjunto Módulo-Funcionalidade-NomeAtual.
      * 

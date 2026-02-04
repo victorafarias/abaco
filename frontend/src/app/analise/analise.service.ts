@@ -5,7 +5,7 @@ import { Analise } from './analise.model';
 import { AnaliseShareEquipe } from './analise-share-equipe.model';
 import { TipoEquipe } from '../tipo-equipe/tipo-equipe.model';
 import { Resumo } from './analise-resumo/resumo.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
 import { Observable, forkJoin, pipe, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -493,10 +493,38 @@ export class AnaliseService {
     }
 
     findAnalisesFromFD(nomeFuncao: String, nomeModulo: String, nomeFuncionalidade: String, nomeSistema: String, nomeEquipe: String): Observable<any[]> {
-        return this.http.get<any[]>(this.resourceUrl + "/FD?nomeFuncao=" + nomeFuncao + "&nomeModulo=" + nomeModulo + "&nomeFuncionalidade=" + nomeFuncionalidade + "&nomeSistema=" + nomeSistema + "&nomeEquipe=" + nomeEquipe);
+        const params = new HttpParams()
+            .set('nomeFuncao', nomeFuncao.toString())
+            .set('nomeModulo', nomeModulo.toString())
+            .set('nomeFuncionalidade', nomeFuncionalidade.toString())
+            .set('nomeSistema', nomeSistema.toString())
+            .set('nomeEquipe', nomeEquipe.toString());
+
+        return this.http.get<any[]>(`${this.resourceUrl}/FD`, { params }).pipe(
+            catchError((error: any) => {
+                if (error.status === 403) {
+                    this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+                }
+                return throwError(error);
+            })
+        );
     }
     findAnalisesFromFT(nomeFuncao: String, nomeModulo: String, nomeFuncionalidade: String, nomeSistema: String, nomeEquipe: String): Observable<any[]> {
-        return this.http.get<any[]>(this.resourceUrl + "/FT?nomeFuncao=" + nomeFuncao + "&nomeModulo=" + nomeModulo + "&nomeFuncionalidade=" + nomeFuncionalidade + "&nomeSistema=" + nomeSistema + "&nomeEquipe=" + nomeEquipe);
+        const params = new HttpParams()
+            .set('nomeFuncao', nomeFuncao.toString())
+            .set('nomeModulo', nomeModulo.toString())
+            .set('nomeFuncionalidade', nomeFuncionalidade.toString())
+            .set('nomeSistema', nomeSistema.toString())
+            .set('nomeEquipe', nomeEquipe.toString());
+
+        return this.http.get<any[]>(`${this.resourceUrl}/FT`, { params }).pipe(
+            catchError((error: any) => {
+                if (error.status === 403) {
+                    this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+                }
+                return throwError(error);
+            })
+        );
     }
 
     public atualizarEncerramento(analise: Analise): Observable<Analise> {

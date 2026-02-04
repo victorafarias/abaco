@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Pesquisa técnica detalhada sobre o bug de performance na listagem de funções distintas na tela de edição de sistemas. Documenta a implementação atual através do fluxo completo (Frontend → Backend → Database), identificando gargalos críticos de desempenho como problema N+1 (201 consultas para 100 análises), falta de paginação, eager loading desnecessário com EntityGraphs, deduplicação e ordenação em memória. Inclui análise de cenário de teste com 10.000 registros, referências de código específicas com linhas, e contexto histórico. Levanta questões importantes sobre limites aceitáveis e necessidades dos usuários.",
+  "updatedAt": "2026-02-04T00:23:09.999725700Z"
+}

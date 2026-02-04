@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationService, SelectItem } from 'primeng';
 import { Observable, Subscription } from 'rxjs';
@@ -102,6 +102,10 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
     mostrarDialogEditarFuncao = false;
     renomeacoesPendentes: RenomearFuncao[] = [];
 
+    // Variáveis para lazy loading de funções distintas
+    totalRecordsFuncoes = 0;
+    loadingFuncoes = false;
+
     private routeSub: Subscription;
 
     constructor(
@@ -121,11 +125,18 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.isSaving = false;
         this.blockUiService.show();
-        this.organizacaoService.dropDownActive().subscribe(response => {
-            this.organizacoes = response;
-            this.organizacoes.push(new Organizacao());
-            this.blockUiService.hide();
-        });
+        this.organizacaoService.dropDownActive().subscribe(
+            response => {
+                this.organizacoes = response;
+                this.organizacoes.push(new Organizacao());
+                this.blockUiService.hide();
+            },
+            error => {
+                console.error('[SistemaForm] Erro ao carregar organizações:', error);
+                this.blockUiService.hide();
+                this.pageNotificationService.addErrorMessage('Erro ao carregar organizações.');
+            }
+        );
         this.routeSub = this.route.params.subscribe(params => {
             if (params['id']) {
                 this.blockUiService.show();
@@ -133,10 +144,18 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
                     sistema => {
                         this.sistema = Sistema.fromJSON(sistema);
                         this.listModulos = Sistema.fromJSON(sistema).modulos;
+                        this.sistema = Sistema.fromJSON(sistema);
+                        this.listModulos = Sistema.fromJSON(sistema).modulos;
+                        // Carregar funções distintas para edição - REMOVIDO: DataTable lazy carrega automaticamente
+                        // e evita timeout.
                         this.blockUiService.hide();
-                        // Carregar funções distintas para edição
-                        this.carregarFuncoesDistintas();
-                    });
+                    },
+                    error => {
+                        console.error('[SistemaForm] Erro ao carregar sistema:', error);
+                        this.blockUiService.hide();
+                        this.pageNotificationService.addErrorMessage('Erro ao carregar dados do sistema.');
+                    }
+                );
             }
         });
     }
@@ -479,6 +498,8 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
         document.getElementById('organizacao_sistema').setAttribute('style', 'border-bottom: none');
     }
 
+    @ViewChild('datatableFuncaoDistinta') datatableFuncaoDistinta: any;
+
     private notifyRequiredFields() {
         this.pageNotificationService.addErrorMessage('Por favor preencher os campos Obrigatórios!');
         document.getElementById('sigla_sistema').setAttribute('style', 'border-color: red');
@@ -499,8 +520,12 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
                             this.isSaving = false;
                             this.sistema = Sistema.fromJSON(res);
                             this.listModulos = this.sistema.modulos;
-                            this.carregarFuncoesDistintas(); // Recarregar funções para refletir as mudanças
-                            this.blockUiService.hide(); // Esconder loader
+
+                            // Recarregar funções lazy (apenas página atual/inicial)
+                            if (this.datatableFuncaoDistinta) {
+                                this.datatableFuncaoDistinta.reset();
+                            }
+
                             this.pageNotificationService.addUpdateMsg();
                         },
                         (error) => {
@@ -631,12 +656,63 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
                             id: `${f.nomeModulo}_${f.nomeFuncionalidade}_${f.nomeFuncao}_${index}`
                         }));
                     console.log('[SistemaForm] Funções distintas carregadas:', this.funcoesDistintas.length);
+                    this.blockUiService.hide();
                 },
                 (error) => {
                     console.error('[SistemaForm] Erro ao carregar funções distintas:', error);
+                    this.blockUiService.hide();
                 }
             );
+        } else {
+            this.blockUiService.hide();
         }
+    }
+
+    /**
+     * Método de lazy loading para o DataTable de funções distintas.
+     * Chamado automaticamente pelo PrimeNG quando:
+     * - O componente é inicializado
+     * - O usuário muda de página
+     * - O usuário filtra dados
+     * 
+     * @param event Evento do DataTable contendo first (índice inicial), rows (tamanho da página)
+     */
+    loadFuncoesDistintasLazy(event: any) {
+        if (!this.sistema || !this.sistema.id) {
+            return;
+        }
+
+        this.loadingFuncoes = true;
+        const page = Math.floor(event.first / event.rows); // Calcular número da página (0-indexed)
+        const size = event.rows;
+
+        console.log('[SistemaForm] Lazy loading funções distintas:', { page, size, first: event.first });
+
+        this.sistemaService.getFuncoesDistintasPaged(this.sistema.id, page, size).subscribe(
+            (response) => {
+                // Extrair total de registros do header X-Total-Count
+                const totalCount = response.headers.get('X-Total-Count');
+                this.totalRecordsFuncoes = totalCount ? parseInt(totalCount, 10) : 0;
+
+                // Adicionar ID único para cada função (necessário para seleção no DataTable)
+                this.funcoesDistintas = (response.body || []).map((f, index) => ({
+                    ...f,
+                    id: `${f.nomeModulo}_${f.nomeFuncionalidade}_${f.nomeFuncao}_${page}_${index}`
+                }));
+
+                console.log('[SistemaForm] Funções distintas carregadas (lazy):', {
+                    registros: this.funcoesDistintas.length,
+                    total: this.totalRecordsFuncoes
+                });
+
+                this.loadingFuncoes = false;
+            },
+            (error) => {
+                console.error('[SistemaForm] Erro ao carregar funções distintas (lazy):', error);
+                this.loadingFuncoes = false;
+                this.pageNotificationService.addErrorMessage('Erro ao carregar funções.');
+            }
+        );
     }
 
     /**

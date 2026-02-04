@@ -27,14 +27,18 @@
                                             [filter]="true"
                                             dataKey="id"
                                             id="idSistemaSaveFormAnalise"
-                                            optionLabel="sigla"
                                             [disabled]="disabledOptionsforEdit()"
                                             [placeholder]="this.getLabel('Selecione')"
                                             (onChange)="getSistemaSelecionado()"
                                             name="sistema"
                                             [options]="sistemas"
-                                            [(ngModel)]="analise.sistema"
-                                            >
+                                            [(ngModel)]="analise.sistema">
+                                        <ng-template let-sistema pTemplate="selectedItem">
+                                            <span *ngIf="sistema">{{sistema.nome}} - {{sistema.sigla}}</span>
+                                        </ng-template>
+                                        <ng-template let-sistema pTemplate="item">
+                                            <span>{{sistema.nome}} - {{sistema.sigla}}</span>
+                                        </ng-template>
                                     </p-dropdown>
                                 </div>
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 05px">

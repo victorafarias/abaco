@@ -28,10 +28,16 @@
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
                                     <label>Sistema</label>
                                     <p-dropdown [filter]="true" dataKey="id" id="idSistemaViewAnalise"
-                                        optionLabel="sigla" [disabled]="this.isEdicao || this.isView"
+                                        [disabled]="this.isEdicao || this.isView"
                                         placeholder="{{ sistemaDropdownPlaceholder() }}"
                                         (onChange)="getSistemaSelecionado()" name="sistema" [options]="sistemas"
                                         [(ngModel)]="analise.sistema">
+                                        <ng-template let-sistema pTemplate="selectedItem">
+                                            <span *ngIf="sistema">{{sistema.nome}} - {{sistema.sigla}}</span>
+                                        </ng-template>
+                                        <ng-template let-sistema pTemplate="item">
+                                            <span>{{sistema.nome}} - {{sistema.sigla}}</span>
+                                        </ng-template>
                                     </p-dropdown>
                                 </div>
                             </fieldset>

@@ -363,12 +363,22 @@ export class AnaliseFormComponent implements OnInit {
                 this.contratoSelected(this.contratos[0]);
             }
         });
-        this.sistemaService.findAllSystemOrg(org.id).subscribe((res: Sistema[]) => {
-            this.sistemas = res;
+        this.sistemaService.findAllSystemOrg(org.id).subscribe({
+            next: (res: Sistema[]) => {
+                // Ordenar alfabeticamente por nome
+                this.sistemas = res.sort((a, b) => {
+                    const nomeA = (a.nome || '').toLowerCase();
+                    const nomeB = (b.nome || '').toLowerCase();
+                    return nomeA.localeCompare(nomeB, 'pt-BR');
+                });
 
-            // Auto-seleciona sistema se houver apenas um disponível
-            if (!this.isEdicao && this.sistemas && this.sistemas.length === 1) {
-                this.analise.sistema = this.sistemas[0];
+                // Auto-seleciona sistema se houver apenas um disponível
+                if (!this.isEdicao && this.sistemas && this.sistemas.length === 1) {
+                    this.analise.sistema = this.sistemas[0];
+                }
+            },
+            error: (err) => {
+                console.error('Erro ao carregar sistemas:', err);
             }
         });
         this.setEquipeOrganizacao(org);

@@ -127,11 +127,12 @@
                     <h4 style="margin-bottom: 20px;">Funções de Dados/Transação</h4>
 
                     <!-- Datatable Funções Distintas -->
-                    <basis-datatable id="idFuncaoDistintaTable" type="memory" [filterOnColumn]="true"
+                    <basis-datatable id="idFuncaoDistintaTable" type="lazy" [filterOnColumn]="true"
                         [value]="funcoesDistintas" disableView="true" disableClone="true" disableDelete="true"
                         [enableScroll]="false" [rows]="20" [(selection)]="funcaoSelecionada"
                         (buttonClick)="datatableClickFuncaoDistinta($event)" selectionMode="single" dataKey="id"
-                        #datatableFuncaoDistinta>
+                        [lazy]="true" [totalRecords]="totalRecordsFuncoes" [loading]="loadingFuncoes"
+                        (onLazyLoad)="loadFuncoesDistintasLazy($event)" #datatableFuncaoDistinta>
                         <p-column header="Módulo" field="nomeModulo" [filter]="true"
                             filterPlaceholder="Filtro"></p-column>
                         <p-column header="Funcionalidade" field="nomeFuncionalidade" [filter]="true"
