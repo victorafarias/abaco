@@ -6,3 +6,4 @@ charts/charts/
 charts/abaco*.tgz
 .idea/
 .agent/
+.plans/
