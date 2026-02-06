@@ -1192,14 +1192,25 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         if (manual) {
             if (manual.fatoresAjuste) {
                 this.faS = _.cloneDeep(manual.fatoresAjuste);
+
+                // DEBUG: Verificar ordem antes do filter e sort
+                console.log('[DEBUG FD-Divergence] Antes filter/sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.faS = this.faS.filter(value => value.tipoAjuste !== 'UNITARIO');
                 this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
+
+                // DEBUG: Verificar ordem depois do sort
+                console.log('[DEBUG FD-Divergence] Depois sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
                         return { label: label, value: fa };
                     });
                 this.fatoresAjuste.unshift(this.fatorAjusteNenhumSelectItem);
+
+                // DEBUG: Verificar ordem final no combo
+                console.log('[DEBUG FD-Divergence] SelectItems final:', this.fatoresAjuste.map(f => f.label));
             }
         }
     }

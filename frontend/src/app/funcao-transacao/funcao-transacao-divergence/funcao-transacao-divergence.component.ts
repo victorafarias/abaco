@@ -1108,13 +1108,24 @@ export class FuncaoTransacaoDivergenceComponent implements OnInit {
         if (manual.fatoresAjuste) {
             if (this.analise.manual) {
                 this.faS = _.cloneDeep(this.analise.manual.fatoresAjuste);
+
+                // DEBUG: Verificar ordem antes do sort
+                console.log('[DEBUG FT-Divergence] Antes sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
+
+                // DEBUG: Verificar ordem depois do sort
+                console.log('[DEBUG FT-Divergence] Depois sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
                         return { label: label, value: fa };
                     });
                 this.fatoresAjuste.unshift(this.fatorAjusteNenhumSelectItem);
+
+                // DEBUG: Verificar ordem final no combo
+                console.log('[DEBUG FT-Divergence] SelectItems final:', this.fatoresAjuste.map(f => f.label));
             }
         }
     }

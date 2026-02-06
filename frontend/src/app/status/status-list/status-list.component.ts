@@ -57,10 +57,25 @@ export class StatusListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[StatusList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('status_rows');
-        if (savedRows) {
+        console.log('[StatusList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[StatusList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[StatusList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('status_rows', this.rows);
+        } else {
+            console.log('[StatusList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar filtro salvo
         const savedFilter = this.pageConfigService.getConfig('status_filter');
         if (savedFilter) {
             this.elasticQuery.value = savedFilter;
@@ -172,7 +187,9 @@ export class StatusListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[StatusList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('status_rows', this.rows);
+        console.log('[StatusList] Nova configuração salva:', this.rows);
     }
 }

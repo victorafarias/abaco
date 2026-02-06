@@ -77,10 +77,25 @@ export class OrganizacaoListComponent implements OnInit, AfterViewInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[OrganizacaoList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('organizacao_rows');
-        if (savedRows) {
+        console.log('[OrganizacaoList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[OrganizacaoList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[OrganizacaoList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('organizacao_rows', this.rows);
+        } else {
+            console.log('[OrganizacaoList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar configuração de colunas visíveis
         const savedCols = this.pageConfigService.getConfig('organizacao_columnsVisible');
         if (savedCols) {
             this.columnsVisible = savedCols;
@@ -88,6 +103,7 @@ export class OrganizacaoListComponent implements OnInit, AfterViewInit {
             this.columnsVisible = this.allColumnsTable.map(c => c.value);
         }
 
+        // Recuperar filtro salvo
         const savedFilter = this.pageConfigService.getConfig('organizacao_filter');
         if (savedFilter) {
             this.elasticQuery.value = savedFilter;
@@ -249,7 +265,9 @@ export class OrganizacaoListComponent implements OnInit, AfterViewInit {
     }
 
     onPageChange(event) {
+        console.log('[OrganizacaoList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('organizacao_rows', this.rows);
+        console.log('[OrganizacaoList] Nova configuração salva:', this.rows);
     }
 }

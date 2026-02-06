@@ -8,6 +8,7 @@ import br.com.basis.abaco.domain.UploadedFile;
 import br.com.basis.abaco.domain.enumeration.Complexidade;
 import br.com.basis.abaco.domain.enumeration.MetodoContagem;
 import br.com.basis.abaco.domain.enumeration.StatusFuncao;
+import br.com.basis.abaco.domain.TipoEquipe;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.DerRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
@@ -20,7 +21,7 @@ import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.service.dto.AlrDTO;
 import br.com.basis.abaco.service.dto.DerFtDTO;
-//import br.com.basis.abaco.service.dto.DerDTO;
+import br.com.basis.abaco.service.dto.DerDTO;
 import br.com.basis.abaco.service.dto.FuncaoImportarDTO;
 import br.com.basis.abaco.service.dto.FuncaoOrdemDTO;
 import br.com.basis.abaco.service.dto.FuncaoPFDTO;
@@ -160,38 +161,61 @@ public class FuncaoTransacaoResource {
      */
     @PutMapping(path = "/funcaoTransacao/{id}", consumes = {"multipart/form-data"})
     @Timed
-    public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(@PathVariable Long id, @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, @RequestPart("files")List<MultipartFile> files) throws URISyntaxException{
-        FuncaoTransacao funcaoTransacao = convertToEntity(funcaoTransacaoDTO);
-
-        log.debug("REST request to update FuncaoTransacao : {}", funcaoTransacao);
+    public ResponseEntity<FuncaoTransacao> updateFuncaoTransacao(
+            @PathVariable Long id, 
+            @RequestPart("funcaoTransacao") FuncaoTransacaoSaveDTO funcaoTransacaoDTO, 
+            @RequestPart("files") List<MultipartFile> files) throws URISyntaxException {
+        
+        log.debug("REST request to update FuncaoTransacao : {}", funcaoTransacaoDTO);
+        
+        // CORREÇÃO BUG: Usar objeto gerenciado do banco para permitir orphanRemoval
         FuncaoTransacao funcaoTransacaoOld = funcaoTransacaoRepository.findOne(id);
+        
+        if (funcaoTransacaoOld == null) {
+            log.warn("FuncaoTransacao com ID {} não encontrada para atualização", id);
+            return ResponseEntity.notFound().build();
+        }
+        
         Analise analise = analiseRepository.findOneByIdClean(funcaoTransacaoOld.getAnalise().getId());
-        funcaoTransacao.getDers().forEach(der -> der.setFuncaoTransacao(funcaoTransacao));
-        funcaoTransacao.getAlrs().forEach((alr -> alr.setFuncaoTransacao(funcaoTransacao)));
-        funcaoTransacao.setAnalise(analise);
 
-        if (funcaoTransacao.getId() == null) {
-            return createFuncaoTransacao(analise.getId(), funcaoTransacaoDTO, files);
-        }
-
-        if (funcaoTransacao.getAnalise() == null || funcaoTransacao.getAnalise().getId() == null) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new funcaoTransacao cannot already have an ID")).body(null);
-        }
-        if(!files.isEmpty()){
+        // CORREÇÃO BUG: Copiar campos do DTO para o objeto gerenciado
+        atualizarCamposSimples(funcaoTransacaoOld, funcaoTransacaoDTO);
+        
+        // CORREÇÃO BUG: Sincronizar coleções de DERs e ALRs
+        // Isso permite que o Hibernate detecte e remova órfãos automaticamente
+        sincronizarDers(funcaoTransacaoOld, funcaoTransacaoDTO.getDers());
+        sincronizarAlrs(funcaoTransacaoOld, funcaoTransacaoDTO.getAlrs());
+        
+        // Processar arquivos
+        if (!files.isEmpty()) {
             List<UploadedFile> uploadedFiles = funcaoDadosService.uploadFiles(files);
-            funcaoTransacao.setFiles(uploadedFiles);
+            funcaoTransacaoOld.setFiles(uploadedFiles);
         }
-        if(analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)){
-            funcaoTransacao.setComplexidade(Complexidade.MEDIA);
-        }
-
-        FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacao);
-
-        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao()) && analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)){
-            funcaoTransacaoService.saveVwDersAndVwAlrs(result.getDers(), result.getAlrs(), analise.getSistema().getId(), result.getId());
+        
+        // Aplicar regras de negócio
+        if (analise.getMetodoContagem().equals(MetodoContagem.ESTIMADA)) {
+            funcaoTransacaoOld.setComplexidade(Complexidade.MEDIA);
         }
 
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, funcaoTransacao.getId().toString())).body(result);
+        // CORREÇÃO BUG: Salvar objeto gerenciado (Hibernate detectará órfãos automaticamente)
+        FuncaoTransacao result = funcaoTransacaoRepository.save(funcaoTransacaoOld);
+
+        if (Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao()) && 
+            analise.getMetodoContagem().equals(MetodoContagem.DETALHADA)) {
+            funcaoTransacaoService.saveVwDersAndVwAlrs(
+                result.getDers(), 
+                result.getAlrs(), 
+                analise.getSistema().getId(), 
+                result.getId()
+            );
+        }
+
+        log.debug("FuncaoTransacao ID {} atualizada com {} DERs e {} ALRs", 
+                  result.getId(), result.getDers().size(), result.getAlrs().size());
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -466,6 +490,102 @@ public class FuncaoTransacaoResource {
         map.setDers(ders);
         map.setAlrs(alrs);
         return map;
+    }
+
+    /**
+     * Atualiza campos simples (não relacionamentos de coleção) do objeto gerenciado com dados do DTO.
+     * 
+     * @param funcaoTransacao Objeto gerenciado do Hibernate
+     * @param dto DTO com novos valores
+     */
+    private void atualizarCamposSimples(FuncaoTransacao funcaoTransacao, FuncaoTransacaoSaveDTO dto) {
+        // Campos simples
+        funcaoTransacao.setTipo(dto.getTipo());
+        funcaoTransacao.setName(dto.getName());
+        funcaoTransacao.setFtrStr(dto.getFtrStr());
+        funcaoTransacao.setQuantidade(dto.getQuantidade());
+        funcaoTransacao.setImpacto(dto.getImpacto());
+        funcaoTransacao.setComplexidade(dto.getComplexidade());
+        funcaoTransacao.setPf(dto.getPf());
+        funcaoTransacao.setGrossPF(dto.getGrossPF());
+        funcaoTransacao.setDetStr(dto.getDetStr());
+        funcaoTransacao.setSustantation(dto.getSustantation());
+        funcaoTransacao.setOrdem(dto.getOrdem());
+        funcaoTransacao.setStatusFuncao(dto.getStatusFuncao());
+        
+        // Relacionamentos ManyToOne
+        if (dto.getFuncionalidade() != null) {
+            funcaoTransacao.setFuncionalidade(dto.getFuncionalidade());
+        }
+        
+        if (dto.getFatorAjuste() != null) {
+            funcaoTransacao.setFatorAjuste(dto.getFatorAjuste());
+        }
+        
+        if (dto.getEquipe() != null) {
+            // CORREÇÃO: TipoEquipeDTO não tem toEntity(), usar ModelMapper
+            funcaoTransacao.setEquipe(modelMapper.map(dto.getEquipe(), TipoEquipe.class));
+        }
+        
+        log.debug("Campos simples atualizados para FuncaoTransacao ID {}", funcaoTransacao.getId());
+    }
+
+    /**
+     * Sincroniza a coleção de DERs do objeto gerenciado.
+     * Remove DERs antigos e adiciona novos, permitindo que o Hibernate
+     * detecte entidades órfãs através do orphanRemoval=true.
+     * 
+     * @param funcaoTransacao Objeto gerenciado do Hibernate
+     * @param dersDTO Lista de DERs do DTO
+     */
+    private void sincronizarDers(FuncaoTransacao funcaoTransacao, Set<DerDTO> dersDTO) {
+        // CRÍTICO: Limpar coleção existente - marca DERs atuais como órfãos
+        funcaoTransacao.getDers().clear();
+        
+        // Adicionar novos DERs do DTO
+        if (dersDTO != null && !dersDTO.isEmpty()) {
+            Set<Der> novosDers = new LinkedHashSet<>();
+            dersDTO.forEach(derDto -> {
+                Der der = new Der();
+                der.setNome(derDto.getNome());
+                der.setValor(derDto.getValor());
+                der.setFuncaoTransacao(funcaoTransacao);
+                novosDers.add(der);
+            });
+            funcaoTransacao.getDers().addAll(novosDers);
+        }
+        
+        log.debug("Sincronizados {} DERs para FuncaoTransacao ID {}", 
+                  funcaoTransacao.getDers().size(), funcaoTransacao.getId());
+    }
+
+    /**
+     * Sincroniza a coleção de ALRs (FTRs) do objeto gerenciado.
+     * Remove ALRs antigos e adiciona novos, permitindo que o Hibernate
+     * detecte entidades órfãs através do orphanRemoval=true.
+     * 
+     * @param funcaoTransacao Objeto gerenciado do Hibernate
+     * @param alrsDTO Lista de ALRs do DTO
+     */
+    private void sincronizarAlrs(FuncaoTransacao funcaoTransacao, Set<AlrDTO> alrsDTO) {
+        // CRÍTICO: Limpar coleção existente - marca ALRs atuais como órfãos
+        funcaoTransacao.getAlrs().clear();
+        
+        // Adicionar novos ALRs do DTO
+        if (alrsDTO != null && !alrsDTO.isEmpty()) {
+            Set<Alr> novosAlrs = new LinkedHashSet<>();
+            alrsDTO.forEach(alrDto -> {
+                Alr alr = new Alr();
+                alr.setNome(alrDto.getNome());
+                alr.setValor(alrDto.getValor());
+                alr.setFuncaoTransacao(funcaoTransacao);
+                novosAlrs.add(alr);
+            });
+            funcaoTransacao.getAlrs().addAll(novosAlrs);
+        }
+        
+        log.debug("Sincronizados {} ALRs para FuncaoTransacao ID {}", 
+                  funcaoTransacao.getAlrs().size(), funcaoTransacao.getId());
     }
 
 

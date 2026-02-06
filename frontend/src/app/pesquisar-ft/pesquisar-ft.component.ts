@@ -349,12 +349,24 @@ export class PesquisarFtComponent implements OnInit {
 
     private inicializaFatoresAjuste() {
         const faS: FatorAjuste[] = _.cloneDeep(this.analise.manual.fatoresAjuste);
+
+        // DEBUG: Verificar ordem antes do sort
+        console.log('[DEBUG Pesquisar-FT] Antes sort:', faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
         faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
+
+        // DEBUG: Verificar ordem depois do sort
+        console.log('[DEBUG Pesquisar-FT] Depois sort:', faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
         this.fatoresAjuste =
             faS.map(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
                 return { label: label, value: fa };
             });
+
+        // DEBUG: Verificar ordem final no combo
+        console.log('[DEBUG Pesquisar-FT] SelectItems final:', this.fatoresAjuste.map(f => f.label));
+
         this.carregarModulosQuandoTiverSistemaDisponivel();
     }
 

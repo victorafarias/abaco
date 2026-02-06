@@ -9,6 +9,7 @@ import br.com.basis.abaco.domain.UploadedFile;
 import br.com.basis.abaco.reports.rest.RelatorioFatorAjusteRest;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.FatorAjusteRepository;
+import br.com.basis.abaco.repository.FuncaoDadosRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
 import br.com.basis.abaco.repository.ManualContratoRepository;
 import br.com.basis.abaco.repository.ManualRepository;
@@ -98,6 +99,8 @@ public class ManualResource {
 
     private final FuncaoTransacaoRepository funcaoTransacaoRepository;
 
+    private final FuncaoDadosRepository funcaoDadosRepository;
+
     private final FatorAjusteRepository fatorAjusteRepository;
 
     private final ManualService manualService;
@@ -106,13 +109,14 @@ public class ManualResource {
 
     public ManualResource(ManualRepository manualRepository, ManualSearchRepository manualSearchRepository,
                           ManualContratoRepository manualContratoRepository, AnaliseRepository analiseRepository, FatorAjusteRepository fatorAjusteRepository,
-                          FuncaoTransacaoRepository funcaoTransacaoRepository, ManualService manualService, UploadedFilesRepository uploadedFilesRepository) {
+                          FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoDadosRepository funcaoDadosRepository, ManualService manualService, UploadedFilesRepository uploadedFilesRepository) {
         this.manualRepository = manualRepository;
         this.manualSearchRepository = manualSearchRepository;
         this.manualContratoRepository = manualContratoRepository;
         this.analiseRepository = analiseRepository;
         this.fatorAjusteRepository = fatorAjusteRepository;
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
+        this.funcaoDadosRepository = funcaoDadosRepository;
         this.manualService = manualService;
         this.filesRepository = uploadedFilesRepository;
     }
@@ -211,6 +215,42 @@ public class ManualResource {
                 .body(null);
         }
 
+        // Validação preventiva: verificar se fatores de ajuste sendo removidos estão em uso
+        Manual existingManualWithFactors = manualRepository.findOne(manual.getId());
+        if (existingManualWithFactors != null && existingManualWithFactors.getFatoresAjuste() != null) {
+            List<Long> incomingFactorIds = manual.getFatoresAjuste() != null 
+                ? manual.getFatoresAjuste().stream().map(FatorAjuste::getId).filter(id -> id != null).collect(java.util.stream.Collectors.toList())
+                : new ArrayList<>();
+            
+            log.debug("Fatores de ajuste recebidos: {}", incomingFactorIds);
+            
+            for (FatorAjuste existingFactor : existingManualWithFactors.getFatoresAjuste()) {
+                if (existingFactor.getId() != null && !incomingFactorIds.contains(existingFactor.getId())) {
+                    // Fator está sendo removido, verificar se está em uso
+                    log.debug("Fator de ajuste {} será removido, verificando se está em uso...", existingFactor.getId());
+                    
+                    // Verificar se está referenciado por FuncaoTransacao ou FuncaoDados
+                    boolean isReferencedByFT = funcaoTransacaoRepository.findAll().stream()
+                        .anyMatch(ft -> ft.getFatorAjuste() != null && ft.getFatorAjuste().getId().equals(existingFactor.getId()));
+                    
+                    boolean isReferencedByFD = funcaoDadosRepository.findAll().stream()
+                        .anyMatch(fd -> fd.getFatorAjuste() != null && fd.getFatorAjuste().getId().equals(existingFactor.getId()));
+                    
+                    if (isReferencedByFT || isReferencedByFD) {
+                        String entityType = isReferencedByFD ? "Função de Dados" : "Função de Transação";
+                        log.error("Fator de ajuste {} não pode ser removido pois está sendo usado por {}. "
+                            + "Referenced by FT: {}, Referenced by FD: {}", 
+                            existingFactor.getId(), entityType, isReferencedByFT, isReferencedByFD);
+                        
+                        return ResponseEntity.badRequest()
+                            .headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "fatorajusteemuso", 
+                                "O fator de ajuste '" + existingFactor.getNome() + "' não pode ser excluído pois está sendo usado por uma " + entityType + "."))
+                            .body(null);
+                    }
+                }
+            }
+        }
+
         Optional<List<UploadedFile>> existingFiles = filesRepository.findAllByManuais(manual);
         if(existingFiles.isPresent()){
             manual.setArquivosManual(existingFiles.get());
@@ -221,11 +261,22 @@ public class ManualResource {
             manual.addArquivoManual(file);
         }
 
-        Manual linkedManual = linkManualToPhaseEffortsAndAdjustFactors(manual);
-        Manual result = manualRepository.save(linkedManual);
-        manualSearchRepository.save(result);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, manual.getId().toString()))
-            .body(result);
+        try {
+            Manual linkedManual = linkManualToPhaseEffortsAndAdjustFactors(manual);
+            log.debug("Manual vinculado com {} fatores de ajuste antes de salvar", 
+                linkedManual.getFatoresAjuste() != null ? linkedManual.getFatoresAjuste().size() : 0);
+            
+            Manual result = manualRepository.save(linkedManual);
+            log.debug("Manual salvo com sucesso. ID: {}, Fatores: {}", 
+                result.getId(), result.getFatoresAjuste() != null ? result.getFatoresAjuste().size() : 0);
+            
+            manualSearchRepository.save(result);
+            return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, manual.getId().toString()))
+                .body(result);
+        } catch (Exception e) {
+            log.error("Erro ao salvar manual. Manual ID: {}, Erro: {}", manual.getId(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**

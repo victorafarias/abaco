@@ -261,10 +261,24 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[AnaliseList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('analise_rows');
-        if (savedRows) {
+        console.log('[AnaliseList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[AnaliseList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[AnaliseList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('analise_rows', this.rows);
+        } else {
+            console.log('[AnaliseList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.estadoInicial();
         this.verificarPermissoes();
@@ -1141,8 +1155,10 @@ export class AnaliseListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[AnaliseList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('analise_rows', this.rows);
+        console.log('[AnaliseList] Nova configuração salva:', this.rows);
     }
     public openModalDivergence(lstAnalise: Analise[]) {
         this.statusToChange = undefined;

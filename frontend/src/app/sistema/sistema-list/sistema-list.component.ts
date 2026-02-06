@@ -62,10 +62,25 @@ export class SistemaListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[SistemaList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('sistema_rows');
-        if (savedRows) {
+        console.log('[SistemaList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[SistemaList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[SistemaList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('sistema_rows', this.rows);
+        } else {
+            console.log('[SistemaList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar parâmetros de busca salvos
         const savedSearch = this.pageConfigService.getConfig('sistema_searchParams');
         if (savedSearch) {
             this.searchParams = savedSearch;
@@ -269,7 +284,9 @@ export class SistemaListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[SistemaList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('sistema_rows', this.rows);
+        console.log('[SistemaList] Nova configuração salva:', this.rows);
     }
 }

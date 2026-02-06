@@ -62,10 +62,25 @@ export class TipoEquipeListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[TipoEquipeList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('tipo_equipe_rows');
-        if (savedRows) {
+        console.log('[TipoEquipeList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[TipoEquipeList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[TipoEquipeList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('tipo_equipe_rows', this.rows);
+        } else {
+            console.log('[TipoEquipeList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar filtro salvo
         const savedFilter = this.pageConfigService.getConfig('tipo_equipe_filter');
         if (savedFilter) {
             this.elasticQuery.value = savedFilter;
@@ -177,7 +192,9 @@ export class TipoEquipeListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[TipoEquipeList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('tipo_equipe_rows', this.rows);
+        console.log('[TipoEquipeList] Nova configuração salva:', this.rows);
     }
 }

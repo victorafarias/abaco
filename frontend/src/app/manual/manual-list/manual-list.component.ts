@@ -77,16 +77,33 @@ export class ManualListComponent implements OnInit, AfterViewInit {
 
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[ManualList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('manual_rows');
-        if (savedRows) {
+        console.log('[ManualList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[ManualList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[ManualList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('manual_rows', this.rows);
+        } else {
+            console.log('[ManualList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar configuração de colunas visíveis
         const savedCols = this.pageConfigService.getConfig('manual_columnsVisible');
         if (savedCols) {
             this.columnsVisible = savedCols;
         } else {
             this.columnsVisible = this.allColumnsTable.map(c => c.value);
         }
+
+        // Recuperar filtro salvo
         const savedFilter = this.pageConfigService.getConfig('manual_filter');
         if (savedFilter) {
             this.elasticQuery.value = savedFilter;
@@ -315,7 +332,9 @@ export class ManualListComponent implements OnInit, AfterViewInit {
     }
 
     onPageChange(event) {
+        console.log('[ManualList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('manual_rows', this.rows);
+        console.log('[ManualList] Nova configuração salva:', this.rows);
     }
 }

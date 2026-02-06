@@ -125,10 +125,25 @@ export class DivergenciaListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[DivergenciaList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('divergencia_rows');
-        if (savedRows) {
+        console.log('[DivergenciaList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[DivergenciaList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[DivergenciaList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('divergencia_rows', this.rows);
+        } else {
+            console.log('[DivergenciaList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar parâmetros de busca salvos
         const savedSearch = this.pageConfigService.getConfig('divergencia_searchGroup');
         if (savedSearch) {
             this.searchDivergence = savedSearch;
@@ -487,8 +502,10 @@ export class DivergenciaListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[DivergenciaList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('divergencia_rows', this.rows);
+        console.log('[DivergenciaList] Nova configuração salva:', this.rows);
     }
 
     // mostrarColunas removed

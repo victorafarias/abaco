@@ -82,8 +82,19 @@ export class ManualService {
         return this.http.put<Manual>(this.resourceUrl, body).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
+            if (error.status === 400) {
+                this.pageNotificationService.addErrorMessage('Erro ao atualizar o manual. Verifique os dados e tente novamente.');
+                return throwError(new Error(error.status));
+            }
+            if (error.status >= 500) {
+                this.pageNotificationService.addErrorMessage('Erro no servidor ao salvar o manual. Por favor, tente novamente ou contate o suporte.');
+                return throwError(new Error(error.status));
+            }
+            // Erro genérico para outros casos
+            this.pageNotificationService.addErrorMessage('Erro ao salvar o manual. Por favor, tente novamente.');
+            return throwError(error);
         }));
     }
 

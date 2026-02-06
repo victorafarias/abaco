@@ -87,22 +87,37 @@ export class UserListComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit() {
+        // Log de inicialização
+        console.log('[UserList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('user_rows');
-        if (savedRows) {
+        console.log('[UserList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[UserList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[UserList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('user_rows', this.rows);
+        } else {
+            console.log('[UserList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar configuração de colunas visíveis
         const savedCols = this.pageConfigService.getConfig('user_columnsVisible');
         if (savedCols) {
             this.columnsVisible = savedCols;
         } else {
             this.columnsVisible = this.allColumnsTable.map(c => c.value);
         }
+
         this.recuperarOrganizacoes();
         this.recuperarEquipe();
         this.recuperarPerfis();
         this.query = this.changeUrl();
         if (this.datatable) {
-
             this.datatable.pDatatableComponent.onRowSelect.subscribe((event) => {
                 this.usuarioSelecionado = event.data;
             });
@@ -110,6 +125,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
                 this.usuarioSelecionado = undefined;
             });
         }
+
+        // Recuperar parâmetros de busca salvos
         const savedSearch = this.pageConfigService.getConfig('user_searchParams');
         if (savedSearch) {
             this.searchParams = savedSearch;
@@ -337,7 +354,9 @@ export class UserListComponent implements OnInit, AfterViewInit {
     }
 
     onPageChange(event) {
+        console.log('[UserList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('user_rows', this.rows);
+        console.log('[UserList] Nova configuração salva:', this.rows);
     }
 }
