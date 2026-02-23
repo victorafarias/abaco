@@ -389,7 +389,7 @@ public class AnaliseResource {
     public ResponseEntity<byte[]> exportarExcel(@PathVariable Long id, @PathVariable Long modelo) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
-        String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
+        String extensaoModelo = (modelo == 6 || modelo == 8) ? "xls" : "xlsx";
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analiseService.recuperarAnalise(id)), extensaoModelo));
         return new ResponseEntity<>(analiseService.exportarExcel(id, modelo), headers, HttpStatus.OK);
     }
@@ -533,7 +533,7 @@ public class AnaliseResource {
     public ResponseEntity<byte[]> importarExcelDivergencia(@PathVariable Long id, @PathVariable Long modelo) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
-        String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
+        String extensaoModelo = (modelo == 6 || modelo == 8) ? "xls" : "xlsx";
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analiseService.recuperarAnalise(id)), extensaoModelo));
         return new ResponseEntity<>(analiseService.importarExcelDivergencia(id, modelo), headers, HttpStatus.OK);
     }

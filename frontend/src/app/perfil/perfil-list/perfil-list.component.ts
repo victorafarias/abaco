@@ -42,10 +42,25 @@ export class PerfilListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[PerfilList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('perfil_rows');
-        if (savedRows) {
+        console.log('[PerfilList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[PerfilList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[PerfilList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('perfil_rows', this.rows);
+        } else {
+            console.log('[PerfilList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar filtro salvo
         const savedFilter = this.pageConfigService.getConfig('perfil_filter');
         if (savedFilter) {
             this.elasticQuery.value = savedFilter;
@@ -150,7 +165,9 @@ export class PerfilListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[PerfilList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('perfil_rows', this.rows);
+        console.log('[PerfilList] Nova configuração salva:', this.rows);
     }
 }

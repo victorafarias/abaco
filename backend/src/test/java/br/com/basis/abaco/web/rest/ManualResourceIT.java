@@ -11,6 +11,7 @@ import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.ManualRepository;
 import br.com.basis.abaco.repository.UploadedFilesRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
+import br.com.basis.abaco.repository.FuncaoDadosRepository;
 import br.com.basis.abaco.repository.FatorAjusteRepository;
 import br.com.basis.abaco.repository.ManualContratoRepository;
 import br.com.basis.dynamicexports.service.DynamicExportsService;
@@ -88,6 +89,9 @@ public class ManualResourceIT {
     private FuncaoTransacaoRepository funcaoTransacaoRepository;
 
     @Autowired
+    private FuncaoDadosRepository funcaoDadosRepository;
+
+    @Autowired
     private  ManualContratoRepository manualContratoRepository;
 
     @Autowired
@@ -114,7 +118,7 @@ public class ManualResourceIT {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         ManualResource manualResource = new ManualResource(manualRepository, manualSearchRepository, manualContratoRepository
-            , analiseRepository, fatorAjusteRepository, funcaoTransacaoRepository, manualService, filesRepository);
+            , analiseRepository, fatorAjusteRepository, funcaoTransacaoRepository, funcaoDadosRepository, manualService, filesRepository);
         this.restManualMockMvc = MockMvcBuilders.standaloneSetup(manualResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

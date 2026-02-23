@@ -28,10 +28,25 @@ export class ContratoListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // Log de inicialização
+    console.log('[ContratoList] Inicializando componente');
+
+    // Recuperar configuração de rows salva
     const savedRows = this.pageConfigService.getConfig('contrato_rows');
-    if (savedRows) {
+    console.log('[ContratoList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+    // Validar e aplicar configuração de rows
+    if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
       this.rows = savedRows;
+      console.log('[ContratoList] Aplicando rows válido:', this.rows);
+    } else if (savedRows) {
+      console.warn(`[ContratoList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+      this.pageConfigService.saveConfig('contrato_rows', this.rows);
+    } else {
+      console.log('[ContratoList] Nenhuma config salva. Usando padrão:', this.rows);
     }
+
+    // Recuperar filtro salvo
     const savedFilter = this.pageConfigService.getConfig('contrato_filter');
     if (savedFilter) {
       this.filter = savedFilter;
@@ -45,8 +60,10 @@ export class ContratoListComponent implements OnInit {
   }
 
   onPageChange(event) {
+    console.log('[ContratoList] Evento de mudança de página:', event);
     this.rows = event.rows;
     this.pageConfigService.saveConfig('contrato_rows', this.rows);
+    console.log('[ContratoList] Nova configuração salva:', this.rows);
   }
 
   getLabel(label) {

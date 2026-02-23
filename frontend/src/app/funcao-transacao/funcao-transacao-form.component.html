@@ -34,10 +34,11 @@
                                     [disableView]="selectButtonMultiple || isOrderning"
                                     id="idTabelaFuncaoTransacaoFormFuncaoTransacao" [enableButtonsScroll]="true"
                                     [value]="this.funcoesTransacoes" (buttonClick)="datatableClick($event)"
-                                    (dblclick)="onRowDblclick($event)" (click)="selectFT($event)" [paginator]="false"
-                                    [reorderableRows]="isOrderning" (onRowReorder)="updateIndex()" [rows]="numberPages"
-                                    [selectionMode]="'multiple'" [filterOnColumn]="true"
-                                    [rowsPerPageOptions]="[20,50,100]" [showVisibleColumnsControl]="false" #tables>
+                                    (dblclick)="onRowDblclick($event)" (click)="selectFT($event)" [paginator]="true"
+                                    (onPage)="onPageChange($event)" [reorderableRows]="isOrderning"
+                                    (onRowReorder)="updateIndex()" [rows]="numberPages" [selectionMode]="'multiple'"
+                                    [filterOnColumn]="true" [rowsPerPageOptions]="[20,50,100]"
+                                    [showVisibleColumnsControl]="false" #tables>
                                     <p-column header="Ordem" field="ordem"
                                         [style]="{'display': tables.visibleColumns['ordem']}">
                                         <ng-template let-col let-funcaoTransacao="rowData" pTemplate="body">
@@ -477,7 +478,7 @@
                 </div>
             </div>
         </div>
-        <div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 05px; margin-top: 05px">
+        <div class="ui-g ui-md-12" style="justify-content: flex-start; margin-bottom: 05px; margin-top: 05px">
             <div class="ui-g-12 ui-md-12 ui-lg-2" style="margin-bottom: 05px">
                 <app-white-button [buttonLabel]="'Voltar'" id="idBtnVoltarFormAnalise" routerLink="/analise">
                 </app-white-button>
@@ -504,7 +505,7 @@
 </p-dialog>
 <!-- DIALOG: COPIAR FUNÇÕES DE TRANSAÇÃO -->
 <div *ngIf="analise && analise.organizacao && analise.sistema.modulos">
-    <p-dialog [header]="this.getLabel('Importa funções de transação')" [(visible)]="display" [style]="{width: '80vw'}"
+    <p-dialog [header]="this.getLabel('Importa funções de transação')" [(visible)]="display" [style]="{width: '94%'}"
         [closable]="false">
         <app-pesquisar-ft [tamanhoLista]="funcoesTransacoes.length+1"></app-pesquisar-ft>
     </p-dialog>

@@ -1,27 +1,27 @@
-import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {PageNotificationService} from '@nuvem/primeng-components';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
-import {ConfirmationService} from 'primeng/';
-import {SelectItem} from 'primeng/api';
-import {AnaliseSharedDataService} from 'src/app/shared/analise-shared-data.service';
-import {AnaliseSharedUtils} from '../../analise-shared/analise-shared-utils';
-import {ResumoTotal} from '../../analise-shared/resumo-funcoes';
-import {Contrato} from '../../contrato';
-import {EsforcoFase} from '../../esforco-fase';
-import {Manual} from '../../manual';
-import {Organizacao, OrganizacaoService} from '../../organizacao';
-import {Sistema} from '../../sistema';
-import {TipoEquipe, TipoEquipeService} from '../../tipo-equipe';
-import {User, UserService} from '../../user';
-import {MessageUtil} from '../../util/message.util';
-import {AnaliseShareEquipe} from '../../analise/analise-share-equipe.model';
-import {Analise} from '../../analise/analise.model';
-import {Resumo} from './resumo.model';
-import {BlockUiService} from '@nuvem/angular-base';
-import {DivergenciaService} from '../divergencia.service';
-import {Status} from "../../status/status.model";
-import {StatusService} from "../../status";
+import { ConfirmationService } from 'primeng/';
+import { SelectItem } from 'primeng/api';
+import { AnaliseSharedDataService } from 'src/app/shared/analise-shared-data.service';
+import { AnaliseSharedUtils } from '../../analise-shared/analise-shared-utils';
+import { ResumoTotal } from '../../analise-shared/resumo-funcoes';
+import { Contrato } from '../../contrato';
+import { EsforcoFase } from '../../esforco-fase';
+import { Manual } from '../../manual';
+import { Organizacao, OrganizacaoService } from '../../organizacao';
+import { Sistema } from '../../sistema';
+import { TipoEquipe, TipoEquipeService } from '../../tipo-equipe';
+import { User, UserService } from '../../user';
+import { MessageUtil } from '../../util/message.util';
+import { AnaliseShareEquipe } from '../../analise/analise-share-equipe.model';
+import { Analise } from '../../analise/analise.model';
+import { Resumo } from './resumo.model';
+import { BlockUiService } from '@nuvem/angular-base';
+import { DivergenciaService } from '../divergencia.service';
+import { Status } from "../../status/status.model";
+import { StatusService } from "../../status";
 
 @Component({
 	selector: 'app-analise-resumo',
@@ -66,7 +66,8 @@ export class DivergenciaResumoComponent implements OnInit {
 	showDialogImportarExcel: boolean = false;
 	analiseImportarExcel: Analise = new Analise();
 	lstModelosExcel = [
-		{label: "Modelo padrão BASIS", value: 1}
+		{ label: "Modelo padrão BASIS", value: 1 },
+		{ label: "Modelo padrão SFSP", value: 8 }
 	];
 	modeloSelecionado: any;
 
@@ -101,36 +102,36 @@ export class DivergenciaResumoComponent implements OnInit {
 			if (this.idAnalise) {
 				// if (!this.isView) {
 				this.divergenciaService.find(this.idAnalise).subscribe(analise => {
-						this.analiseSharedDataService.analise = new Analise().copyFromJSON(analise);
-						this.analise = new Analise().copyFromJSON(analise);
-						this.disableAba = analise.metodoContagem === MessageUtil.INDICATIVA;
-						this.complexidades = AnaliseSharedUtils.complexidades;
-						this.resumoTotal = this.analiseSharedDataService.analise.resumoTotal;
-						this.esforcoFases = this.analiseSharedDataService.analise.esforcoFases;
-						this.pfTotal = analise.pfTotal.toFixed(2);
-						this.pfAjustada = parseFloat(analise.adjustPFTotal).toFixed(2);
-						this.pfOriginal = analise.analisesComparadas[0]?.pfTotal.toFixed(2);
-						this.divergenciaService.getDivergenciaResumo(this.idAnalise)
-							.subscribe(res => {
-								const jsonResponse = res;
-								const lstResumo: Resumo[] = [];
-								jsonResponse.forEach(
-									elem => {
-										lstResumo.push(new Resumo(
-											elem.pfAjustada,
-											elem.pfTotal,
-											elem.quantidadeTipo,
-											elem.sem,
-											elem.baixa,
-											elem.media, elem.alta,
-											elem.inm,
-											elem.tipo
-										).clone());
-									});
-								this.linhaResumo = lstResumo;
-								this.linhaResumo = Resumo.addTotalLine(this.linhaResumo);
-							});
-					},
+					this.analiseSharedDataService.analise = new Analise().copyFromJSON(analise);
+					this.analise = new Analise().copyFromJSON(analise);
+					this.disableAba = analise.metodoContagem === MessageUtil.INDICATIVA;
+					this.complexidades = AnaliseSharedUtils.complexidades;
+					this.resumoTotal = this.analiseSharedDataService.analise.resumoTotal;
+					this.esforcoFases = this.analiseSharedDataService.analise.esforcoFases;
+					this.pfTotal = analise.pfTotal.toFixed(2);
+					this.pfAjustada = parseFloat(analise.adjustPFTotal).toFixed(2);
+					this.pfOriginal = analise.analisesComparadas[0]?.pfTotal.toFixed(2);
+					this.divergenciaService.getDivergenciaResumo(this.idAnalise)
+						.subscribe(res => {
+							const jsonResponse = res;
+							const lstResumo: Resumo[] = [];
+							jsonResponse.forEach(
+								elem => {
+									lstResumo.push(new Resumo(
+										elem.pfAjustada,
+										elem.pfTotal,
+										elem.quantidadeTipo,
+										elem.sem,
+										elem.baixa,
+										elem.media, elem.alta,
+										elem.inm,
+										elem.tipo
+									).clone());
+								});
+							this.linhaResumo = lstResumo;
+							this.linhaResumo = Resumo.addTotalLine(this.linhaResumo);
+						});
+				},
 					err => {
 						this.pageNotificationService.addErrorMessage(
 							this.getLabel('Você não tem permissão para editar esta análise, redirecionando para a tela de visualização...')
@@ -306,7 +307,7 @@ export class DivergenciaResumoComponent implements OnInit {
 				(response) => {
 					let filename = response.headers.get("content-disposition").split("filename=");
 					const mediaType = 'application/vnd.ms-excel';
-					const blob = new Blob([response.body], {type: mediaType});
+					const blob = new Blob([response.body], { type: mediaType });
 					const fileURL = window.URL.createObjectURL(blob);
 					const anchor = document.createElement('a');
 					anchor.download = filename[1];

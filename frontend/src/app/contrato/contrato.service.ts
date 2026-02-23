@@ -14,7 +14,7 @@ export class ContratoService {
 
   searchUrl = environment.apiUrl + '/_search/contratoes';
 
-  constructor(private http: HttpClient, private dateUtils: JhiDateUtils) {}
+  constructor(private http: HttpClient, private dateUtils: JhiDateUtils) { }
 
   create(contrato: Contrato): Observable<Contrato> {
     const copy = this.convert(contrato);
@@ -28,6 +28,10 @@ export class ContratoService {
 
   findAllContratoesByOrganization(org: Organizacao): Observable<Contrato[]> {
     return this.http.post<Contrato[]>(`${this.resourceUrl}/organizations`, org);
+  }
+
+  findAllActiveContratoesByOrganization(org: Organizacao): Observable<Contrato[]> {
+    return this.http.post<Contrato[]>(`${this.resourceUrl}/organizations/active`, org);
   }
 
   find(id: number): Observable<Contrato> {

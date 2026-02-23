@@ -5,4 +5,6 @@ requirements.lock
 charts/charts/
 charts/abaco*.tgz
 .idea/
-.agent/
+# plans/
+# docs/
+Analise Importacao Estimada.md

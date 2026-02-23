@@ -223,10 +223,10 @@ export class ManualFormComponent implements OnInit, OnDestroy {
         if (this.manual.fatoresAjuste.length === 0 || this.manual.fatoresAjuste === undefined) {
             document.getElementById('tabela-deflator').setAttribute('style', 'border: 1px dotted red;');
             this.invalidFields.push('Deflatores');
-        }else{
-            this.manual.fatoresAjuste.forEach(fatorAjuste =>{
-                if(!fatorAjuste.nome || !fatorAjuste.tipoAjuste || !fatorAjuste.fator || !fatorAjuste.descricao || !fatorAjuste.codigo){
-                    this.invalidFields.push("Deflator: "+fatorAjuste.codigo+"\n");
+        } else {
+            this.manual.fatoresAjuste.forEach(fatorAjuste => {
+                if (!fatorAjuste.nome || !fatorAjuste.tipoAjuste || !fatorAjuste.fator || !fatorAjuste.descricao || !fatorAjuste.codigo) {
+                    this.invalidFields.push("Deflator: " + fatorAjuste.codigo + "\n");
                 }
             })
         }
@@ -268,12 +268,32 @@ export class ManualFormComponent implements OnInit, OnDestroy {
             this.router.navigate(['/manual']);
             this.isEdit ? this.pageNotificationService.addUpdateMsg() : this.pageNotificationService.addCreateMsg();
         },
-            (error: Response) => {
+            (error: any) => {
                 this.isSaving = false;
 
-                if (error.headers['x-abacoapp-error'][0] === 'error.manualexists') {
+                // Verifica se o erro tem headers e o header de erro específico da aplicação
+                if (error.headers && error.headers.get && error.headers.get('x-abacoapp-error') === 'error.manualexists') {
                     this.pageNotificationService.addErrorMessage('Já existe um Manual registrado com este nome!');
-                    document.getElementById('nome_manual').setAttribute('style', 'border-color: red;');
+                    const nomeManualElement = document.getElementById('nome_manual');
+                    if (nomeManualElement) {
+                        nomeManualElement.setAttribute('style', 'border-color: red;');
+                    }
+                } else if (error.headers && error.headers.get && error.headers.get('x-abacoapp-error') === 'error.fatorajusteemuso') {
+                    // Fator de ajuste em uso - extrair mensagem do header
+                    const mensagem = error.headers.get('x-abacoapp-params');
+                    this.pageNotificationService.addErrorMessage(mensagem || 'O fator de ajuste não pode ser excluído pois está sendo usado.');
+                } else if (error.status >= 500) {
+                    // Erros de servidor (500, 502, 503, 504)
+                    this.pageNotificationService.addErrorMessage('Erro no servidor ao salvar o manual. Por favor, tente novamente ou contate o suporte.');
+                } else if (error.status === 400) {
+                    // Bad request
+                    this.pageNotificationService.addErrorMessage('Dados inválidos. Verifique os campos e tente novamente.');
+                } else if (error.status === 403) {
+                    // Sem permissão
+                    this.pageNotificationService.addErrorMessage('Você não possui permissão para realizar esta operação.');
+                } else {
+                    // Outros erros
+                    this.pageNotificationService.addErrorMessage('Erro ao salvar o manual. Por favor, tente novamente.');
                 }
             });
     }

@@ -66,4 +66,26 @@ public interface FuncaoTransacaoRepository extends JpaRepository<FuncaoTransacao
     // Alterado: Método para buscar a maior ordem de funções de transação de uma análise
     @Query("SELECT COALESCE(MAX(ft.ordem), 0) FROM FuncaoTransacao ft WHERE ft.analise.id = :analiseId")
     Long findMaxOrdemByAnaliseId(@Param("analiseId") Long analiseId);
+
+    /**
+     * Busca funções distintas de transação de um sistema.
+     * Retorna apenas os campos necessários (sem EntityGraph) usando query SQL otimizada.
+     * 
+     * @param sistemaId ID do sistema
+     * @return Lista de arrays [nomeModulo, nomeFuncionalidade, nomeFuncao, tipo]
+     */
+    @Query(value = 
+        "SELECT DISTINCT " +
+        "  m.nome AS nomeModulo, " +
+        "  f.nome AS nomeFuncionalidade, " +
+        "  ft.name AS nomeFuncao, " +
+        "  'FT' AS tipo " +
+        "FROM funcao_transacao ft " +
+        "INNER JOIN funcionalidade f ON ft.funcionalidade_id = f.id " +
+        "INNER JOIN modulo m ON f.modulo_id = m.id " +
+        "INNER JOIN analise a ON ft.analise_id = a.id " +
+        "WHERE a.sistema_id = :sistemaId " +
+        "ORDER BY m.nome, f.nome, ft.name",
+        nativeQuery = true)
+    List<Object[]> findFuncoesDistintasTransacaoBySistemaId(@Param("sistemaId") Long sistemaId);
 }
