@@ -75,4 +75,27 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
     // Alterado: Método para buscar a maior ordem de funções de dados de uma análise
     @Query("SELECT COALESCE(MAX(fd.ordem), 0) FROM FuncaoDados fd WHERE fd.analise.id = :analiseId")
     Long findMaxOrdemByAnaliseId(@Param("analiseId") Long analiseId);
+
+    /**
+     * Busca funções distintas de dados de um sistema.
+     * Retorna apenas os campos necessários (sem EntityGraph) usando query SQL otimizada.
+     * Esta query elimina o problema N+1 e reduz significativamente o volume de dados transferidos.
+     * 
+     * @param sistemaId ID do sistema
+     * @return Lista de arrays [nomeModulo, nomeFuncionalidade, nomeFuncao, tipo]
+     */
+    @Query(value = 
+        "SELECT DISTINCT " +
+        "  m.nome AS nomeModulo, " +
+        "  f.nome AS nomeFuncionalidade, " +
+        "  fd.name AS nomeFuncao, " +
+        "  'FD' AS tipo " +
+        "FROM funcao_dados fd " +
+        "INNER JOIN funcionalidade f ON fd.funcionalidade_id = f.id " +
+        "INNER JOIN modulo m ON f.modulo_id = m.id " +
+        "INNER JOIN analise a ON fd.analise_id = a.id " +
+        "WHERE a.sistema_id = :sistemaId " +
+        "ORDER BY m.nome, f.nome, fd.name",
+        nativeQuery = true)
+    List<Object[]> findFuncoesDistintasDadosBySistemaId(@Param("sistemaId") Long sistemaId);
 }

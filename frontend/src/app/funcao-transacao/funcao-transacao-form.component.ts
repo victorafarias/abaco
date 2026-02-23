@@ -268,6 +268,15 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
             this.columnsVisible = savedCols;
         }
         this.updateVisibleColumns(this.columnsVisible);
+        // Load saved pagination setting (applies to both view and edit modes)
+        const savedRows = localStorage.getItem("numberPagesFT");
+        if (savedRows != null) {
+            this.numberPages = Number.parseInt(savedRows);
+            if (this.tables && this.tables.pDatatableComponent) {
+                this.tables.pDatatableComponent._rows = this.numberPages;
+            }
+        }
+        this.changeDetectorRef.detectChanges();
     }
 
     estadoInicial() {
@@ -704,7 +713,8 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     dersReferenciados(ders: Der[]) {
         const dersReferenciadosChips: DerChipItem[] = DerChipConverter.converterReferenciaveis(ders);
         this.dersChips = this.dersChips ? this.dersChips.concat(dersReferenciadosChips) : dersReferenciadosChips;
-        this.alrsChips = this.alrsChips ? this.dersChips.concat(dersReferenciadosChips) : dersReferenciadosChips;
+        // FIX: Corrigido bug de copy-paste - estava concatenando dersChips em vez de alrsChips
+        this.alrsChips = this.alrsChips ? this.alrsChips.concat(dersReferenciadosChips) : dersReferenciadosChips;
     }
 
     private editar() {
@@ -948,7 +958,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
     }
     carregarModuloFuncionalidade(funcaoTransacaoSelecionada: FuncaoTransacao) {
         //CarregarModulo
-        this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo);
+        this.moduloSelected(funcaoTransacaoSelecionada.funcionalidade.modulo as Modulo);
     }
 
     private carregarFatorDeAjusteNaEdicao(funcaoSelecionada: FuncaoTransacao) {
@@ -1059,21 +1069,24 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         if (manual.fatoresAjuste) {
             if (this.analise.manual) {
                 this.faS = _.cloneDeep(this.analise.manual.fatoresAjuste);
-                this.faS.sort((n1, n2) => {
-                    if (n1.fator < n2.fator) {
-                        return 1;
-                    }
-                    if (n1.fator > n2.fator) {
-                        return -1;
-                    }
-                    return 0;
-                });
+
+                // DEBUG: Verificar ordem antes do sort
+                console.log('[DEBUG FT-Form] Antes sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
+                this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
+
+                // DEBUG: Verificar ordem depois do sort
+                console.log('[DEBUG FT-Form] Depois sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
                         return { label: label, value: fa };
                     });
                 this.fatoresAjuste.unshift(this.fatorAjusteNenhumSelectItem);
+
+                // DEBUG: Verificar ordem final no combo
+                console.log('[DEBUG FT-Form] SelectItems final:', this.fatoresAjuste.map(f => f.label));
             }
         }
     }
@@ -1167,9 +1180,14 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
             }
         }
     }
+
+    onPageChange(event) {
+        this.numberPages = event.rows;
+        localStorage.setItem("numberPagesFT", event.rows.toString());
+    }
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos;
+            this.modulos = sistemaRecarregado.modulos.sort((a, b) => a.nome.localeCompare(b.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
         });
@@ -1464,7 +1482,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         }
         this.deselecionaFuncionalidadesSeModuloForDiferente();
         this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.currentFuncaoTransacao.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades;
+            this.funcionalidades = funcionalidades.sort((a, b) => a.nome.localeCompare(b.nome));
             this.selecionaFuncionalidadeFromCurrentAnalise(this.currentFuncaoTransacao.modulo);
             this.oldModuloId = modulo.id;
         });

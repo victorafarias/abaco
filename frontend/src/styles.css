@@ -57,11 +57,11 @@ body .ui-widget-overlay {
 
 
 #idTabelaComponentAnalise td:nth-child(1) {
-    width: 100px !important;
+    width: 123px !important;
 }
 
 #idTabelaComponentAnalise th:nth-child(1) {
-    width: 100px !important;
+    width: 123px !important;
 }
 
 #idTabelaComponentAnalise th:nth-child(9) {
@@ -105,27 +105,27 @@ body .ui-widget-overlay {
 }
 
 #idTabelaComponentAnalise th:nth-child(10) {
-    width: 95px !important;
-    padding: 0px;
+    width: 115px !important;
+    padding: 0.625em 1em;
 }
 
 #idTabelaComponentAnalise td:nth-child(10) {
-    width: 95px !important;
+    width: 115px !important;
 }
 
 #idTabelaComponentAnalise th:nth-child(11) {
-    width: 95px !important;
-    padding: 0px;
+    width: 100px !important;
+    padding: 0.625em 1em;
 }
 
 #idTabelaComponentAnalise td:nth-child(11) {
-    width: 95px !important;
+    width: 100px !important;
     text-align: center;
 }
 
 #idTabelaComponentAnalise th:nth-child(12) {
     width: 105px !important;
-    padding: 0px;
+    padding: 0.625em 1em;
 }
 
 #idTabelaComponentAnalise td:nth-child(12) {
@@ -134,12 +134,12 @@ body .ui-widget-overlay {
 }
 
 #idTabelaComponentAnalise th:nth-child(13) {
-    width: 95px !important;
-    padding: 0px;
+    width: 135px !important;
+    padding: 0.625em 1em;
 }
 
 #idTabelaComponentAnalise td:nth-child(13) {
-    width: 95px !important;
+    width: 135px !important;
     text-align: center;
 }
 
@@ -194,4 +194,51 @@ body .ui-widget-overlay {
     position: absolute;
     left: 0;
     color: #666;
+}
+
+/* ===================================================================
+   FULL-WIDTH GRID: Abas Funções de Dados & Funções de Transação
+   Remove o espaço inútil à direita dos botões de ação, fazendo
+   a tabela se estender por toda a largura da página.
+   =================================================================== */
+
+/* 1. Tabela ocupa toda a largura (override do ui-g-11 float-based do PrimeNG) */
+#idTabelaFuncaoDados>.ui-g-11,
+#idTabelaFuncaoTransacaoFormFuncaoTransacao>.ui-g-11 {
+    width: 100% !important;
+    padding-right: 0 !important;
+}
+
+/* 2. Coluna de botões de ação: largura automática mínima */
+#idTabelaFuncaoDados>.ui-g-1,
+#idTabelaFuncaoTransacaoFormFuncaoTransacao>.ui-g-1 {
+    width: auto !important;
+    float: right !important;
+    clear: none !important;
+}
+
+/* 3. Wrapper containers: remover padding excessivo */
+#idTabelaFuncaoDados,
+#idTabelaFuncaoTransacaoFormFuncaoTransacao {
+    width: 100% !important;
+}
+
+/* 4. Wrapper divs acima do datatable: remover padding lateral */
+#idTabelaFuncaoDados~.card,
+#idTabelaFuncaoTransacaoFormFuncaoTransacao~.card,
+p-tabPanel .ui-g.ui-fluid>.ui-g-12>.card.card-w-title:has(#idTabelaFuncaoDados),
+p-tabPanel .ui-g.ui-fluid>.ui-g-12>.card.card-w-title:has(#idTabelaFuncaoTransacaoFormFuncaoTransacao) {
+    padding: 0.25em !important;
+}
+
+/* 5. Remover padding dos ui-g-12 wrappers que envolvem os datatables */
+p-tabPanel .ui-g.ui-fluid>.ui-g-12:has(#idTabelaFuncaoDados),
+p-tabPanel .ui-g.ui-fluid>.ui-g-12:has(#idTabelaFuncaoTransacaoFormFuncaoTransacao) {
+    padding: 0 !important;
+}
+
+p-tabPanel .ui-g.ui-fluid:has(#idTabelaFuncaoDados),
+p-tabPanel .ui-g.ui-fluid:has(#idTabelaFuncaoTransacaoFormFuncaoTransacao) {
+    padding: 0 !important;
+    margin: 0 !important;
 }

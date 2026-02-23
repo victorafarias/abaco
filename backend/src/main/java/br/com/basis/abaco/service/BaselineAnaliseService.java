@@ -78,7 +78,7 @@ public class BaselineAnaliseService extends BaseService{
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
-        String extensaoModelo = modelo == 6 ? "xls" : "xlsx";
+        String extensaoModelo = (modelo == 6 || modelo == 8) ? "xls" : "xlsx";
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.%s", RelatorioUtil.pegarNomeRelatorio(analise), extensaoModelo));
         return new ResponseEntity<byte[]>(byteArrayOutputStream.toByteArray(),headers, HttpStatus.OK);
     }

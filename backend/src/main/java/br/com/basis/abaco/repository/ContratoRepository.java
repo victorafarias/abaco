@@ -21,6 +21,8 @@ public interface ContratoRepository extends JpaRepository<Contrato, Long> {
      * @param organizacao
      */
     List<Contrato> findAllByOrganization(Organizacao organizacao);
+    
+    List<Contrato> findAllByOrganizationAndAtivoTrue(Organizacao organizacao);
 
 
     Optional<Contrato> findByNumeroContrato(String numeroContrato);

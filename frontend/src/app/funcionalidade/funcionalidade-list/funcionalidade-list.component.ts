@@ -27,10 +27,25 @@ export class FuncionalidadeListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // Log de inicialização
+    console.log('[FuncionalidadeList] Inicializando componente');
+
+    // Recuperar configuração de rows salva
     const savedRows = this.pageConfigService.getConfig('funcionalidade_rows');
-    if (savedRows) {
+    console.log('[FuncionalidadeList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+    // Validar e aplicar configuração de rows
+    if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
       this.rows = savedRows;
+      console.log('[FuncionalidadeList] Aplicando rows válido:', this.rows);
+    } else if (savedRows) {
+      console.warn(`[FuncionalidadeList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+      this.pageConfigService.saveConfig('funcionalidade_rows', this.rows);
+    } else {
+      console.log('[FuncionalidadeList] Nenhuma config salva. Usando padrão:', this.rows);
     }
+
+    // Recuperar filtro salvo
     const savedFilter = this.pageConfigService.getConfig('funcionalidade_filter');
     if (savedFilter) {
       this.filter = savedFilter;
@@ -38,8 +53,10 @@ export class FuncionalidadeListComponent implements OnInit {
   }
 
   onPageChange(event) {
+    console.log('[FuncionalidadeList] Evento de mudança de página:', event);
     this.rows = event.rows;
     this.pageConfigService.saveConfig('funcionalidade_rows', this.rows);
+    console.log('[FuncionalidadeList] Nova configuração salva:', this.rows);
   }
 
   performSearch(value: string) {

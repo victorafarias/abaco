@@ -354,21 +354,37 @@ export class AnaliseFormComponent implements OnInit {
 
             this.setDefaultStatus();
         }
-        this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
-            this.contratos = contracts;
+        if (this.isEdicao) {
+            this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
+                this.contratos = contracts;
+            });
+        } else {
+            this.contratoService.findAllActiveContratoesByOrganization(org).subscribe((contracts) => {
+                this.contratos = contracts;
 
-            // Auto-seleciona contrato se houver apenas um disponível
-            if (!this.isEdicao && this.contratos && this.contratos.length === 1) {
-                this.analise.contrato = this.contratos[0];
-                this.contratoSelected(this.contratos[0]);
-            }
-        });
-        this.sistemaService.findAllSystemOrg(org.id).subscribe((res: Sistema[]) => {
-            this.sistemas = res;
+                // Auto-seleciona contrato se houver apenas um disponível
+                if (this.contratos && this.contratos.length === 1) {
+                    this.analise.contrato = this.contratos[0];
+                    this.contratoSelected(this.contratos[0]);
+                }
+            });
+        }
+        this.sistemaService.findAllSystemOrg(org.id).subscribe({
+            next: (res: Sistema[]) => {
+                // Ordenar alfabeticamente por nome
+                this.sistemas = res.sort((a, b) => {
+                    const nomeA = (a.nome || '').toLowerCase();
+                    const nomeB = (b.nome || '').toLowerCase();
+                    return nomeA.localeCompare(nomeB, 'pt-BR');
+                });
 
-            // Auto-seleciona sistema se houver apenas um disponível
-            if (!this.isEdicao && this.sistemas && this.sistemas.length === 1) {
-                this.analise.sistema = this.sistemas[0];
+                // Auto-seleciona sistema se houver apenas um disponível
+                if (!this.isEdicao && this.sistemas && this.sistemas.length === 1) {
+                    this.analise.sistema = this.sistemas[0];
+                }
+            },
+            error: (err) => {
+                console.error('Erro ao carregar sistemas:', err);
             }
         });
         this.setEquipeOrganizacao(org);
@@ -414,6 +430,7 @@ export class AnaliseFormComponent implements OnInit {
         this.fatoresAjuste = [];
         if (manual.fatoresAjuste) {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
+            faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
                 this.fatoresAjuste.push({ label, value: fa });

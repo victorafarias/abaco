@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, OnDestroy, Output, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
@@ -204,7 +204,8 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         private moduloService: ModuloService,
         sanitizer: DomSanitizer,
         private messageService: MessageService,
-        private pageConfigService: PageConfigService
+        private pageConfigService: PageConfigService,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         this.sanitizer = sanitizer;
         this.lastObjectUrl = "";
@@ -262,6 +263,15 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
             this.columnsVisible = savedCols;
         }
         this.updateVisibleColumns(this.columnsVisible);
+        // Load saved pagination setting (applies to both view and edit modes)
+        const savedRows = localStorage.getItem("numberPagesFD");
+        if (savedRows != null) {
+            this.numberPages = Number.parseInt(savedRows);
+            if (this.tables && this.tables.pDatatableComponent) {
+                this.tables.pDatatableComponent._rows = this.numberPages;
+            }
+        }
+        this.changeDetectorRef.detectChanges();
     }
 
     estadoInicial() {
@@ -1112,7 +1122,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
     }
     carregarModuloFuncionalidade(funcaoDadosSelecionada: FuncaoDados) {
         //CarregarModulo
-        this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo);
+        this.moduloSelected(funcaoDadosSelecionada.funcionalidade.modulo as Modulo);
 
     }
 
@@ -1210,22 +1220,25 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         if (manual) {
             if (manual.fatoresAjuste) {
                 this.faS = _.cloneDeep(manual.fatoresAjuste);
+
+                // DEBUG: Verificar ordem antes do filter e sort
+                console.log('[DEBUG FD-Form] Antes filter/sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.faS = this.faS.filter(value => value.tipoAjuste !== 'UNITARIO');
-                this.faS.sort((n1, n2) => {
-                    if (n1.fator < n2.fator) {
-                        return 1;
-                    }
-                    if (n1.fator > n2.fator) {
-                        return -1;
-                    }
-                    return 0;
-                });
+                this.faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
+
+                // DEBUG: Verificar ordem depois do sort
+                console.log('[DEBUG FD-Form] Depois sort:', this.faS.map(f => ({ nome: f.nome, ordem: f.ordem })));
+
                 this.fatoresAjuste =
                     this.faS.map(fa => {
                         const label = FatorAjusteLabelGenerator.generate(fa);
                         return { label: label, value: fa };
                     });
                 this.fatoresAjuste.unshift(this.fatorAjusteNenhumSelectItem);
+
+                // DEBUG: Verificar ordem final no combo
+                console.log('[DEBUG FD-Form] SelectItems final:', this.fatoresAjuste.map(f => f.label));
             }
         }
     }
@@ -1328,6 +1341,11 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
                 this.selectButtonMultiple = false;
             }
         }
+    }
+
+    onPageChange(event) {
+        this.numberPages = event.rows;
+        localStorage.setItem("numberPagesFD", event.rows.toString());
     }
 
     prepararEditarEmLote() {
@@ -1452,9 +1470,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
 
     carregarModuloSistema() {
         this.sistemaService.find(this.analise.sistema.id).subscribe((sistemaRecarregado: Sistema) => {
-            this.modulos = sistemaRecarregado.modulos;
+            this.modulos = sistemaRecarregado.modulos.sort((a, b) => a.nome.localeCompare(b.nome));
             this.analise.sistema = sistemaRecarregado;
             this.analiseSharedDataService.analise.sistema = sistemaRecarregado;
+        });
+    }
+
+    moduloSelected(modulo: Modulo) {
+        for (let i = 0; i < this.modulos.length; i++) {
+            const moduloFor = this.modulos[i];
+            if (moduloFor.id === modulo.id) {
+                this.seletedFuncaoDados.modulo = moduloFor;
+            }
+        }
+        this.deselecionaFuncionalidadesSeModuloForDiferente();
+        this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.seletedFuncaoDados.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
+            this.funcionalidades = funcionalidades.sort((a, b) => a.nome.localeCompare(b.nome));
+            this.selecionaFuncionalidadeFromCurrentAnalise(this.seletedFuncaoDados.modulo);
+            this.oldModuloId = modulo.id;
         });
     }
 
@@ -1636,20 +1669,7 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         this.carregarDadosBaseline();
     }
 
-    moduloSelected(modulo: Modulo) {
-        for (let i = 0; i < this.modulos.length; i++) {
-            const moduloFor = this.modulos[i];
-            if (moduloFor.id === modulo.id) {
-                this.seletedFuncaoDados.modulo = moduloFor;
-            }
-        }
-        this.deselecionaFuncionalidadesSeModuloForDiferente();
-        this.funcionalidadeService.findFuncionalidadesDropdownByModulo(this.seletedFuncaoDados.modulo.id).subscribe((funcionalidades: Funcionalidade[]) => {
-            this.funcionalidades = funcionalidades;
-            this.selecionaFuncionalidadeFromCurrentAnalise(this.seletedFuncaoDados.modulo);
-            this.oldModuloId = modulo.id;
-        });
-    }
+
     selecionaFuncionalidadeFromCurrentAnalise(modulo: any) {
         if (this.seletedFuncaoDados.funcionalidade) {
             this.funcionalidadeSelected(this.seletedFuncaoDados.funcionalidade);

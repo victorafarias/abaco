@@ -32,8 +32,8 @@
                                     [disableEdit]="this.isView || selectButtonMultiple || isOrderning"
                                     [enableButtonsScroll]="true" [disableView]="selectButtonMultiple || isOrderning"
                                     (dblclick)="onRowDblclick($event)" [value]="funcoesDados"
-                                    (buttonClick)="datatableClick($event)" (click)="selectFD($event)"
-                                    [paginator]="false" [rows]="numberPages" [selectionMode]="'multiple'"
+                                    (buttonClick)="datatableClick($event)" (click)="selectFD($event)" [paginator]="true"
+                                    [rows]="numberPages" (onPage)="onPageChange($event)" [selectionMode]="'multiple'"
                                     [filterOnColumn]="true" [reorderableRows]="isOrderning"
                                     (onRowReorder)="updateIndex()" [rowsPerPageOptions]="[20,50,100]"
                                     [showVisibleColumnsControl]="false" #tables>
@@ -106,7 +106,8 @@
                                     <p-column field="evidencia" header="Evidência" [sortable]="true"
                                         [style]="{'word-break': 'break-all', 'display': tables.visibleColumns['evidencia']}">
                                         <ng-template let-row="rowData" pTemplate="body">
-                                            <span style="word-break: break-all;" [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
+                                            <span style="word-break: break-all;"
+                                                [pTooltip]="stripHtmlTags(row.sustantation)" tooltipPosition="left"
                                                 tooltipStyleClass="evidencia-tooltip">
                                                 {{ formatEvidence(row.sustantation) }}
                                             </span>
@@ -488,7 +489,7 @@
             </div>
         </div>
 
-        <div class="ui-g ui-md-12" style="justify-content: center; margin-bottom: 05px; margin-top: 05px">
+        <div class="ui-g ui-md-12" style="justify-content: flex-start; margin-bottom: 05px; margin-top: 05px">
             <div class="ui-g-12 ui-md-12 ui-lg-2" style="margin-bottom: 05px">
                 <app-white-button [buttonLabel]="'Voltar' " id="idBtnVoltarFormAnalise" routerLink="/analise">
                 </app-white-button>
@@ -732,7 +733,7 @@
         </div>
     </div>
 </p-dialog>
-<p-dialog [header]="this.getLabel('Importa funções de dados')" [(visible)]="display" [style]="{width: '80vw'}"
+<p-dialog [header]="this.getLabel('Importa funções de dados')" [(visible)]="display" [style]="{width: '94%'}"
     [closable]="false">
     <div *ngIf="analise && analise.id && analise.sistema.modulos">
         <app-pesquisar-ft [isFuncaoDados]="true" [tamanhoLista]="funcoesDados.length+1"></app-pesquisar-ft>

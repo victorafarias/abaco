@@ -74,21 +74,21 @@ export class DerChipsComponent implements OnChanges, OnInit {
 
     @ViewChild(AutoComplete) component: AutoComplete;
 
-	canPesquisar: boolean = false;
+    canPesquisar: boolean = false;
 
 
     constructor(
         private derService: DerService,
         private rlrService: RlrService,
         private alrService: AlrService,
-		private configuracaoService: ConfiguracaoService
+        private configuracaoService: ConfiguracaoService
     ) { }
 
     ngOnInit() {
         this.contagem = 0;
-		this.configuracaoService.buscarConfiguracao().subscribe(r => {
-			this.canPesquisar = r.habilitarCamposFuncao;
-		})
+        this.configuracaoService.buscarConfiguracao().subscribe(r => {
+            this.canPesquisar = r.habilitarCamposFuncao;
+        })
     }
 
     getLabel(label) {
@@ -133,48 +133,48 @@ export class DerChipsComponent implements OnChanges, OnInit {
     }
 
     search(event) {
-		this.canEnter = true;
-		if(this.canPesquisar){
-			switch (this.tipoChip) {
-				case 'DER':
-					switch (this.tipoFuncao) {
-						case 'FD':
-							this.derService.getDersFuncaoDadosByNomeSistema(event.query, this.idSistema).subscribe(response => {
-								this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-								this.options = this.listOptions.filter(item => {
-									return this.values.find(value => value.text === item.text) === undefined;
-								});
-							});
+        this.canEnter = true;
+        if (this.canPesquisar) {
+            switch (this.tipoChip) {
+                case 'DER':
+                    switch (this.tipoFuncao) {
+                        case 'FD':
+                            this.derService.getDersFuncaoDadosByNomeSistema(event.query, this.idSistema).subscribe(response => {
+                                this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+                                this.options = this.listOptions.filter(item => {
+                                    return this.values.find(value => value.text === item.text) === undefined;
+                                });
+                            });
 
-							break;
-						case 'FT':
-							this.derService.getDersFuncaoTransacaoByNomeSistema(event.query, this.idSistema).subscribe(response => {
-								this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-								this.options = this.listOptions.filter(item => {
-									return this.values.find(value => value.text === item.text) === undefined;
-								});
-							})
-							break;
-					}
-					break;
-				case 'RLR':
-					this.rlrService.getRlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
-						this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-						this.options = this.listOptions.filter(item => {
-							return this.values.find(value => value.text === item.text) === undefined;
-						});
-					})
-					break;
-				case 'ALR':
-					this.alrService.getAlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
-						this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
-						this.options = this.listOptions.filter(item => {
-							return this.values.find(value => value.text === item.text) === undefined;
-						});
-					})
-					break;
-			}
-		}
+                            break;
+                        case 'FT':
+                            this.derService.getDersFuncaoTransacaoByNomeSistema(event.query, this.idSistema).subscribe(response => {
+                                this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+                                this.options = this.listOptions.filter(item => {
+                                    return this.values.find(value => value.text === item.text) === undefined;
+                                });
+                            })
+                            break;
+                    }
+                    break;
+                case 'RLR':
+                    this.rlrService.getRlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
+                        this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+                        this.options = this.listOptions.filter(item => {
+                            return this.values.find(value => value.text === item.text) === undefined;
+                        });
+                    })
+                    break;
+                case 'ALR':
+                    this.alrService.getAlrsByNomeSistema(event.query, this.idSistema).subscribe(response => {
+                        this.listOptions = response.map(item => new DerChipItem(undefined, item.nome));
+                        this.options = this.listOptions.filter(item => {
+                            return this.values.find(value => value.text === item.text) === undefined;
+                        });
+                    })
+                    break;
+            }
+        }
     }
 
     limparCampo(event) {
@@ -303,6 +303,7 @@ export class DerChipsComponent implements OnChanges, OnInit {
      */
     limparMultiplos() {
         this.values = [];
+        this.valuesChange.emit(this.values);
     }
 
     private verificaMultiplosDuplicados(texto: string): boolean {

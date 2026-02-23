@@ -28,10 +28,25 @@ export class FatorAjusteListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // Log de inicialização
+    console.log('[FatorAjusteList] Inicializando componente');
+
+    // Recuperar configuração de rows salva
     const savedRows = this.pageConfigService.getConfig('fator_ajuste_rows');
-    if (savedRows) {
+    console.log('[FatorAjusteList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+    // Validar e aplicar configuração de rows
+    if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
       this.rows = savedRows;
+      console.log('[FatorAjusteList] Aplicando rows válido:', this.rows);
+    } else if (savedRows) {
+      console.warn(`[FatorAjusteList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+      this.pageConfigService.saveConfig('fator_ajuste_rows', this.rows);
+    } else {
+      console.log('[FatorAjusteList] Nenhuma config salva. Usando padrão:', this.rows);
     }
+
+    // Recuperar filtro salvo
     const savedFilter = this.pageConfigService.getConfig('fator_ajuste_filter');
     if (savedFilter) {
       this.filter = savedFilter;
@@ -39,8 +54,10 @@ export class FatorAjusteListComponent implements OnInit {
   }
 
   onPageChange(event) {
+    console.log('[FatorAjusteList] Evento de mudança de página:', event);
     this.rows = event.rows;
     this.pageConfigService.saveConfig('fator_ajuste_rows', this.rows);
+    console.log('[FatorAjusteList] Nova configuração salva:', this.rows);
   }
 
   performSearch(value: string) {

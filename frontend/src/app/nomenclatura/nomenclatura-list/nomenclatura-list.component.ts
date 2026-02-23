@@ -57,10 +57,25 @@ export class NomenclaturaListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[NomenclaturaList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('nomenclatura_rows');
-        if (savedRows) {
+        console.log('[NomenclaturaList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[NomenclaturaList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[NomenclaturaList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('nomenclatura_rows', this.rows);
+        } else {
+            console.log('[NomenclaturaList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
+        // Recuperar filtro salvo
         const savedFilter = this.pageConfigService.getConfig('nomenclatura_filter');
         if (savedFilter) {
             this.elasticQuery.value = savedFilter;
@@ -171,7 +186,9 @@ export class NomenclaturaListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[NomenclaturaList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('nomenclatura_rows', this.rows);
+        console.log('[NomenclaturaList] Nova configuração salva:', this.rows);
     }
 }

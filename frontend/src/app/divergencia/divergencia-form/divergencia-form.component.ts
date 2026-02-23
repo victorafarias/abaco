@@ -238,7 +238,7 @@ export class DivergenciaFormComponent implements OnInit {
             this.analise.manual = new Manual();
             this.analise.organizacao = org;
         }
-        this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
+        this.contratoService.findAllActiveContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
         });
         this.sistemaService.findAllSystemOrg(org.id).subscribe((res: Sistema[]) => {
@@ -268,6 +268,7 @@ export class DivergenciaFormComponent implements OnInit {
         this.fatoresAjuste = [];
         if (manual.fatoresAjuste) {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
+            faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
                 this.fatoresAjuste.push({ label, value: fa });

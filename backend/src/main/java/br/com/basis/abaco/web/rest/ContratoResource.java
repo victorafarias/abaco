@@ -135,6 +135,18 @@ public class ContratoResource {
         return contratoRepository.findAllByOrganization(organizacao);
     }
 
+    /**
+     * POST  /contratoes/organizations/active : get all active contratoes by organization.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the list of active contratoes in body
+     */
+    @PostMapping("/contratoes/organizations/active")
+    @Timed
+    public List<Contrato> getAllActiveContratoesByOrganization(@RequestBody Organizacao organizacao) {
+        log.debug("REST request to get all Active Contratoes by Organization");
+        return contratoRepository.findAllByOrganizationAndAtivoTrue(organizacao);
+    }
+
 
     /**
      * GET  /contratoes : get all the contratoes.

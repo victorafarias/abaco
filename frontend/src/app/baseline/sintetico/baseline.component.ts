@@ -47,7 +47,8 @@ export class BaselineComponent implements OnInit {
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
         { label: "Modelo padrão MCTI", value: 6 },
-        { label: "Modelo padrão BNB", value: 7 }
+        { label: "Modelo padrão BNB", value: 7 },
+        { label: "Modelo padrão SFSP", value: 8 }
     ];
     modeloSelecionado: any;
 

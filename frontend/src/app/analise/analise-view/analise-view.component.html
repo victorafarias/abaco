@@ -13,6 +13,24 @@
                                         [filter]="true" [disabled]="this.isEdicao || this.isView"
                                         [options]="organizacoes" [(ngModel)]="analise.organizacao"
                                         (onChange)="setSistamaOrganizacao($event.value)">
+
+                                    </p-dropdown>
+                                </div>
+                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
+                                    <label>Sistema</label>
+                                    <p-dropdown [filter]="true" dataKey="id" id="idSistemaViewAnalise"
+                                        [disabled]="this.isEdicao || this.isView" optionLabel="nome"
+                                        placeholder="{{ sistemaDropdownPlaceholder() }}"
+                                        (onChange)="getSistemaSelecionado()" name="sistema" [options]="sistemas"
+                                        [(ngModel)]="analise.sistema">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span *ngIf="item">{{ item.nome || item.value?.nome }} - {{ item.sigla ||
+                                                item.value?.sigla }}</span>
+                                        </ng-template>
+                                        <ng-template let-item pTemplate="item">
+                                            <span>{{ item.nome || item.value?.nome }} - {{ item.sigla ||
+                                                item.value?.sigla }}</span>
+                                        </ng-template>
                                     </p-dropdown>
                                 </div>
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
@@ -23,15 +41,6 @@
                                         [disabled]="this.isEdicao || this.isView" [options]="equipeResponsavel"
                                         [(ngModel)]="analise.equipeResponsavel"
                                         (onChange)="setSistamaOrganizacao($event.value)">
-                                    </p-dropdown>
-                                </div>
-                                <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 25px; margin-top: 25px">
-                                    <label>Sistema</label>
-                                    <p-dropdown [filter]="true" dataKey="id" id="idSistemaViewAnalise"
-                                        optionLabel="sigla" [disabled]="this.isEdicao || this.isView"
-                                        placeholder="{{ sistemaDropdownPlaceholder() }}"
-                                        (onChange)="getSistemaSelecionado()" name="sistema" [options]="sistemas"
-                                        [(ngModel)]="analise.sistema">
                                     </p-dropdown>
                                 </div>
                             </fieldset>
@@ -199,27 +208,28 @@
                                 <p-fieldset [legend]="this.getLabel('Fases')" [toggleable]="true" [collapsed]="true">
                                     <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
                                         <p-table dataKey="id" [rowHover]="true"
-                                            [emptyMessage]="this.getLabel('Selecione um Contrato para escolher Fases')"
+                                            [emptyMessage]="this.getLabel('Nenhuma fase disponível')"
                                             [value]="esforcoFases" id="idTabelaFasesViewAnalise"
-                                            [resizableColumns]="true" [(selection)]="analise.esforcoFases">
+                                            [resizableColumns]="true">
                                             <ng-template pTemplate="caption">
                                                 Fase
                                             </ng-template>
                                             <ng-template pTemplate="header">
                                                 <tr>
-                                                    <th style="text-align:left">
-                                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                                    <th style="text-align:left; width: 50px;">Sel.</th>
                                                     <th pSortableColumn="fase.nome">Nome <p-sortIcon></p-sortIcon></th>
                                                     <th pSortableColumn="esforco">Esforço <p-sortIcon></p-sortIcon></th>
                                                 </tr>
                                             </ng-template>
                                             <ng-template pTemplate="body" let-esforcoFase>
                                                 <tr class="ui-selectable-row">
-                                                    <td>
-                                                        <p-tableCheckbox [value]="esforcoFase"></p-tableCheckbox>
+                                                    <td style="text-align: center;">
+                                                        <p-checkbox [binary]="true"
+                                                            [ngModel]="isFaseSelecionada(esforcoFase)"
+                                                            [disabled]="true"></p-checkbox>
                                                     </td>
                                                     <td>
-                                                        {{esforcoFase.fase.nome}}
+                                                        {{esforcoFase.fase?.nome}}
                                                     </td>
                                                     <td>
                                                         {{esforcoFase.esforco}}%

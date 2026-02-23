@@ -292,6 +292,45 @@ public class SistemaResource {
     }
 
     /**
+     * GET /sistemas/{id}/funcoes-distintas/paged : Recupera funções distintas paginadas.
+     * 
+     * Este endpoint suporta paginação server-side para sistemas com muitas funções.
+     * Retorna headers de paginação (X-Total-Count, Link) seguindo padrões REST.
+     *
+     * @param id ID do sistema
+     * @param page Número da página (0-indexed, padrão: 0)
+     * @param size Tamanho da página (padrão: 20)
+     * @param sort Campo e direção de ordenação (padrão: "nomeModulo,asc")
+     * @return Página de FuncaoDistintaDTO com headers de paginação
+     */
+    @GetMapping("/sistemas/{id}/funcoes-distintas/paged")
+    @Timed
+    @Transactional
+    @Secured({"ROLE_ABACO_SISTEMA_CONSULTAR", "ROLE_ABACO_SISTEMA_EDITAR"})
+    public ResponseEntity<List<FuncaoDistintaDTO>> getFuncoesDistintasPaged(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "nomeModulo,asc") String sort) throws URISyntaxException {
+        
+        log.debug("[SistemaResource] REST request para buscar funções distintas paginadas do sistema: {}, page: {}, size: {}", 
+            id, page, size);
+        
+        // Criar Pageable (ordenação será aplicada pelas queries SQL otimizadas)
+        // Por enquanto, as queries já retornam ordenado por módulo, funcionalidade, nome
+        Pageable pageable = new PageRequest(page, size);
+        
+        Page<FuncaoDistintaDTO> resultado = sistemaService.getFuncoesDistintasPaged(id, pageable);
+        
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(resultado, "/api/sistemas/" + id + "/funcoes-distintas/paged");
+        
+        log.debug("[SistemaResource] Retornando {} funções distintas (página {} de {})", 
+            resultado.getContent().size(), page, resultado.getTotalPages());
+        
+        return new ResponseEntity<>(resultado.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
      * PUT /sistemas/{id}/renomear-funcoes : Renomeia funções em lote.
      * Atualiza o nome de todas as ocorrências de funções que correspondem ao conjunto
      * Módulo-Funcionalidade-NomeAtual.

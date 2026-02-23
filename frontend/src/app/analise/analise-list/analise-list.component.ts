@@ -186,7 +186,8 @@ export class AnaliseListComponent implements OnInit {
         { label: "Modelo padrão EBCOLOG", value: 4 },
         { label: "Modelo padrão EBDCT", value: 5 },
         { label: "Modelo padrão MCTI", value: 6 },
-        { label: "Modelo padrão BNB", value: 7 }
+        { label: "Modelo padrão BNB", value: 7 },
+        { label: "Modelo padrão SFSP", value: 8 }
     ];
     modeloSelecionado: any;
 
@@ -261,10 +262,24 @@ export class AnaliseListComponent implements OnInit {
     }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[AnaliseList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('analise_rows');
-        if (savedRows) {
+        console.log('[AnaliseList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[AnaliseList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[AnaliseList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('analise_rows', this.rows);
+        } else {
+            console.log('[AnaliseList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
         this.userAnaliseUrl = this.grupoService.grupoUrl + this.changeUrl();
         this.estadoInicial();
         this.verificarPermissoes();
@@ -1141,8 +1156,10 @@ export class AnaliseListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[AnaliseList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('analise_rows', this.rows);
+        console.log('[AnaliseList] Nova configuração salva:', this.rows);
     }
     public openModalDivergence(lstAnalise: Analise[]) {
         this.statusToChange = undefined;
@@ -1485,11 +1502,16 @@ export class AnaliseListComponent implements OnInit {
     }
 
     setSistemaOrganizacao(org: Organizacao) {
-        this.contratoService.findAllContratoesByOrganization(org).subscribe((contracts) => {
+        this.contratoService.findAllActiveContratoesByOrganization(org).subscribe((contracts) => {
             this.contratos = contracts;
         });
         this.sistemaService.findAllSystemOrg(org.id).subscribe((res: Sistema[]) => {
-            this.sistemas = res;
+            // Ordenar alfabeticamente por nome
+            this.sistemas = res.sort((a, b) => {
+                const nomeA = (a.nome || '').toLowerCase();
+                const nomeB = (b.nome || '').toLowerCase();
+                return nomeA.localeCompare(nomeB, 'pt-BR');
+            });
         });
         this.setEquipeOrganizacao(org);
     }
@@ -1597,6 +1619,7 @@ export class AnaliseListComponent implements OnInit {
         this.fatoresAjuste = [];
         if (manual.fatoresAjuste) {
             const faS: FatorAjuste[] = _.cloneDeep(manual.fatoresAjuste);
+            faS.sort((n1, n2) => (n1.ordem || 0) - (n2.ordem || 0));
             faS.forEach(fa => {
                 const label = FatorAjusteLabelGenerator.generate(fa);
                 this.fatoresAjuste.push({ label, value: fa });

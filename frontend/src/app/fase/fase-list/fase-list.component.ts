@@ -40,10 +40,24 @@ export class FaseListComponent implements OnInit {
     ) { }
 
     public ngOnInit() {
+        // Log de inicialização
+        console.log('[FaseList] Inicializando componente');
+
+        // Recuperar configuração de rows salva
         const savedRows = this.pageConfigService.getConfig('fase_rows');
-        if (savedRows) {
+        console.log('[FaseList] Config recuperada:', { savedRows, rowsPerPageOptions: this.rowsPerPageOptions });
+
+        // Validar e aplicar configuração de rows
+        if (savedRows && this.rowsPerPageOptions && this.rowsPerPageOptions.includes(savedRows)) {
             this.rows = savedRows;
+            console.log('[FaseList] Aplicando rows válido:', this.rows);
+        } else if (savedRows) {
+            console.warn(`[FaseList] Valor inválido (${savedRows}) não está em rowsPerPageOptions. Usando padrão: ${this.rows}`);
+            this.pageConfigService.saveConfig('fase_rows', this.rows);
+        } else {
+            console.log('[FaseList] Nenhuma config salva. Usando padrão:', this.rows);
         }
+
         this.verificarPermissoes();
     }
 
@@ -144,8 +158,10 @@ export class FaseListComponent implements OnInit {
     }
 
     onPageChange(event) {
+        console.log('[FaseList] Evento de mudança de página:', event);
         this.rows = event.rows;
         this.pageConfigService.saveConfig('fase_rows', this.rows);
+        console.log('[FaseList] Nova configuração salva:', this.rows);
     }
 }
 

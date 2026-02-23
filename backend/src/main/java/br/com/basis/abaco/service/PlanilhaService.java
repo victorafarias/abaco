@@ -96,10 +96,219 @@ public class PlanilhaService {
                 return this.modeloPadraoMCTI(analise, funcaoDadosList, funcaoTransacaoList);
             case 7:
                 return this.modeloPadraoBNB(analise, funcaoDadosList, funcaoTransacaoList);
+            case 8:
+                return this.modeloPadraoSFSP(analise, funcaoDadosList, funcaoTransacaoList);
             default:
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
         }
     }
+
+    private ByteArrayOutputStream modeloPadraoSFSP(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo8-sfsp.xls");
+        org.apache.poi.hssf.usermodel.HSSFWorkbook excelFile = new org.apache.poi.hssf.usermodel.HSSFWorkbook(stream);
+        org.apache.poi.ss.usermodel.FormulaEvaluator evaluator = excelFile.getCreationHelper().createFormulaEvaluator();
+        evaluator.clearAllCachedResultValues();
+
+        this.setarResumoExcelPadraoSFSP(excelFile, analise);
+        this.setarFuncoesExcelPadraoSFSP(excelFile, funcaoDadosList, funcaoTransacaoList);
+
+        excelFile.setForceFormulaRecalculation(true);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        excelFile.write(outputStream);
+        return outputStream;
+    }
+
+    private void setarResumoExcelPadraoSFSP(org.apache.poi.hssf.usermodel.HSSFWorkbook excelFile, Analise analise) {
+        org.apache.poi.hssf.usermodel.HSSFSheet excelSheet = excelFile.getSheet("Contagem");
+
+        if (analise.getSistema() != null) {
+            String sistemaNomeSigla = analise.getSistema().getNome();
+            if (analise.getSistema().getSigla() != null && !analise.getSistema().getSigla().trim().isEmpty()) {
+                sistemaNomeSigla += " - " + analise.getSistema().getSigla();
+            }
+            excelSheet.getRow(4).getCell(5).setCellValue(sistemaNomeSigla);
+        }
+
+        if (analise.getTipoAnalise() != null) {
+            String tipoContagem = "";
+            switch (analise.getTipoAnalise()) {
+                case APLICACAO:
+                    tipoContagem = "Aplicação";
+                    break;
+                case DESENVOLVIMENTO:
+                    tipoContagem = "Projeto de Desenvolvimento";
+                    break;
+                case MELHORIA:
+                    tipoContagem = "Projeto de Melhoria";
+                    break;
+            }
+            excelSheet.getRow(5).getCell(5).setCellValue(tipoContagem);
+        }
+
+        if (analise.getMetodoContagem() != null) {
+            String metodo = "";
+            switch (analise.getMetodoContagem()) {
+                case DETALHADA:
+                    metodo = "Detalhada (IFPUG)";
+                    break;
+                case ESTIMADA:
+                    metodo = "Estimativa (NESMA)";
+                    break;
+                case INDICATIVA:
+                    metodo = "Indicativa (NESMA)";
+                    break;
+            }
+            excelSheet.getRow(6).getCell(5).setCellValue(metodo);
+        }
+
+        String nomeElaborador = this.recuperarNomeElaborador(analise);
+        excelSheet.getRow(8).getCell(5).setCellValue(nomeElaborador);
+
+        if (analise.getDataCriacaoOrdemServico() != null) {
+            excelSheet.getRow(8).getCell(17).setCellValue(new java.text.SimpleDateFormat("dd/MM/yy").format(analise.getDataCriacaoOrdemServico()));
+        }
+    }
+
+    private void setarFuncoesExcelPadraoSFSP(org.apache.poi.hssf.usermodel.HSSFWorkbook excelFile, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
+        org.apache.poi.hssf.usermodel.HSSFSheet excelSheet = excelFile.getSheet("Funções");
+        int rowNum = 7; // Linha 8 na interface (0-indexed = 7)
+
+        for (FuncaoDados fd : funcaoDadosList) {
+            org.apache.poi.hssf.usermodel.HSSFRow row = excelSheet.getRow(rowNum);
+            if (row == null) { row = excelSheet.createRow(rowNum); }
+            
+            String modulo = fd.getFuncionalidade() != null && fd.getFuncionalidade().getModulo() != null ? fd.getFuncionalidade().getModulo().getNome() : "";
+            String funcionalidade = fd.getFuncionalidade() != null ? fd.getFuncionalidade().getNome() : "";
+            row.getCell(0, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(modulo + " - " + funcionalidade + " - " + fd.getName());
+            
+            String tipo = fd.getTipo() != null ? fd.getTipo().toString() : "";
+            if (fd.getFatorAjuste() != null && fd.getFatorAjuste().getNome() != null) {
+                String nomeLimpoFa = limparTextoDeflator(fd.getFatorAjuste().getNome());
+                if (nomeLimpoFa.equals(limparTextoDeflator("Manutenção em Interface"))) {
+                    tipo = "COSNF";
+                } else if (nomeLimpoFa.equals(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"))) {
+                    tipo = "PAG";
+                }
+            }
+            row.getCell(1, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(tipo);
+            row.getCell(2, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(this.pegarSiglaDeflatorSFSP(fd.getFatorAjuste()));
+            
+            row.getCell(3, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(this.getTotalDer(fd.getDers()));
+            String ders = fd.getDers().stream().map(br.com.basis.abaco.domain.Der::getNome).collect(Collectors.joining(", "));
+            row.getCell(4, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(ders);
+            
+            row.getCell(5, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(this.getTotalRlr(fd.getRlrs()));
+            String rlrs = fd.getRlrs().stream().map(br.com.basis.abaco.domain.Rlr::getNome).collect(Collectors.joining(", "));
+            row.getCell(6, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(rlrs);
+            
+            row.getCell(7, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(fd.getImpacto() != null ? fd.getImpacto().toString() : "");
+            
+            String evidencia = Jsoup.parse(fd.getSustantation() != null ? fd.getSustantation() : "").text();
+            if (evidencia != null && evidencia.contains(";")) {
+                int index = evidencia.indexOf(";");
+                row.getCell(14, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia.substring(0, index));
+                row.getCell(15, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia.substring(index + 1).trim());
+            } else {
+                row.getCell(14, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia);
+            }
+            
+            rowNum++;
+        }
+
+        for (FuncaoTransacao ft : funcaoTransacaoList) {
+            org.apache.poi.hssf.usermodel.HSSFRow row = excelSheet.getRow(rowNum);
+            if (row == null) { row = excelSheet.createRow(rowNum); }
+            
+            String modulo = ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null ? ft.getFuncionalidade().getModulo().getNome() : "";
+            String funcionalidade = ft.getFuncionalidade() != null ? ft.getFuncionalidade().getNome() : "";
+            row.getCell(0, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(modulo + " - " + funcionalidade + " - " + ft.getName());
+            
+            String tipo = ft.getTipo() != null ? ft.getTipo().toString() : "";
+            if (ft.getFatorAjuste() != null && ft.getFatorAjuste().getNome() != null) {
+                String nomeLimpoFa = limparTextoDeflator(ft.getFatorAjuste().getNome());
+                if (nomeLimpoFa.equals(limparTextoDeflator("Manutenção em Interface"))) {
+                    tipo = "COSNF";
+                } else if (nomeLimpoFa.equals(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"))) {
+                    tipo = "PAG";
+                }
+            }
+            row.getCell(1, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(tipo);
+            row.getCell(2, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(this.pegarSiglaDeflatorSFSP(ft.getFatorAjuste()));
+            
+            row.getCell(3, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(this.getTotalDer(ft.getDers()));
+            String ders = ft.getDers().stream().map(br.com.basis.abaco.domain.Der::getNome).collect(Collectors.joining(", "));
+            row.getCell(4, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(ders);
+            
+            row.getCell(5, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(this.getTotalAlr(ft.getAlrs()));
+            String alrs = ft.getAlrs().stream().map(br.com.basis.abaco.domain.Alr::getNome).collect(Collectors.joining(", "));
+            row.getCell(6, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(alrs);
+            
+            row.getCell(7, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(ft.getImpacto() != null ? ft.getImpacto().toString() : "");
+            
+            String evidencia = Jsoup.parse(ft.getSustantation() != null ? ft.getSustantation() : "").text();
+            if (evidencia != null && evidencia.contains(";")) {
+                int index = evidencia.indexOf(";");
+                row.getCell(14, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia.substring(0, index));
+                row.getCell(15, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia.substring(index + 1).trim());
+            } else {
+                row.getCell(14, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia);
+            }
+            
+            rowNum++;
+        }
+    }
+
+    private static final Map<String, String> DEFLATOR_SIGLAS_SFSP = new HashMap<>();
+
+    static {
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Projeto de Desenvolvimento - Novo"), "I");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Projeto de Melhoria - Novo"), "I");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Projeto de Melhoria - Desenvolvido pela Empresa"), "A");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Projeto de Melhoria (1a vez) - Sem redocumentação"), "A75");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Projeto de Melhoria (1a vez) - Com redocumentação"), "A90");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Projeto de Melhoria - Exclusão de Funcionalidade"), "E");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Migração de Dados"), "PMD");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Manutenção Corretiva - Desenvolvido pela Empresa"), "COR");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Manutenção Corretiva - Não Desenvolvido pela Empresa"), "COR75");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Mudança de Plataforma - Linguagem de Programação"), "MLP");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Mudança de Plataforma - Banco de Dados (hierárquico p/ relacional)"), "MBO");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Mudança de Plataforma - Banco de Dados (relacional p/ relacional)"), "MBM");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Atualização de Versão – Linguagem de Programação"), "ALP");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Atualização de Versão"), "AVB");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Atualização de Versão – Banco de Dados"), "ABD");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Manutenção em Interface"), "");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Adaptação em Funcionalidades - Basis"), "ARN");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Adaptação em Funcionalidades - Não Basis"), "ARN75");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Apuração Especial – Atualização"), "ADS");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Apuração Especial – Consulta Prévia"), "CPA");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Apuração Especial – Base de Dados com consulta prévia"), "ADC");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Apuração Especial – Geração de Relatórios"), "AGR");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Apuração Especial – Reexecução"), "AER");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Atualização de Dados"), "ATD");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"), "");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Manutenção de Documentação de Sistemas Legados"), "MSL");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Verificação de Erros - Com documentação"), "VES");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Verificação de Erros - Sem Documentação"), "VEC");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Pontos de Função de Teste"), "PFT");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Componente Interno Reusável"), "CIR");
+        DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Componente Interno Reusável - Arquivo"), "CIRN");
+    }
+
+    private static String limparTextoDeflator(String texto) {
+        if (texto == null) return "";
+        return texto.replaceAll("[\\p{Z}\\s]+", " ")
+                    .replace("–", "-").replace("—", "-")
+                    .trim().toLowerCase();
+    }
+
+    private String pegarSiglaDeflatorSFSP(FatorAjuste fatorAjuste) {
+        if (fatorAjuste == null || fatorAjuste.getNome() == null) {
+            return "";
+        }
+        String nomeLimpo = limparTextoDeflator(fatorAjuste.getNome());
+        return DEFLATOR_SIGLAS_SFSP.getOrDefault(nomeLimpo, "");
+    }
+
 
     private ByteArrayOutputStream modeloPadraoBNB(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
         InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo7-bnb.xlsx");
