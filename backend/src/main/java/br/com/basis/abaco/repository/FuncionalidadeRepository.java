@@ -21,4 +21,23 @@ public interface FuncionalidadeRepository extends JpaRepository<Funcionalidade, 
     Optional<List<Funcionalidade>> findAllByNomeIgnoreCaseAndModuloId(String nome, Long moduloId);
     
     Optional<List<Funcionalidade>> findByModuloId(Long moduloId);
+
+    /**
+     * Resolve o ID de uma funcionalidade a partir do nome do sistema, módulo e funcionalidade.
+     * Evita carregar o grafo completo do Sistema apenas para resolver um ID.
+     *
+     * @return ID da funcionalidade, ou null se não encontrada
+     */
+    @Query(value =
+        "SELECT f.id FROM funcionalidade f " +
+        "INNER JOIN modulo m ON f.modulo_id = m.id " +
+        "WHERE m.sistema_id = :sistemaId " +
+        "AND m.nome = :nomeModulo " +
+        "AND f.nome = :nomeFuncionalidade " +
+        "LIMIT 1",
+        nativeQuery = true)
+    Long findIdPorSistemaModuloFuncionalidade(
+        @Param("sistemaId") Long sistemaId,
+        @Param("nomeModulo") String nomeModulo,
+        @Param("nomeFuncionalidade") String nomeFuncionalidade);
 }

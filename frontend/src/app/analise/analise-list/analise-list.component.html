@@ -132,7 +132,7 @@
 						<p-column [styleClass]="'sistema'" header="Sistema" field="sistema.nome" [sortable]="true"
 							filterType="select" [filter]="true">
 							<ng-template let-col let-analise="rowData" pTemplate="body">
-								{{ analise.sistema.nome}}
+								{{ analise.sistema.nome}} - {{ analise.sistema.sigla }}
 							</ng-template>
 						</p-column>
 						<p-column [styleClass]="'metodo-contagem'" header="Método Contagem" field="metodoContagem"

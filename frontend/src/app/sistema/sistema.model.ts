@@ -25,6 +25,7 @@ export class Sistema implements BaseEntity {
   ) {
     if (modulos) {
       this.mappableModulos = new MappableEntities<Modulo>(modulos);
+      this.sortModulos();
     } else {
       this.mappableModulos = new MappableEntities<Modulo>();
     }
@@ -47,9 +48,16 @@ export class Sistema implements BaseEntity {
       s.organizacao, nonCircularModulos);
   }
 
+  private sortModulos() {
+    if (this.modulos) {
+      this.modulos.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    }
+  }
+
   addModulo(modulo: Modulo) {
     this.mappableModulos.push(modulo);
     this.modulos = this.mappableModulos.values();
+    this.sortModulos();
   }
 
   get funcionalidades(): Funcionalidade[] {
@@ -57,7 +65,12 @@ export class Sistema implements BaseEntity {
       return [];
     }
     const allFuncs = this.getAllFuncionalidadesAsArrayOfArrays();
-    return allFuncs.reduce((a, b) => a.concat(b), []);
+    const result = allFuncs.reduce((a, b) => a.concat(b), []);
+    return result.sort((a, b) => {
+      const cmpModulo = (a.modulo?.nome || '').localeCompare(b.modulo?.nome || '');
+      if (cmpModulo !== 0) return cmpModulo;
+      return (a.nome || '').localeCompare(b.nome || '');
+    });
   }
 
   private getAllFuncionalidadesAsArrayOfArrays(): Array<Array<Funcionalidade>> {
@@ -84,11 +97,13 @@ export class Sistema implements BaseEntity {
   updateModulo(modulo: Modulo) {
     this.mappableModulos.update(modulo);
     this.modulos = this.mappableModulos.values();
+    this.sortModulos();
   }
 
   deleteModulo(modulo: Modulo) {
     this.mappableModulos.delete(modulo);
     this.modulos = this.mappableModulos.values();
+    this.sortModulos();
   }
 
   // XXX analisar pool único de funcionalidades vs estrutura OO
@@ -101,6 +116,7 @@ export class Sistema implements BaseEntity {
       this.doUpdateFuncionalidadeWithSameModule(funcionalidade);
     }
     this.modulos = this.mappableModulos.values();
+    this.sortModulos();
   }
 
   private updateFuncionalidadeWithDifferentModulo(func: Funcionalidade, oldFunc: Funcionalidade) {
@@ -122,6 +138,7 @@ export class Sistema implements BaseEntity {
   deleteFuncionalidade(funcionalidade: Funcionalidade) {
     this.doDeleteFuncionalidade(funcionalidade);
     this.modulos = this.mappableModulos.values();
+    this.sortModulos();
   }
 
   private doDeleteFuncionalidade(funcionalidade: Funcionalidade) {

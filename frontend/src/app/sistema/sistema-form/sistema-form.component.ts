@@ -284,12 +284,16 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
 
         this.moduloService.migrarModulos(this.moduloEmEdicao.id, this.moduloMigracaoSistema.id).subscribe(response => {
             // Atualizar o frontend state: transferir funcionalidades no formulário atual
-            if (this.sistema.funcionalidades) {
+            const moduloDestino = this.sistema.modulos.find(m => m.id === this.moduloMigracaoSistema.id);
+            if (this.sistema.funcionalidades && moduloDestino) {
                 this.sistema.funcionalidades.forEach(f => {
                     if (f.modulo.id === this.moduloEmEdicao.id || f.modulo.nome === this.moduloEmEdicao.nome) {
                         // Atribui apenas ID e Nome (ModuloHandle) para quebrar referência circular 
                         // e evitar RangeError: Maximum call stack no PrimeNG ObjectUtils.equalsByValue
-                        f.modulo = { id: this.moduloMigracaoSistema.id, nome: this.moduloMigracaoSistema.nome };
+                        f.modulo = { id: moduloDestino.id, nome: moduloDestino.nome };
+                        if (!moduloDestino.funcionalidades.find(func => func.id === f.id || (func.artificialId && func.artificialId === f.artificialId))) {
+                            moduloDestino.addFuncionalidade(f);
+                        }
                     }
                 });
             }
