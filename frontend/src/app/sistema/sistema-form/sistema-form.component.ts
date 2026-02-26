@@ -6,6 +6,7 @@ import { OrganizacaoService, Organizacao } from '../../organizacao';
 import { Sistema } from '../sistema.model';
 import { SistemaService, FuncaoDistinta, RenomearFuncao } from '../sistema.service';
 import { Modulo } from 'src/app/modulo';
+import { ModuloService } from 'src/app/modulo/modulo.service';
 import { Funcionalidade, funcionalidadeRoute, FuncionalidadeService } from 'src/app/funcionalidade';
 import { PageNotificationService, DatatableClickEvent } from '@nuvem/primeng-components';
 import { BlockUiService } from '@nuvem/angular-base';
@@ -79,6 +80,9 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
     novoModulo: Modulo = new Modulo();
     moduloEmEdicao: Modulo = new Modulo();
 
+    mostrarDialogMigrarModulo = false;
+    moduloMigracaoSistema: Modulo = new Modulo();
+
     moduloMigracao: Modulo = new Modulo();
 
     mostrarDialogFuncionalidade = false;
@@ -117,6 +121,7 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
         private pageNotificationService: PageNotificationService,
         private funcionalidadeService: FuncionalidadeService,
         private blockUiService: BlockUiService,
+        private moduloService: ModuloService,
     ) {
     }
 
@@ -217,20 +222,95 @@ export class SistemaFormComponent implements OnInit, OnDestroy {
     }
 
     confirmDeleteModulo() {
+        if (this.moduloEmEdicao.id) {
+            this.moduloService.getTotalFunction(this.moduloEmEdicao.id).subscribe(totalFuncoes => {
+                if (totalFuncoes > 0) {
+                    this.confirmationService.confirm({
+                        message: "O módulo selecionado está vinculado a alguma funcionalidade com funções de dados/transações. Deseja selecionar outro módulo para migrar as funcionalidades?",
+                        accept: () => {
+                            this.abrirDialogMigrarModulo();
+                        }
+                    });
+                } else if (!this.moduleCanBeDeleted()) {
+                    this.pageNotificationService.addErrorMessage(
+                        'O ' + this.moduloEmEdicao.nome + ' não pode ser excluído porque existem funcionalidades atribuídas.'
+                    );
+                } else {
+                    this.exibirConfirmacaoExclusaoNormal();
+                }
+            });
+        } else {
+            // Módulo não salvo no banco, não tem id nem funções
+            if (!this.moduleCanBeDeleted()) {
+                this.pageNotificationService.addErrorMessage(
+                    'O ' + this.moduloEmEdicao.nome + ' não pode ser excluído porque existem funcionalidades atribuídas.'
+                );
+            } else {
+                this.exibirConfirmacaoExclusaoNormal();
+            }
+        }
+    }
+
+    private exibirConfirmacaoExclusaoNormal() {
         this.confirmationService.confirm({
             message: 'Tem certeza que deseja excluir o módulo ' + this.moduloEmEdicao.nome + ' ?',
             accept: () => {
-                if (this.moduleCanBeDeleted()) {
-                    this.sistema.deleteModulo(this.moduloEmEdicao);
-                    this.moduloEmEdicao = new Modulo();
-                } else {
-                    this.pageNotificationService.addErrorMessage('O '
-                        + this.moduloEmEdicao.nome
-                        + ' não pode ser excluído porque existem funcionalidades atribuídas.'
-                    );
-                }
+                this.sistema.deleteModulo(this.moduloEmEdicao);
+                this.moduloEmEdicao = new Modulo();
             }
         });
+    }
+
+    abrirDialogMigrarModulo() {
+        if (this.sistema.modulos && this.sistema.modulos.length <= 1) {
+            this.pageNotificationService.addErrorMessage('Não é possível excluir o único módulo do sistema pois existem funções vinculadas a ele. Crie outro módulo para migrar as funcionalidades.');
+            return;
+        }
+        this.mostrarDialogMigrarModulo = true;
+    }
+
+    fecharDialogMigrarModulo() {
+        this.mostrarDialogMigrarModulo = false;
+        this.moduloMigracaoSistema = new Modulo();
+    }
+
+    migrarModuloAction() {
+        if (!this.moduloMigracaoSistema || !this.moduloMigracaoSistema.id) {
+            return this.pageNotificationService.addErrorMessage('Escolha um módulo para fazer a migração.');
+        }
+        if (this.moduloEmEdicao.id === this.moduloMigracaoSistema.id) {
+            return this.pageNotificationService.addErrorMessage('Você não pode migrar para o módulo que irá excluir.');
+        }
+
+        this.moduloService.migrarModulos(this.moduloEmEdicao.id, this.moduloMigracaoSistema.id).subscribe(response => {
+            // Atualizar o frontend state: transferir funcionalidades no formulário atual
+            if (this.sistema.funcionalidades) {
+                this.sistema.funcionalidades.forEach(f => {
+                    if (f.modulo.id === this.moduloEmEdicao.id || f.modulo.nome === this.moduloEmEdicao.nome) {
+                        // Atribui apenas ID e Nome (ModuloHandle) para quebrar referência circular 
+                        // e evitar RangeError: Maximum call stack no PrimeNG ObjectUtils.equalsByValue
+                        f.modulo = { id: this.moduloMigracaoSistema.id, nome: this.moduloMigracaoSistema.nome };
+                    }
+                });
+            }
+            this.sistema.deleteModulo(this.moduloEmEdicao);
+            this.moduloEmEdicao = new Modulo();
+            this.carregarFuncoesDistintas();
+            this.pageNotificationService.addSuccessMessage('Migração de módulo concluída!');
+            this.fecharDialogMigrarModulo();
+        }, error => {
+            this.pageNotificationService.addErrorMessage('Erro: Migração do módulo não concluída.');
+        });
+    }
+
+    get modulosParaMigrar() {
+        if (!this.sistema.modulos) return [];
+        // Retorna objetos planos {id, nome} para evitar referências circulares
+        // que causam RangeError: Maximum call stack no PrimeNG ObjectUtils.equalsByValue
+        return this.sistema.modulos
+            .filter(m => m.id !== this.moduloEmEdicao.id)
+            .map(m => ({ id: m.id, nome: m.nome }))
+            .sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
     }
 
     private moduleCanBeDeleted() {

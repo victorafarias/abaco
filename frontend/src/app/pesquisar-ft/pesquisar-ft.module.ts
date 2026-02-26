@@ -4,7 +4,7 @@ import { Routes } from '@angular/router';
 import { PesquisarFtComponent } from './pesquisar-ft.component';
 import { HttpClientModule } from '@angular/common/http';
 import { SharedModule } from '../shared/shared.module';
-import { ButtonModule, TableModule } from 'primeng';
+import { ButtonModule, MultiSelectModule, TableModule } from 'primeng';
 import { AbacoButtonsModule } from '../components/abaco-buttons/abaco-buttons.module';
 import { DatatableModule } from '@nuvem/primeng-components';
 
@@ -23,6 +23,7 @@ const rotas: Routes = [
     SharedModule,
     DatatableModule,
     TableModule,
+    MultiSelectModule,
   ],
   declarations: [
     PesquisarFtComponent

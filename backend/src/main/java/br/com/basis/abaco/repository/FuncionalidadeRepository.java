@@ -19,4 +19,6 @@ public interface FuncionalidadeRepository extends JpaRepository<Funcionalidade, 
     List<DropdownDTO> findDropdownByModuloId(@Param("idModulo") Long idModulo);
 
     Optional<List<Funcionalidade>> findAllByNomeIgnoreCaseAndModuloId(String nome, Long moduloId);
+    
+    Optional<List<Funcionalidade>> findByModuloId(Long moduloId);
 }

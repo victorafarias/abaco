@@ -67,6 +67,8 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
 
     long countByFuncionalidadeId(Long id);
 
+    long countByFuncionalidadeModuloId(Long id);
+
     @EntityGraph(attributePaths = {"funcionalidade", "rlrs", "ders", "fatorAjuste"})
     FuncaoDados findByIdOrderByDersIdAscRlrsIdAsc(Long id);
 

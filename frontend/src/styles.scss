@@ -191,3 +191,40 @@ body .ui-widget-overlay {
 #idTabelaFuncaoTransacaoFormFuncaoTransacao>.ui-g-1 {
 	width: 50px !important;
 }
+
+/* ===================================================================
+   MultiSelect filter inside table header (pesquisar-ft)
+   =================================================================== */
+p-multiSelect.column-filter-multiselect {
+	display: block;
+}
+
+.column-filter-multiselect.ui-multiselect {
+	display: block;
+	background-image: none;
+	background-color: transparent;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 0;
+	height: 25px;
+	/* Fixed height for header */
+	box-sizing: border-box;
+}
+
+.column-filter-multiselect.ui-multiselect .ui-multiselect-label {
+	padding: 2px 1.8em 2px 4px;
+	font-size: 0.85em;
+	line-height: 1.6em;
+	height: 25px;
+}
+
+.column-filter-multiselect.ui-multiselect .ui-multiselect-trigger {
+	height: 100%;
+	top: 0 !important;
+	width: 1.5em;
+	padding: 0;
+	margin-top: 0;
+}
+
+.column-filter-multiselect.ui-multiselect .ui-multiselect-trigger .fa {
+	margin-top: 5px !important;
+}

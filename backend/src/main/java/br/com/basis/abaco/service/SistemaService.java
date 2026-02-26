@@ -260,17 +260,14 @@ public class SistemaService extends BaseService {
         // Buscar o sistema para ter acesso aos módulos e funcionalidades
         Sistema sistema = sistemaRepository.findOne(sistemaId);
         
+        // Mapear cada RenomearFuncaoDTO para sua nova Funcionalidade (se existir)
+        java.util.Map<RenomearFuncaoDTO, Funcionalidade> mapaNovasFuncionalidades = new java.util.HashMap<>();
         for (RenomearFuncaoDTO renomeacao : renomeacoes) {
-            log.debug("[SistemaService] Processando alteração: Módulo={}, Funcionalidade={}, Nome={}", 
-                renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(), renomeacao.getNomeAtual());
-            
-            // Buscar a nova funcionalidade, se informada
             Funcionalidade novaFuncionalidade = null;
             if (renomeacao.getNovoModulo() != null || renomeacao.getNovaFuncionalidade() != null) {
                 String moduloDestino = renomeacao.getNovoModulo() != null ? renomeacao.getNovoModulo() : renomeacao.getNomeModulo();
                 String funcionalidadeDestino = renomeacao.getNovaFuncionalidade() != null ? renomeacao.getNovaFuncionalidade() : renomeacao.getNomeFuncionalidade();
                 
-                // Buscar a funcionalidade de destino
                 for (Modulo modulo : sistema.getModulos()) {
                     if (moduloDestino.equals(modulo.getNome())) {
                         for (Funcionalidade func : modulo.getFuncionalidades()) {
@@ -286,13 +283,22 @@ public class SistemaService extends BaseService {
                 if (novaFuncionalidade == null) {
                     log.warn("[SistemaService] Funcionalidade de destino não encontrada: Módulo={}, Funcionalidade={}", 
                         moduloDestino, funcionalidadeDestino);
-                    continue;
+                } else {
+                    mapaNovasFuncionalidades.put(renomeacao, novaFuncionalidade);
                 }
             }
+        }
+        
+        List<FuncaoDados> fdsToSave = new java.util.ArrayList<>();
+        List<FuncaoTransacao> ftsToSave = new java.util.ArrayList<>();
+
+        for (Analise analise : analises) {
+            Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
+            Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
             
-            for (Analise analise : analises) {
-                // Atualizar funções de dados
-                Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
+            for (RenomearFuncaoDTO renomeacao : renomeacoes) {
+                Funcionalidade novaFuncionalidade = mapaNovasFuncionalidades.get(renomeacao);
+                
                 for (FuncaoDados fd : funcoesDados) {
                     if (fd.getFuncionalidade() != null && 
                         fd.getFuncionalidade().getModulo() != null &&
@@ -300,24 +306,19 @@ public class SistemaService extends BaseService {
                         renomeacao.getNomeFuncionalidade().equals(fd.getFuncionalidade().getNome()) &&
                         renomeacao.getNomeAtual().equals(fd.getName())) {
                         
-                        // Atualizar nome se informado
                         if (renomeacao.getNovoNome() != null && !renomeacao.getNovoNome().isEmpty()) {
                             fd.setName(renomeacao.getNovoNome());
                         }
                         
-                        // Atualizar funcionalidade se informada
                         if (novaFuncionalidade != null) {
                             fd.setFuncionalidade(novaFuncionalidade);
                         }
                         
-                        funcaoDadosRepository.save(fd);
-                        totalAtualizadas++;
+                        fdsToSave.add(fd);
                         log.debug("[SistemaService] Função de dados ID {} alterada", fd.getId());
                     }
                 }
                 
-                // Atualizar funções de transação
-                Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
                 for (FuncaoTransacao ft : funcoesTransacao) {
                     if (ft.getFuncionalidade() != null && 
                         ft.getFuncionalidade().getModulo() != null &&
@@ -325,22 +326,29 @@ public class SistemaService extends BaseService {
                         renomeacao.getNomeFuncionalidade().equals(ft.getFuncionalidade().getNome()) &&
                         renomeacao.getNomeAtual().equals(ft.getName())) {
                         
-                        // Atualizar nome se informado
                         if (renomeacao.getNovoNome() != null && !renomeacao.getNovoNome().isEmpty()) {
                             ft.setName(renomeacao.getNovoNome());
                         }
                         
-                        // Atualizar funcionalidade se informada
                         if (novaFuncionalidade != null) {
                             ft.setFuncionalidade(novaFuncionalidade);
                         }
                         
-                        funcaoTransacaoRepository.save(ft);
-                        totalAtualizadas++;
+                        ftsToSave.add(ft);
                         log.debug("[SistemaService] Função de transação ID {} alterada", ft.getId());
                     }
                 }
             }
+        }
+        
+        if (!fdsToSave.isEmpty()) {
+            funcaoDadosRepository.save(fdsToSave);
+            totalAtualizadas += fdsToSave.size();
+        }
+        
+        if (!ftsToSave.isEmpty()) {
+            funcaoTransacaoRepository.save(ftsToSave);
+            totalAtualizadas += ftsToSave.size();
         }
         
         log.debug("[SistemaService] Total de funções atualizadas: {}", totalAtualizadas);

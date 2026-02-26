@@ -5,6 +5,11 @@ import br.com.basis.abaco.AbacoApp;
 import br.com.basis.abaco.domain.Modulo;
 import br.com.basis.abaco.repository.ModuloRepository;
 import br.com.basis.abaco.repository.search.ModuloSearchRepository;
+import br.com.basis.abaco.repository.FuncaoDadosRepository;
+import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
+import br.com.basis.abaco.repository.FuncionalidadeRepository;
+import br.com.basis.abaco.repository.search.FuncionalidadeSearchRepository;
+import br.com.basis.abaco.service.ModuloService;
 import br.com.basis.abaco.web.rest.errors.ExceptionTranslator;
 
 import br.com.basis.dynamicexports.service.DynamicExportsService;
@@ -49,6 +54,21 @@ public class ModuloResourceIT {
     private ModuloSearchRepository moduloSearchRepository;
 
     @Autowired
+    private FuncaoDadosRepository funcaoDadosRepository;
+
+    @Autowired
+    private FuncaoTransacaoRepository funcaoTransacaoRepository;
+
+    @Autowired
+    private FuncionalidadeRepository funcionalidadeRepository;
+
+    @Autowired
+    private FuncionalidadeSearchRepository funcionalidadeSearchRepository;
+
+    @Autowired
+    private ModuloService moduloService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -69,7 +89,7 @@ public class ModuloResourceIT {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-            ModuloResource moduloResource = new ModuloResource(moduloRepository, moduloSearchRepository, dynamicExportsService);
+        ModuloResource moduloResource = new ModuloResource(moduloRepository, moduloSearchRepository, dynamicExportsService, moduloService);
         this.restModuloMockMvc = MockMvcBuilders.standaloneSetup(moduloResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

@@ -90,6 +90,28 @@ export class ModuloService {
     }));
   }
 
+  getTotalFunction(id: number): Observable<number> {
+    const url = `${this.resourceUrl}/total-funcoes/${id}`;
+    return this.http.get<number>(url).pipe(catchError((error: any) => {
+      if (error.status === 403) {
+        this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+        return Observable.throw(new Error(error.status));
+      }
+      return Observable.throw(new Error(error.status || error.message));
+    }));
+  }
+
+  migrarModulos(idEdit: number, idMigrar: number): Observable<any> {
+    const url = `${this.resourceUrl}/migrar?idEdit=${idEdit}&idMigrar=${idMigrar}`;
+    return this.http.post<any>(url, null).pipe(catchError((error: any) => {
+      if (error.status === 403) {
+        this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
+        return Observable.throw(new Error(error.status));
+      }
+      return Observable.throw(new Error(error.status || error.message));
+    }));
+  }
+
   // private convertResponse(res: Response): ResponseWrapper {
   //   const jsonResponse = res.json();
   //   const result = [];

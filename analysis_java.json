@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "total_issues": 0,
+    "errors": 0,
+    "warnings": 0,
+    "info": 0,
+    "security_issues": 0,
+    "security_high": 0,
+    "security_medium": 0
+  },
+  "issues": [],
+  "metrics": {},
+  "security": []
+}
