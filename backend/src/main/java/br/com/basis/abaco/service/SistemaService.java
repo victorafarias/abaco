@@ -283,14 +283,6 @@ public class SistemaService extends BaseService {
                     continue;
                 }
             }
-        }
-        
-        List<FuncaoDados> fdsToSave = new java.util.ArrayList<>();
-        List<FuncaoTransacao> ftsToSave = new java.util.ArrayList<>();
-
-        for (Analise analise : analises) {
-            Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
-            Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
             
             int atualizadasFD;
             int atualizadasFT;
@@ -324,16 +316,6 @@ public class SistemaService extends BaseService {
             log.debug("[SistemaService] Função '{}' → FD: {} atualizadas, FT: {} atualizadas", 
                 renomeacao.getNomeAtual(), atualizadasFD, atualizadasFT);
             totalAtualizadas += atualizadasFD + atualizadasFT;
-        }
-        
-        if (!fdsToSave.isEmpty()) {
-            funcaoDadosRepository.save(fdsToSave);
-            totalAtualizadas += fdsToSave.size();
-        }
-        
-        if (!ftsToSave.isEmpty()) {
-            funcaoTransacaoRepository.save(ftsToSave);
-            totalAtualizadas += ftsToSave.size();
         }
         
         log.debug("[SistemaService] Total de funções atualizadas: {}", totalAtualizadas);
