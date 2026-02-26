@@ -125,7 +125,7 @@ export class PesquisarFtComponent implements OnInit {
 
     classificacoes: SelectItem[] = [];
 
-    classificacaoSearch: String;
+    classificacaoSearch: string[] = [];
 
     nameSearch: String;
 
@@ -310,15 +310,16 @@ export class PesquisarFtComponent implements OnInit {
             }
         }
         if (this.isFuncaoDados) {
-            this.classificacoes = [{ label: "", value: "" },
-            { label: "ALI", value: "ALI" },
-            { label: "AIE", value: "AIE" }];
+            this.classificacoes = [
+                { label: "ALI", value: "ALI" },
+                { label: "AIE", value: "AIE" }];
             this.campoDers = "DERs/RLRs";
         } else {
-            this.classificacoes = [{ label: "", value: "" },
-            { label: "CE", value: "CE" },
-            { label: "EE", value: "EE" },
-            { label: "SE", value: "SE" }];
+            this.classificacoes = [
+                { label: "CE", value: "CE" },
+                { label: "EE", value: "EE" },
+                { label: "SE", value: "SE" },
+                { label: "INM", value: "INM" }];
             this.campoDers = "DERs/ALRs";
         }
     }

@@ -222,6 +222,35 @@
                     </div>
                 </p-dialog>
 
+                <!-- Dialog migrar módulo -->
+                <p-dialog header="Migrar Módulo" [modal]="true" [(visible)]="mostrarDialogMigrarModulo"
+                    [contentStyle]="{'overflow':'visible'}" [style]="{width: '50vw'}">
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-12 ui-sm-12" style="margin-bottom: 25px">
+                            <span>
+                                <p-dropdown [filter]="true" [options]="modulosParaMigrar" optionLabel="nome" datakey="id"
+                                    id="idModuloMigrarFormSistema" placeholder="Módulo destino*"
+                                    name="moduloMigracaoSistemaNome" [(ngModel)]="moduloMigracaoSistema"
+                                    required #moduloMigracaoSistemaReq='ngModel'>
+                                </p-dropdown>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="ui-g ui-md-12" style="justify-content: flex-end; padding-top: 25px">
+                        <div class="ui-g-4 ui-md-4 ui-sm-12">
+                            <app-white-button [buttonLabel]="'Cancelar'" id="idBtnCancelarModuloMigrar"
+                                (click)="fecharDialogMigrarModulo()">
+                            </app-white-button>
+                        </div>
+                        <div class="ui-g-4 ui-md-4 ui-sm-12">
+                            <app-green-button [buttonLabel]="'Confirmar'" id="idBtnSalvarModuloMigrar"
+                                (click)="migrarModuloAction()">
+                            </app-green-button>
+                        </div>
+                    </div>
+                </p-dialog>
+                <!-- Fim dialog migrar módulo -->
+
                 <!-- Dialog confirmação deleção -->
                 <p-confirmDialog header="Confirmação" #dialog>
                     <p-footer>

@@ -17,10 +17,11 @@
                                 </div>
                                 <div class="ui-g-4 ui-md-4 ui-sm-12" style="margin-bottom: 05px">
                                     <label>Sistema</label>
-                                    <p-dropdown [filter]="true" dataKey="id" id="idSistemaSaveFormAnalise"
-                                        optionLabel="nome" [disabled]="disabledOptionsforEdit()"
-                                        [placeholder]="this.getLabel('Selecione')" (onChange)="getSistemaSelecionado()"
-                                        name="sistema" [options]="sistemas" [(ngModel)]="analise.sistema">
+                                    <p-dropdown [filter]="true" filterBy="label,value.sigla" filterMatchMode="contains"
+                                        dataKey="id" id="idSistemaSaveFormAnalise" optionLabel="nome"
+                                        [disabled]="disabledOptionsforEdit()" [placeholder]="this.getLabel('Selecione')"
+                                        (onChange)="getSistemaSelecionado()" name="sistema" [options]="sistemas"
+                                        [(ngModel)]="analise.sistema">
                                         <ng-template let-item pTemplate="selectedItem">
                                             <span *ngIf="item">{{ item.nome || item.value?.nome }} - {{ item.sigla ||
                                                 item.value?.sigla }}</span>

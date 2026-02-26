@@ -13,6 +13,7 @@ import {
 
   sistemaRoute, SistemaService
 } from '.';
+import { ModuloService } from '../modulo/modulo.service';
 
 @NgModule({
   imports: [
@@ -32,7 +33,8 @@ import {
   ],
   providers: [
     SistemaService,
+    ModuloService,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class SistemaModule {}
+export class SistemaModule { }

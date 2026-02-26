@@ -99,12 +99,13 @@
                                 </th>
                                 <th pSortableColumn="fase.classificacao" style="text-align: center; width: 9em;">
                                     Classificação <p-sortIcon></p-sortIcon>
-                                    <p-dropdown class="column-filter-input" [(options)]="classificacoes"
-                                        name="classificaoFiltro" [(ngModel)]="classificacaoSearch" [autoWidth]="false"
-                                        [style]="{'min-width':'50%'}"
-                                        (onChange)="table.filter(classificacaoSearch, 'classificacao', 'contains')"
-                                        [placeholder]="''" (click)="$event.stopPropagation()">
-                                    </p-dropdown>
+                                    <p-multiSelect [options]="classificacoes" name="classificaoFiltro"
+                                        [(ngModel)]="classificacaoSearch"
+                                        (onChange)="table.filter($event.value, 'classificacao', 'in')" defaultLabel=""
+                                        [maxSelectedLabels]="0" selectedItemsLabel="{0} selecionados"
+                                        [appendTo]="'body'" [style]="{'width':'100%'}"
+                                        styleClass="column-filter-multiselect" (click)="$event.stopPropagation()">
+                                    </p-multiSelect>
                                 </th>
                                 <th style="text-align:left; width: 4em;"></th>
                             </tr>

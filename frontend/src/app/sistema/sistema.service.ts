@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { Sistema } from './sistema.model';
 import { HttpClient } from '@angular/common/http';
 import { PageNotificationService } from '@nuvem/primeng-components';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { ResponseWrapper } from '../shared';
 import { catchError } from 'rxjs/operators';
 import { ExportacaoUtilService } from '../components/abaco-buttons/export-button/export-button.service';
@@ -39,7 +39,7 @@ export class SistemaService {
         return this.http.post<Sistema>(this.resourceUrl, copy).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -49,7 +49,7 @@ export class SistemaService {
         return this.http.put<Sistema>(this.resourceUrl, copy).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -58,7 +58,7 @@ export class SistemaService {
         return this.http.get<Sistema>(`${this.resourceUrl}/${id}`).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -68,7 +68,7 @@ export class SistemaService {
         return this.http.get<ResponseWrapper>(url).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -78,7 +78,7 @@ export class SistemaService {
         return this.http.get<Sistema[]>(url).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -87,7 +87,7 @@ export class SistemaService {
         return this.http.get<Sistema[]>(this.resourceUrl + '/drop-down').pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -96,7 +96,7 @@ export class SistemaService {
         return this.http.delete<Response>(`${this.resourceUrl}/${id}`).pipe(catchError((error: any) => {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
             if (error) {
                 const msgError = error.headers.get('x-abacoapp-error');
@@ -109,7 +109,7 @@ export class SistemaService {
                         'Cadastros.Sistema.Mensagens.msgSistemaVinculadoNaoPodeSerExcluido')
                     );
                 }
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             }
         }));
     }
@@ -174,7 +174,7 @@ export class SistemaService {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
             }
-            return Observable.throw(new Error(error.status));
+            return throwError(new Error(error.status));
         }));
     }
 
@@ -200,7 +200,7 @@ export class SistemaService {
                 } else if (error.status === 504) {
                     this.pageNotificationService.addErrorMessage(this.getLabel('Timeout ao carregar funções. Tente novamente.'));
                 }
-                return Observable.throw(new Error(error.status));
+                return throwError(new Error(error.status));
             })
         );
     }
@@ -221,7 +221,7 @@ export class SistemaService {
             if (error.status === 403) {
                 this.pageNotificationService.addErrorMessage(this.getLabel('Você não possui permissão!'));
             }
-            return Observable.throw(new Error(error.status));
+            return throwError(new Error(error.status));
         }));
     }
 

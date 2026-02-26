@@ -4,6 +4,7 @@ import br.com.basis.abaco.domain.Funcionalidade;
 import br.com.basis.abaco.domain.Modulo;
 import br.com.basis.abaco.repository.ModuloRepository;
 import br.com.basis.abaco.repository.search.ModuloSearchRepository;
+import br.com.basis.abaco.service.ModuloService;
 import br.com.basis.abaco.service.dto.filter.SearchFilterDTO;
 import br.com.basis.abaco.service.exception.RelatorioException;
 import br.com.basis.abaco.service.relatorio.RelatorioModuloColunas;
@@ -62,11 +63,14 @@ public class ModuloResource {
     private final ModuloSearchRepository moduloSearchRepository;
 
     private final DynamicExportsService dynamicExportsService;
+    
+    private final ModuloService moduloService;
 
-    public ModuloResource(ModuloRepository moduloRepository, ModuloSearchRepository moduloSearchRepository, DynamicExportsService dynamicExportsService) {
+    public ModuloResource(ModuloRepository moduloRepository, ModuloSearchRepository moduloSearchRepository, DynamicExportsService dynamicExportsService, ModuloService moduloService) {
         this.moduloRepository = moduloRepository;
         this.moduloSearchRepository = moduloSearchRepository;
         this.dynamicExportsService = dynamicExportsService;
+        this.moduloService = moduloService;
     }
 
     /**
@@ -189,6 +193,21 @@ public class ModuloResource {
         return StreamSupport
             .stream(moduloSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .collect(Collectors.toList());
+    }
+    @GetMapping("/modulos/total-funcoes/{id}")
+    @Timed
+    public ResponseEntity<Long> countTotalFuncao(@PathVariable Long id){
+        log.debug("REST request to get total funcoes for Modulo {}", id);
+        Long count = moduloService.countTotalFuncao(id);
+        return ResponseEntity.ok(count);
+    }
+
+    @PostMapping("/modulos/migrar")
+    @Timed
+    public ResponseEntity<Void> migrarFuncionalidades(@RequestParam("idEdit") Long idEdit, @RequestParam("idMigrar") Long idMigrar){
+        log.debug("Requisição para migrar funcionalidades do modulo: {} para {}", idEdit, idMigrar);
+        moduloService.migrarFuncionalidades(idEdit, idMigrar);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, idEdit.toString())).build();
     }
 
     @PostMapping(value = "/modulos/exportacao/{tipoRelatorio}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
