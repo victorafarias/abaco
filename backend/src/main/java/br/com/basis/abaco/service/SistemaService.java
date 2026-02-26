@@ -19,15 +19,11 @@ import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.basis.abaco.domain.Analise;
-import br.com.basis.abaco.domain.FuncaoDados;
-import br.com.basis.abaco.domain.FuncaoTransacao;
-import br.com.basis.abaco.domain.Funcionalidade;
-import br.com.basis.abaco.domain.Modulo;
 import br.com.basis.abaco.domain.Sistema;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.FuncaoDadosRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
+import br.com.basis.abaco.repository.FuncionalidadeRepository;
 import br.com.basis.abaco.repository.SistemaRepository;
 import br.com.basis.abaco.repository.search.SistemaSearchRepository;
 import br.com.basis.abaco.service.dto.FuncaoDistintaDTO;
@@ -55,6 +51,7 @@ public class SistemaService extends BaseService {
     private final AnaliseRepository analiseRepository;
     private final FuncaoDadosRepository funcaoDadosRepository;
     private final FuncaoTransacaoRepository funcaoTransacaoRepository;
+    private final FuncionalidadeRepository funcionalidadeRepository;
 
     public SistemaService(
             SistemaRepository sistemaRepository,
@@ -63,7 +60,8 @@ public class SistemaService extends BaseService {
             ModelMapper modelMapper,
             AnaliseRepository analiseRepository,
             FuncaoDadosRepository funcaoDadosRepository,
-            FuncaoTransacaoRepository funcaoTransacaoRepository) {
+            FuncaoTransacaoRepository funcaoTransacaoRepository,
+            FuncionalidadeRepository funcionalidadeRepository) {
         this.sistemaRepository = sistemaRepository;
         this.sistemaSearchRepository = sistemaSearchRepository;
         this.dynamicExportsService = dynamicExportsService;
@@ -71,6 +69,7 @@ public class SistemaService extends BaseService {
         this.analiseRepository = analiseRepository;
         this.funcaoDadosRepository = funcaoDadosRepository;
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
+        this.funcionalidadeRepository = funcionalidadeRepository;
     }
 
     @Transactional(readOnly = true)
@@ -250,41 +249,38 @@ public class SistemaService extends BaseService {
      * @return Número de funções atualizadas
      */
     public int renomearFuncoes(Long sistemaId, List<RenomearFuncaoDTO> renomeacoes) {
-        log.debug("[SistemaService] Alterando {} funções para o sistema ID: {}", renomeacoes.size(), sistemaId);
+        log.debug("[SistemaService] Alterando {} funções para o sistema ID: {} (via SQL nativo)", renomeacoes.size(), sistemaId);
         
         int totalAtualizadas = 0;
         
-        // Buscar todas as análises do sistema
-        List<Analise> analises = analiseRepository.findAllBySistemaId(sistemaId);
-        
-        // Buscar o sistema para ter acesso aos módulos e funcionalidades
-        Sistema sistema = sistemaRepository.findOne(sistemaId);
-        
-        // Mapear cada RenomearFuncaoDTO para sua nova Funcionalidade (se existir)
-        java.util.Map<RenomearFuncaoDTO, Funcionalidade> mapaNovasFuncionalidades = new java.util.HashMap<>();
         for (RenomearFuncaoDTO renomeacao : renomeacoes) {
-            Funcionalidade novaFuncionalidade = null;
-            if (renomeacao.getNovoModulo() != null || renomeacao.getNovaFuncionalidade() != null) {
-                String moduloDestino = renomeacao.getNovoModulo() != null ? renomeacao.getNovoModulo() : renomeacao.getNomeModulo();
-                String funcionalidadeDestino = renomeacao.getNovaFuncionalidade() != null ? renomeacao.getNovaFuncionalidade() : renomeacao.getNomeFuncionalidade();
+            boolean temNovoNome = renomeacao.getNovoNome() != null && !renomeacao.getNovoNome().isEmpty();
+            // novoModulo e novaFuncionalidade são independentes: pode mover só de módulo
+            // mantendo o mesmo nome de funcionalidade, ou mover funcionalidade mantendo módulo.
+            boolean temNovaLocalizacao = renomeacao.getNovoModulo() != null || renomeacao.getNovaFuncionalidade() != null;
+            
+            if (!temNovoNome && !temNovaLocalizacao) {
+                log.debug("[SistemaService] Nenhuma alteração para: {}", renomeacao.getNomeAtual());
+                continue;
+            }
+            
+            // Resolver ID da funcionalidade destino via SQL direto, sem carregar o grafo do Sistema
+            Long novaFuncionalidadeId = null;
+            if (temNovaLocalizacao) {
+                // Se não foi informado novo módulo, usamos o módulo atual como destino.
+                // Se não foi informada nova funcionalidade, usamos a funcionalidade atual como destino.
+                String moduloDestino = renomeacao.getNovoModulo() != null
+                    ? renomeacao.getNovoModulo() : renomeacao.getNomeModulo();
+                String funcDestino = renomeacao.getNovaFuncionalidade() != null
+                    ? renomeacao.getNovaFuncionalidade() : renomeacao.getNomeFuncionalidade();
                 
-                for (Modulo modulo : sistema.getModulos()) {
-                    if (moduloDestino.equals(modulo.getNome())) {
-                        for (Funcionalidade func : modulo.getFuncionalidades()) {
-                            if (funcionalidadeDestino.equals(func.getNome())) {
-                                novaFuncionalidade = func;
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
+                novaFuncionalidadeId = funcionalidadeRepository
+                    .findIdPorSistemaModuloFuncionalidade(sistemaId, moduloDestino, funcDestino);
                 
-                if (novaFuncionalidade == null) {
-                    log.warn("[SistemaService] Funcionalidade de destino não encontrada: Módulo={}, Funcionalidade={}", 
-                        moduloDestino, funcionalidadeDestino);
-                } else {
-                    mapaNovasFuncionalidades.put(renomeacao, novaFuncionalidade);
+                if (novaFuncionalidadeId == null) {
+                    log.warn("[SistemaService] Funcionalidade de destino não encontrada: Módulo='{}', Funcionalidade='{}'",
+                        moduloDestino, funcDestino);
+                    continue;
                 }
             }
         }
@@ -296,49 +292,38 @@ public class SistemaService extends BaseService {
             Set<FuncaoDados> funcoesDados = funcaoDadosRepository.findByAnaliseId(analise.getId());
             Set<FuncaoTransacao> funcoesTransacao = funcaoTransacaoRepository.findAllByAnaliseId(analise.getId());
             
-            for (RenomearFuncaoDTO renomeacao : renomeacoes) {
-                Funcionalidade novaFuncionalidade = mapaNovasFuncionalidades.get(renomeacao);
-                
-                for (FuncaoDados fd : funcoesDados) {
-                    if (fd.getFuncionalidade() != null && 
-                        fd.getFuncionalidade().getModulo() != null &&
-                        renomeacao.getNomeModulo().equals(fd.getFuncionalidade().getModulo().getNome()) &&
-                        renomeacao.getNomeFuncionalidade().equals(fd.getFuncionalidade().getNome()) &&
-                        renomeacao.getNomeAtual().equals(fd.getName())) {
-                        
-                        if (renomeacao.getNovoNome() != null && !renomeacao.getNovoNome().isEmpty()) {
-                            fd.setName(renomeacao.getNovoNome());
-                        }
-                        
-                        if (novaFuncionalidade != null) {
-                            fd.setFuncionalidade(novaFuncionalidade);
-                        }
-                        
-                        fdsToSave.add(fd);
-                        log.debug("[SistemaService] Função de dados ID {} alterada", fd.getId());
-                    }
-                }
-                
-                for (FuncaoTransacao ft : funcoesTransacao) {
-                    if (ft.getFuncionalidade() != null && 
-                        ft.getFuncionalidade().getModulo() != null &&
-                        renomeacao.getNomeModulo().equals(ft.getFuncionalidade().getModulo().getNome()) &&
-                        renomeacao.getNomeFuncionalidade().equals(ft.getFuncionalidade().getNome()) &&
-                        renomeacao.getNomeAtual().equals(ft.getName())) {
-                        
-                        if (renomeacao.getNovoNome() != null && !renomeacao.getNovoNome().isEmpty()) {
-                            ft.setName(renomeacao.getNovoNome());
-                        }
-                        
-                        if (novaFuncionalidade != null) {
-                            ft.setFuncionalidade(novaFuncionalidade);
-                        }
-                        
-                        ftsToSave.add(ft);
-                        log.debug("[SistemaService] Função de transação ID {} alterada", ft.getId());
-                    }
-                }
+            int atualizadasFD;
+            int atualizadasFT;
+            
+            if (temNovoNome && novaFuncionalidadeId != null) {
+                // Renomear + mover para nova funcionalidade
+                atualizadasFD = funcaoDadosRepository.renomearEMoverPorSistema(
+                    sistemaId, renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(),
+                    renomeacao.getNomeAtual(), renomeacao.getNovoNome(), novaFuncionalidadeId);
+                atualizadasFT = funcaoTransacaoRepository.renomearEMoverPorSistema(
+                    sistemaId, renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(),
+                    renomeacao.getNomeAtual(), renomeacao.getNovoNome(), novaFuncionalidadeId);
+            } else if (temNovoNome) {
+                // Apenas renomear, sem mover
+                atualizadasFD = funcaoDadosRepository.renomearPorSistema(
+                    sistemaId, renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(),
+                    renomeacao.getNomeAtual(), renomeacao.getNovoNome());
+                atualizadasFT = funcaoTransacaoRepository.renomearPorSistema(
+                    sistemaId, renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(),
+                    renomeacao.getNomeAtual(), renomeacao.getNovoNome());
+            } else {
+                // Apenas mover funcionalidade, sem renomear
+                atualizadasFD = funcaoDadosRepository.moverFuncionalidadePorSistema(
+                    sistemaId, renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(),
+                    renomeacao.getNomeAtual(), novaFuncionalidadeId);
+                atualizadasFT = funcaoTransacaoRepository.moverFuncionalidadePorSistema(
+                    sistemaId, renomeacao.getNomeModulo(), renomeacao.getNomeFuncionalidade(),
+                    renomeacao.getNomeAtual(), novaFuncionalidadeId);
             }
+            
+            log.debug("[SistemaService] Função '{}' → FD: {} atualizadas, FT: {} atualizadas", 
+                renomeacao.getNomeAtual(), atualizadasFD, atualizadasFT);
+            totalAtualizadas += atualizadasFD + atualizadasFT;
         }
         
         if (!fdsToSave.isEmpty()) {

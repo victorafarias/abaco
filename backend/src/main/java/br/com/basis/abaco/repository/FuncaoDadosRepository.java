@@ -5,8 +5,10 @@ import br.com.basis.abaco.domain.enumeration.StatusFuncao;
 import br.com.basis.abaco.service.dto.DropdownDTO;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -100,4 +102,78 @@ public interface FuncaoDadosRepository extends JpaRepository<FuncaoDados, Long> 
         "ORDER BY m.nome, f.nome, fd.name",
         nativeQuery = true)
     List<Object[]> findFuncoesDistintasDadosBySistemaId(@Param("sistemaId") Long sistemaId);
+
+    /**
+     * Renomeia funções de dados em lote via SQL nativo.
+     * Atualiza o nome de todas as FDs que correspondem ao módulo/funcionalidade/nome atuais
+     * em todas as análises do sistema informado.
+     *
+     * @return número de registros atualizados
+     */
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value =
+        "UPDATE funcao_dados " +
+        "SET name = :novoNome " +
+        "WHERE name = :nomeAtual " +
+        "AND funcionalidade_id IN (" +
+        "  SELECT f.id FROM funcionalidade f " +
+        "  INNER JOIN modulo m ON f.modulo_id = m.id " +
+        "  WHERE m.nome = :nomeModulo AND f.nome = :nomeFuncionalidade" +
+        ") " +
+        "AND analise_id IN (" +
+        "  SELECT a.id FROM analise a WHERE a.sistema_id = :sistemaId" +
+        ")",
+        nativeQuery = true)
+    int renomearPorSistema(
+        @Param("sistemaId") Long sistemaId,
+        @Param("nomeModulo") String nomeModulo,
+        @Param("nomeFuncionalidade") String nomeFuncionalidade,
+        @Param("nomeAtual") String nomeAtual,
+        @Param("novoNome") String novoNome);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value =
+        "UPDATE funcao_dados " +
+        "SET funcionalidade_id = :novaFuncionalidadeId " +
+        "WHERE name = :nomeAtual " +
+        "AND funcionalidade_id IN (" +
+        "  SELECT f.id FROM funcionalidade f " +
+        "  INNER JOIN modulo m ON f.modulo_id = m.id " +
+        "  WHERE m.nome = :nomeModulo AND f.nome = :nomeFuncionalidade" +
+        ") " +
+        "AND analise_id IN (" +
+        "  SELECT a.id FROM analise a WHERE a.sistema_id = :sistemaId" +
+        ")",
+        nativeQuery = true)
+    int moverFuncionalidadePorSistema(
+        @Param("sistemaId") Long sistemaId,
+        @Param("nomeModulo") String nomeModulo,
+        @Param("nomeFuncionalidade") String nomeFuncionalidade,
+        @Param("nomeAtual") String nomeAtual,
+        @Param("novaFuncionalidadeId") Long novaFuncionalidadeId);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value =
+        "UPDATE funcao_dados " +
+        "SET name = :novoNome, funcionalidade_id = :novaFuncionalidadeId " +
+        "WHERE name = :nomeAtual " +
+        "AND funcionalidade_id IN (" +
+        "  SELECT f.id FROM funcionalidade f " +
+        "  INNER JOIN modulo m ON f.modulo_id = m.id " +
+        "  WHERE m.nome = :nomeModulo AND f.nome = :nomeFuncionalidade" +
+        ") " +
+        "AND analise_id IN (" +
+        "  SELECT a.id FROM analise a WHERE a.sistema_id = :sistemaId" +
+        ")",
+        nativeQuery = true)
+    int renomearEMoverPorSistema(
+        @Param("sistemaId") Long sistemaId,
+        @Param("nomeModulo") String nomeModulo,
+        @Param("nomeFuncionalidade") String nomeFuncionalidade,
+        @Param("nomeAtual") String nomeAtual,
+        @Param("novoNome") String novoNome,
+        @Param("novaFuncionalidadeId") Long novaFuncionalidadeId);
 }

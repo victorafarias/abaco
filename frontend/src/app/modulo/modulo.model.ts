@@ -16,6 +16,7 @@ export class Modulo implements BaseEntity {
     if (funcionalidades) {
       funcionalidades.forEach(f => f.modulo = this);
       this.mappableFuncionalidades = new MappableEntities<Funcionalidade>(funcionalidades);
+      this.sortFuncionalidades();
     } else {
       this.funcionalidades = [];
       this.mappableFuncionalidades = new MappableEntities<Funcionalidade>();
@@ -41,19 +42,28 @@ export class Modulo implements BaseEntity {
     return newModulo;
   }
 
+  private sortFuncionalidades() {
+    if (this.funcionalidades) {
+      this.funcionalidades.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    }
+  }
+
   addFuncionalidade(funcionalidade: Funcionalidade) {
     this.mappableFuncionalidades.push(funcionalidade);
     this.funcionalidades = this.mappableFuncionalidades.values();
+    this.sortFuncionalidades();
   }
 
   updateFuncionalidade(funcionalidade: Funcionalidade) {
     this.mappableFuncionalidades.update(funcionalidade);
     this.funcionalidades = this.mappableFuncionalidades.values();
+    this.sortFuncionalidades();
   }
 
   deleteFuncionalidade(funcionalidade: Funcionalidade) {
     this.mappableFuncionalidades.delete(funcionalidade);
     this.funcionalidades = this.mappableFuncionalidades.values();
+    this.sortFuncionalidades();
   }
 
   // XXX extrair interface?
