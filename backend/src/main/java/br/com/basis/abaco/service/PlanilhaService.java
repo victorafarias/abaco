@@ -294,6 +294,44 @@ public class PlanilhaService {
         DEFLATOR_SIGLAS_SFSP.put(limparTextoDeflator("Componente Interno Reusável - Arquivo"), "CIRN");
     }
 
+    private static final Map<String, String> DEFLATOR_SIGLAS_BNDES = new HashMap<>();
+
+    static {
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Projeto de Desenvolvimento - Novo"), "I");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Projeto de Melhoria - Desenvolvido pela Empresa"), "A");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Projeto de Melhoria - Exclusão de Funcionalidade"), "E");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Migração de Dados"), "MIG");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Função de Conversão"), "FCO");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Manutenção Corretiva (Fora da Garantia)"), "A");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Mudança de Plataforma - Linguagem de Programação"), "MPL");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Mudança de Plataforma - Banco de Dados (hierárquico p/ relacional)"), "MPH");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Mudança de Plataforma - Banco de Dados (relacional p/ relacional)"), "MPR");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Atualização de Versão – Linguagem de Programação"), "AVL");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Atualização de Versão - Browser"), "AVR");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Atualização de Versão – Banco de Dados"), "AVB");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Manutenção em Interface"), "C");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Adaptação em Funcionalidades sem Alteração de Requisitos Funcionais"), "AAF");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial - Atualização"), "ABD");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial - Consulta Prévia sem Atualização"), "ABE");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial - Atualização com Consulta Prévia"), "ABC");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial – Geração de Relatórios"), "AGR");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial – Reexecução"), "ARE");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Atualização de Dados"), "ATD");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"), "C");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Manutenção de Documentação de Sistemas Legados"), "MDL");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Verificação de Erros - Sem documentação"), "VES");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Verificação de Erros - Com Documentação"), "VED");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Pontos de Função de Teste"), "T");
+    }
+
+    private String pegarSiglaDeflatorBNDES(FatorAjuste fatorAjuste) {
+        if (fatorAjuste == null || fatorAjuste.getNome() == null) {
+            return "";
+        }
+        String nomeLimpo = limparTextoDeflator(fatorAjuste.getNome());
+        return DEFLATOR_SIGLAS_BNDES.getOrDefault(nomeLimpo, "");
+    }
+
     private static String limparTextoDeflator(String texto) {
         if (texto == null) return "";
         return texto.replaceAll("[\\p{Z}\\s]+", " ")
@@ -1026,7 +1064,7 @@ public class PlanilhaService {
             String nome = funcaoTransacao.getFuncionalidade().getModulo().getNome() + " - " + funcaoTransacao.getFuncionalidade().getNome() + " - " + funcaoTransacao.getName();
             XSSFRow row = excelSheet.getRow(rowNum++);
             row.getCell(0).setCellValue(nome);
-            row.getCell(9).setCellValue(this.getImpactoFromFatorAjuste(funcaoTransacao.getFatorAjuste()));
+            row.getCell(9).setCellValue(this.pegarSiglaDeflatorBNDES(funcaoTransacao.getFatorAjuste()));
             row.getCell(8).setCellValue(funcaoTransacao.getTipo().equals(TipoFuncaoTransacao.INM) ? "" : funcaoTransacao.getTipo().toString());
             evaluator.evaluateFormulaCell(row.getCell(8));
             row.getCell(10).setCellValue(this.getTotalDer(funcaoTransacao.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoTransacao.getDers())) : "");
@@ -1043,7 +1081,7 @@ public class PlanilhaService {
             row.getCell(0).setCellValue(nome);
             row.getCell(8).setCellValue(funcaoDados.getTipo().equals(TipoFuncaoDados.INM) ? "" : funcaoDados.getTipo().toString());
             evaluator.evaluateFormulaCell(row.getCell(8));
-            row.getCell(9).setCellValue(this.getImpactoFromFatorAjuste(funcaoDados.getFatorAjuste()));
+            row.getCell(9).setCellValue(this.pegarSiglaDeflatorBNDES(funcaoDados.getFatorAjuste()));
             row.getCell(10).setCellValue(this.getTotalDer(funcaoDados.getDers()) != 0 ? String.valueOf(this.getTotalDer(funcaoDados.getDers())) : "");
             row.getCell(11).setCellValue(this.getTotalRlr(funcaoDados.getRlrs()) != 0 ? String.valueOf(this.getTotalRlr(funcaoDados.getRlrs())) : "");
             row.getCell(23).setCellValue(Jsoup.parse(funcaoDados.getSustantation() != null ? funcaoDados.getSustantation() : "").text());
