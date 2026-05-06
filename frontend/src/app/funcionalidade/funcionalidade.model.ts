@@ -23,6 +23,9 @@ export class Funcionalidade implements BaseEntity {
   ) { }
 
   static fromJSON(json: any) {
+    if (!json) {
+      return undefined;
+    }
     return new Funcionalidade(json.id, json.nome, json.modulo,
       json.funcaoDados, json.FuncaoTransacao);
   }

@@ -87,20 +87,20 @@ public class FuncaoTransacaoResource {
     @Autowired
     private AnaliseService analiseService;
 
-    @Autowired
-    private FuncaoTransacaoService funcaoTransacaoService;
+    private final FuncaoTransacaoService funcaoTransacaoService;
 
 
     @Autowired
     private ConfiguracaoService configuracaoService;
 
-    public FuncaoTransacaoResource(FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwAlrSearchRepository vwAlrSearchRepository, FuncaoDadosService funcaoDadosService) {
+    public FuncaoTransacaoResource(FuncaoTransacaoRepository funcaoTransacaoRepository, FuncaoTransacaoSearchRepository funcaoTransacaoSearchRepository, AnaliseRepository analiseRepository, VwDerSearchRepository vwDerSearchRepository, VwAlrSearchRepository vwAlrSearchRepository, FuncaoDadosService funcaoDadosService, FuncaoTransacaoService funcaoTransacaoService) {
         this.funcaoTransacaoRepository = funcaoTransacaoRepository;
         this.funcaoTransacaoSearchRepository = funcaoTransacaoSearchRepository;
         this.analiseRepository = analiseRepository;
         this.vwDerSearchRepository = vwDerSearchRepository;
         this.vwAlrSearchRepository = vwAlrSearchRepository;
         this.funcaoDadosService = funcaoDadosService;
+        this.funcaoTransacaoService = funcaoTransacaoService;
     }
 
     /**
@@ -318,12 +318,14 @@ public class FuncaoTransacaoResource {
     public ResponseEntity<Void> deleteFuncaoTransacao(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoTransacao : {}", id);
         FuncaoTransacao funcaoTransacao = funcaoTransacaoRepository.findOne(id);
+        Long analiseId = funcaoTransacao != null && funcaoTransacao.getAnalise() != null ? funcaoTransacao.getAnalise().getId() : null;
         if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao())){
             funcaoTransacao.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
             funcaoTransacao.getAlrs().forEach(item -> vwAlrSearchRepository.delete(item.getId()));
         }
         funcaoTransacaoRepository.delete(id);
         funcaoTransacaoSearchRepository.delete(id);
+        funcaoTransacaoService.reordenarFuncoesPorAnalise(analiseId);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 

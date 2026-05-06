@@ -9,22 +9,29 @@
 
   <div class="ui-g">
     
-    <div class="ui-g-12" style="margin-bottom: 25px">
-      <p-dropdown 
-        [filter]="true"
-        [options]="funcoesDados"
-        [(ngModel)]="funcaoDadosSelecionada"
-        (onChange)="funcaoDadosSelected($event.value)"
+    <div class="ui-g-12 referenciador-fd-ac-wrap" style="margin-bottom: 25px">
+      <p-autoComplete
+        [(ngModel)]="funcoesDadosSelecionadas"
+        [suggestions]="funcoesDadosFiltradas"
+        (completeMethod)="filtrarFuncoesDados($event)"
+        field="name"
+        [multiple]="true"
+        [forceSelection]="true"
+        [dropdown]="true"
+        [completeOnFocus]="true"
+        [delay]="200"
+        (ngModelChange)="onFuncoesDadosSelecionadasChange()"
         [placeholder]="funcoesDadosDropdownPlaceholder()"
-        optionLabel="name">
-      </p-dropdown>
+        [minLength]="0"
+        styleClass="referenciador-fd-autocomplete">
+      </p-autoComplete>
     </div>
 
     <div class="ui-g-12" style="margin-bottom: 25px">
       <p-multiSelect 
         name="dersMultiSelect"
         [defaultLabel]="dersMultiSelectedPlaceholder()"
-        [disabled]="!funcaoDadosSelecionada"
+        [disabled]="!funcoesDadosSelecionadas?.length"
         [options]="ders"
         [(ngModel)]="dersReferenciados"
         optionLabel="nome">

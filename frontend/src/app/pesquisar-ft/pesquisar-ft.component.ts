@@ -38,6 +38,7 @@ import { TipoMensagem } from '../shared/mensagens.dto';
 @Component({
     selector: 'app-pesquisar-ft',
     templateUrl: './pesquisar-ft.component.html',
+    styleUrls: ['./pesquisar-ft.component.scss'],
 })
 export class PesquisarFtComponent implements OnInit {
 
@@ -178,6 +179,7 @@ export class PesquisarFtComponent implements OnInit {
             { field: 'nomeFuncionalidade', header: 'Funcionalidade' },
             { field: 'name', header: 'Nome' },
             { field: 'classificacao', header: 'Classificação' },
+            { field: 'insumosTexto', header: 'Insumos' },
             { field: 'complexidade', header: 'Complexidade' }
         ];
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
@@ -560,6 +562,23 @@ export class PesquisarFtComponent implements OnInit {
         ]);
     }
 
+    stripHtmlTags(html: string): string {
+        if (!html) {
+            return '';
+        }
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = html;
+        return tempElement.textContent || tempElement.innerText || '';
+    }
+
+    private prepareFnList(list: any[]): any[] {
+        const sorted = this.sortList(list);
+        return sorted.map((r) => ({
+            ...r,
+            insumosTexto: this.stripHtmlTags(r.insumos || ''),
+        }));
+    }
+
     public recarregarDataTable() {
         this.funcionalidadeAtual.id = this.funcionalidadeAtual && this.funcionalidadeAtual.id ? this.funcionalidadeAtual.id : 0;
         this.moduloSelecionado.id = this.moduloSelecionado && this.moduloSelecionado.id ? this.moduloSelecionado.id : 0;
@@ -569,14 +588,12 @@ export class PesquisarFtComponent implements OnInit {
             if (this.metodoContagem === 1) {
                 this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    // Alterado: Ordenando a lista antes de atribuir
-                    this.fn = this.sortList(value);
+                    this.fn = this.prepareFnList(value);
                 });
             } else {
                 this.funcaoDadosService.getFuncaoDadosByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    // Alterado: Ordenando a lista antes de atribuir
-                    this.fn = this.sortList(value);
+                    this.fn = this.prepareFnList(value);
                 });
             }
 
@@ -585,14 +602,12 @@ export class PesquisarFtComponent implements OnInit {
             if (this.metodoContagem === 1) {
                 this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidade(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    // Alterado: Ordenando a lista antes de atribuir
-                    this.fn = this.sortList(value);
+                    this.fn = this.prepareFnList(value);
                 });
             } else {
                 this.funcaoTransacaoService.getFuncaoTransacaoByModuloOrFuncionalidadeEstimada(this.analise.sistema.id, this.nameSearch, this.moduloSelecionado.id, this.funcionalidadeAtual.id, this.analise.equipeResponsavel.id).subscribe(value => {
                     this.blockUiService.hide();
-                    // Alterado: Ordenando a lista antes de atribuir
-                    this.fn = this.sortList(value);
+                    this.fn = this.prepareFnList(value);
                 });
             }
         }
@@ -740,7 +755,7 @@ export class PesquisarFtComponent implements OnInit {
     exportExcel() {
         if (this.fn && this.fn.length > 0) {
             let funcoes = this.puxarFuncoes();
-            let heading: any = { nomeModulo: "Módulo", nomeFuncionalidade: "Funcionalidade", name: "Nome", classificacao: "Classificação", complexidade: "Complexidade", };
+            let heading: any = { nomeModulo: "Módulo", nomeFuncionalidade: "Funcionalidade", name: "Nome", classificacao: "Classificação", insumosTexto: "Insumos", complexidade: "Complexidade", };
             funcoes.unshift(heading);
             const worksheet = XLSX.utils.json_to_sheet(funcoes, { skipHeader: true });
             const workbook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };

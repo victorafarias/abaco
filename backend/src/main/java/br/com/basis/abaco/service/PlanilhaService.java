@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -317,7 +318,7 @@ public class PlanilhaService {
         DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial – Geração de Relatórios"), "AGR");
         DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Apuração Especial – Reexecução"), "ARE");
         DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Atualização de Dados"), "ATD");
-        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"), "C");
+        DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"), "CE");
         DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Manutenção de Documentação de Sistemas Legados"), "MDL");
         DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Verificação de Erros - Sem documentação"), "VES");
         DEFLATOR_SIGLAS_BNDES.put(limparTextoDeflator("Verificação de Erros - Com Documentação"), "VED");
@@ -1246,10 +1247,8 @@ public class PlanilhaService {
             evaluator.evaluateFormulaCell(row.getCell(2));row.getCell(3).setCellValue(funcaoDados.getFuncionalidade().getModulo().getNome());
             row.getCell(4).setCellValue(funcaoDados.getFuncionalidade().getNome());
             row.getCell(9).setCellValue(this.getTotalRlr(funcaoDados.getRlrs()));
-            String rlrs = funcaoDados.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(10).setCellValue(rlrs);
-            String ders = funcaoDados.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(8).setCellValue(ders);
+            row.getCell(10).setCellValue(this.joinDescricoesRlrsExportacaoBasis(funcaoDados.getRlrs()));
+            row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoDados.getDers()));
             row.getCell(17).setCellValue(Jsoup.parse(funcaoDados.getSustantation() != null ? funcaoDados.getSustantation() : "").text());
             evaluator.evaluateFormulaCell(row.getCell(16));
             if(isDivergence == true){
@@ -1267,10 +1266,8 @@ public class PlanilhaService {
                 row.getCell(3).setCellValue(funcaoTransacao.getFuncionalidade().getModulo().getNome());
                 row.getCell(4).setCellValue(funcaoTransacao.getFuncionalidade().getNome());
                 row.getCell(5).setCellValue(funcaoTransacao.getName());
-                String ders = funcaoTransacao.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-                row.getCell(8).setCellValue(ders);
-                String rlrs = funcaoTransacao.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-                row.getCell(10).setCellValue(rlrs);
+                row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoTransacao.getDers()));
+                row.getCell(10).setCellValue(this.joinDescricoesAlrsExportacaoBasis(funcaoTransacao.getAlrs()));
                 row.getCell(9).setCellValue(this.getTotalAlr(funcaoTransacao.getAlrs()));
                 evaluator.evaluateFormulaCell(row.getCell(16));
                 row.getCell(0).setCellValue(idRow++);
@@ -1625,18 +1622,14 @@ public class PlanilhaService {
             row.getCell(6).setCellValue(funcaoPrimaria.getTipo().toString());
             if(funcaoPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) && funcaoSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)){
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoSecundaria.getDers()));
-                String ders = funcaoSecundaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
-                row.getCell(8).setCellValue(ders);
+                row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoSecundaria.getDers()));
                 row.getCell(9).setCellValue(this.getTotalAlr(funcaoSecundaria.getAlrs()));
-                String alrs = funcaoPrimaria.getAlrs().stream().map(Alr::getNome).collect(Collectors.joining(", "));
-                row.getCell(10).setCellValue(alrs);
+                row.getCell(10).setCellValue(this.joinDescricoesAlrsExportacaoBasis(funcaoPrimaria.getAlrs()));
             }else {
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoPrimaria.getDers()));
-                String ders = funcaoPrimaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
-                row.getCell(8).setCellValue(ders);
+                row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoPrimaria.getDers()));
                 row.getCell(9).setCellValue(this.getTotalAlr(funcaoPrimaria.getAlrs()));
-                String alrs = funcaoPrimaria.getAlrs().stream().map(Alr::getNome).collect(Collectors.joining(", "));
-                row.getCell(10).setCellValue(alrs);
+                row.getCell(10).setCellValue(this.joinDescricoesAlrsExportacaoBasis(funcaoPrimaria.getAlrs()));
             }
             row.getCell(1).setCellValue(funcaoPrimaria.getFatorAjuste().getNome());
             evaluator.evaluateFormulaCell(row.getCell(2));
@@ -1657,10 +1650,8 @@ public class PlanilhaService {
                     row.getCell(3).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
                     row.getCell(4).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
                     row.getCell(9).setCellValue(this.getTotalAlr(funcaoSecundaria.getAlrs()));
-                    String alrs = funcaoSecundaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-                    row.getCell(10).setCellValue(alrs);
-                    String ders = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-                    row.getCell(8).setCellValue(ders);
+                    row.getCell(10).setCellValue(this.joinDescricoesAlrsExportacaoBasis(funcaoSecundaria.getAlrs()));
+                    row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoSecundaria.getDers()));
                 }else{
                     row.getCell(4).setCellValue(funcaoSecundaria.getFuncionalidade().getNome());
                     row.getCell(3).setCellValue(funcaoSecundaria.getFuncionalidade().getModulo().getNome());
@@ -1672,12 +1663,10 @@ public class PlanilhaService {
             row.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoPrimaria, funcaoSecundaria));
             row.getCell(20).setCellValue(funcaoSecundaria.getFatorAjuste().getNome());
             row.getCell(22).setCellValue(funcaoSecundaria.getTipo().toString());
-            String dersSecundaria = funcaoSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
             row.getCell(23).setCellValue(this.getTotalDer(funcaoSecundaria.getDers()));
-            row.getCell(24).setCellValue(dersSecundaria);
+            row.getCell(24).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoSecundaria.getDers()));
             row.getCell(25).setCellValue(this.getTotalAlr(funcaoSecundaria.getAlrs()));
-            String alrsSecundaria = funcaoSecundaria.getAlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(26).setCellValue(alrsSecundaria);
+            row.getCell(26).setCellValue(this.joinDescricoesAlrsExportacaoBasis(funcaoSecundaria.getAlrs()));
             row.getCell(33).setCellValue(funcaoSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
         }
     }
@@ -1721,18 +1710,14 @@ public class PlanilhaService {
             row.getCell(6).setCellValue(funcaoDadosPrimaria.getTipo().toString());
             if (funcaoDadosPrimaria.getStatusFuncao().equals(StatusFuncao.EXCLUIDO) && funcaoDadosSecundaria.getStatusFuncao().equals(StatusFuncao.VALIDADO)) {
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosSecundaria.getDers()));
-                String ders = funcaoDadosSecundaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
-                row.getCell(8).setCellValue(ders);
+                row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoDadosSecundaria.getDers()));
                 row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosSecundaria.getRlrs()));
-                String rlrs = funcaoDadosSecundaria.getRlrs().stream().map(Rlr::getNome).collect(Collectors.joining(", "));
-                row.getCell(10).setCellValue(rlrs);
+                row.getCell(10).setCellValue(this.joinDescricoesRlrsExportacaoBasis(funcaoDadosSecundaria.getRlrs()));
             }else {
                 row.getCell(7).setCellValue(this.getTotalDer(funcaoDadosPrimaria.getDers()));
-                String ders = funcaoDadosPrimaria.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
-                row.getCell(8).setCellValue(ders);
+                row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoDadosPrimaria.getDers()));
                 row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosPrimaria.getRlrs()));
-                String rlrs = funcaoDadosPrimaria.getRlrs().stream().map(Rlr::getNome).collect(Collectors.joining(", "));
-                row.getCell(10).setCellValue(rlrs);
+                row.getCell(10).setCellValue(this.joinDescricoesRlrsExportacaoBasis(funcaoDadosPrimaria.getRlrs()));
             }
             row.getCell(1).setCellValue(funcaoDadosPrimaria.getFatorAjuste().getNome());
             evaluator.evaluateFormulaCell(row.getCell(2));
@@ -1753,10 +1738,8 @@ public class PlanilhaService {
                     row.getCell(3).setCellValue(funcaoDadosSecundaria.getFuncionalidade().getModulo().getNome());
                     row.getCell(4).setCellValue(funcaoDadosSecundaria.getFuncionalidade().getNome());
                     row.getCell(9).setCellValue(this.getTotalRlr(funcaoDadosSecundaria.getRlrs()));
-                    String alrs = funcaoDadosSecundaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-                    row.getCell(10).setCellValue(alrs);
-                    String ders = funcaoDadosSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-                    row.getCell(8).setCellValue(ders);
+                    row.getCell(10).setCellValue(this.joinDescricoesRlrsExportacaoBasis(funcaoDadosSecundaria.getRlrs()));
+                    row.getCell(8).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoDadosSecundaria.getDers()));
                 }else{
                     row.getCell(4).setCellValue(funcaoDadosSecundaria.getFuncionalidade().getNome());
                     row.getCell(3).setCellValue(funcaoDadosSecundaria.getFuncionalidade().getModulo().getNome());
@@ -1768,12 +1751,10 @@ public class PlanilhaService {
             row.getCell(19).setCellValue(this.pegarValorValidacaoDuasFuncao(funcaoDadosPrimaria, funcaoDadosSecundaria));
             row.getCell(20).setCellValue(funcaoDadosSecundaria.getFatorAjuste().getNome());
             row.getCell(22).setCellValue(funcaoDadosSecundaria.getTipo().toString());
-            String dersSecundaria = funcaoDadosSecundaria.getDers().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
             row.getCell(23).setCellValue(this.getTotalDer(funcaoDadosSecundaria.getDers()));
-            row.getCell(24).setCellValue(dersSecundaria);
+            row.getCell(24).setCellValue(this.joinDescricoesDersExportacaoBasis(funcaoDadosSecundaria.getDers()));
             row.getCell(25).setCellValue(this.getTotalRlr(funcaoDadosSecundaria.getRlrs()));
-            String rlrsSecundaria = funcaoDadosSecundaria.getRlrs().stream().map(item -> item.getNome()).collect(Collectors.joining(", "));
-            row.getCell(26).setCellValue(rlrsSecundaria);
+            row.getCell(26).setCellValue(this.joinDescricoesRlrsExportacaoBasis(funcaoDadosSecundaria.getRlrs()));
             row.getCell(33).setCellValue(funcaoDadosSecundaria.getLstDivergenceComments().stream().map(item -> item.getComment()).collect(Collectors.joining(", ")));
         }
     }
@@ -1912,6 +1893,72 @@ public class PlanilhaService {
             total = listaDer.iterator().next().getValor();
         }
         return total;
+    }
+
+    /**
+     * Descrições na planilha Basis (aba AFP - Detalhada): contagem apenas numérica ({@code valor} preenchido)
+     * não deve gerar texto; {@code nome} nulo não deve virar a string "null" no Excel.
+     */
+    private String joinDescricoesDersExportacaoBasis(Set<Der> ders) {
+        if (ders == null || ders.isEmpty()) {
+            return "";
+        }
+        return ders.stream()
+            .map(this::descricaoDerExportacaoBasis)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(", "));
+    }
+
+    private String joinDescricoesRlrsExportacaoBasis(Set<Rlr> rlrs) {
+        if (rlrs == null || rlrs.isEmpty()) {
+            return "";
+        }
+        return rlrs.stream()
+            .map(this::descricaoRlrExportacaoBasis)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(", "));
+    }
+
+    private String joinDescricoesAlrsExportacaoBasis(Set<Alr> alrs) {
+        if (alrs == null || alrs.isEmpty()) {
+            return "";
+        }
+        return alrs.stream()
+            .map(this::descricaoAlrExportacaoBasis)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(", "));
+    }
+
+    private String descricaoDerExportacaoBasis(Der der) {
+        if (der == null || der.getValor() != null) {
+            return null;
+        }
+        return nomeDescricaoExportacaoBasis(der.getNome());
+    }
+
+    private String descricaoRlrExportacaoBasis(Rlr rlr) {
+        if (rlr == null || rlr.getValor() != null) {
+            return null;
+        }
+        return nomeDescricaoExportacaoBasis(rlr.getNome());
+    }
+
+    private String descricaoAlrExportacaoBasis(Alr alr) {
+        if (alr == null || alr.getValor() != null) {
+            return null;
+        }
+        return nomeDescricaoExportacaoBasis(alr.getNome());
+    }
+
+    private String nomeDescricaoExportacaoBasis(String nome) {
+        if (nome == null) {
+            return null;
+        }
+        String trimmed = nome.trim();
+        if (trimmed.isEmpty() || "null".equalsIgnoreCase(trimmed)) {
+            return null;
+        }
+        return trimmed;
     }
 
     private String recuperarNomeElaborador(Analise analise) {

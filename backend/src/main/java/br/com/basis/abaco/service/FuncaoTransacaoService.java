@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -253,5 +254,31 @@ public class FuncaoTransacaoService {
 
         // 5. Salva no Elasticsearch (Lote) - Resolve o problema de visualização
         funcaoTransacaoSearchRepository.save(funcoesNoBanco);
+    }
+
+    public void reordenarFuncoesPorAnalise(Long analiseId) {
+        if (analiseId == null) {
+            return;
+        }
+
+        List<FuncaoTransacao> funcoes = funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(analiseId).stream()
+            .sorted(Comparator.comparing(FuncaoTransacao::getOrdem, Comparator.nullsLast(Long::compareTo))
+                .thenComparing(FuncaoTransacao::getId, Comparator.nullsLast(Long::compareTo)))
+            .collect(Collectors.toList());
+
+        Long ordem = 1L;
+        boolean alterouOrdem = false;
+        for (FuncaoTransacao funcaoTransacao : funcoes) {
+            if (!ordem.equals(funcaoTransacao.getOrdem())) {
+                funcaoTransacao.setOrdem(ordem);
+                alterouOrdem = true;
+            }
+            ordem++;
+        }
+
+        if (alterouOrdem) {
+            funcaoTransacaoRepository.save(funcoes);
+            funcaoTransacaoSearchRepository.save(funcoes);
+        }
     }
 }

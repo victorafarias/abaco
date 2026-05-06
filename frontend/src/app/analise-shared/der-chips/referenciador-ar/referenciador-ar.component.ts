@@ -5,7 +5,7 @@ import {AnaliseSharedDataService} from '../../../shared/analise-shared-data.serv
 import {AnaliseService} from './../../../analise/analise.service';
 import {Der} from '../../../der/der.model';
 import {ResponseWrapper} from '../../../shared';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { BaselineService } from 'src/app/baseline';
 import { FuncaoDados } from 'src/app/funcao-dados';
 import { FuncaoDadosService } from 'src/app/funcao-dados/funcao-dados.service';
@@ -14,7 +14,8 @@ import { BlockUiService } from '@nuvem/angular-base';
 
 @Component({
     selector: 'app-analise-referenciador-ar',
-    templateUrl: './referenciador-ar.component.html'
+    templateUrl: './referenciador-ar.component.html',
+    styleUrls: ['./referenciador-ar.component.scss']
 })
 export class ReferenciadorArComponent implements OnInit, OnDestroy {
 
@@ -23,11 +24,13 @@ export class ReferenciadorArComponent implements OnInit, OnDestroy {
     dersReferenciadosEvent: EventEmitter<Der[]> = new EventEmitter<Der[]>();
 
     @Output()
-    funcaoDadosReferenciadaEvent: EventEmitter<string> = new EventEmitter<string>();
+    funcaoDadosReferenciadaEvent: EventEmitter<string[]> = new EventEmitter<string[]>();
 
     private subscriptionAnaliseCarregada: Subscription;
 
     funcoesDados: FuncaoDados[] = [];
+
+    funcoesDadosFiltradas: FuncaoDados[] = [];
 
     funcoesDadosCache: FuncaoDados[] = [];
 
@@ -40,7 +43,7 @@ export class ReferenciadorArComponent implements OnInit, OnDestroy {
 
     mostrarDialog = false;
 
-    funcaoDadosSelecionada: any;
+    funcoesDadosSelecionadas: FuncaoDados[] = [];
 
     dersReferenciados: Der[] = [];
 
@@ -137,22 +140,65 @@ export class ReferenciadorArComponent implements OnInit, OnDestroy {
     }
 
     funcoesDadosDropdownPlaceholder(): string {
-        return this.getLabel('Selecione uma Função de Dados');
+        return this.getLabel('Selecione uma ou mais Funções de Dados');
     }
 
-    funcaoDadosSelected(fd: FuncaoDados) {
-        this.funcaoDadosSelecionada = fd;
-        this.derService.dropDownByFuncaoDadosId(fd.id).subscribe(res => {
-            this.ders = res;
-            if (!this.ders.some(der => (der.nome === 'Mensagem' || der.nome === 'Ação'))) {
-                this.ders.push(this.derMsg, this.derAcao);
+    filtrarFuncoesDados(event: { query: string }) {
+        const q = (event.query || '').toLowerCase().trim();
+        this.funcoesDadosFiltradas = !q
+            ? [...this.funcoesDados]
+            : this.funcoesDados.filter(fd => fd.name && fd.name.toLowerCase().includes(q));
+    }
+
+    onFuncoesDadosSelecionadasChange() {
+        this.atualizarDersParaFuncoesSelecionadas();
+    }
+
+    private atualizarDersParaFuncoesSelecionadas() {
+        const selecionadas = this.funcoesDadosSelecionadas || [];
+        const porId = new Map<number, FuncaoDados>();
+        selecionadas.forEach(fd => {
+            if (fd && fd.id != null) {
+                porId.set(fd.id, fd);
             }
         });
+        const unicas = Array.from(porId.values());
+        if (unicas.length === 0) {
+            this.ders = [];
+            this.dersReferenciados = [];
+            return;
+        }
+        this.blockUiService.show();
+        forkJoin(unicas.map(fd => this.derService.dropDownByFuncaoDadosId(fd.id))).subscribe(
+            (results: Der[][]) => {
+                const merged: Der[] = [];
+                const seenIds = new Set<number>();
+                for (const list of results) {
+                    for (const der of list) {
+                        if (der.id != null) {
+                            if (!seenIds.has(der.id)) {
+                                seenIds.add(der.id);
+                                merged.push(der);
+                            }
+                        } else {
+                            merged.push(der);
+                        }
+                    }
+                }
+                if (!merged.some(der => der.nome === 'Mensagem' || der.nome === 'Ação')) {
+                    merged.push(this.derMsg, this.derAcao);
+                }
+                this.ders = merged;
+                this.dersReferenciados = [];
+                this.blockUiService.hide();
+            },
+            () => this.blockUiService.hide()
+        );
     }
 
     dersMultiSelectedPlaceholder(): string {
-        if (!this.funcaoDadosSelecionada) {
-            return this.getLabel('DERs - Selecione uma Função de Dados para selecionar quais DERs referenciar');
+        if (!this.funcoesDadosSelecionadas?.length) {
+            return this.getLabel('DERs - Selecione uma ou mais Funções de Dados para selecionar quais DERs referenciar');
         }
         return this.getLabel('Selecione quais DERs deseja referenciar');
 
@@ -166,7 +212,8 @@ export class ReferenciadorArComponent implements OnInit, OnDestroy {
         }
         this.dersReferenciadosEvent.emit(this.dersReferenciados);
         // XXX vai precisar relacionar qual funcao de dados foi relacionada?
-        this.funcaoDadosReferenciadaEvent.emit(this.funcaoDadosSelecionada.name);
+        const names = (this.funcoesDadosSelecionadas || []).map(fd => fd.name);
+        this.funcaoDadosReferenciadaEvent.emit(names);
         this.fecharDialog();
     }
 
@@ -176,7 +223,8 @@ export class ReferenciadorArComponent implements OnInit, OnDestroy {
     }
 
     private resetarCampos() {
-        this.funcaoDadosSelecionada = undefined;
+        this.funcoesDadosSelecionadas = [];
+        this.funcoesDadosFiltradas = [];
         this.ders = [];
         this.dersReferenciados = [];
     }
