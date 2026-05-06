@@ -22,4 +22,6 @@ public class PEAnaliticoDTO implements Serializable {
     private String nomeModulo;
     private Long idFuncionalidade;
     private Long idModulo;
+    /** Fundamentação / evidência (sustantation) da função na versão mais recente da baseline por equipe. */
+    private String insumos;
 }

@@ -237,21 +237,29 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
                 }
                 this.funcoesDados.sort((a, b) => a.ordem - b.ordem);
                 // Always fetch the analise to have metodoContagem for grid display
-                this.analiseService.find(this.idAnalise).subscribe(analise => {
-                    this.analise = analise;
-                    this.analiseSharedDataService.analise = analise;
+                const analiseReq = this.isView
+                    ? this.analiseService.findView(this.idAnalise)
+                    : this.analiseService.find(this.idAnalise);
+                analiseReq.subscribe({
+                    next: analise => {
+                        this.analise = analise;
+                        this.analiseSharedDataService.analise = analise;
 
-                    if (!this.isView) {
-                        // Edit-specific initialization
-                        this.exibeComponenteModuloFuncionalidade();
-                        this.carregarModuloSistema();
-                        this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
-                        this.hideShowQuantidade = true;
-                        this.estadoInicial();
-                        this.impactos = AnaliseSharedUtils.impactos;
-                        this.disableTRDER();
-                    }
-                    this.blockUiService.hide();
+                        if (!this.isView) {
+                            // Edit-specific initialization
+                            this.exibeComponenteModuloFuncionalidade();
+                            this.carregarModuloSistema();
+                            this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
+                            this.hideShowQuantidade = true;
+                            this.estadoInicial();
+                            this.impactos = AnaliseSharedUtils.impactos;
+                            this.disableTRDER();
+                        } else {
+                            this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
+                        }
+                        this.blockUiService.hide();
+                    },
+                    error: () => this.blockUiService.hide()
                 });
             });
         });
@@ -308,7 +316,6 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
      */
     abrirVisualizar() {
         if (this.funcaoDadosEditar && this.funcaoDadosEditar.length > 0) {
-            this.viewFuncaoDados = true;
             this.prepararParaVisualizar(this.funcaoDadosEditar[0]);
         }
     }
@@ -940,7 +947,6 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
                 this.confirmDelete(this.funcaoDadosEditar);
                 break;
             case 'view':
-                this.viewFuncaoDados = true;
                 this.prepararParaVisualizar(this.funcaoDadosEditar[0]);
                 break;
         }
@@ -1308,12 +1314,25 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         this.displayDescriptionDeflator = false;
     }
     private prepararParaVisualizar(funcaoDadosSelecionada: FuncaoDados) {
+        if (!funcaoDadosSelecionada?.id) {
+            return;
+        }
         this.blockUiService.show();
-        this.funcaoDadosService.getById(funcaoDadosSelecionada.id)
-            .subscribe(funcaoDados => {
-                this.seletedFuncaoDados = funcaoDados;
+        this.funcaoDadosService.getById(funcaoDadosSelecionada.id).subscribe({
+            next: funcaoDados => {
+                this.seletedFuncaoDados = new FuncaoDados().copyFromJSON(funcaoDados);
+                this.seletedFuncaoDados.ordem = funcaoDadosSelecionada.ordem;
+                this.viewFuncaoDados = true;
                 this.blockUiService.hide();
-            });
+                this.changeDetectorRef.detectChanges();
+            },
+            error: () => {
+                this.blockUiService.hide();
+                this.pageNotificationService.addErrorMessage(
+                    this.getLabel('Não foi possível carregar o detalhamento da função.')
+                );
+            }
+        });
     }
     public selectFD(event) {
         localStorage.setItem("numberPagesFD", this.tables.pDatatableComponent._rows.toString());

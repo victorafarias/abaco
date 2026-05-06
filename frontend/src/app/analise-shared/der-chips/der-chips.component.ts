@@ -419,8 +419,11 @@ export class DerChipsComponent implements OnChanges, OnInit {
         this.mostrarDialogEdicao = false;
     }
 
-    funcaoDadosReferenciada(name: string) {
-        this.addItem(new DerChipItem(undefined, name, this.contagem++));
+    funcaoDadosReferenciada(names: string[]) {
+        if (!names) {
+            return;
+        }
+        names.forEach(name => this.addItem(new DerChipItem(undefined, name, this.contagem++)));
     }
 
     dersReferenciados(ders: Der[]) {

@@ -1,6 +1,7 @@
 package br.com.basis.abaco.web.rest;
 
 import br.com.basis.abaco.AbacoApp;
+import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.domain.FuncaoTransacao;
 import br.com.basis.abaco.domain.enumeration.Complexidade;
 import br.com.basis.abaco.domain.enumeration.TipoFuncaoTransacao;
@@ -8,6 +9,7 @@ import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.FuncaoTransacaoRepository;
 import br.com.basis.abaco.repository.UploadedFilesRepository;
 import br.com.basis.abaco.repository.search.FuncaoTransacaoSearchRepository;
+import br.com.basis.abaco.service.ConfiguracaoService;
 import br.com.basis.abaco.service.FuncaoDadosService;
 import br.com.basis.abaco.service.FuncaoTransacaoService;
 import br.com.basis.abaco.repository.search.VwAlrSearchRepository;
@@ -23,13 +25,16 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -87,6 +92,10 @@ public class FuncaoTransacaoResourceIT {
     @Autowired
     private FuncaoDadosService funcaoDadosService;
     @Autowired
+    private FuncaoTransacaoService funcaoTransacaoService;
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+    @Autowired
     private VwDerSearchRepository vwDerSearchRepository;
     @Autowired
     private VwAlrSearchRepository vwAlrSearchRepository;
@@ -94,7 +103,8 @@ public class FuncaoTransacaoResourceIT {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        FuncaoTransacaoResource funcaoTransacaoResource = new FuncaoTransacaoResource(funcaoTransacaoRepository, funcaoTransacaoSearchRepository, analiseRepository, vwDerSearchRepository, vwAlrSearchRepository, funcaoDadosService);
+        FuncaoTransacaoResource funcaoTransacaoResource = new FuncaoTransacaoResource(funcaoTransacaoRepository, funcaoTransacaoSearchRepository, analiseRepository, vwDerSearchRepository, vwAlrSearchRepository, funcaoDadosService, funcaoTransacaoService);
+        ReflectionTestUtils.setField(funcaoTransacaoResource, "configuracaoService", configuracaoService);
         this.restFuncaoTransacaoMockMvc = MockMvcBuilders.standaloneSetup(funcaoTransacaoResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setControllerAdvice(exceptionTranslator)
@@ -276,6 +286,44 @@ public class FuncaoTransacaoResourceIT {
         // Validate the database is empty
         List<FuncaoTransacao> funcaoTransacaoList = funcaoTransacaoRepository.findAll();
         assertThat(funcaoTransacaoList).hasSize(databaseSizeBeforeDelete - 1);
+    }
+
+    @Test
+    @Transactional
+    public void deleteFuncaoTransacaoReordenaFuncoesDaAnalise() throws Exception {
+        Analise analise = analiseRepository.saveAndFlush(AnaliseResourceIT.createEntity(em));
+        FuncaoTransacao primeira = createEntity(em);
+        primeira.setAnalise(analise);
+        primeira.setName("Primeira");
+        primeira.setOrdem(1L);
+        primeira = funcaoTransacaoRepository.saveAndFlush(primeira);
+
+        FuncaoTransacao segunda = createEntity(em);
+        segunda.setAnalise(analise);
+        segunda.setName("Segunda");
+        segunda.setOrdem(2L);
+        segunda = funcaoTransacaoRepository.saveAndFlush(segunda);
+        funcaoTransacaoSearchRepository.save(segunda);
+
+        FuncaoTransacao terceira = createEntity(em);
+        terceira.setAnalise(analise);
+        terceira.setName("Terceira");
+        terceira.setOrdem(3L);
+        terceira = funcaoTransacaoRepository.saveAndFlush(terceira);
+
+        restFuncaoTransacaoMockMvc.perform(delete("/api/funcaoTransacao/{id}", segunda.getId())
+                .accept(TestUtil.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk());
+
+        List<FuncaoTransacao> funcoesRestantes = funcaoTransacaoRepository.findAllByAnaliseIdOrderByOrdem(analise.getId()).stream()
+                .sorted(Comparator.comparing(FuncaoTransacao::getOrdem))
+                .collect(Collectors.toList());
+
+        assertThat(funcoesRestantes).hasSize(2);
+        assertThat(funcoesRestantes.get(0).getId()).isEqualTo(primeira.getId());
+        assertThat(funcoesRestantes.get(0).getOrdem()).isEqualTo(1L);
+        assertThat(funcoesRestantes.get(1).getId()).isEqualTo(terceira.getId());
+        assertThat(funcoesRestantes.get(1).getOrdem()).isEqualTo(2L);
     }
 
     @Test
