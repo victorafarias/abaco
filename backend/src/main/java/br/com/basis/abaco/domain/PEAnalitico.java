@@ -75,5 +75,7 @@ public class PEAnalitico implements Serializable {
     @Column(name = "nome_modulo")
     private String nomeModulo;
 
-    
+    @Column(name = "insumos")
+    private String insumos;
+
 }

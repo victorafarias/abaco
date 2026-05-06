@@ -11,14 +11,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import br.com.basis.abaco.domain.Analise;
 import br.com.basis.abaco.repository.AnaliseRepository;
 import br.com.basis.abaco.repository.FuncionalidadeRepository;
 import br.com.basis.abaco.repository.search.VwDerSearchRepository;
 import br.com.basis.abaco.repository.search.VwRlrSearchRepository;
+import br.com.basis.abaco.service.ConfiguracaoService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -80,7 +85,11 @@ public class FuncaoDadosResourceIT {
     @Autowired
     private FuncaoDadosService funcaoDadosService;
 
+    @Autowired
     private AnaliseRepository analiseRepository;
+
+    @Autowired
+    private ConfiguracaoService configuracaoService;
 
     private MockMvc restFuncaoDadosMockMvc;
 
@@ -97,6 +106,7 @@ public class FuncaoDadosResourceIT {
         MockitoAnnotations.initMocks(this);
         FuncaoDadosResource funcaoDadosResource = new FuncaoDadosResource(funcaoDadosRepository,
                 funcaoDadosSearchRepository, funcaoDadosService, analiseRepository, vwDerSearchRepository, vwRlrSearchRepository);
+        ReflectionTestUtils.setField(funcaoDadosResource, "configuracaoService", configuracaoService);
         this.restFuncaoDadosMockMvc = MockMvcBuilders.standaloneSetup(funcaoDadosResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setControllerAdvice(exceptionTranslator)
@@ -278,6 +288,44 @@ public class FuncaoDadosResourceIT {
         // Validate the database is empty
         List<FuncaoDados> funcaoDadosList = funcaoDadosRepository.findAll();
         assertThat(funcaoDadosList).hasSize(databaseSizeBeforeDelete - 1);
+    }
+
+    @Test
+    @Transactional
+    public void deleteFuncaoDadosReordenaFuncoesDaAnalise() throws Exception {
+        Analise analise = analiseRepository.saveAndFlush(AnaliseResourceIT.createEntity(em));
+        FuncaoDados primeira = createEntity(em);
+        primeira.setAnalise(analise);
+        primeira.setName("Primeira");
+        primeira.setOrdem(1L);
+        primeira = funcaoDadosRepository.saveAndFlush(primeira);
+
+        FuncaoDados segunda = createEntity(em);
+        segunda.setAnalise(analise);
+        segunda.setName("Segunda");
+        segunda.setOrdem(2L);
+        segunda = funcaoDadosRepository.saveAndFlush(segunda);
+        funcaoDadosSearchRepository.save(segunda);
+
+        FuncaoDados terceira = createEntity(em);
+        terceira.setAnalise(analise);
+        terceira.setName("Terceira");
+        terceira.setOrdem(3L);
+        terceira = funcaoDadosRepository.saveAndFlush(terceira);
+
+        restFuncaoDadosMockMvc.perform(delete("/api/funcao-dados/{id}", segunda.getId())
+            .accept(TestUtil.APPLICATION_JSON_UTF8))
+            .andExpect(status().isOk());
+
+        List<FuncaoDados> funcoesRestantes = funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(analise.getId()).stream()
+            .sorted(Comparator.comparing(FuncaoDados::getOrdem))
+            .collect(Collectors.toList());
+
+        assertThat(funcoesRestantes).hasSize(2);
+        assertThat(funcoesRestantes.get(0).getId()).isEqualTo(primeira.getId());
+        assertThat(funcoesRestantes.get(0).getOrdem()).isEqualTo(1L);
+        assertThat(funcoesRestantes.get(1).getId()).isEqualTo(terceira.getId());
+        assertThat(funcoesRestantes.get(1).getOrdem()).isEqualTo(2L);
     }
 
     @Test

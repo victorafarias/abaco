@@ -243,20 +243,28 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
                 }
                 this.funcoesTransacoes.sort((a, b) => a.ordem - b.ordem);
                 // Always fetch the analise to have metodoContagem for grid display
-                this.analiseService.find(this.idAnalise).subscribe(analise => {
-                    this.analise = analise;
-                    this.analiseSharedDataService.analise = analise;
+                const analiseReq = this.isView
+                    ? this.analiseService.findView(this.idAnalise)
+                    : this.analiseService.find(this.idAnalise);
+                analiseReq.subscribe({
+                    next: analise => {
+                        this.analise = analise;
+                        this.analiseSharedDataService.analise = analise;
 
-                    if (!this.isView) {
-                        // Edit-specific initialization
-                        this.carregarModuloSistema();
-                        this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
-                        this.hideShowQuantidade = true;
-                        this.currentFuncaoTransacao = new FuncaoTransacao();
-                        this.estadoInicial();
-                        this.initClassificacoes();
-                    }
-                    this.blockUiService.hide();
+                        if (!this.isView) {
+                            // Edit-specific initialization
+                            this.carregarModuloSistema();
+                            this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
+                            this.hideShowQuantidade = true;
+                            this.currentFuncaoTransacao = new FuncaoTransacao();
+                            this.estadoInicial();
+                            this.initClassificacoes();
+                        } else {
+                            this.disableAba = this.analise.metodoContagem === MessageUtil.INDICATIVA;
+                        }
+                        this.blockUiService.hide();
+                    },
+                    error: () => this.blockUiService.hide()
                 });
             });
         });
@@ -376,7 +384,6 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
      */
     abrirVisualizar() {
         if (this.funcaoTransacaoEditar && this.funcaoTransacaoEditar.length > 0) {
-            this.viewFuncaoTransacao = true;
             this.prepararParaVisualizar(this.funcaoTransacaoEditar[0]);
         }
     }
@@ -839,8 +846,7 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
                 this.confirmDelete(this.funcaoTransacaoEditar);
                 break;
             case 'view':
-                this.isView = true;
-                this.openDialog(true);
+                this.abrirVisualizar();
                 break;
         }
     }
@@ -1147,10 +1153,24 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         this.displayDescriptionDeflator = false;
     }
     private prepararParaVisualizar(funcaoTransacaoSelecionada: FuncaoTransacao) {
+        if (!funcaoTransacaoSelecionada?.id) {
+            return;
+        }
         this.blockUiService.show();
-        this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe(funcaoTransacao => {
-            this.currentFuncaoTransacao = funcaoTransacao;
-            this.blockUiService.hide();
+        this.funcaoTransacaoService.getById(funcaoTransacaoSelecionada.id).subscribe({
+            next: funcaoTransacao => {
+                this.currentFuncaoTransacao = new FuncaoTransacao().copyFromJSON(funcaoTransacao);
+                this.currentFuncaoTransacao.ordem = funcaoTransacaoSelecionada.ordem;
+                this.viewFuncaoTransacao = true;
+                this.blockUiService.hide();
+                this.changeDetectorRef.detectChanges();
+            },
+            error: () => {
+                this.blockUiService.hide();
+                this.pageNotificationService.addErrorMessage(
+                    this.getLabel('Não foi possível carregar o detalhamento da função.')
+                );
+            }
         });
     }
     public selectFT(event) {

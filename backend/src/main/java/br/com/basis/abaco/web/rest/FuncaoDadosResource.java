@@ -344,12 +344,14 @@ public class FuncaoDadosResource {
     public ResponseEntity<Void> deleteFuncaoDados(@PathVariable Long id) {
         log.debug("REST request to delete FuncaoDados : {}", id);
         FuncaoDados funcaoDados = funcaoDadosRepository.findById(id);
-        if(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao() == true){
+        Long analiseId = funcaoDados != null && funcaoDados.getAnalise() != null ? funcaoDados.getAnalise().getId() : null;
+        if(Boolean.TRUE.equals(configuracaoService.buscarConfiguracaoHabilitarCamposFuncao())){
             funcaoDados.getDers().forEach(item -> vwDerSearchRepository.delete(item.getId()));
             funcaoDados.getRlrs().forEach(item -> vwRlrSearchRepository.delete(item.getId()));
         }
         funcaoDadosRepository.delete(id);
         funcaoDadosSearchRepository.delete(id);
+        funcaoDadosService.reordenarFuncoesPorAnalise(analiseId);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
