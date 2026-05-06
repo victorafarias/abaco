@@ -1,0 +1,29 @@
+.referenciador-fd-ac-wrap {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .referenciador-fd-autocomplete {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .referenciador-fd-autocomplete .ui-autocomplete-multiple-container {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+:host ::ng-deep .referenciador-fd-autocomplete .ui-autocomplete-input-token {
+  flex: 1 1 auto;
+  min-width: 22rem;
+  max-width: 100%;
+}
+
+:host ::ng-deep .referenciador-fd-autocomplete .ui-autocomplete-input-token > input {
+  width: 100% !important;
+  min-width: 0;
+  box-sizing: border-box;
+}

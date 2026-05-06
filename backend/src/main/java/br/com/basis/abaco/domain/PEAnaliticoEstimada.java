@@ -75,4 +75,7 @@ public class PEAnaliticoEstimada implements Serializable {
     @Column(name = "complexidade")
     private String complexidade;
 
+    @Column(name = "insumos")
+    private String insumos;
+
 }

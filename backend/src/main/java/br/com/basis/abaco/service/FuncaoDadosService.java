@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -315,5 +316,31 @@ public class FuncaoDadosService {
         // 5. Alterado: Salva todas as alterações no Elasticsearch em lote
         // Isso resolve o problema de precisar dar F5 na página
         funcaoDadosSearchRepository.save(funcoesNoBanco);
+    }
+
+    public void reordenarFuncoesPorAnalise(Long analiseId) {
+        if (analiseId == null) {
+            return;
+        }
+
+        List<FuncaoDados> funcoes = funcaoDadosRepository.findAllByAnaliseIdOrderByOrdem(analiseId).stream()
+            .sorted(Comparator.comparing(FuncaoDados::getOrdem, Comparator.nullsLast(Long::compareTo))
+                .thenComparing(FuncaoDados::getId, Comparator.nullsLast(Long::compareTo)))
+            .collect(Collectors.toList());
+
+        Long ordem = 1L;
+        boolean alterouOrdem = false;
+        for (FuncaoDados funcaoDados : funcoes) {
+            if (!ordem.equals(funcaoDados.getOrdem())) {
+                funcaoDados.setOrdem(ordem);
+                alterouOrdem = true;
+            }
+            ordem++;
+        }
+
+        if (alterouOrdem) {
+            funcaoDadosRepository.save(funcoes);
+            funcaoDadosSearchRepository.save(funcoes);
+        }
     }
 }

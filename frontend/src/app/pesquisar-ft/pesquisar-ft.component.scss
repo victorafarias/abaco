@@ -1,0 +1,36 @@
+/* Estilos do redimensionamento de colunas do <p-table> (PrimeNG 9) na modal de pesquisa
+   de funções para importação. O CSS legado (`primeng.min.css`) só estiliza a
+   `.ui-datatable` antiga; o componente `<p-table>` renderiza `.ui-table`,
+   então duplicamos as regras escopadas para a nossa tabela. */
+:host ::ng-deep {
+    .pesquisar-ft-table {
+        .ui-table-thead > tr > th {
+            position: relative;
+        }
+
+        .ui-resizable-column {
+            background-clip: padding-box;
+        }
+
+        .ui-column-resizer {
+            display: block;
+            position: absolute !important;
+            top: 0;
+            right: 0;
+            margin: 0;
+            width: 0.5em;
+            height: 100%;
+            padding: 0;
+            cursor: col-resize;
+            border: 1px solid transparent;
+        }
+
+        .ui-column-resizer-helper {
+            width: 1px;
+            position: absolute;
+            z-index: 10;
+            display: none;
+            background-color: #007ad9;
+        }
+    }
+}
