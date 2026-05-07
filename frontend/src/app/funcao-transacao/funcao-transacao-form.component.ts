@@ -7,7 +7,8 @@ import * as _ from 'lodash';
 
 import Quill from 'quill';
 import { ConfirmationService, Editor, FileUpload, SelectItem } from 'primeng';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { forkJoin, from, Observable, Subscription } from 'rxjs';
+import { concatMap, tap } from 'rxjs/operators';
 import { CalculadoraTransacao } from 'src/app/analise-shared/calculadora-transacao';
 import { ResumoFuncoes } from 'src/app/analise-shared/resumo-funcoes';
 import { AnaliseReferenciavel } from 'src/app/analise-shared/analise-referenciavel';
@@ -1025,17 +1026,24 @@ export class FuncaoTransacaoFormComponent implements OnInit, AfterViewInit {
         this.confirmationService.confirm({
             message: 'Tem certeza que deseja excluir as funções de transações selecionada?',
             accept: () => {
-                funcaoTransacaoSelecionada.forEach((funcaoTransacao) => {
-                    this.funcaoTransacaoService.delete(funcaoTransacao.id).subscribe(value => {
-                        this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacaoEdit) => (
-                            funcaoTransacaoEdit.id !== funcaoTransacao.id
-                        ));
+                from(funcaoTransacaoSelecionada).pipe(
+                    concatMap((funcaoTransacao) =>
+                        this.funcaoTransacaoService.delete(funcaoTransacao.id).pipe(
+                            tap(() => {
+                                this.funcoesTransacoes = this.funcoesTransacoes.filter((funcaoTransacaoEdit) => (
+                                    funcaoTransacaoEdit.id !== funcaoTransacao.id
+                                ));
+                            })
+                        )
+                    )
+                ).subscribe({
+                    complete: () => {
                         this.analiseService.updateSomaPf(this.analise.id).subscribe();
                         this.updateIndex();
                         this.resetarEstadoPosSalvar();
-                    });
-                })
-                this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+                        this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+                    }
+                });
             }
         });
     }
