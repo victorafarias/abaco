@@ -3,7 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
 import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { forkJoin, from, Observable, Subscription } from 'rxjs';
+import { concatMap, tap } from 'rxjs/operators';
 import { Alr } from '../alr/alr.model';
 import { Analise } from '../analise/analise.model';
 import { AnaliseService } from '../analise/analise.service';
@@ -1180,15 +1181,24 @@ export class FuncaoDadosFormComponent implements OnInit, OnChanges, AfterViewIni
         this.confirmationService.confirm({
             message: 'Tem certeza que deseja excluir as funções de dados selecionada?',
             accept: () => {
-                funcaoDadosSelecionada.forEach(funcaoDados => {
-                    this.funcaoDadosService.delete(funcaoDados.id).subscribe(value => {
-                        this.funcoesDados = this.funcoesDados.filter((funcaoDadosEdit) => (funcaoDadosEdit.id !== funcaoDados.id));
+                from(funcaoDadosSelecionada).pipe(
+                    concatMap((funcaoDados) =>
+                        this.funcaoDadosService.delete(funcaoDados.id).pipe(
+                            tap(() => {
+                                this.funcoesDados = this.funcoesDados.filter((funcaoDadosEdit) => (
+                                    funcaoDadosEdit.id !== funcaoDados.id
+                                ));
+                            })
+                        )
+                    )
+                ).subscribe({
+                    complete: () => {
                         this.analiseService.updateSomaPf(this.analise.id).subscribe();
                         this.updateIndex();
                         this.resetarEstadoPosSalvar();
-                    });
-                })
-                this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+                        this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+                    }
+                });
             }
         });
     }
