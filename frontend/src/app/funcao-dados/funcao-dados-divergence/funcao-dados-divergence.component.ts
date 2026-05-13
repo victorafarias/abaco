@@ -5,8 +5,8 @@ import { BlockUiService } from '@nuvem/angular-base';
 import { Column, DatatableClickEvent, DatatableComponent, PageNotificationService } from '@nuvem/primeng-components';
 import * as _ from 'lodash';
 import { ConfirmationService, FileUpload, SelectItem } from 'primeng';
-import { asapScheduler, asyncScheduler, forkJoin, interval, Observable, queueScheduler, Subscription } from 'rxjs';
-import { observeOn, take } from 'rxjs/operators';
+import { asapScheduler, asyncScheduler, forkJoin, from, interval, Observable, queueScheduler, Subscription } from 'rxjs';
+import { concatMap, observeOn, take, tap } from 'rxjs/operators';
 import { DivergenciaService } from 'src/app/divergencia';
 import { Sistema, SistemaService } from 'src/app/sistema';
 import { TipoEquipe, TipoEquipeService } from 'src/app/tipo-equipe';
@@ -843,17 +843,24 @@ export class FuncaoDadosDivergenceComponent implements OnInit {
         this.confirmationService.confirm({
             message: 'Tem certeza que deseja excluir as funções de dados selecionada?',
             accept: () => {
-                funcaoDadosSelecionada.forEach((funcaoDado) => {
-                    this.funcaoDadosService.delete(funcaoDado.id).subscribe(value => {
-                        this.funcoesDados = this.funcoesDados.filter((funcaoDadoEdit) => (
-                            funcaoDadoEdit.id !== funcaoDado.id
-                        ));
+                from(funcaoDadosSelecionada).pipe(
+                    concatMap((funcaoDado) =>
+                        this.funcaoDadosService.delete(funcaoDado.id).pipe(
+                            tap(() => {
+                                this.funcoesDados = this.funcoesDados.filter((funcaoDadoEdit) => (
+                                    funcaoDadoEdit.id !== funcaoDado.id
+                                ));
+                            })
+                        )
+                    )
+                ).subscribe({
+                    complete: () => {
                         this.divergenciaService.updateDivergenciaSomaPf(this.analise.id).subscribe();
                         this.updateIndex();
                         this.resetarEstadoPosSalvar();
-                    });
-                })
-                this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+                        this.pageNotificationService.addDeleteMsg("Funções deletadas com sucesso!");
+                    }
+                });
             }
         });
     }
