@@ -187,7 +187,8 @@ export class AnaliseListComponent implements OnInit {
         { label: "Modelo padrão EBDCT", value: 5 },
         { label: "Modelo padrão MCTI", value: 6 },
         { label: "Modelo padrão BNB", value: 7 },
-        { label: "Modelo padrão SFSP", value: 8 }
+        { label: "Modelo padrão SFSP", value: 8 },
+        { label: "Modelo padrão EBSERH", value: 9 }
     ];
     modeloSelecionado: any;
 

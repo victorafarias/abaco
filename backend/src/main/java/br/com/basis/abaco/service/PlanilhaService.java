@@ -32,11 +32,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -99,6 +103,8 @@ public class PlanilhaService {
                 return this.modeloPadraoBNB(analise, funcaoDadosList, funcaoTransacaoList);
             case 8:
                 return this.modeloPadraoSFSP(analise, funcaoDadosList, funcaoTransacaoList);
+            case 9:
+                return this.modeloPadraoEBSERH(analise, funcaoDadosList, funcaoTransacaoList);
             default:
                 return this.modeloPadraoBasis(analise, funcaoDadosList, funcaoTransacaoList);
         }
@@ -347,6 +353,331 @@ public class PlanilhaService {
         String nomeLimpo = limparTextoDeflator(fatorAjuste.getNome());
         return DEFLATOR_SIGLAS_SFSP.getOrDefault(nomeLimpo, "");
     }
+
+
+    // =============================================================================
+    // Modelo padrão EBSERH (modelo 9) — exporta para template .xlsx
+    // =============================================================================
+
+    private static final Map<String, String> DEFLATOR_SIGLAS_EBSERH = new HashMap<>();
+
+    static {
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Projeto de Desenvolvimento - Novo"), "I");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Projeto de Melhoria - Desenvolvido pela Empresa"), "A");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Projeto de Melhoria - Sem redocumentação"), "A75");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Projeto de Melhoria - Com redocumentação"), "A90");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Projeto de Melhoria - Exclusão de Funcionalidade"), "E");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Migração de Dados"), "PMD");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Manutenção Corretiva - Desenvolvido pela Empresa"), "COR");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Manutenção Corretiva - Não Desenvolvido pela Empresa"), "COR75");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Mudança de Plataforma - Linguagem de Programação"), "MLP");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Mudança de Plataforma - Banco de Dados (hierárquico p/ relacional)"), "MBO");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Mudança de Plataforma - Banco de Dados (relacional p/ relacional)"), "MBM");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Atualização de Versão – Linguagem de Programação"), "ALP");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Atualização de Versão"), "AVB");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Atualização de Versão – Banco de Dados"), "ABD");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Manutenção em Interface"), "COSNF");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Adaptação em Funcionalidades - Basis"), "ARN");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Adaptação em Funcionalidades - Não Basis"), "ARN75");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Apuração Especial – Atualização"), "ADS");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Apuração Especial – Consulta Prévia"), "CPA");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Apuração Especial – Atualização c/ Consulta Prévia"), "ADC");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Apuração Especial – Geração de Relatórios"), "AGR");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Apuração Especial – Reexecução"), "AER");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Atualização de Dados"), "ATD");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"), "PAG");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Manutenção de Documentação de Sistemas Legados"), "MSL");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Verificação de Erros - Com documentação"), "VES");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Verificação de Erros - Sem Documentação"), "VEC");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Pontos de Função de Teste"), "PFT");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Componente Interno Reusável"), "CIR");
+        DEFLATOR_SIGLAS_EBSERH.put(limparTextoDeflator("Componente Interno Reusável - Arquivo"), "CIRN");
+    }
+
+    private static final Pattern EBSERH_HU_NUMERO_PATTERN = Pattern.compile("#(\\d+)");
+
+    /**
+     * Placeholder usado para preservar quebras de linha durante a conversão HTML → texto puro com o
+     * Jsoup (o método {@code text()} normaliza espaços em branco e descarta '\n'); aplicamos a
+     * substituição antes do parse e revertemos depois.
+     */
+    private static final String EBSERH_LINE_BREAK_PLACEHOLDER = "__EBSERH_NL__";
+
+    /**
+     * Converte o HTML do campo "Evidência" (sustantation) em texto puro preservando quebras de linha
+     * originadas de tags de bloco ({@code <br>}, {@code </p>}, {@code </div>}, {@code </li>}, headings).
+     */
+    private String evidenciaEBSERHParaTextoComQuebras(String html) {
+        if (html == null) {
+            return "";
+        }
+        // Preserva quebras de linha textuais e oriundas de tags de bloco usando um placeholder, já que
+        // Jsoup#text() normaliza espaços em branco descartando '\n' (mesmo quando o input é texto puro).
+        String preProcessado = html
+            .replace("\r\n", EBSERH_LINE_BREAK_PLACEHOLDER)
+            .replace("\n", EBSERH_LINE_BREAK_PLACEHOLDER)
+            .replace("\r", EBSERH_LINE_BREAK_PLACEHOLDER)
+            .replaceAll("(?i)<\\s*br\\s*/?>", EBSERH_LINE_BREAK_PLACEHOLDER)
+            .replaceAll("(?i)</\\s*(p|div|li|h[1-6])\\s*>", EBSERH_LINE_BREAK_PLACEHOLDER);
+        return Jsoup.parse(preProcessado).text().replace(EBSERH_LINE_BREAK_PLACEHOLDER, "\n");
+    }
+
+    private String pegarSiglaDeflatorEBSERH(FatorAjuste fatorAjuste) {
+        if (fatorAjuste == null || fatorAjuste.getNome() == null) {
+            return "";
+        }
+        String nomeLimpo = limparTextoDeflator(fatorAjuste.getNome());
+        return DEFLATOR_SIGLAS_EBSERH.getOrDefault(nomeLimpo, "");
+    }
+
+    private ByteArrayOutputStream modeloPadraoEBSERH(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("reports/planilhas/modelo9-ebserh.xlsx");
+        XSSFWorkbook excelFile = new XSSFWorkbook(stream);
+        FormulaEvaluator evaluator = excelFile.getCreationHelper().createFormulaEvaluator();
+        evaluator.clearAllCachedResultValues();
+
+        this.setarResumoExcelPadraoEBSERH(excelFile, analise, funcaoDadosList, funcaoTransacaoList);
+        this.setarFuncoesExcelPadraoEBSERH(excelFile, funcaoDadosList, funcaoTransacaoList);
+
+        excelFile.setForceFormulaRecalculation(true);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        excelFile.write(outputStream);
+        return outputStream;
+    }
+
+    private void setarResumoExcelPadraoEBSERH(XSSFWorkbook excelFile, Analise analise,
+                                              List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
+        XSSFSheet excelSheet = excelFile.getSheet("Info Gerais");
+
+        if (analise.getSistema() != null) {
+            String sistemaNomeSigla = analise.getSistema().getNome();
+            if (analise.getSistema().getSigla() != null && !analise.getSistema().getSigla().trim().isEmpty()) {
+                sistemaNomeSigla += " - " + analise.getSistema().getSigla();
+            }
+            obterCelula(excelSheet, 4, 5).setCellValue(sistemaNomeSigla);
+        }
+
+        if (analise.getTipoAnalise() != null) {
+            String tipoContagem = "";
+            switch (analise.getTipoAnalise()) {
+                case APLICACAO:
+                    tipoContagem = "Aplicação";
+                    break;
+                case DESENVOLVIMENTO:
+                    tipoContagem = "Projeto de Desenvolvimento";
+                    break;
+                case MELHORIA:
+                    tipoContagem = "Projeto de Melhoria";
+                    break;
+            }
+            obterCelula(excelSheet, 5, 5).setCellValue(tipoContagem);
+        }
+
+        if (analise.getMetodoContagem() != null) {
+            String metodo = "";
+            switch (analise.getMetodoContagem()) {
+                case DETALHADA:
+                    metodo = "Detalhada (IFPUG)";
+                    break;
+                case ESTIMADA:
+                    metodo = "Estimativa (NESMA)";
+                    break;
+                case INDICATIVA:
+                    metodo = "Indicativa (NESMA)";
+                    break;
+            }
+            obterCelula(excelSheet, 6, 5).setCellValue(metodo);
+        }
+
+        obterCelula(excelSheet, 8, 5).setCellValue(this.recuperarNomeElaborador(analise));
+
+        if (analise.getDataCriacaoOrdemServico() != null) {
+            obterCelula(excelSheet, 8, 17).setCellValue(
+                new java.text.SimpleDateFormat("dd/MM/yy").format(analise.getDataCriacaoOrdemServico()));
+        }
+
+        String historiasUsuario = extrairHistoriasDeUsuarioEBSERH(funcaoDadosList, funcaoTransacaoList);
+        obterCelula(excelSheet, 16, 0).setCellValue(historiasUsuario);
+
+        String arquivosHistoriasUsuario = extrairNomesArquivosHistoriasUsuarioEBSERH(funcaoDadosList, funcaoTransacaoList);
+        obterCelula(excelSheet, 21, 0).setCellValue(arquivosHistoriasUsuario);
+    }
+
+    private void setarFuncoesExcelPadraoEBSERH(XSSFWorkbook excelFile,
+                                               List<FuncaoDados> funcaoDadosList,
+                                               List<FuncaoTransacao> funcaoTransacaoList) {
+        XSSFSheet excelSheet = excelFile.getSheet("Contagem_PF");
+        int rowNum = 7; // Linha 8 na interface (0-indexed = 7)
+
+        for (FuncaoDados fd : funcaoDadosList) {
+            XSSFRow row = obterOuCriarLinha(excelSheet, rowNum);
+
+            String modulo = (fd.getFuncionalidade() != null && fd.getFuncionalidade().getModulo() != null)
+                ? fd.getFuncionalidade().getModulo().getNome() : "";
+            if (modulo == null) modulo = "";
+            String funcionalidade = (fd.getFuncionalidade() != null && fd.getFuncionalidade().getNome() != null)
+                ? fd.getFuncionalidade().getNome() : "";
+            row.getCell(0, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(modulo + " - " + funcionalidade + " - " + fd.getName());
+
+            String tipo = fd.getTipo() != null ? fd.getTipo().toString() : "";
+            tipo = aplicarOverrideTipoEBSERH(tipo, fd.getFatorAjuste());
+            row.getCell(1, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(tipo);
+
+            row.getCell(2, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(this.pegarSiglaDeflatorEBSERH(fd.getFatorAjuste()));
+
+            row.getCell(3, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(this.getTotalDer(fd.getDers()));
+            String ders = fd.getDers() == null ? "" :
+                fd.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
+            row.getCell(4, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(ders);
+
+            row.getCell(5, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(this.getTotalRlr(fd.getRlrs()));
+            String rlrs = fd.getRlrs() == null ? "" :
+                fd.getRlrs().stream().map(Rlr::getNome).collect(Collectors.joining(", "));
+            row.getCell(6, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(rlrs);
+
+            row.getCell(7, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(fd.getImpacto() != null ? fd.getImpacto().toString() : "");
+
+            String evidencia = Jsoup.parse(fd.getSustantation() != null ? fd.getSustantation() : "").text();
+            row.getCell(15, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia);
+
+            rowNum++;
+        }
+
+        for (FuncaoTransacao ft : funcaoTransacaoList) {
+            XSSFRow row = obterOuCriarLinha(excelSheet, rowNum);
+
+            String modulo = (ft.getFuncionalidade() != null && ft.getFuncionalidade().getModulo() != null)
+                ? ft.getFuncionalidade().getModulo().getNome() : "";
+            if (modulo == null) modulo = "";
+            String funcionalidade = (ft.getFuncionalidade() != null && ft.getFuncionalidade().getNome() != null)
+                ? ft.getFuncionalidade().getNome() : "";
+            row.getCell(0, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(modulo + " - " + funcionalidade + " - " + ft.getName());
+
+            String tipo = ft.getTipo() != null ? ft.getTipo().toString() : "";
+            tipo = aplicarOverrideTipoEBSERH(tipo, ft.getFatorAjuste());
+            row.getCell(1, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(tipo);
+
+            row.getCell(2, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(this.pegarSiglaDeflatorEBSERH(ft.getFatorAjuste()));
+
+            row.getCell(3, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(this.getTotalDer(ft.getDers()));
+            String ders = ft.getDers() == null ? "" :
+                ft.getDers().stream().map(Der::getNome).collect(Collectors.joining(", "));
+            row.getCell(4, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(ders);
+
+            row.getCell(5, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(this.getTotalAlr(ft.getAlrs()));
+            String alrs = ft.getAlrs() == null ? "" :
+                ft.getAlrs().stream().map(Alr::getNome).collect(Collectors.joining(", "));
+            row.getCell(6, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(alrs);
+
+            row.getCell(7, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK)
+                .setCellValue(ft.getImpacto() != null ? ft.getImpacto().toString() : "");
+
+            String evidencia = Jsoup.parse(ft.getSustantation() != null ? ft.getSustantation() : "").text();
+            row.getCell(15, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK).setCellValue(evidencia);
+
+            rowNum++;
+        }
+    }
+
+    private XSSFRow obterOuCriarLinha(XSSFSheet sheet, int rowNum) {
+        XSSFRow row = sheet.getRow(rowNum);
+        if (row == null) {
+            row = sheet.createRow(rowNum);
+        }
+        return row;
+    }
+
+    private org.apache.poi.ss.usermodel.Cell obterCelula(XSSFSheet sheet, int rowIdx, int colIdx) {
+        XSSFRow row = sheet.getRow(rowIdx);
+        if (row == null) {
+            row = sheet.createRow(rowIdx);
+        }
+        return row.getCell(colIdx, org.apache.poi.ss.usermodel.Row.CREATE_NULL_AS_BLANK);
+    }
+
+    private String aplicarOverrideTipoEBSERH(String tipoBase, FatorAjuste fatorAjuste) {
+        if (fatorAjuste == null || fatorAjuste.getNome() == null) {
+            return tipoBase;
+        }
+        String nomeLimpoFa = limparTextoDeflator(fatorAjuste.getNome());
+        if (nomeLimpoFa.equals(limparTextoDeflator("Manutenção em Interface"))) {
+            return "COSNF";
+        }
+        if (nomeLimpoFa.equals(limparTextoDeflator("Desenvolvimento, Manutenção e Publicação de Páginas Estáticas"))) {
+            return "PAG";
+        }
+        return tipoBase;
+    }
+
+    /**
+     * Varre as evidências (campo {@code sustantation} convertido para texto puro via Jsoup) de todas as
+     * funções (dados e transação) extraindo tokens no formato "#NNN" e produz uma lista única, na ordem
+     * de aparição, no formato "História de Usuário NNN", separadas por quebra de linha.
+     */
+    String extrairHistoriasDeUsuarioEBSERH(List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
+        Set<String> numerosHU = new LinkedHashSet<>();
+        Stream.concat(
+                funcaoDadosList == null ? Stream.<String>empty()
+                    : funcaoDadosList.stream().map(fd -> fd.getSustantation()),
+                funcaoTransacaoList == null ? Stream.<String>empty()
+                    : funcaoTransacaoList.stream().map(ft -> ft.getSustantation())
+            )
+            .filter(Objects::nonNull)
+            .map(this::evidenciaEBSERHParaTextoComQuebras)
+            .forEach(texto -> {
+                Matcher m = EBSERH_HU_NUMERO_PATTERN.matcher(texto);
+                while (m.find()) {
+                    numerosHU.add(m.group(1));
+                }
+            });
+        if (numerosHU.isEmpty()) {
+            return "";
+        }
+        return numerosHU.stream()
+            .map(n -> "História de Usuário " + n)
+            .collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * Varre as evidências (sustentação como texto puro, com quebras de linha preservadas a partir do
+     * HTML) de todas as funções e produz uma lista única dos nomes completos dos arquivos das
+     * histórias de usuário, na ordem de aparição. Os trechos são separados por ';' ou por quebras de
+     * linha; cada candidato é {@code trim}-ado e descartado apenas se ficar vazio. Nenhum filtro
+     * adicional por formato é aplicado (interpretação literal da especificação).
+     */
+    String extrairNomesArquivosHistoriasUsuarioEBSERH(List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) {
+        Set<String> arquivos = new LinkedHashSet<>();
+        Stream.concat(
+                funcaoDadosList == null ? Stream.<String>empty()
+                    : funcaoDadosList.stream().map(fd -> fd.getSustantation()),
+                funcaoTransacaoList == null ? Stream.<String>empty()
+                    : funcaoTransacaoList.stream().map(ft -> ft.getSustantation())
+            )
+            .filter(Objects::nonNull)
+            .map(this::evidenciaEBSERHParaTextoComQuebras)
+            .forEach(texto -> {
+                for (String pedaco : texto.split("[;\\r\\n]+")) {
+                    String candidato = pedaco.trim();
+                    if (!candidato.isEmpty()) {
+                        arquivos.add(candidato);
+                    }
+                }
+            });
+        return arquivos.isEmpty() ? "" : String.join("\n", arquivos);
+    }
+
+    // =============================================================================
+    // Fim Modelo padrão EBSERH
+    // =============================================================================
 
 
     private ByteArrayOutputStream modeloPadraoBNB(Analise analise, List<FuncaoDados> funcaoDadosList, List<FuncaoTransacao> funcaoTransacaoList) throws IOException {
